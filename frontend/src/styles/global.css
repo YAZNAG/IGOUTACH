@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    color-scheme: light dark;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  /* Transition douce lors du changement de thème. */
+  a,
+  button,
+  input,
+  select,
+  .bg-card,
+  [class*='bg-'] {
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  /* Survol des lignes de tableau dans le contenu. */
+  main tbody tr:hover {
+    background: var(--bg);
+  }
+
+  /* Chiffres, codes, horodatages : IBM Plex Mono, alignés à droite. */
+  .mono,
+  .tabular {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabular {
+    text-align: right;
+  }
+}

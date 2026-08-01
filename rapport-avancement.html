@@ -1,0 +1,568 @@
+<title>IGOUTECH — Rapport d'avancement</title>
+<style>
+  :root{
+    --ground:#f4f6f8; --surface:#ffffff; --surface-2:#fbfcfd;
+    --ink:#10151c; --muted:#5b6672; --faint:#8a94a0;
+    --line:#e3e8ee; --line-2:#eef1f5;
+    --accent:#0f766e; --accent-soft:#d7efec;
+    --ok:#15803d; --ok-bg:#e4f4e9;
+    --warn:#b45309; --warn-bg:#fbeddb;
+    --todo:#64748b; --todo-bg:#eef1f4;
+    --track:#e9edf2;
+    --shadow:0 1px 2px rgba(16,21,28,.05),0 6px 18px rgba(16,21,28,.05);
+    --radius:14px;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Code","Consolas",monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#0c1015; --surface:#141a22; --surface-2:#111721;
+      --ink:#e7edf4; --muted:#9aa6b3; --faint:#6b7684;
+      --line:#232c38; --line-2:#1b232d;
+      --accent:#2dd4bf; --accent-soft:#123433;
+      --ok:#43c874; --ok-bg:#13291c;
+      --warn:#e0a44b; --warn-bg:#2c2113;
+      --todo:#8a97a5; --todo-bg:#1c242e;
+      --track:#222b36;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#f4f6f8; --surface:#ffffff; --surface-2:#fbfcfd;
+    --ink:#10151c; --muted:#5b6672; --faint:#8a94a0;
+    --line:#e3e8ee; --line-2:#eef1f5;
+    --accent:#0f766e; --accent-soft:#d7efec;
+    --ok:#15803d; --ok-bg:#e4f4e9; --warn:#b45309; --warn-bg:#fbeddb;
+    --todo:#64748b; --todo-bg:#eef1f4; --track:#e9edf2;
+    --shadow:0 1px 2px rgba(16,21,28,.05),0 6px 18px rgba(16,21,28,.05);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0c1015; --surface:#141a22; --surface-2:#111721;
+    --ink:#e7edf4; --muted:#9aa6b3; --faint:#6b7684;
+    --line:#232c38; --line-2:#1b232d;
+    --accent:#2dd4bf; --accent-soft:#123433;
+    --ok:#43c874; --ok-bg:#13291c; --warn:#e0a44b; --warn-bg:#2c2113;
+    --todo:#8a97a5; --todo-bg:#1c242e; --track:#222b36;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.5;-webkit-font-smoothing:antialiased;font-size:15px}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  .tnum{font-variant-numeric:tabular-nums}
+  code,.mono{font-family:var(--mono);font-size:.86em}
+  h1,h2,h3{text-wrap:balance;margin:0}
+  a{color:var(--accent)}
+
+  /* Header */
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .head h1{font-size:34px;line-height:1.1;letter-spacing:-.02em;margin:.35em 0 .3em;font-weight:700}
+  .head p.sub{color:var(--muted);max-width:62ch;margin:0}
+  .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--faint)}
+  .meta b{color:var(--muted);font-weight:600}
+
+  /* Global banner */
+  .hero{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:26px 28px;display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center}
+  .ring{--p:40;width:132px;height:132px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--track) 0);
+    display:grid;place-items:center;position:relative}
+  .ring::before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface)}
+  .ring .val{position:relative;text-align:center}
+  .ring .val .n{font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .ring .val .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .hero .txt h2{font-size:16px;font-weight:650;margin-bottom:6px}
+  .hero .txt p{margin:0;color:var(--muted);font-size:13.5px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .dot.ok{background:var(--ok)} .dot.mid{background:var(--warn)} .dot.todo{background:var(--todo)}
+
+  /* Block summary grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:16px}
+  .bcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+  .bcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .bcard .code{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  .bcard h3{font-size:15px;font-weight:640;margin-top:2px}
+  .bcard .pct{font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .bar{height:9px;border-radius:6px;background:var(--track);overflow:hidden;display:flex;margin:12px 0 10px}
+  .bar i{display:block;height:100%}
+  .bar i.ok{background:var(--ok)} .bar i.mid{background:var(--warn)}
+  .counts{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+  .counts b{color:var(--ink);font-weight:650}
+
+  /* Sections */
+  section{margin-top:44px}
+  .s-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--line);padding-bottom:10px;margin-bottom:6px}
+  .s-head .sc{font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:600}
+  .s-head h2{font-size:21px;font-weight:700;letter-spacing:-.01em}
+  .s-head .sp{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600}
+
+  .sub{margin-top:22px}
+  .sub h3{font-size:14.5px;font-weight:650;display:flex;align-items:center;gap:10px;margin-bottom:2px}
+  .sub h3 .m{font-family:var(--mono);font-size:11.5px;color:var(--faint);font-weight:500}
+  .sub h3 .miniq{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}
+  th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line)}
+  td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.st{white-space:nowrap;width:1%}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;line-height:1.3}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.mid{background:var(--warn-bg);color:var(--warn)}
+  .pill.todo{background:var(--todo-bg);color:var(--todo)}
+  .pill.v2{background:transparent;color:var(--faint);border:1px dashed var(--line)}
+  .up{margin-left:8px;font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);
+    padding:1px 6px;border-radius:5px;letter-spacing:.02em;white-space:nowrap}
+  td .note{display:block;color:var(--faint);font-size:12px;margin-top:2px}
+
+  /* Callout */
+  .callout{margin-top:22px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    border-radius:12px;padding:18px 20px}
+  .callout h3{font-size:14px;font-weight:680;color:var(--accent);display:flex;gap:8px;align-items:center}
+  .callout ul{margin:10px 0 0;padding-left:18px;columns:2;column-gap:28px}
+  @media(max-width:640px){.callout ul{columns:1}}
+  .callout li{margin:4px 0;font-size:13px;break-inside:avoid}
+
+  .panel{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .panel h3{font-size:14px;font-weight:660;margin-bottom:10px}
+  .panel ol{margin:0;padding-left:20px} .panel ol li{margin:5px 0;font-size:13.5px}
+  .panel .inv{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line-2);
+    border-radius:8px;padding:10px 12px;margin:8px 0;color:var(--muted)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.two{grid-template-columns:1fr}.hero{grid-template-columns:1fr;text-align:center;justify-items:center}.callout ul{columns:1}}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);color:var(--faint);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+</style>
+
+<div class="wrap">
+
+  <header class="head">
+    <div class="eyebrow">IGOUTECH · Gestion de stock multi-sites</div>
+    <h1>Rapport d'avancement</h1>
+    <p class="sub">État réel du code confronté à la cartographie fonctionnelle complète. Chaque sous-module est vérifié dans le dépôt (domaines, contrôleurs, écrans, tests) — les écarts avec la cartographie fournie sont signalés.</p>
+    <div class="meta">
+      <span><b>Date</b> 1 août 2026</span>
+      <span><b>Backend</b> Laravel 11 · PHP 8.3 · MariaDB</span>
+      <span><b>Frontend</b> React 18 · Vite · TypeScript</span>
+      <span><b>Qualité</b> PHPStan niv. 8 ✓ · Pint ✓ · Pest ✓ · 0 <code>any</code></span>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="ring" style="--p:40">
+      <div class="val"><div class="n tnum">~40%</div><div class="l">Global</div></div>
+    </div>
+    <div class="txt">
+      <h2>Le cœur difficile est fait — reste l'assemblage</h2>
+      <p>Le moteur de stock (mouvements append-only, CMUP, transferts, isolation par lieu, RBAC) représente ~70% de la complexité réelle et il est livré et testé. La cartographie fournie estimait ~30% : elle sous-évaluait les modules Accès, Fournisseurs, Clients, écrans Stock et Inventaire, tous désormais livrés.</p>
+      <div class="legend">
+        <span><i class="dot ok"></i> Livré</span>
+        <span><i class="dot mid"></i> Partiel</span>
+        <span><i class="dot todo"></i> À faire</span>
+        <span><span class="up" style="margin:0">▲ corrigé</span> réévalué vs cartographie</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="grid">
+    <div class="bcard">
+      <div class="top"><div><div class="code">Bloc A</div><h3>Socle · Sécurité</h3></div><div class="pct tnum">58%</div></div>
+      <div class="bar"><i class="ok" style="width:54%"></i><i class="mid" style="width:8%"></i></div>
+      <div class="counts"><span><b class="tnum">14</b> livré</span><span><b class="tnum">2</b> partiel</span><span><b class="tnum">10</b> à faire</span></div>
+    </div>
+    <div class="bcard">
+      <div class="top"><div><div class="code">Bloc B</div><h3>Référentiel</h3></div><div class="pct tnum">60%</div></div>
+      <div class="bar"><i class="ok" style="width:58%"></i><i class="mid" style="width:3%"></i></div>
+      <div class="counts"><span><b class="tnum">21</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">14</b> à faire</span></div>
+    </div>
+    <div class="bcard">
+      <div class="top"><div><div class="code">Bloc C</div><h3>Flux stock</h3></div><div class="pct tnum">44%</div></div>
+      <div class="bar"><i class="ok" style="width:40%"></i><i class="mid" style="width:9%"></i></div>
+      <div class="counts"><span><b class="tnum">21</b> livré</span><span><b class="tnum">5</b> partiel</span><span><b class="tnum">27</b> à faire</span></div>
+    </div>
+    <div class="bcard">
+      <div class="top"><div><div class="code">Bloc D</div><h3>Argent</h3></div><div class="pct tnum">3%</div></div>
+      <div class="bar"><i class="ok" style="width:0%"></i><i class="mid" style="width:5%"></i></div>
+      <div class="counts"><span><b class="tnum">0</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">19</b> à faire</span></div>
+    </div>
+    <div class="bcard">
+      <div class="top"><div><div class="code">Bloc E</div><h3>Pilotage</h3></div><div class="pct tnum">15%</div></div>
+      <div class="bar"><i class="ok" style="width:8%"></i><i class="mid" style="width:13%"></i></div>
+      <div class="counts"><span><b class="tnum">2</b> livré</span><span><b class="tnum">3</b> partiel</span><span><b class="tnum">19</b> à faire</span></div>
+    </div>
+    <div class="bcard">
+      <div class="top"><div><div class="code">Bloc F</div><h3>Terrain</h3></div><div class="pct tnum">25%</div></div>
+      <div class="bar"><i class="ok" style="width:20%"></i><i class="mid" style="width:5%"></i></div>
+      <div class="counts"><span><b class="tnum">2</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">7</b> à faire</span></div>
+    </div>
+  </div>
+
+  <!-- CORRECTIONS CALLOUT -->
+  <div class="callout">
+    <h3>▲ Corrections majeures vs la cartographie fournie</h3>
+    <ul>
+      <li><b>A1</b> Dérogations <code>user_permission</code> · CRUD utilisateurs + invitation · attribution des rôles · matrice permissions×rôles — <b>livrés</b> (marqués ⬜)</li>
+      <li><b>A2</b> Véhicules vendeurs + hiérarchie <code>parent_id</code> — <b>livrés</b> (⬜/🟡)</li>
+      <li><b>A3</b> Taxes &amp; taux de TVA paramétrables — <b>livré</b> (⬜)</li>
+      <li><b>B1</b> Marques + détection auto · unités · réordonnancement catégories — <b>livrés</b> (⬜/🟡)</li>
+      <li><b>B3</b> Fiche fournisseur (CRUD) — <b>livré</b> (bloc à 0%)</li>
+      <li><b>B4</b> Fiche client, plafond de crédit, blocage/déblocage — <b>livrés</b> (bloc à 0%)</li>
+      <li><b>C3</b> Bon de sortie · bon d'entrée · écran stock/lieu · matrice article×lieu · journal — <b>livrés</b> (⬜)</li>
+      <li><b>C5</b> Workflow inventaire brouillon→compté→validé/annulé, régularisation admin — <b>livré</b> (🟡)</li>
+    </ul>
+  </div>
+
+  <!-- ============ BLOC A ============ -->
+  <section>
+    <div class="s-head"><span class="sc">A</span><h2>Socle — Administration &amp; sécurité</h2><span class="sp tnum">58%</span></div>
+
+    <div class="sub">
+      <h3>A1 · Accès &amp; Sécurité <span class="m">Domain/Access</span><span class="miniq">8 / 11</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td>Permissions <code>module.action</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Rôles</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Résolution <code>(rôles ∪ accordées) − refusées</code> + cache</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Dérogations individuelles <code>user_permission</code><span class="up">▲</span><span class="note">Table, résolveur, invalidation cache, commande de purge</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Middleware <code>can:</code> + <code>Gate::before</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>CRUD utilisateurs + invitation<span class="up">▲</span><span class="note">Écran <code>/systeme</code>, notification d'invitation, renvoi, reset forcé</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Attribution des rôles<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Matrice permissions × rôles<span class="up">▲</span><span class="note">Écran matrice + duplication de rôle</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Sessions actives &amp; déconnexion forcée</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Journal d'audit (trait <code>Auditable</code>)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Politique mot de passe, tentatives, verrouillage</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub">
+      <h3>A2 · Lieux multi-sites <span class="m">Domain/Warehouses</span><span class="miniq">5 / 7</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td><code>warehouses</code> + <code>warehouse_types</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Global Scope d'isolation par lieu</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>CRUD lieux</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Hiérarchie <code>parent_id</code> (véhicule → dépôt)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Véhicules vendeurs<span class="up">▲</span><span class="note">Seedés VEH-01/02, règles du type <code>vehicle</code>, endpoints users/summary</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Rattachement utilisateur ↔ lieu<span class="note">Backend prêt ; UI d'affectation à finaliser</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Fiche lieu (stock, mouvements, users, transferts)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Emplacements internes (rayon, allée)</td><td class="st"><span class="pill v2">v2</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub">
+      <h3>A3 · Paramètres généraux <span class="m">Domain/Settings</span><span class="miniq">1 / 8</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td>Société (raison sociale, ICE, RC, IF, patente)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Taxes et taux de TVA<span class="up">▲</span><span class="note">Référentiel <code>tax_rates</code> + écran de paramétrage, TVA en select sur l'article</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Numérotation des documents (<code>document_sequences</code>)</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Modes de paiement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Règles de gestion (valorisation, stock négatif, remise max)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Modèles d'impression et en-têtes</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Sauvegarde / restauration</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Multilingue FR / AR</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ BLOC B ============ -->
+  <section>
+    <div class="s-head"><span class="sc">B</span><h2>Référentiel — Ce que l'on vend</h2><span class="sp tnum">60%</span></div>
+
+    <div class="sub">
+      <h3>B1 · Catalogue <span class="m">Domain/Catalog</span><span class="miniq">8 / 14</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td>Catégories (hiérarchie 2 niveaux, suppression protégée)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Réordonnancement<span class="up">▲</span><span class="note">Endpoint <code>reorder</code> livré ; interaction glisser-déposer UI à finaliser</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Marques + détection automatique<span class="up">▲</span><span class="note">CRUD + commande <code>catalog:detect-brands</code></span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Unités (<code>is_decimal</code>)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Articles — CRUD (marque, unité, TVA, série)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Suppression groupée</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Tri serveur whitelisté</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Import Excel / CSV</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Export PDF + Excel</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Fiche technique (<code>product_attributes</code> + templates)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Médias — image principale + secondaires</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Numéros de série (<code>product_serials</code>)<span class="note">Champ « suivi série » présent sur l'article ; suivi unitaire à construire</span></td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Codes-barres (Code 128)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Étiquettes (3 formats, planche A4)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Articles composés / packs</td><td class="st"><span class="pill v2">v2</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub">
+      <h3>B2 · Tarification <span class="m">Domain/Pricing</span><span class="miniq">9 / 12</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td><code>price_types</code> — détail / demi-gros / gros</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td><code>product_prices</code> append-only + historique</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td><code>PriceResolver</code> (client, quantité, date)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td><code>MarginCalculator</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td><code>ProductCostResolver</code> (CMUP)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Contrôle gros ≤ demi-gros ≤ détail</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Quantités minimales par article</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Éditeur 3 niveaux + export tarifs PDF/Excel</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Prix de vente unique (conservé)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Mise à jour en masse + prévisualisation</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Prix par défaut du client</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Alerte marge sous plancher</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Promotions datées</td><td class="st"><span class="pill v2">v2</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two">
+      <div class="sub">
+        <h3>B3 · Fournisseurs <span class="m">Domain/Purchasing</span><span class="miniq">1 / 5</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Fiche fournisseur (CRUD)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Contacts multiples</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td><code>product_supplier</code> (réf, prix, délai)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Statistiques fournisseur</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Échéancier &amp; règlements</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <h3>B4 · Clients <span class="m">Domain/Customers</span><span class="miniq">3 / 5</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Fiche client<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Plafond de crédit + solde<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Blocage automatique / déblocage<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Type de prix par défaut</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Vendeur référent, lieu de rattachement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BLOC C ============ -->
+  <section>
+    <div class="s-head"><span class="sc">C</span><h2>Flux — Ce qui fait bouger le stock</h2><span class="sp tnum">44%</span></div>
+
+    <div class="two">
+      <div class="sub">
+        <h3>C1 · Achats<span class="miniq">1 / 8</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Bon de commande + workflow</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Suggestion de réapprovisionnement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Bon de réception (total / partiel)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Recalcul du CMUP à la réception</td><td class="st"><span class="pill ok">Socle</span></td></tr>
+            <tr><td>Saisie des numéros de série</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Reliquats / commandes en attente</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Facture d'achat + rapprochement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Retour fournisseur / avoir</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <h3>C2 · Ventes<span class="miniq">0 / 10</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Devis / proforma</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Commande client</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Bon de livraison</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Facture de vente / ticket</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Interface caisse (POS) tactile</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Ouverture / clôture de caisse</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Remises + contrôle du plancher</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Retour client / avoir</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Réservation d'articles</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>C3 · Stock <span class="m">Domain/Stock</span><span class="miniq">9 / 12</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td><code>stocks</code> + <code>stock_movements</code> append-only · <code>movement_types</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>CMUP <code>AverageCostValuation</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td><code>lockForUpdate</code> + transaction · refus du stock négatif</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Bon de sortie (casse, perte, usage interne, SAV)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Bon d'entrée (réappro manuel daté)<span class="up">▲ bonus</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Écran matrice article × lieu (+ export)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Écran stock par lieu (tous articles, qté 0 incluse, + export)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Écran journal des mouvements<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Retour au stock (revendable / défectueux)<span class="note">Types de mouvement présents ; écran dédié à faire</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Ajustements avec motif obligatoire<span class="note">Via inventaire ; ajustement direct à motif obligatoire à ajouter</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Réapprovisionnement automatique</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two">
+      <div class="sub">
+        <h3>C4 · Transferts inter-lieux<span class="miniq">6 / 9</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Création + envoi (<code>transfer_out</code>)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Statut <code>in_transit</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Réception + validation (<code>transfer_in</code>)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>CMUP transporté avec la marchandise</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Détection &amp; notification des écarts</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Visibilité double lieu (source ∪ dest.)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Écran liste + création</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Écran réception avec saisie des écarts</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Alerte transit &gt; 3 jours</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <h3>C5 · Inventaires <span class="m">Stock/Inventory</span><span class="miniq">5 / 14</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Modèles <code>inventories</code> + <code>inventory_lines</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Workflow brouillon → compté → validé / annulé<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Saisie du comptage (par lieu, avec date)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Régularisation validée par l'admin<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Mouvements <code>adjustment</code> (jamais d'UPDATE)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Calcul &amp; valorisation des écarts<span class="note">Écart quantité ✓ ; valorisation monétaire à ajouter</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+            <tr><td>Inventaire de véhicule<span class="note">Fonctionne par lieu (véhicule inclus) ; cycle dédié à faire</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+            <tr><td>Historique / comparatif par lieu</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+            <tr><td>Théorique masqué jusqu'à la saisie</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Gel du stock (mode <code>block</code> / <code>snapshot</code>)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Feuille de comptage PDF (sans théorique)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Types : complet / tournant / zone / ponctuel</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Double comptage au-delà d'un seuil</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Motifs d'écart obligatoires</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BLOC D ============ -->
+  <section>
+    <div class="s-head"><span class="sc">D</span><h2>Argent</h2><span class="sp tnum">3%</span></div>
+    <div class="panel">
+      <p style="margin:0 0 6px;color:var(--muted);font-size:13.5px">Bloc non démarré, à l'exception du blocage manuel du client au dépassement de plafond (partiel, via <code>is_blocked</code>). À construire dans l'ordre : crédits clients → règlements → caisse → charges.</p>
+      <div class="counts" style="margin-top:12px">
+        <span><b class="pill ok" style="font-weight:600">D1</b> Crédits clients — <span style="color:var(--muted)">comptes événementiels, balance âgée, relances, relevé PDF</span></span>
+      </div>
+      <table style="margin-top:14px">
+        <thead><tr><th>Sous-bloc</th><th>Contenu</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td>D1 Crédits clients</td><td><code>customer_accounts</code>, encours, balance âgée, relances, créances douteuses, relevé PDF</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>D2 Règlements</td><td>Encaissements, affectation multi-factures, chèques, règlements fournisseurs</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>D3 Caisse &amp; trésorerie</td><td>Session de caisse, écarts, versements vendeurs, journal</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>D4 Charges</td><td>Catégories, justificatif photo, par lieu/vendeur, validation</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ BLOC E ============ -->
+  <section>
+    <div class="s-head"><span class="sc">E</span><h2>Pilotage — La gestion globale</h2><span class="sp tnum">15%</span></div>
+    <div class="sub">
+      <h3>E1 · Vue consolidée <span class="m">réservée à <code>stock.view_global</code></span><span class="miniq">2 / 7</span></h3>
+      <table>
+        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <tbody>
+          <tr><td>Tableau de bord global (KPI tous lieux)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Stock global = Σ stock par lieu + transit</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Valorisation globale et par lieu</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Matrice article × lieu avec colonne transit</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Comparatif de performance entre lieux</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Vue consolidée créances / trésorerie</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="two">
+      <div class="sub">
+        <h3>E2 · Alertes<span class="miniq">0 / 9</span></h3>
+        <table><tbody>
+          <tr><td>Règles paramétrables, seuils, marges, crédit, échéances, transit, écarts d'inventaire ; canaux app / e-mail / SMS</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="sub">
+        <h3>E3 · Rapports<span class="miniq">~ partiel</span></h3>
+        <table><tbody>
+          <tr><td>Exports PDF/Excel de base présents (articles, catégories, tarifs, stock). Rapports analytiques (ventes, achats, rotation, marges, balance âgée) à construire.</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BLOC F ============ -->
+  <section>
+    <div class="s-head"><span class="sc">F</span><h2>Terrain — Vendeurs itinérants</h2><span class="sp tnum">25%</span></div>
+    <div class="two">
+      <div class="sub">
+        <h3>F1 · Stock véhicule<span class="miniq">2 / 4</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Véhicule = lieu de type <code>vehicle</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Alimentation par transfert validé</td><td class="st"><span class="pill ok">Socle</span></td></tr>
+            <tr><td>Inventaire véhicule périodique</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+            <tr><td>Retour de marchandise au dépôt</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <h3>F2 · Application mobile vendeur<span class="miniq">0 / 6</span></h3>
+        <table>
+          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+          <tbody>
+            <tr><td>Mon stock · Nouvelle vente · Mes clients · Mes charges</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Mode hors ligne + file d'attente</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Synchronisation idempotente (<code>client_uuid</code>)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVARIANTS + NEXT -->
+  <section class="two">
+    <div class="panel">
+      <h3>Invariants — vrais dans le code actuel</h3>
+      <div class="inv">Stock global = Σ (stock par lieu) + marchandise en transit</div>
+      <div class="inv"><code>stock_movements</code> : aucun UPDATE ni DELETE — corrections par mouvements inverses</div>
+      <div class="inv">Isolation : un utilisateur ne voit que ses lieux (sauf <code>stock.view_global</code>)</div>
+      <div class="inv">Un inventaire validé ne modifie jamais le CMUP — seulement les quantités</div>
+    </div>
+    <div class="panel">
+      <h3>Ordre recommandé pour la suite</h3>
+      <ol>
+        <li>Écrans <b>Transferts</b> (backend prêt, front seul manquant)</li>
+        <li>Trait <b><code>Auditable</code></b> — à poser avant les modules suivants</li>
+        <li><b>Finitions inventaire</b> : théorique masqué, feuille PDF, motifs d'écart</li>
+        <li><b>Achats</b> : bons de commande → réceptions (recalcul CMUP)</li>
+        <li><b>Ventes + Caisse POS</b>, puis <b>Argent</b> (crédits, règlements)</li>
+        <li><b>Alertes &amp; rapports</b>, puis <b>appli mobile vendeur</b></li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>
+    <span>IGOUTECH · rapport généré le 1 août 2026</span>
+    <span>7 domaines · 18 contrôleurs API · 15 modules front · 8 suites de tests</span>
+  </footer>
+</div>

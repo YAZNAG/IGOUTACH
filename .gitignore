@@ -1,0 +1,41 @@
+# Dépendances
+/backend/vendor
+/frontend/node_modules
+node_modules
+
+# Build / artefacts
+/frontend/dist
+/frontend/dist-ssr
+/backend/public/build
+/backend/public/hot
+/backend/public/storage
+
+# Environnement & secrets (ne JAMAIS committer)
+.env
+.env.*
+!.env.example
+*.key
+/backend/storage/*.key
+/backend/auth.json
+
+# Laravel storage / cache
+/backend/storage/logs/*.log
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
+/backend/bootstrap/cache/*.php
+/backend/.phpunit.cache
+/backend/.phpunit.result.cache
+
+# Logs & divers
+*.log
+.DS_Store
+
+# Éditeurs
+.idea
+.vscode
+.fleet
+.nova
+.zed
+*.suo
+*.sln

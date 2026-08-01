@@ -1,0 +1,67 @@
+/* Charte IGOUTECH — dérivée du logo. Aucune couleur en dur ailleurs.
+   Deux thèmes : clair (défaut) et sombre (:root[data-theme="dark"]). */
+:root {
+  --navy: #0b2a5b;
+  --navy-2: #123a73;
+  --navy-3: #1b4a8f;
+
+  --sky: #0ea5e9;
+  --sky-2: #38bdf8;
+  --sky-soft: #e8f4fe;
+
+  --ink: #0f1b2d;
+  --muted: #647a99;
+  --faint: #8fa3bc;
+
+  --bg: #f2f5f9;
+  --card: #ffffff;
+  --line: #e3eaf2;
+  --line-2: #cbd8e8;
+
+  --ok: #0e9f6e;
+  --ok-bg: #e6f6f0;
+  --warn: #b7791f;
+  --warn-bg: #fdf3e2;
+  --bad: #c53b3b;
+  --bad-bg: #fbebeb;
+
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  --shadow-card: 0 1px 2px rgba(15, 27, 45, 0.04);
+  --shadow-pop: 0 8px 24px rgba(15, 27, 45, 0.12);
+
+  /* Dégradé réservé au panneau gauche de la connexion — nulle part ailleurs. */
+  --login-gradient: linear-gradient(160deg, var(--navy) 0%, var(--navy-3) 55%, var(--sky) 140%);
+}
+
+:root[data-theme='dark'] {
+  --navy: #2f6fbf; /* devient l'accent primaire lisible sur fond sombre */
+  --navy-2: #3f81d4;
+  --navy-3: #4f97e8;
+
+  --sky: #38bdf8;
+  --sky-2: #7dd3fc;
+  --sky-soft: #16304f; /* tuile active discrète */
+
+  --ink: #e7eef8;
+  --muted: #9fb3cf;
+  --faint: #6c809e;
+
+  --bg: #0a1120;
+  --card: #101d33;
+  --line: #1e3050;
+  --line-2: #2a4066;
+
+  --ok: #34d399;
+  --ok-bg: #102b24;
+  --warn: #e0a94a;
+  --warn-bg: #33280f;
+  --bad: #f0736f;
+  --bad-bg: #351a1c;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+  --login-gradient: linear-gradient(160deg, #0b1f3d 0%, #123a73 55%, #0ea5e9 150%);
+}

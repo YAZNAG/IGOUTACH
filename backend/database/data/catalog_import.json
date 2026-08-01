@@ -1,0 +1,3245 @@
+{
+ "categories": [
+  "ADAPTER",
+  "ACCESSOIRES INFO",
+  "AIRPODS",
+  "ANTENNE",
+  "HAUT PARLEUR",
+  "BOX ANDROID",
+  "CABLES",
+  "CABLE",
+  "CAMERA",
+  "SUPPORTE",
+  "CASQUE",
+  "ACCESSOIRE INFO",
+  "CHARGE",
+  "ACCESSOIRES",
+  "ECOUTES",
+  "ACCESSOIRE",
+  "FICH",
+  "PARABOL",
+  "PIL",
+  "RESEAUX",
+  "RALLONGE",
+  "RECEPTEUR",
+  "RLT",
+  "SIWTCH",
+  "TC",
+  "TETE",
+  "ACCESSOIRES P",
+  "TRANSFER",
+  "TV"
+ ],
+ "articles": [
+  {
+   "sku": "ADAPTER RJ45",
+   "name": "ADAPTER RJ45",
+   "description": "ADAPTER RJ45",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "ADAPTER"
+  },
+  {
+   "sku": "VGA TO HD",
+   "name": "ADAPTER VGA TO HDMI WITH AUDIO",
+   "description": "ADAPTER VGA TO HDMI WITH AUDIO",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "ADAPTER"
+  },
+  {
+   "sku": "AFFICHEUR RECEPTEUR",
+   "name": "AFFICHEUR RECEPTEUR",
+   "description": "AFFICHEUR RECEPTEUR",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "TW-105",
+   "name": "AIRPODS NEWAY / TW-105",
+   "description": "AIRPODS NEWAY / TW-105",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "AIRPODS"
+  },
+  {
+   "sku": "PRO 4",
+   "name": "AIRPODS PRO 4",
+   "description": "AIRPODS PRO 4",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "AIRPODS"
+  },
+  {
+   "sku": "A9 PRO",
+   "name": "AIRPODS REDINGTON / A9 PRO",
+   "description": "AIRPODS REDINGTON / A9 PRO",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 65.0,
+   "tax_rate": 0.0,
+   "category": "AIRPODS"
+  },
+  {
+   "sku": "ANTENNE FARACHA PLASTIC",
+   "name": "ANTENNE FARACHA PLASTIC",
+   "description": "ANTENNE FARACHA PLASTIC",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "ANTENNE"
+  },
+  {
+   "sku": "JIA YUE",
+   "name": "ANTENNE JIA YUE",
+   "description": "ANTENNE JIA YUE",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "ANTENNE"
+  },
+  {
+   "sku": "SG-3002",
+   "name": "ANTENNE TNT / SG3002",
+   "description": "ANTENNE TNT / SG3002",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 65.0,
+   "tax_rate": 0.0,
+   "category": "ANTENNE"
+  },
+  {
+   "sku": "ANTENNE TNT 20e",
+   "name": "ANTENNE TNT 20e",
+   "description": "ANTENNE TNT 20e",
+   "min_stock": 5,
+   "cost_price": 55.0,
+   "sale_price": 60.0,
+   "tax_rate": 0.0,
+   "category": "ANTENNE"
+  },
+  {
+   "sku": "U4",
+   "name": "ARMOIR U4",
+   "description": "ARMOIR U4",
+   "min_stock": 10,
+   "cost_price": 190.0,
+   "sale_price": 200.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "BAF BLEUTOOTH BEATS",
+   "name": "BAF BLEUTOOTH BEATS",
+   "description": "BAF BLEUTOOTH BEATS",
+   "min_stock": 10,
+   "cost_price": 30.0,
+   "sale_price": 40.0,
+   "tax_rate": 0.0,
+   "category": "HAUT PARLEUR"
+  },
+  {
+   "sku": "ZQS4209 / ZQ 4210",
+   "name": "BAF BTSPEAKER ZQS4209 / 4210",
+   "description": "BAF BTSPEAKER ZQS4209 / 4210",
+   "min_stock": 10,
+   "cost_price": 120.0,
+   "sale_price": 140.0,
+   "tax_rate": 0.0,
+   "category": "HAUT PARLEUR"
+  },
+  {
+   "sku": "CK4",
+   "name": "BAF JEDEL / CK4",
+   "description": "BAF JEDEL / CK4",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "HAUT PARLEUR"
+  },
+  {
+   "sku": "ZQS1310",
+   "name": "BAF SPEAKER / ZQS1310",
+   "description": "BAF SPEAKER / ZQS1310",
+   "min_stock": 10,
+   "cost_price": 50.0,
+   "sale_price": 60.0,
+   "tax_rate": 0.0,
+   "category": "HAUT PARLEUR"
+  },
+  {
+   "sku": "TV STICK",
+   "name": "BOX ANDROID TV STICK",
+   "description": "BOX ANDROID TV STICK",
+   "min_stock": 10,
+   "cost_price": 210.0,
+   "sale_price": 220.0,
+   "tax_rate": 0.0,
+   "category": "BOX ANDROID"
+  },
+  {
+   "sku": "S-219",
+   "name": "CABLE FAMILY 3-IN-1 120W /S-219",
+   "description": "CABLE FAMILY 3-IN-1 120W /S-219",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "C09",
+   "name": "CABLE FAMILY HIBRO / C09",
+   "description": "CABLE FAMILY HIBRO / C09",
+   "min_stock": 10,
+   "cost_price": 15.0,
+   "sale_price": 25.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "HD 1,5 4K ASTRO",
+   "name": "CABLE HDMI 1,5 4K ASTRO",
+   "description": "CABLE HDMI 1,5 4K ASTRO",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "HD 1,5M",
+   "name": "CABLE HDMI 1,5 ASTRO",
+   "description": "CABLE HDMI 1,5 ASTRO",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "HD 10M",
+   "name": "CABLE HDMI 10M",
+   "description": "CABLE HDMI 10M",
+   "min_stock": 10,
+   "cost_price": 43.0,
+   "sale_price": 53.0,
+   "tax_rate": 0.0,
+   "category": "CABLE"
+  },
+  {
+   "sku": "HD 1M",
+   "name": "CABLE HDMI 1M",
+   "description": "CABLE HDMI 1M",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "HD 20M",
+   "name": "CABLE HDMI 20M ASTRO",
+   "description": "CABLE HDMI 20M ASTRO",
+   "min_stock": 10,
+   "cost_price": 85.0,
+   "sale_price": 95.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "HD 3M ASTRO",
+   "name": "CABLE HDMI 3M ASTRO",
+   "description": "CABLE HDMI 3M ASTRO",
+   "min_stock": 10,
+   "cost_price": 15.0,
+   "sale_price": 25.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "HD 5M ASTRO",
+   "name": "CABLE HDMI 5M ASTRO",
+   "description": "CABLE HDMI 5M ASTRO",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CABLE IMPRIMENT NOIRE",
+   "name": "CABLE IMPRIMENT NOIRE",
+   "description": "CABLE IMPRIMENT NOIRE",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CABLE IMPRIMENT SIMPLE",
+   "name": "CABLE IMPRIMENT SIMPLE",
+   "description": "CABLE IMPRIMENT SIMPLE",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "OVVO IOS",
+   "name": "CABLE IOS OVVO",
+   "description": "CABLE IOS OVVO",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "MB-B020I",
+   "name": "CABLE IOS MEIDOU / MD-B020I",
+   "description": "CABLE IOS MEIDOU / MD-B020I",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "C01",
+   "name": "CABLE IOS ORIGINAL / C01",
+   "description": "CABLE IOS ORIGINAL / C01",
+   "min_stock": 10,
+   "cost_price": 7.5,
+   "sale_price": 17.5,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CA-B03i",
+   "name": "CABLE IOS TENGO / CA-B03",
+   "description": "CABLE IOS TENGO / CA-B03",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "JACK 3 RIF",
+   "name": "CABLE JACK 3 RIF",
+   "description": "CABLE JACK 3 RIF",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "SX-77",
+   "name": "CABLE JACK IOS / SX-77",
+   "description": "CABLE JACK IOS / SX-77",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "LT-0031I",
+   "name": "CABLE IOS LOZA ORG / LT-0031I",
+   "description": "CABLE LIOS OZA ORG / LT-0031I",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "LUZA NORMAL",
+   "name": "CABLE LUZA NORMAL",
+   "description": "CABLE LUZA NORMAL",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "V8 1,8",
+   "name": "CABLE MICRO 1,8M",
+   "description": "CABLE MICRO 1,8M",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "MD-B020V",
+   "name": "CABLE MICRO MEIDOU / MD-B020V",
+   "description": "CABLE MICRO MEIDOU / MD-B020V",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "OVVO MICRO",
+   "name": "CABLE MICRO OVVO",
+   "description": "CABLE MICRO OVVO",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "Q29M",
+   "name": "CABLE MICRO PAVAREAL / Q29M",
+   "description": "CABLE MICRO PAVAREAL / Q29M",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CA-B03m",
+   "name": "CABLE MICRO TENGO / CA-B03",
+   "description": "CABLE MICRO TENGO / CA-B03",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "MODEM 1,5M",
+   "name": "CABLE MODEM 1,5M BLEU",
+   "description": "CABLE MODEM 1,5M BLEU",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "MODEM 10M B",
+   "name": "CABLE MODEM 10M BLEU",
+   "description": "CABLE MODEM 10M BLEU",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "PCB JIAYUE",
+   "name": "CABLE PC B JIAYUE",
+   "description": "CABLE PC B JIAYUE",
+   "min_stock": 10,
+   "cost_price": 7.5,
+   "sale_price": 17.5,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "PCB ORG",
+   "name": "CABLE PC B ORIGINAL",
+   "description": "CABLE PC B ORIGINAL",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "PCP ORG",
+   "name": "CABLE PC P ORIGINAL",
+   "description": "CABLE PC P ORIGINAL",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "C,RADIO NORMAL",
+   "name": "CABLE RADIO NORMAL",
+   "description": "CABLE RADIO NORMAL",
+   "min_stock": 10,
+   "cost_price": 3.0,
+   "sale_price": 13.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "RJ45 2M CAT6",
+   "name": "CABLE RJ45 2M CAT 6 ASTRO",
+   "description": "CABLE RJ45 2M CAT 6 ASTRO",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "RJ45 10M ASTRO",
+   "name": "CABLE RJ45 10M CAT 6 ASTRO",
+   "description": "CABLE RJ45 10M CAT 6 ASTRO",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "RJ45 20M CAT 6",
+   "name": "CABLE RJ45 20M CAT6 ASTRO",
+   "description": "CABLE RJ45 20M CAT6 ASTRO",
+   "min_stock": 10,
+   "cost_price": 23.0,
+   "sale_price": 33.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "RJ45 25M CAT5",
+   "name": "CABLE RJ45 25M CAT 5",
+   "description": "CABLE RJ45 25M CAT 5",
+   "min_stock": 10,
+   "cost_price": 33.0,
+   "sale_price": 43.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "RJ45 30M CAT6",
+   "name": "CABLE RJ45 30M CAT 6 ASTRO",
+   "description": "CABLE RJ45 30M CAT 6 ASTRO",
+   "min_stock": 10,
+   "cost_price": 60.0,
+   "sale_price": 70.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "RJ45 50M CAT 6",
+   "name": "CABLE RJ45 50M CAT 6",
+   "description": "CABLE RJ45 50M CAT 6",
+   "min_stock": 10,
+   "cost_price": 95.0,
+   "sale_price": 105.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "LT-003C",
+   "name": "CABLE TYPE-C LOZA ORG / LT-003C",
+   "description": "CABLE TYPE-C LOZA ORG / LT-003C",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "OVVO TYPE C",
+   "name": "CABLE TYPE-C OVVO",
+   "description": "CABLE TYPE-C OVVO",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "TYPE-C NORMAL",
+   "name": "CABLE TYPEC TYPEC NORMAL",
+   "description": "CABLE TYPEC TYPEC NORMAL",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "MI TYPE C",
+   "name": "CABLE TYPE-C XIAOMI",
+   "description": "CABLE TYPE-C XIAOMI",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "V3 1,5",
+   "name": "CABLE V3 1,5M",
+   "description": "CABLE V3 1,5M",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "VGA 1,5M",
+   "name": "CABLE VGA 1,5M",
+   "description": "CABLE VGA 1,5M",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "VGA 10M",
+   "name": "CABLE VGA 10M",
+   "description": "CABLE VGA 10M",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "VGA 20M",
+   "name": "CABLE VGA 20M",
+   "description": "CABLE VGA 20M",
+   "min_stock": 10,
+   "cost_price": 80.0,
+   "sale_price": 90.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "VGA 5M",
+   "name": "CABLE VGA 5M",
+   "description": "CABLE VGA 5M",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CAMERA DOUBLE SF",
+   "name": "CAMERA DOUBLE SF",
+   "description": "CAMERA DOUBLE SF",
+   "min_stock": 10,
+   "cost_price": 220.0,
+   "sale_price": 230.0,
+   "tax_rate": 0.0,
+   "category": "CAMERA"
+  },
+  {
+   "sku": "IP-D31",
+   "name": "CAR CHARGE TYPE-C IP GOLD /IP-D31",
+   "description": "CAR CHARGE TYPE-C IP GOLD /IP-D31",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "K319",
+   "name": "CAR MOBIL BRACKET / K319",
+   "description": "CAR MOBIL BRACKET / K319",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "AIR MAX 2",
+   "name": "CASQUE AIR MAX 2",
+   "description": "CASQUE AIR MAX 2",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "AIRPODS PRO MAX",
+   "name": "CASQUE AIRPODS PRO MAX",
+   "description": "CASQUE AIRPODS PRO MAX",
+   "min_stock": 10,
+   "cost_price": 100.0,
+   "sale_price": 110.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "DK-182",
+   "name": "CASQUE DK / DK-182",
+   "description": "CASQUE DK / DK-182",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "DK-183",
+   "name": "CASQUE DK / DK-183",
+   "description": "CASQUE DK / DK-183",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "DK-184",
+   "name": "CASQUE DK / DK184",
+   "description": "CASQUE DK / DK184",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "DK-186",
+   "name": "CASQUE DK / DK-186",
+   "description": "CASQUE DK / DK-186",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "DK-187",
+   "name": "CASQUE DK / DK-187",
+   "description": "CASQUE DK / DK-187",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "P9",
+   "name": "CASQUE P9",
+   "description": "CASQUE P9",
+   "min_stock": 10,
+   "cost_price": 30.0,
+   "sale_price": 40.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "P9 PROX MAX",
+   "name": "CASQUE P9 PRO MAX",
+   "description": "CASQUE P9 PRO MAX",
+   "min_stock": 10,
+   "cost_price": 35.0,
+   "sale_price": 45.0,
+   "tax_rate": 0.0,
+   "category": "CASQUE"
+  },
+  {
+   "sku": "CASQUE PC",
+   "name": "CASQUE PC NORMAL",
+   "description": "CASQUE PC NORMAL",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE INFO"
+  },
+  {
+   "sku": "45W PD ADAPTER",
+   "name": "CHARGE 45W PD ADAPTER SAMSUNG",
+   "description": "CHARGE 45W PD ADAPTER SAMSUNG",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "YU-11",
+   "name": "CHARGE GDOX / YU-11",
+   "description": "CHARGE GDOX / YU-11",
+   "min_stock": 10,
+   "cost_price": 22.0,
+   "sale_price": 32.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "CD-99",
+   "name": "CHARGE INKAX CD-99",
+   "description": "CHARGE INKAX CD-99",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "TYPE C 35W",
+   "name": "CHARGE IPHONE 15 PRO MAX 35W TYPE C",
+   "description": "CHARGE IPHONE 15 PRO MAX 35W TYPE C",
+   "min_stock": 10,
+   "cost_price": 32.0,
+   "sale_price": 42.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "E56+C",
+   "name": "CHARGE SUPER FAST CHARGING TYPE C / E56+C",
+   "description": "CHARGE SUPER FAST CHARGING TYPE C / E56+C",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "BM-01",
+   "name": "CHARGE TYPE C BKM / / BM-01",
+   "description": "CHARGE TYPE C BKM / / BM-01",
+   "min_stock": 10,
+   "cost_price": 23.0,
+   "sale_price": 33.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "V8 EMBRAG",
+   "name": "CHARGE V8 NOIRE EMBRAG",
+   "description": "CHARGE V8 NOIRE EMBRAG",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "ORIGINAL 4,1A",
+   "name": "CHARGE V8 ORIGINAL 4,1A",
+   "description": "CHARGE V8 ORIGINAL 4,1A",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "CHARGE VOITURE IOS IP GOLD",
+   "name": "CHARGE VOITURE IOS IP GOLD",
+   "description": "CHARGE VOITURE IOS IP GOLD",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "CHARGE"
+  },
+  {
+   "sku": "KB119",
+   "name": "CLAVIER HAVIC + SOURIE / KB 119",
+   "description": "CLAVIER HAVIC + SOURIE / KB 119",
+   "min_stock": 10,
+   "cost_price": 90.0,
+   "sale_price": 100.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE INFO"
+  },
+  {
+   "sku": "GKM901",
+   "name": "CLAVIER MINI / GKM901",
+   "description": "CLAVIER MINI / GKM901",
+   "min_stock": 10,
+   "cost_price": 80.0,
+   "sale_price": 90.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE INFO"
+  },
+  {
+   "sku": "TJ-818",
+   "name": "CLAVIER XLEADER / TJ-818",
+   "description": "CLAVIER XLEADER / TJ-818",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE INFO"
+  },
+  {
+   "sku": "CLE BT",
+   "name": "CLE BT",
+   "description": "CLE BT",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "CLE WIFI RIFLAND",
+   "name": "CLE WIFI RIFLAND",
+   "description": "CLE WIFI RIFLAND",
+   "min_stock": 10,
+   "cost_price": 21.0,
+   "sale_price": 31.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES"
+  },
+  {
+   "sku": "DISCO PAR LIGHT RGB+W 60W",
+   "name": "DISCO PAR LIGHT RGB+W 60W",
+   "description": "DISCO PAR LIGHT RGB+W 60W",
+   "min_stock": 10,
+   "cost_price": 85.0,
+   "sale_price": 95.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES"
+  },
+  {
+   "sku": "D42",
+   "name": "ECOUTE BLUE SPECTRUM / D42",
+   "description": "ECOUTE BLUE SPECTRUM / D42",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "D41",
+   "name": "ECOUTE D PLUS",
+   "description": "ECOUTE D PLUS",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "E4",
+   "name": "ECOUTE GERLAX / E4",
+   "description": "ECOUTE GERLAX / E4",
+   "min_stock": 10,
+   "cost_price": 7.5,
+   "sale_price": 17.5,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "HX856",
+   "name": "ECOUTE IOS CABLE BT BAVIN",
+   "description": "ECOUTE IOS CABLE BT BAVIN",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "JH-103F",
+   "name": "ECOUTE IOS POP-UP WINDOW / JH-103F",
+   "description": "ECOUTE IOS POP-UP WINDOW / JH-103F",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "J-01",
+   "name": "ECOUTE JBL EXTRA BAS / J-01",
+   "description": "ECOUTE JBL EXTRA BAS / J-01",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "B-110",
+   "name": "ECOUTE STEREO EARPHONE / B-110",
+   "description": "ECOUTE STEREO EARPHONE / B-110",
+   "min_stock": 10,
+   "cost_price": 7.5,
+   "sale_price": 17.5,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "T-292",
+   "name": "ECOUTE UNIVERSAL / T-292",
+   "description": "ECOUTE UNIVERSAL / T-292",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "S803",
+   "name": "ECOUTE VIDVIE / S803",
+   "description": "ECOUTE VIDVIE / S803",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "ECOUTES"
+  },
+  {
+   "sku": "ELECTRIC GM",
+   "name": "ELECTRIC MOSQUITO BAT",
+   "description": "ELECTRIC MOSQUITO BAT",
+   "min_stock": 10,
+   "cost_price": 75.0,
+   "sale_price": 85.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE"
+  },
+  {
+   "sku": "DC 12V M",
+   "name": "FICH DC 12V MALE",
+   "description": "FICH DC 12V MALE",
+   "min_stock": 10,
+   "cost_price": 1.6,
+   "sale_price": 11.6,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "DC 12V F",
+   "name": "FICH DV 12V FUMEL",
+   "description": "FICH DV 12V FUMEL",
+   "min_stock": 10,
+   "cost_price": 1.8,
+   "sale_price": 11.8,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "140401XD605K",
+   "name": "FICH ENGLISE / 140401XD605K",
+   "description": "FICH ENGLISE / 140401XD605K",
+   "min_stock": 10,
+   "cost_price": 4.5,
+   "sale_price": 14.5,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "F-1008",
+   "name": "FICH F ADY STAR B / F-1008",
+   "description": "FICH F ADY STAR B / F-1008",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "FICH F GRIS",
+   "name": "FICH F GRIS ADY STAR",
+   "description": "FICH F GRIS ADY STAR",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "FICH FIX",
+   "name": "FICH FIX",
+   "description": "FICH FIX",
+   "min_stock": 10,
+   "cost_price": 1.2,
+   "sale_price": 11.2,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "FICH MERICAN",
+   "name": "FICH MERICAN",
+   "description": "FICH MERICAN",
+   "min_stock": 10,
+   "cost_price": 1.5,
+   "sale_price": 11.5,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "FICH MERICAN NORMAL",
+   "name": "FICH MERICAN NORMAL",
+   "description": "FICH MERICAN NORMAL",
+   "min_stock": 10,
+   "cost_price": 2.0,
+   "sale_price": 12.0,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "RJ45 N",
+   "name": "FICH RJ45 NORMAL",
+   "description": "FICH RJ45 NORMAL",
+   "min_stock": 10,
+   "cost_price": 0.3,
+   "sale_price": 10.3,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "ELECTRIC PM",
+   "name": "FOLDING ELECTRIC MOSQUITO BAT",
+   "description": "FOLDING ELECTRIC MOSQUITO BAT",
+   "min_stock": 10,
+   "cost_price": 70.0,
+   "sale_price": 80.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE"
+  },
+  {
+   "sku": "IG-GM",
+   "name": "GLACE GM IGOUTECH / IG-GM",
+   "description": "GLACE GM IGOUTECH / IG-GM",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "GLACE PM BD",
+   "name": "GLACE PM BD",
+   "description": "GLACE PM BD",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "IG-PM",
+   "name": "GLACE PM IGOUTECH / IG-PM",
+   "description": "GLACE PM IGOUTECH / IG-PM",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "2011 BT",
+   "name": "HAUT PARLEUR AZASAT / 2011BT",
+   "description": "HAUT PARLEUR AZASAT / 2011BT",
+   "min_stock": 10,
+   "cost_price": 550.0,
+   "sale_price": 560.0,
+   "tax_rate": 0.0,
+   "category": "HAUT PARLEUR"
+  },
+  {
+   "sku": "JAABA COUDI",
+   "name": "JAABA COUDI",
+   "description": "JAABA COUDI",
+   "min_stock": 10,
+   "cost_price": 15.5,
+   "sale_price": 25.5,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "JAABA NORMAL",
+   "name": "JAABA NORMAL",
+   "description": "JAABA NORMAL",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "HAM-1006",
+   "name": "JACK BT HUMAX",
+   "description": "JACK BT HUMAX",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "JACK JACK",
+   "name": "JACK JACK",
+   "description": "JACK JACK",
+   "min_stock": 10,
+   "cost_price": 4.5,
+   "sale_price": 14.5,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "KAKUSIGA CAR HOLDER",
+   "name": "KAKUSIGA CAR HOLDER",
+   "description": "KAKUSIGA CAR HOLDER",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "MCHTA MCHTA",
+   "name": "MCHTA MCHTA ORG",
+   "description": "MCHTA MCHTA ORG",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "PARABOL 70CM BLANDY",
+   "name": "PARABOL 70CM BLANDY",
+   "description": "PARABOL 70CM BLANDY",
+   "min_stock": 10,
+   "cost_price": 53.0,
+   "sale_price": 63.0,
+   "tax_rate": 0.0,
+   "category": "PARABOL"
+  },
+  {
+   "sku": "PARABOL 70CM CHBKA BLANDY",
+   "name": "PARABOL 70CM CHBKA BLANDY",
+   "description": "PARABOL 70CM CHBKA BLANDY",
+   "min_stock": 10,
+   "cost_price": 53.0,
+   "sale_price": 63.0,
+   "tax_rate": 0.0,
+   "category": "PARABOL"
+  },
+  {
+   "sku": "PARABOL 90CM CHBKA BLANDY",
+   "name": "PARABOL 90CM CHBKA BLANDY",
+   "description": "PARABOL 90CM CHBKA BLANDY",
+   "min_stock": 10,
+   "cost_price": 68.0,
+   "sale_price": 78.0,
+   "tax_rate": 0.0,
+   "category": "PARABOL"
+  },
+  {
+   "sku": "PARABOL 90CM GNV BLANDY",
+   "name": "PARABOL 90CM GNV BLANDY",
+   "description": "PARABOL 90CM GNV BLANDY",
+   "min_stock": 10,
+   "cost_price": 115.0,
+   "sale_price": 125.0,
+   "tax_rate": 0.0,
+   "category": "PARABOL"
+  },
+  {
+   "sku": "PIL R6 PANASONIC",
+   "name": "PIL R6 PANASONIC",
+   "description": "PIL R6 PANASONIC",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "PIL"
+  },
+  {
+   "sku": "PIL RJ RECHARGABLE",
+   "name": "PIL RJ RECHARGABLE",
+   "description": "PIL RJ RECHARGABLE",
+   "min_stock": 10,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "PIL"
+  },
+  {
+   "sku": "PLASTIC TETE 3",
+   "name": "PLASTIC TETE3",
+   "description": "PLASTIC TETE3",
+   "min_stock": 10,
+   "cost_price": 2.0,
+   "sale_price": 12.0,
+   "tax_rate": 0.0,
+   "category": "FICH"
+  },
+  {
+   "sku": "F6",
+   "name": "POINT DACCES TENDA /F6",
+   "description": "POINT DACCES TENDA /F6",
+   "min_stock": 10,
+   "cost_price": 155.0,
+   "sale_price": 165.0,
+   "tax_rate": 0.0,
+   "category": "RESEAUX"
+  },
+  {
+   "sku": "V-125",
+   "name": "POWER SUPPLY AZATECH 4P",
+   "description": "POWER SUPPLY AZATECH 4P",
+   "min_stock": 10,
+   "cost_price": 60.0,
+   "sale_price": 70.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "12V4CH",
+   "name": "POWER SUPPLY WDLINK 4P",
+   "description": "POWER SUPPLY WDLINK 4P",
+   "min_stock": 10,
+   "cost_price": 65.0,
+   "sale_price": 75.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "12V8CH",
+   "name": "POWER SUPPLY WDLINK 8P",
+   "description": "POWER SUPPLY WDLINK 8P",
+   "min_stock": 10,
+   "cost_price": 75.0,
+   "sale_price": 85.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "RALLONGE ALTEC PM",
+   "name": "RALLONGE ALTEC PM",
+   "description": "RALLONGE ALTEC PM",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "RALLONGE"
+  },
+  {
+   "sku": "F33",
+   "name": "RALLONGE POWER SOCKET 2500W / F33",
+   "description": "RALLONGE POWER SOCKET 2500W / F33",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "RALLONGE"
+  },
+  {
+   "sku": "RALLONGE SWISS TERRE",
+   "name": "RALLONGE SWISS TERRE",
+   "description": "RALLONGE SWISS TERRE",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "RALLONGE"
+  },
+  {
+   "sku": "8204",
+   "name": "RALLONGE4 POWER SOCKET / 8204",
+   "description": "RALLONGE4 POWER SOCKET / 8204",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "RALLONGE"
+  },
+  {
+   "sku": "BRAVO PM",
+   "name": "RECEPTEUR ECHOLINK BRAVO PM",
+   "description": "RECEPTEUR ECHOLINK BRAVO PM",
+   "min_stock": 10,
+   "cost_price": 90.0,
+   "sale_price": 100.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "NIRVANA LITE",
+   "name": "RECEPTEUR ECHOLINK NIRVANA LITE",
+   "description": "RECEPTEUR ECHOLINK NIRVANA LITE",
+   "min_stock": 10,
+   "cost_price": 120.0,
+   "sale_price": 130.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "ZEN5",
+   "name": "RECEPTEUR ECHOLINK ZEN 5",
+   "description": "RECEPTEUR ECHOLINK ZEN 5",
+   "min_stock": 10,
+   "cost_price": 270.0,
+   "sale_price": 280.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "ZEN6",
+   "name": "RECEPTEUR ECHOLINK ZEN 6",
+   "description": "RECEPTEUR ECHOLINK ZEN 6",
+   "min_stock": 10,
+   "cost_price": 280.0,
+   "sale_price": 290.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "ER-860",
+   "name": "RECEPTEUR ECHOSAT / ER-860",
+   "description": "RECEPTEUR ECHOSAT / ER-860",
+   "min_stock": 10,
+   "cost_price": 235.0,
+   "sale_price": 245.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "TYPHOON",
+   "name": "RECEPTEUR GM TECHNOSTAR / TYPHOON+B2",
+   "description": "RECEPTEUR GM TECHNOSTAR / TYPHOON+B2",
+   "min_stock": 10,
+   "cost_price": 120.0,
+   "sale_price": 130.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "G3",
+   "name": "RECEPTEUR ISTAR /G3",
+   "description": "RECEPTEUR ISTAR /G3",
+   "min_stock": 10,
+   "cost_price": 85.0,
+   "sale_price": 95.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "N1",
+   "name": "RECEPTEUR LINKSTAR / N1",
+   "description": "RECEPTEUR LINKSTAR / N1",
+   "min_stock": 10,
+   "cost_price": 85.0,
+   "sale_price": 95.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "ST-M26",
+   "name": "RECEPTEUR NEXT VISION / ST-M26",
+   "description": "RECEPTEUR NEXT VISION / ST-M26",
+   "min_stock": 10,
+   "cost_price": 88.0,
+   "sale_price": 98.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "AYOUR 1",
+   "name": "RECEPTEUR REVOLUTION / AYOUR 1",
+   "description": "RECEPTEUR REVOLUTION / AYOUR 1",
+   "min_stock": 10,
+   "cost_price": 80.0,
+   "sale_price": 90.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "AYOUR 2",
+   "name": "RECEPTEUR REVOLUTION / AYOUR 2",
+   "description": "RECEPTEUR REVOLUTION / AYOUR 2",
+   "min_stock": 10,
+   "cost_price": 80.0,
+   "sale_price": 90.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "AYOUR 2 PLUS",
+   "name": "RECEPTEUR REVOLUTION / AYOUR 2 PLUS",
+   "description": "RECEPTEUR REVOLUTION / AYOUR 2 PLUS",
+   "min_stock": 10,
+   "cost_price": 80.0,
+   "sale_price": 90.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "F9",
+   "name": "RECEPTEUR REVOLUTION / F9",
+   "description": "RECEPTEUR REVOLUTION / F9",
+   "min_stock": 10,
+   "cost_price": 110.0,
+   "sale_price": 120.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "F8",
+   "name": "RECEPTEUR REVOLUTION /F8",
+   "description": "RECEPTEUR REVOLUTION /F8",
+   "min_stock": 10,
+   "cost_price": 90.0,
+   "sale_price": 100.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "K5",
+   "name": "RECEPTEUR VISION COMBO / K5",
+   "description": "RECEPTEUR VISION COMBO / K5",
+   "min_stock": 10,
+   "cost_price": 130.0,
+   "sale_price": 140.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "PRO2",
+   "name": "RECEPTEUR VISION FUN PRO 2 / PRO 2",
+   "description": "RECEPTEUR VISION FUN PRO 2 / PRO 2",
+   "min_stock": 10,
+   "cost_price": 100.0,
+   "sale_price": 110.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "M30",
+   "name": "RECEPTEUR WENSAT /M30",
+   "description": "RECEPTEUR WENSAT /M30",
+   "min_stock": 10,
+   "cost_price": 85.0,
+   "sale_price": 95.0,
+   "tax_rate": 0.0,
+   "category": "RECEPTEUR"
+  },
+  {
+   "sku": "RLT ANTENNE REVOLUTION 300M NOIR",
+   "name": "RLT ANTENNE REVOLUTION 300M NOIR",
+   "description": "RLT ANTENNE REVOLUTION 300M NOIR",
+   "min_stock": 10,
+   "cost_price": 300.0,
+   "sale_price": 310.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT ANTENNE WDLINK 100M",
+   "name": "RLT ANTENNE WDLINK 100M",
+   "description": "RLT ANTENNE WDLINK 100M",
+   "min_stock": 10,
+   "cost_price": 95.0,
+   "sale_price": 105.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT ANTENNE WDLINK 100M SLIM",
+   "name": "RLT ANTENNE WDLINK 100M SLIM",
+   "description": "RLT ANTENNE WDLINK 100M SLIM",
+   "min_stock": 10,
+   "cost_price": 95.0,
+   "sale_price": 105.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT CAMERA WDLINK RJ45",
+   "name": "RLT CAMERA WDLINK RJ45",
+   "description": "RLT CAMERA WDLINK RJ45",
+   "min_stock": 10,
+   "cost_price": 180.0,
+   "sale_price": 190.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT CAMERA WDLINK RJ45+JACKET",
+   "name": "RLT CAMERA WDLINK RJ45+JACKET",
+   "description": "RLT CAMERA WDLINK RJ45+JACKET",
+   "min_stock": 10,
+   "cost_price": 190.0,
+   "sale_price": 200.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT RJ45 305M BLEU",
+   "name": "RLT RJ45 305M BLEU",
+   "description": "RLT RJ45 305M BLEU",
+   "min_stock": 10,
+   "cost_price": 370.0,
+   "sale_price": 380.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT RJ45 305M WDLINK NOIRE",
+   "name": "RLT RJ45 305M WDLINK NOIRE",
+   "description": "RLT RJ45 305M WDLINK NOIRE",
+   "min_stock": 10,
+   "cost_price": 390.0,
+   "sale_price": 400.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "RLT RJ45 305M WDLINK GRIS",
+   "name": "RLT RJ45 305M WDLINK GRIS",
+   "description": "RLT RJ45 305M WDLINK GRIS",
+   "min_stock": 10,
+   "cost_price": 390.0,
+   "sale_price": 400.0,
+   "tax_rate": 0.0,
+   "category": "RLT"
+  },
+  {
+   "sku": "TSF01",
+   "name": "SATELLITE FINDER TOPSTAR / TSF01",
+   "description": "SATELLITE FINDER TOPSTAR / TSF01",
+   "min_stock": 10,
+   "cost_price": 35.0,
+   "sale_price": 45.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRE"
+  },
+  {
+   "sku": "SOURIE GAMER CHROMA RAZER",
+   "name": "SOURIE GAMER CHROMA RAZER",
+   "description": "SOURIE GAMER CHROMA RAZER",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 65.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "G302",
+   "name": "SOURIE GAMER LOGITECH / G302",
+   "description": "SOURIE GAMER LOGITECH / G302",
+   "min_stock": 10,
+   "cost_price": 50.0,
+   "sale_price": 60.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "SOURIE GAMER XLEADER",
+   "name": "SOURIE GAMER XLEADER",
+   "description": "SOURIE GAMER XLEADER",
+   "min_stock": 10,
+   "cost_price": 65.0,
+   "sale_price": 75.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "ERGONOMIC",
+   "name": "SOURIE ITGURU / ERGONOMIC",
+   "description": "SOURIE ITGURU / ERGONOMIC",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "SOURIE SF HAVIC",
+   "name": "SOURIE SF HAVIC",
+   "description": "SOURIE SF HAVIC",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "SOURIE SF ITGURU WIRLESS 2,4",
+   "name": "SOURIE SF ITGURU WIRLESS 2,4",
+   "description": "SOURIE SF ITGURU WIRLESS 2,4",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "SOURIE SF JEDEL",
+   "name": "SOURIE SF JEDEL",
+   "description": "SOURIE SF JEDEL",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "SPLITER HD 1*2",
+   "name": "SPLITER HD 1*2",
+   "description": "SPLITER HD 1*2",
+   "min_stock": 10,
+   "cost_price": 58.0,
+   "sale_price": 68.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES"
+  },
+  {
+   "sku": "SPLITER HD 1*4",
+   "name": "SPLITER HD 1*4",
+   "description": "SPLITER HD 1*4",
+   "min_stock": 10,
+   "cost_price": 78.0,
+   "sale_price": 88.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES"
+  },
+  {
+   "sku": "GJ-101",
+   "name": "SUPPORTE FIX 14-42 SABSAT/ GJ-101",
+   "description": "SUPPORTE FIX 14-42 SABSAT/ GJ-101",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "3280-GREEN",
+   "name": "SUPPORTE FIX 32-80 GREEN / 3280-GREEN",
+   "description": "SUPPORTE FIX 32-80 GREEN / 3280-GREEN",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "GJ-104S",
+   "name": "SUPPORTE FIX 46-100 SABSAT / GJ-104S",
+   "description": "SUPPORTE FIX 46-100 SABSAT / GJ-104S",
+   "min_stock": 10,
+   "cost_price": 100.0,
+   "sale_price": 110.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "BX29",
+   "name": "SUPPORTE FIX 14-46 RIFLAND / BX29",
+   "description": "SUPPORTE FIX 14-46 RIFLAND / BX29",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "VB-102",
+   "name": "SUPPORTE FIX 26-63 VISION / VB-102",
+   "description": "SUPPORTE FIX 26-63 VISION / VB-102",
+   "min_stock": 10,
+   "cost_price": 30.0,
+   "sale_price": 40.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "WF-2665FXM",
+   "name": "SUPPORTE FIX 26-65 WINFORD / WF-2665FXM",
+   "description": "SUPPORTE FIX 26-65 WINFORD / WF-2665FXM",
+   "min_stock": 10,
+   "cost_price": 22.0,
+   "sale_price": 32.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "SUPPORTE FIX LG",
+   "name": "SUPPORTE FIX LG",
+   "description": "SUPPORTE FIX LG",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "3275-MARWA",
+   "name": "SUPPORTE FIX SLIM 32-75 / 3275-MARWA",
+   "description": "SUPPORTE FIX SLIM 32-75 / 3275-MARWA",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "SUPPORTE FIX SUPER SLIM MARWA",
+   "name": "SUPPORTE FIX SUPER SLIM MARWA",
+   "description": "SUPPORTE FIX SUPER SLIM MARWA",
+   "min_stock": 10,
+   "cost_price": 50.0,
+   "sale_price": 60.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "KS-2660T",
+   "name": "SUPPORTE INQLINI BUYSAT 26-60 / KS-2660T",
+   "description": "SUPPORTE INQLINI BUYSAT 26-60 / KS-2660T",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 65.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "ER42ANK",
+   "name": "SUPPORTE INQLINI EUROCLASS 14-46 / ER42ANK",
+   "description": "SUPPORTE INQLINI EUROCLASS 14-46 / ER42ANK",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "ER55ANK",
+   "name": "SUPPORTE INQLINI EUROCLASS 14-75 / ER55ANK",
+   "description": "SUPPORTE INQLINI EUROCLASS 14-75 / ER55ANK",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "1442-T",
+   "name": "SUPPORTE INQLINI REVOLUTION 14-42 / 1442-T",
+   "description": "SUPPORTE INQLINI REVOLUTION 14-42 / 1442-T",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "3258C-T",
+   "name": "SUPPORTE INQLINI REVOLUTION 26-65 / 3258C-T",
+   "description": "SUPPORTE INQLINI REVOLUTION 26-65 / 3258C-T",
+   "min_stock": 10,
+   "cost_price": 32.0,
+   "sale_price": 42.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "RIF4550",
+   "name": "SUPPORTE INQLINI RIFLAND 32-105 / RIF4550",
+   "description": "SUPPORTE INQLINI RIFLAND 32-105 / RIF4550",
+   "min_stock": 10,
+   "cost_price": 65.0,
+   "sale_price": 75.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "GJ-X400",
+   "name": "SUPPORTE MOBIL + SABSAT 32-55 / GJ-X400",
+   "description": "SUPPORTE MOBIL + SABSAT 32-55 / GJ-X400",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 65.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "ER32BOJ",
+   "name": "SUPPORTE MOBIL 10-42 EUROCLASS / ER32BOJ",
+   "description": "SUPPORTE MOBIL 10-42 EUROCLASS / ER32BOJ",
+   "min_stock": 10,
+   "cost_price": 30.0,
+   "sale_price": 40.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "IG0662",
+   "name": "SUPPORTE MOBIL 14-42 IGOUTECH / IG0662",
+   "description": "SUPPORTE MOBIL 14-42 IGOUTECH / IG0662",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 60.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "ER310",
+   "name": "SUPPORTE MOBIL 14-46 EUROCLASS / ER310",
+   "description": "SUPPORTE MOBIL 14-46 EUROCLASS / ER310",
+   "min_stock": 10,
+   "cost_price": 42.0,
+   "sale_price": 52.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "CP-601",
+   "name": "SUPPORTE MOBIL 2 BRA ASTRO 32-60 / CP601",
+   "description": "SUPPORTE MOBIL 2 BRA ASTRO 32-60 / CP601",
+   "min_stock": 10,
+   "cost_price": 150.0,
+   "sale_price": 160.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "ER-6900",
+   "name": "SUPPORTE MOBIL 2 BRA EUROCLAS 40-100 / ER6900",
+   "description": "SUPPORTE MOBIL 2 BRA EUROCLAS 40-100 / ER6900",
+   "min_stock": 10,
+   "cost_price": 170.0,
+   "sale_price": 180.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "CP-502",
+   "name": "SUPPORTE MOBIL 2BRA / CP502",
+   "description": "SUPPORTE MOBIL 2BRA / CP502",
+   "min_stock": 10,
+   "cost_price": 180.0,
+   "sale_price": 190.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "VB-402",
+   "name": "SUPPORTE MOBIL 2BRA VISION 26-55 / VB-402",
+   "description": "SUPPORTE MOBIL 2BRA VISION 26-55 / VB-402",
+   "min_stock": 10,
+   "cost_price": 165.0,
+   "sale_price": 175.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "CP-302",
+   "name": "SUPPORTE MOBIL ASTRO 14-42 / CP302",
+   "description": "SUPPORTE MOBIL ASTRO 14-42 / CP302",
+   "min_stock": 10,
+   "cost_price": 40.0,
+   "sale_price": 50.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "BD1427",
+   "name": "SUPPORTE MOBIL BD 14-27 /BD1427",
+   "description": "SUPPORTE MOBIL BD 14-27 /BD1427",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "GREEN + 14-55",
+   "name": "SUPPORTE MOBIL GREEN + 14-55",
+   "description": "SUPPORTE MOBIL GREEN + 14-55",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 65.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "AR1407",
+   "name": "SUPPORTE MOBIL IGOUTECH 14-32 / AR1407",
+   "description": "SUPPORTE MOBIL IGOUTECH 14-32 / AR1407",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "IG0661",
+   "name": "SUPPORTE MOBIL IGOUTECH 14-55 / IG0661",
+   "description": "SUPPORTE MOBIL IGOUTECH 14-55 / IG0661",
+   "min_stock": 10,
+   "cost_price": 65.0,
+   "sale_price": 75.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "IG0663",
+   "name": "SUPPORTE MOBIL IGOUTECH 26-65 / IG0663",
+   "description": "SUPPORTE MOBIL IGOUTECH 26-65 / IG0663",
+   "min_stock": 10,
+   "cost_price": 60.0,
+   "sale_price": 70.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "X100",
+   "name": "SUPPORTE MPBIL 10-26 EUROMAX / X100",
+   "description": "SUPPORTE MPBIL 10-26 EUROMAX / X100",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "PLC-120",
+   "name": "SUPPORTE REGLE SLIM PM / PLC-120",
+   "description": "SUPPORTE REGLE SLIM PM / PLC-120",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "B27",
+   "name": "SUPPORTER FIX V-STAR 14-42 / B27",
+   "description": "SUPPORTER FIX V-STAR 14-42 / B27",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "SUPPORTE"
+  },
+  {
+   "sku": "AZA-DS-5",
+   "name": "SWITCH AZASAT GM / AZA-DS-5",
+   "description": "SWITCH AZASAT GM / AZA-DS-5",
+   "min_stock": 10,
+   "cost_price": 14.0,
+   "sale_price": 24.0,
+   "tax_rate": 0.0,
+   "category": "SIWTCH"
+  },
+  {
+   "sku": "AZA-DS-41",
+   "name": "SWITCH AZASAT PM / AZA-DS-41",
+   "description": "SWITCH AZASAT PM / AZA-DS-41",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "SIWTCH"
+  },
+  {
+   "sku": "EG41NL",
+   "name": "SWITCH ECHOLINK PM / EG41NL",
+   "description": "SWITCH ECHOLINK PM / EG41NL",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "SIWTCH"
+  },
+  {
+   "sku": "TC AIWA",
+   "name": "TC AIWA",
+   "description": "TC AIWA",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "ATLASS 200",
+   "name": "TC ATLAS 200",
+   "description": "TC ATLAS 200",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC AZA RIF",
+   "name": "TC AZATECH RIFLAND",
+   "description": "TC AZATECH RIFLAND",
+   "min_stock": 10,
+   "cost_price": 15.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC BEIN SPORT",
+   "name": "TC BEIN SPORT",
+   "description": "TC BEIN SPORT",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC CHIQ",
+   "name": "TC CHIQ",
+   "description": "TC CHIQ",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "K-1028V",
+   "name": "TC CLIMA",
+   "description": "TC CLIMA",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC DAIKO FB",
+   "name": "TC DAIKO FB",
+   "description": "TC DAIKO FB",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC DAIKO RX32",
+   "name": "TC DAIKO RX32",
+   "description": "TC DAIKO RX32",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC DAIKO SMART",
+   "name": "TC DAIKO SMART",
+   "description": "TC DAIKO SMART",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC DINVEL",
+   "name": "TC DINVEL",
+   "description": "TC DINVEL",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC DREAM STAR L/M",
+   "name": "TC DREAM STAR L/M",
+   "description": "TC DREAM STAR L/M",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOLIK ZEN",
+   "name": "TC ECHOLIK ZEN",
+   "description": "TC ECHOLIK ZEN",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOLINK FEMTO RX32",
+   "name": "TC ECHOLINK FEMTO RX32",
+   "description": "TC ECHOLINK FEMTO RX32",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOLINK TORNADO 410",
+   "name": "TC ECHOLINK TORNADO 410",
+   "description": "TC ECHOLINK TORNADO 410",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "RECSON HD",
+   "name": "RECSON HD",
+   "description": "RECSON HD",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOLINK TORNADO 560",
+   "name": "TC ECHOLINK TORNADO 560",
+   "description": "TC ECHOLINK TORNADO 560",
+   "min_stock": 10,
+   "cost_price": 7.5,
+   "sale_price": 17.5,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOSONIC 200 RX20",
+   "name": "TC ECHOSONIC 200 RX20",
+   "description": "TC ECHOSONIC 200 RX20",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOSONIC LCD",
+   "name": "TC ECHOSONIC LCD",
+   "description": "TC ECHOSONIC LCD",
+   "min_stock": 10,
+   "cost_price": 11.0,
+   "sale_price": 21.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOSONIC LED",
+   "name": "TC ECHOSONIC LED",
+   "description": "TC ECHOSONIC LED",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOSONIC PM",
+   "name": "TC ECHOSONIC PM",
+   "description": "TC ECHOSONIC PM",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ECHOSONIC SMART",
+   "name": "TC ECHOSONIC SMART",
+   "description": "TC ECHOSONIC SMART",
+   "min_stock": 10,
+   "cost_price": 15.0,
+   "sale_price": 25.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC EUROVIEW SMART",
+   "name": "TC EUROVIEW SMART",
+   "description": "TC EUROVIEW SMART",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC FITCO SMART PM",
+   "name": "TC FITCO SMART PM",
+   "description": "TC FITCO SMART PM",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC FITCO V6",
+   "name": "TC FITCO V6",
+   "description": "TC FITCO V6",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISIO HD",
+   "name": "TC GOLD VISIO HD",
+   "description": "TC GOLD VISIO HD",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION ANTIC",
+   "name": "TC GOLD VISION ANTIC",
+   "description": "TC GOLD VISION ANTIC",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION FREE BOX",
+   "name": "TC GOLD VISION FREE BOX",
+   "description": "TC GOLD VISION FREE BOX",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION HD",
+   "name": "TC GOLD VISION HD",
+   "description": "TC GOLD VISION HD",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION JVC",
+   "name": "TC GOLD VISION JVC",
+   "description": "TC GOLD VISION JVC",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION LCD RX5",
+   "name": "TC GOLD VISION LCD RX5",
+   "description": "TC GOLD VISION LCD RX5",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION LED",
+   "name": "TC GOLD VISION LED",
+   "description": "TC GOLD VISION LED",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VISION SMART BLANC",
+   "name": "TC GOLD VISION SMART BLANC",
+   "description": "TC GOLD VISION SMART BLANC",
+   "min_stock": 10,
+   "cost_price": 11.0,
+   "sale_price": 21.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC GOLD VSION 1600",
+   "name": "TC GOLD VSION 1600",
+   "description": "TC GOLD VSION 1600",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "V/F",
+   "name": "TC GUZUL V/F",
+   "description": "TC GUZUL V/F",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC HAIR",
+   "name": "TC HAIR",
+   "description": "TC HAIR",
+   "min_stock": 10,
+   "cost_price": 11.0,
+   "sale_price": 21.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC HITACHI",
+   "name": "TC HITACHI",
+   "description": "TC HITACHI",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC IHANDY",
+   "name": "TC IHANDY",
+   "description": "TC IHANDY",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ISTAR 8100",
+   "name": "TC ISTAR 8100",
+   "description": "TC ISTAR 8100",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ISTAR PM",
+   "name": "TC ISTAR PM",
+   "description": "TC ISTAR PM",
+   "min_stock": 20,
+   "cost_price": 6.0,
+   "sale_price": 8.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ITEL SMART VISIO",
+   "name": "TC ITEL SMART VISIO",
+   "description": "TC ITEL SMART VISIO",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC KROHLER RX5",
+   "name": "TC KROHLER RX5",
+   "description": "TC KROHLER RX5",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC KROHLER V6",
+   "name": "TC KROHLER V6",
+   "description": "TC KROHLER V6",
+   "min_stock": 10,
+   "cost_price": 16.0,
+   "sale_price": 26.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC KROHLRE 730",
+   "name": "TC KROHLRE 730",
+   "description": "TC KROHLRE 730",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC LG MAGIX",
+   "name": "TC LG MAGIX",
+   "description": "TC LG MAGIX",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC LG SMART",
+   "name": "TC LG SMART",
+   "description": "TC LG SMART",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC LG VIDE",
+   "name": "TC LG VIDE",
+   "description": "TC LG VIDE",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC LIFE MAX",
+   "name": "TC LIFE MAX",
+   "description": "TC LIFE MAX",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC MGS SAM",
+   "name": "TC MGS SAM",
+   "description": "TC MGS SAM",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC MGS SMART",
+   "name": "TC MGS SMART",
+   "description": "TC MGS SMART",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC PINAL 9500",
+   "name": "TC PINAL 9500",
+   "description": "TC PINAL 9500",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC PLUS X",
+   "name": "TC PLUS X",
+   "description": "TC PLUS X",
+   "min_stock": 10,
+   "cost_price": 16.0,
+   "sale_price": 26.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC POILOT TV",
+   "name": "TC POILOT TV",
+   "description": "TC POILOT TV",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC POWERSKY HD RX20 MINI",
+   "name": "TC POWERSKY HD RX20 MINI",
+   "description": "TC POWERSKY HD RX20 MINI",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC RECSON LED",
+   "name": "TC RECSON LED",
+   "description": "TC RECSON LED",
+   "min_stock": 10,
+   "cost_price": 11.0,
+   "sale_price": 21.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REDLIN",
+   "name": "TC REDLIN",
+   "description": "TC REDLIN",
+   "min_stock": 10,
+   "cost_price": 7.0,
+   "sale_price": 17.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REGAL UNION",
+   "name": "TC REGAL UNION",
+   "description": "TC REGAL UNION",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REVOLUTION 410",
+   "name": "TC REVOLUTION 410",
+   "description": "TC REVOLUTION 410",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REVOLUTION 60/60 GOTO",
+   "name": "TC REVOLUTION 60/60 GOTO",
+   "description": "TC REVOLUTION 60/60 GOTO",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REVOLUTION AXIL 3",
+   "name": "TC REVOLUTION AXIL 3",
+   "description": "TC REVOLUTION AXIL 3",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REVOLUTION GALAXY +",
+   "name": "TC REVOLUTION GALAXY +",
+   "description": "TC REVOLUTION GALAXY +",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REVOLUTION LCD",
+   "name": "TC REVOLUTION LCD",
+   "description": "TC REVOLUTION LCD",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REVOLUTION LGX",
+   "name": "TC REVOLUTION LGX",
+   "description": "TC REVOLUTION LGX",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC REV REC LED",
+   "name": "TC REVOLUTION RECSON LED",
+   "description": "TC REVOLUTION RECSON LED",
+   "min_stock": 20,
+   "cost_price": 9.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "RX23",
+   "name": "TC RX23",
+   "description": "TC RX23",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SAMSAT HD60",
+   "name": "TC SAMSAT HD60",
+   "description": "TC SAMSAT HD60",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SAMSAUNG SMART NETFLIX",
+   "name": "TC SAMSAUNG SMART NETFLIX",
+   "description": "TC SAMSAUNG SMART NETFLIX",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SAMSUNG S7",
+   "name": "TC SAMSUNG S7",
+   "description": "TC SAMSUNG S7",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SAMSUNG SMART",
+   "name": "TC SAMSUNG SMART",
+   "description": "TC SAMSUNG SMART",
+   "min_stock": 10,
+   "cost_price": 9.0,
+   "sale_price": 19.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SAMSUNG SMART S7 SLIM",
+   "name": "TC SAMSUNG SMART S7 SLIM",
+   "description": "TC SAMSUNG SMART S7 SLIM",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SMBOX",
+   "name": "TC SMBOX",
+   "description": "TC SMBOX",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC SONY SMART",
+   "name": "TC SONY SMART",
+   "description": "TC SONY SMART",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "F1",
+   "name": "TC STAR SAT F1",
+   "description": "TC STAR SAT F1",
+   "min_stock": 10,
+   "cost_price": 5.8,
+   "sale_price": 15.8,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TCL GM",
+   "name": "TC TCL GM",
+   "description": "TC TCL GM",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TECHNOMATIC",
+   "name": "TC TECHNOMATIC",
+   "description": "TC TECHNOMATIC",
+   "min_stock": 10,
+   "cost_price": 14.0,
+   "sale_price": 24.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC THREESTAR 410",
+   "name": "TC THREESTAR 410",
+   "description": "TC THREESTAR 410",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TIG SUB",
+   "name": "TC TIG SUB",
+   "description": "TC TIG SUB",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TIGER K9",
+   "name": "TC TIGER K9",
+   "description": "TC TIGER K9",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TIGER V6",
+   "name": "TC TIGER V6",
+   "description": "TC TIGER V6",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TNT 2300",
+   "name": "TC TNT 2300",
+   "description": "TC TNT 2300",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TOSHIBA RX33",
+   "name": "TC TOSHIBA RX33",
+   "description": "TC TOSHIBA RX33",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TUARG",
+   "name": "TC TUARG",
+   "description": "TC TUARG",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC TV BOX",
+   "name": "TC TV BOX",
+   "description": "TC TV BOX",
+   "min_stock": 10,
+   "cost_price": 8.0,
+   "sale_price": 18.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC ULTRA VISION",
+   "name": "TC ULTRA VISION",
+   "description": "TC ULTRA VISION",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC UNIONAIR",
+   "name": "TC UNIONAIR",
+   "description": "TC UNIONAIR",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC UNIVERSAL 3000 IN 1",
+   "name": "TC UNIVERSAL 3000 IN 1",
+   "description": "TC UNIVERSAL 3000 IN 1",
+   "min_stock": 10,
+   "cost_price": 11.0,
+   "sale_price": 21.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISIO CLAVIER",
+   "name": "TC VISIO CLAVIER",
+   "description": "TC VISIO CLAVIER",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISIO GUIDE",
+   "name": "TC VISIO GUIDE",
+   "description": "TC VISIO GUIDE",
+   "min_stock": 10,
+   "cost_price": 10.0,
+   "sale_price": 20.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION 410",
+   "name": "TC VISION 410",
+   "description": "TC VISION 410",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION 410 PLUS",
+   "name": "TC VISION 410 PLUS",
+   "description": "TC VISION 410 PLUS",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION B 110",
+   "name": "TC VISION B 110",
+   "description": "TC VISION B 110",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION B420",
+   "name": "TC VISION B420",
+   "description": "TC VISION B420",
+   "min_stock": 10,
+   "cost_price": 6.0,
+   "sale_price": 16.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION BD",
+   "name": "TC VISION BD",
+   "description": "TC VISION BD",
+   "min_stock": 20,
+   "cost_price": 6.0,
+   "sale_price": 7.5,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION BD ORG",
+   "name": "TC VISION BD ORG",
+   "description": "TC VISION BD ORG",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION LCD",
+   "name": "TC VISION LCD",
+   "description": "TC VISION LCD",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION pm",
+   "name": "TC VISION pm (SMART BOX)",
+   "description": "TC VISION pm (SMART BOX)",
+   "min_stock": 20,
+   "cost_price": 6.0,
+   "sale_price": 7.5,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION SAM",
+   "name": "TC VISION SAM",
+   "description": "TC VISION SAM",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC VISION SMART ITEL",
+   "name": "TC VISION SMART ITEL",
+   "description": "TC VISION SMART ITEL",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC WEST VISIO",
+   "name": "TC WEST VISIO",
+   "description": "TC WEST VISIO",
+   "min_stock": 10,
+   "cost_price": 12.0,
+   "sale_price": 22.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC MI GM",
+   "name": "TC XIAOMI SMART GM",
+   "description": "TC XIAOMI SMART GM",
+   "min_stock": 10,
+   "cost_price": 55.0,
+   "sale_price": 70.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "TC MI PM",
+   "name": "TC XIAOMI SMART PM",
+   "description": "TC XIAOMI SMART PM",
+   "min_stock": 10,
+   "cost_price": 50.0,
+   "sale_price": 75.0,
+   "tax_rate": 0.0,
+   "category": "TC"
+  },
+  {
+   "sku": "S108",
+   "name": "TENDA SWITCH 8P",
+   "description": "TENDA SWITCH 8P",
+   "min_stock": 10,
+   "cost_price": 65.0,
+   "sale_price": 75.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "V21",
+   "name": "TETE 1 VISION / V21",
+   "description": "TETE 1 VISION / V21",
+   "min_stock": 10,
+   "cost_price": 11.0,
+   "sale_price": 21.0,
+   "tax_rate": 0.0,
+   "category": "TETE"
+  },
+  {
+   "sku": "V22",
+   "name": "TETE 2 VISION / V22",
+   "description": "TETE 2 VISION / V22",
+   "min_stock": 10,
+   "cost_price": 25.0,
+   "sale_price": 35.0,
+   "tax_rate": 0.0,
+   "category": "TETE"
+  },
+  {
+   "sku": "V24",
+   "name": "TETE 4 VISION",
+   "description": "TETE 4 VISION",
+   "min_stock": 10,
+   "cost_price": 45.0,
+   "sale_price": 55.0,
+   "tax_rate": 0.0,
+   "category": "TETE"
+  },
+  {
+   "sku": "7481",
+   "name": "TETE 8 RIFLAND / 7481",
+   "description": "TETE 8 RIFLAND / 7481",
+   "min_stock": 10,
+   "cost_price": 105.0,
+   "sale_price": 115.0,
+   "tax_rate": 0.0,
+   "category": "TETE"
+  },
+  {
+   "sku": "TETE CHARGE 20W",
+   "name": "TETE CHARGE 20W",
+   "description": "TETE CHARGE 20W",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES P"
+  },
+  {
+   "sku": "TETE CHARGE 25W",
+   "name": "TETE CHARGE 25W",
+   "description": "TETE CHARGE 25W",
+   "min_stock": 10,
+   "cost_price": 20.0,
+   "sale_price": 30.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES P"
+  },
+  {
+   "sku": "TETE CHARGE 25W 15 PRO MAX",
+   "name": "TETE CHARGE 25W 15 PRO MAX",
+   "description": "TETE CHARGE 25W 15 PRO MAX",
+   "min_stock": 10,
+   "cost_price": 28.0,
+   "sale_price": 38.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES P"
+  },
+  {
+   "sku": "GKF-2152",
+   "name": "TETE2 EUROMAX / GKF-2152",
+   "description": "TETE2 EUROMAX / GKF-2152",
+   "min_stock": 10,
+   "cost_price": 24.0,
+   "sale_price": 34.0,
+   "tax_rate": 0.0,
+   "category": "TETE"
+  },
+  {
+   "sku": "12V2A ASTRO",
+   "name": "TRANSFER 12V2A ASTRO",
+   "description": "TRANSFER 12V2A ASTRO",
+   "min_stock": 10,
+   "cost_price": 16.0,
+   "sale_price": 26.0,
+   "tax_rate": 0.0,
+   "category": "TRANSFER"
+  },
+  {
+   "sku": "12V2A WDLINK",
+   "name": "TRANSFER 12V2A WDLINK",
+   "description": "TRANSFER 12V2A WDLINK",
+   "min_stock": 10,
+   "cost_price": 16.0,
+   "sale_price": 26.0,
+   "tax_rate": 0.0,
+   "category": "TRANSFER"
+  },
+  {
+   "sku": "5V2A ASTRO",
+   "name": "TRANSFER 5V2A ASTRO",
+   "description": "TRANSFER 5V2A ASTRO",
+   "min_stock": 10,
+   "cost_price": 18.0,
+   "sale_price": 28.0,
+   "tax_rate": 0.0,
+   "category": "TRANSFER"
+  },
+  {
+   "sku": "TV 43 POUCE RECSON Q-LED",
+   "name": "TV 43 POUCE RECSON Q-LED",
+   "description": "TV 43 POUCE RECSON Q-LED",
+   "min_stock": 10,
+   "cost_price": 1950.0,
+   "sale_price": 1960.0,
+   "tax_rate": 0.0,
+   "category": "TV"
+  },
+  {
+   "sku": "VIDEO BALLON",
+   "name": "VIDEO BALLON",
+   "description": "VIDEO BALLON",
+   "min_stock": 10,
+   "cost_price": 13.0,
+   "sale_price": 23.0,
+   "tax_rate": 0.0,
+   "category": "ACCESSOIRES INFO"
+  },
+  {
+   "sku": "CABLE TYPE-C ASTRO",
+   "name": "CABLE TYPE-C ASTRO",
+   "description": "CABLE TYPE-C ASTRO",
+   "min_stock": 20,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CABLE MICRO ASTRO",
+   "name": "CABLE MICRO ASTRO",
+   "description": "CABLE MICRO ASTRO",
+   "min_stock": 20,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  },
+  {
+   "sku": "CABLE IOS ASTRO",
+   "name": "CABLE IOS ASTRO",
+   "description": "CABLE IOS ASTRO",
+   "min_stock": 20,
+   "cost_price": 5.0,
+   "sale_price": 15.0,
+   "tax_rate": 0.0,
+   "category": "CABLES"
+  }
+ ]
+}

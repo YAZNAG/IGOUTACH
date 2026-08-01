@@ -1,0 +1,85 @@
+import { api, ensureCsrfCookie } from '@/lib/api'
+import { downloadFile } from '@/lib/download'
+import type { Category, Paginated } from '@/types'
+
+export interface PriceCell {
+  amount: number | null
+  min_quantity: number
+}
+
+export interface PriceListItem {
+  id: number
+  sku: string
+  name: string
+  category_id: number
+  prices: {
+    detail: PriceCell
+    semi_gros: PriceCell
+    gros: PriceCell
+  }
+}
+
+export interface PriceLevel {
+  price_type_id: number
+  code: string
+  name: string
+  min_quantity: number
+  amount: number | null
+  min_margin_percent: number
+  margin_percent: number | null
+  floor_price: number
+  below_floor: boolean
+}
+
+export interface ProductPrices {
+  product: { id: number; sku: string; name: string }
+  unit_cost: number | null
+  levels: PriceLevel[]
+}
+
+export interface PriceLevelInput {
+  price_type_code: string
+  amount: number
+  min_margin_percent?: number
+  min_quantity?: number
+}
+
+export interface PricingFilters {
+  search?: string
+  category_id?: number
+  page?: number
+  per_page?: number
+  sort?: string
+  direction?: 'asc' | 'desc'
+}
+
+export async function fetchPriceList(filters: PricingFilters = {}): Promise<Paginated<PriceListItem>> {
+  const { data } = await api.get<Paginated<PriceListItem>>('/prices', { params: filters })
+  return data
+}
+
+export async function fetchCategoryOptions(): Promise<Category[]> {
+  const { data } = await api.get<{ data: Category[] }>('/categories')
+  return data.data
+}
+
+export async function exportPrices(
+  format: 'xlsx' | 'pdf',
+  filters: Omit<PricingFilters, 'page' | 'per_page'> = {},
+): Promise<void> {
+  await downloadFile('/prices/export', `tarifs.${format}`, { ...filters, format })
+}
+
+export async function fetchProductPrices(productId: number): Promise<ProductPrices> {
+  const { data } = await api.get<{ data: ProductPrices }>(`/products/${productId}/prices`)
+  return data.data
+}
+
+export async function updateProductPrices(
+  productId: number,
+  prices: PriceLevelInput[],
+): Promise<ProductPrices> {
+  await ensureCsrfCookie()
+  const { data } = await api.put<{ data: ProductPrices }>(`/products/${productId}/prices`, { prices })
+  return data.data
+}

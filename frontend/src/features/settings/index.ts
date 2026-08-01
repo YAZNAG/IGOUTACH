@@ -1,0 +1,6 @@
+export { ParametresLayout } from './pages/ParametresLayout'
+export { TaxRatesSettingsPage } from './pages/TaxRatesSettingsPage'
+export { GeneralSettingsPage } from './pages/GeneralSettingsPage'
+export { PaymentMethodsPage } from './pages/PaymentMethodsPage'
+export { DocumentSequencesPage } from './pages/DocumentSequencesPage'
+export { BackupPage } from './pages/BackupPage'

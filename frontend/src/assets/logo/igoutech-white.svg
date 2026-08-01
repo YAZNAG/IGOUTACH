@@ -1,0 +1,7 @@
+<svg width="196" height="48" viewBox="0 0 196 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IGOUTECH">
+  <rect x="0.5" y="0.5" width="47" height="47" rx="11.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.5"/>
+  <rect x="12" y="13" width="24" height="9" rx="2" fill="#FFFFFF"/>
+  <rect x="12" y="26" width="16" height="9" rx="2" fill="#FFFFFF" fill-opacity="0.85"/>
+  <rect x="31" y="26" width="5" height="9" rx="2" fill="#FFFFFF" fill-opacity="0.6"/>
+  <text x="60" y="31" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="600" letter-spacing="0.5" fill="#FFFFFF">igoutech</text>
+</svg>
