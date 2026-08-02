@@ -83,3 +83,41 @@ export async function updateProductPrices(
   const { data } = await api.put<{ data: ProductPrices }>(`/products/${productId}/prices`, { prices })
   return data.data
 }
+
+export interface BulkPreviewRow {
+  product_id: number
+  sku: string | null
+  name: string | null
+  current: number
+  next: number
+}
+
+export interface BulkUpdateResult {
+  count: number
+  rows: BulkPreviewRow[]
+  applied: boolean
+}
+
+export async function bulkUpdatePrices(input: {
+  price_type_code: string
+  percent: number
+  category_id?: number
+  apply: boolean
+}): Promise<BulkUpdateResult> {
+  await ensureCsrfCookie()
+  const { data } = await api.post<{ data: BulkUpdateResult }>('/prices/bulk-update', input)
+  return data.data
+}
+
+export interface BelowFloorRow {
+  product_id: number
+  sku: string
+  name: string
+  price_type: string
+  amount: string
+}
+
+export async function fetchBelowFloor(): Promise<BelowFloorRow[]> {
+  const { data } = await api.get<{ data: BelowFloorRow[] }>('/prices/below-floor')
+  return data.data
+}

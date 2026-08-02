@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Category, Paginated } from '@/types'
 import {
+  bulkUpdatePrices,
+  fetchBelowFloor,
   fetchCategoryOptions,
   fetchPriceList,
   fetchProductPrices,
   updateProductPrices,
+  type BelowFloorRow,
   type PriceLevelInput,
   type PriceListItem,
   type PricingFilters,
@@ -42,5 +45,23 @@ export function useUpdateProductPrices() {
     mutationFn: ({ productId, prices }: { productId: number; prices: PriceLevelInput[] }) =>
       updateProductPrices(productId, prices),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useBulkUpdatePrices() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: bulkUpdatePrices,
+    onSuccess: (result) => {
+      if (result.applied) queryClient.invalidateQueries({ queryKey: KEY })
+    },
+  })
+}
+
+export function useBelowFloor(enabled: boolean) {
+  return useQuery<BelowFloorRow[]>({
+    queryKey: ['pricing', 'below-floor'],
+    queryFn: fetchBelowFloor,
+    enabled,
   })
 }

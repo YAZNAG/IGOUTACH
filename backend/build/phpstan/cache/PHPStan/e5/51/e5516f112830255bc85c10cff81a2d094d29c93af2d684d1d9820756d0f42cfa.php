@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Requests\UpdateCustomerRequest.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Requests\UpdateCustomerRequest
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-edb604120db884da01f5f93161e6137f7756bd4799df8cb26f700e9866b0fcbc',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-00461b4123d1224fdf52e6397e07296b660206870ae139a091e42e98961ba749',
    'data' => 
   array (
     'locatedSource' => 
@@ -27,7 +27,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 11,
-    'endLine' => 40,
+    'endLine' => 43,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Foundation\\Http\\FormRequest',
@@ -103,7 +103,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * @return array<string, mixed>
  */',
         'startLine' => 21,
-        'endLine' => 39,
+        'endLine' => 42,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

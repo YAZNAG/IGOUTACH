@@ -12,10 +12,13 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Purchasing\\Models',
          'uses' => 
         array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
           'supplierfactory' => 'Database\\Factories\\SupplierFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
@@ -1323,15 +1326,136 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
           4 => '/** @use HasFactory<SupplierFactory> */',
         ),
       )),
+      '4d2b7867ccddc1ddf1a4c51a797550d8' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Domain\\Purchasing\\Models',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'supplierfactory' => 'Database\\Factories\\SupplierFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+          'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+         'functionName' => 'contacts',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'App\\Domain\\Purchasing\\Models',
+           'uses' => 
+          array (
+            'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'supplierfactory' => 'Database\\Factories\\SupplierFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+            'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+            'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+          ),
+           'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => NULL,
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
+      'af50a4e6618129181fd6ee13a2dd152b' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Domain\\Purchasing\\Models',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'supplierfactory' => 'Database\\Factories\\SupplierFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+          'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+         'functionName' => 'products',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'App\\Domain\\Purchasing\\Models',
+           'uses' => 
+          array (
+            'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'supplierfactory' => 'Database\\Factories\\SupplierFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+            'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+            'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+          ),
+           'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => NULL,
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
       '298596a7a874397d9a2197051e3eb7b5' => 
       \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
          'namespace' => 'App\\Domain\\Purchasing\\Models',
          'uses' => 
         array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
           'supplierfactory' => 'Database\\Factories\\SupplierFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
@@ -1344,10 +1468,13 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Purchasing\\Models',
            'uses' => 
           array (
+            'product' => 'App\\Domain\\Catalog\\Models\\Product',
             'supplierfactory' => 'Database\\Factories\\SupplierFactory',
             'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
             'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+            'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
             'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
           ),
            'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
@@ -1381,10 +1508,13 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Purchasing\\Models',
          'uses' => 
         array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
           'supplierfactory' => 'Database\\Factories\\SupplierFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
@@ -1397,10 +1527,13 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Purchasing\\Models',
            'uses' => 
           array (
+            'product' => 'App\\Domain\\Catalog\\Models\\Product',
             'supplierfactory' => 'Database\\Factories\\SupplierFactory',
             'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
             'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongstomany' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+            'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
             'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
           ),
            'className' => 'App\\Domain\\Purchasing\\Models\\Supplier',
@@ -1432,7 +1565,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php' => '2e4064d939e71b14fd8e4be748fbf8b3a758caf50002e7617b6f96fe6a884767',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php' => 'aa7993b205c536f4a095971468a3777c9c1a98a5d91cc69aace53e6819c9774e',
       'C:\\OPTIZAWORKS\\igoutech\\backend\\vendor\\composer\\..\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Factories\\HasFactory.php' => 'f656f22af602c0c7a3b73524ece133d391640c8c78d29da5ddc48a235e583431',
       'C:\\OPTIZAWORKS\\igoutech\\backend\\vendor\\composer\\..\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\SoftDeletes.php' => '088774910033ee16d93400eb71c4befe82edb195c45e9cb4579093e91e9fe2df',
     ),

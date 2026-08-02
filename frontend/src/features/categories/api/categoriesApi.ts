@@ -46,3 +46,8 @@ export async function bulkDeleteCategories(ids: number[]): Promise<BulkDeleteRes
 export async function exportCategories(format: 'xlsx' | 'pdf'): Promise<void> {
   await downloadFile('/categories/export', `categories.${format}`, { format })
 }
+
+export async function reorderCategories(items: { id: number; position: number }[]): Promise<void> {
+  await ensureCsrfCookie()
+  await api.patch('/categories/reorder', { items })
+}

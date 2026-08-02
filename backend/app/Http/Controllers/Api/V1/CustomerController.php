@@ -56,7 +56,7 @@ final class CustomerController extends Controller
 
     public function show(Customer $customer): CustomerResource
     {
-        return CustomerResource::make($customer);
+        return CustomerResource::make($customer->load(['priceType:id,name', 'seller:id,name', 'warehouse:id,code']));
     }
 
     public function update(UpdateCustomerRequest $request, Customer $customer): CustomerResource

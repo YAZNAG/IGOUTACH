@@ -12,10 +12,14 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Customers\\Models',
          'uses' => 
         array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
           'customerfactory' => 'Database\\Factories\\CustomerFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1328,10 +1332,14 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Customers\\Models',
          'uses' => 
         array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
           'customerfactory' => 'Database\\Factories\\CustomerFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1344,10 +1352,14 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Customers\\Models',
            'uses' => 
           array (
+            'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+            'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+            'user' => 'App\\Models\\User',
             'customerfactory' => 'Database\\Factories\\CustomerFactory',
             'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
             'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
             'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
           ),
            'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1381,10 +1393,14 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Customers\\Models',
          'uses' => 
         array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
           'customerfactory' => 'Database\\Factories\\CustomerFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1397,10 +1413,14 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Customers\\Models',
            'uses' => 
           array (
+            'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+            'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+            'user' => 'App\\Models\\User',
             'customerfactory' => 'Database\\Factories\\CustomerFactory',
             'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
             'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
             'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
           ),
            'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1434,10 +1454,14 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Customers\\Models',
          'uses' => 
         array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
           'customerfactory' => 'Database\\Factories\\CustomerFactory',
           'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
           'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
           'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
         ),
          'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1450,10 +1474,197 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Customers\\Models',
            'uses' => 
           array (
+            'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+            'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+            'user' => 'App\\Models\\User',
             'customerfactory' => 'Database\\Factories\\CustomerFactory',
             'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
             'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+          ),
+           'className' => 'App\\Domain\\Customers\\Models\\Customer',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => NULL,
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
+      '6d8fca82a705d999c50024a5f1026fe1' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Domain\\Customers\\Models',
+         'uses' => 
+        array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
+          'customerfactory' => 'Database\\Factories\\CustomerFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+        ),
+         'className' => 'App\\Domain\\Customers\\Models\\Customer',
+         'functionName' => 'priceType',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'App\\Domain\\Customers\\Models',
+           'uses' => 
+          array (
+            'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+            'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+            'user' => 'App\\Models\\User',
+            'customerfactory' => 'Database\\Factories\\CustomerFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+            'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+          ),
+           'className' => 'App\\Domain\\Customers\\Models\\Customer',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => NULL,
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
+      '294bf10c918b9bf880b334764e9dabd1' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Domain\\Customers\\Models',
+         'uses' => 
+        array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
+          'customerfactory' => 'Database\\Factories\\CustomerFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+        ),
+         'className' => 'App\\Domain\\Customers\\Models\\Customer',
+         'functionName' => 'seller',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'App\\Domain\\Customers\\Models',
+           'uses' => 
+          array (
+            'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+            'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+            'user' => 'App\\Models\\User',
+            'customerfactory' => 'Database\\Factories\\CustomerFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+            'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+          ),
+           'className' => 'App\\Domain\\Customers\\Models\\Customer',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => NULL,
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
+      'a19446b1e37475ce80fa80629af39d1b' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Domain\\Customers\\Models',
+         'uses' => 
+        array (
+          'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
+          'customerfactory' => 'Database\\Factories\\CustomerFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
+        ),
+         'className' => 'App\\Domain\\Customers\\Models\\Customer',
+         'functionName' => 'warehouse',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'App\\Domain\\Customers\\Models',
+           'uses' => 
+          array (
+            'pricetype' => 'App\\Domain\\Pricing\\Models\\PriceType',
+            'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+            'user' => 'App\\Models\\User',
+            'customerfactory' => 'Database\\Factories\\CustomerFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+            'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
             'softdeletes' => 'Illuminate\\Database\\Eloquent\\SoftDeletes',
           ),
            'className' => 'App\\Domain\\Customers\\Models\\Customer',
@@ -1485,7 +1696,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\Customer.php' => '794a55349620cb23e697c40d097021e1c7e25c184a2aac6a6c6af8b3f4bdebbc',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\Customer.php' => '21ef7a6f25a369bdf869d2b6592e1d4985fbd23c125cffee1d0ed44627832eb2',
       'C:\\OPTIZAWORKS\\igoutech\\backend\\vendor\\composer\\..\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Factories\\HasFactory.php' => 'f656f22af602c0c7a3b73524ece133d391640c8c78d29da5ddc48a235e583431',
       'C:\\OPTIZAWORKS\\igoutech\\backend\\vendor\\composer\\..\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\SoftDeletes.php' => '088774910033ee16d93400eb71c4befe82edb195c45e9cb4579093e91e9fe2df',
     ),

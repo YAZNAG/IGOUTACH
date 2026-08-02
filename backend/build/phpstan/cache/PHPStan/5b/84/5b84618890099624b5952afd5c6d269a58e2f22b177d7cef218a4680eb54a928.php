@@ -1042,5 +1042,65 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
       array (
       ),
     ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_01_110000_create_product_attributes_tables.php' => 
+    array (
+      0 => '8f5c2f1938241d2c4879722ae4821e4e78aa7e2fc2e3e1e8a7e3be1f9f64afcf',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_01_110100_create_product_images_table.php' => 
+    array (
+      0 => 'fe77cc4296f6e8be57f6a56db0b4a26c649554f6dfb7e8460e9946aad3f4526d',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_01_110200_create_supplier_links_tables.php' => 
+    array (
+      0 => 'fb987d9b0fed6fbe1be1759a1671db0e0699e8ec961879ff34f9545a59d9fe78',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_01_110300_add_defaults_to_customers_table.php' => 
+    array (
+      0 => 'ff6390e8fd941f1a6bd06caa69658b12e8ca8c72af6853a4d8ee518fc6697e04',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
   ),
 ));

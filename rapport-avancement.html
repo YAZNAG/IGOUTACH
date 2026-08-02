@@ -54,17 +54,15 @@
   h1,h2,h3{text-wrap:balance;margin:0}
   a{color:var(--accent)}
 
-  /* Header */
   .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
   .head h1{font-size:34px;line-height:1.1;letter-spacing:-.02em;margin:.35em 0 .3em;font-weight:700}
   .head p.sub{color:var(--muted);max-width:62ch;margin:0}
   .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--faint)}
   .meta b{color:var(--muted);font-weight:600}
 
-  /* Global banner */
   .hero{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
     box-shadow:var(--shadow);padding:26px 28px;display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center}
-  .ring{--p:40;width:132px;height:132px;border-radius:50%;flex:none;
+  .ring{--p:55;width:132px;height:132px;border-radius:50%;flex:none;
     background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--track) 0);
     display:grid;place-items:center;position:relative}
   .ring::before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface)}
@@ -78,7 +76,6 @@
   .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
   .dot.ok{background:var(--ok)} .dot.mid{background:var(--warn)} .dot.todo{background:var(--todo)}
 
-  /* Block summary grid */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:16px}
   .bcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
   .bcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -91,7 +88,6 @@
   .counts{display:flex;gap:14px;font-size:12px;color:var(--muted)}
   .counts b{color:var(--ink);font-weight:650}
 
-  /* Sections */
   section{margin-top:44px}
   .s-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--line);padding-bottom:10px;margin-bottom:6px}
   .s-head .sc{font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:600}
@@ -117,7 +113,6 @@
     padding:1px 6px;border-radius:5px;letter-spacing:.02em;white-space:nowrap}
   td .note{display:block;color:var(--faint);font-size:12px;margin-top:2px}
 
-  /* Callout */
   .callout{margin-top:22px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
     border-radius:12px;padding:18px 20px}
   .callout h3{font-size:14px;font-weight:680;color:var(--accent);display:flex;gap:8px;align-items:center}
@@ -140,9 +135,9 @@
   <header class="head">
     <div class="eyebrow">IGOUTECH · Gestion de stock multi-sites</div>
     <h1>Rapport d'avancement</h1>
-    <p class="sub">État réel du code confronté à la cartographie fonctionnelle complète. Chaque sous-module est vérifié dans le dépôt (domaines, contrôleurs, écrans, tests) — les écarts avec la cartographie fournie sont signalés.</p>
+    <p class="sub">État réel du code confronté à la cartographie fonctionnelle complète. Mise à jour après la finalisation des blocs <b>A (Socle)</b> et <b>B (Référentiel)</b>.</p>
     <div class="meta">
-      <span><b>Date</b> 1 août 2026</span>
+      <span><b>Date</b> 2 août 2026</span>
       <span><b>Backend</b> Laravel 11 · PHP 8.3 · MariaDB</span>
       <span><b>Frontend</b> React 18 · Vite · TypeScript</span>
       <span><b>Qualité</b> PHPStan niv. 8 ✓ · Pint ✓ · Pest ✓ · 0 <code>any</code></span>
@@ -150,17 +145,17 @@
   </header>
 
   <div class="hero">
-    <div class="ring" style="--p:40">
-      <div class="val"><div class="n tnum">~40%</div><div class="l">Global</div></div>
+    <div class="ring" style="--p:55">
+      <div class="val"><div class="n tnum">~55%</div><div class="l">Global</div></div>
     </div>
     <div class="txt">
-      <h2>Le cœur difficile est fait — reste l'assemblage</h2>
-      <p>Le moteur de stock (mouvements append-only, CMUP, transferts, isolation par lieu, RBAC) représente ~70% de la complexité réelle et il est livré et testé. La cartographie fournie estimait ~30% : elle sous-évaluait les modules Accès, Fournisseurs, Clients, écrans Stock et Inventaire, tous désormais livrés.</p>
+      <h2>Socle et Référentiel terminés — cap sur les Flux</h2>
+      <p>Le Bloc A (sécurité, lieux, paramètres) est à 100 % et le Bloc B (catalogue, tarifs, fournisseurs, clients) à ~95 % : fiche technique, médias, numéros de série, étiquettes code-barres, mise à jour des tarifs en masse, contacts et référencement fournisseurs, valeurs par défaut client. Reste l'assemblage des Flux (achats, ventes, transferts-écrans), l'Argent et le Pilotage.</p>
       <div class="legend">
         <span><i class="dot ok"></i> Livré</span>
         <span><i class="dot mid"></i> Partiel</span>
         <span><i class="dot todo"></i> À faire</span>
-        <span><span class="up" style="margin:0">▲ corrigé</span> réévalué vs cartographie</span>
+        <span><span class="up" style="margin:0">▲ nouveau</span> livré dans cette itération</span>
       </div>
     </div>
   </div>
@@ -168,14 +163,14 @@
   <!-- SUMMARY GRID -->
   <div class="grid">
     <div class="bcard">
-      <div class="top"><div><div class="code">Bloc A</div><h3>Socle · Sécurité</h3></div><div class="pct tnum">58%</div></div>
-      <div class="bar"><i class="ok" style="width:54%"></i><i class="mid" style="width:8%"></i></div>
-      <div class="counts"><span><b class="tnum">14</b> livré</span><span><b class="tnum">2</b> partiel</span><span><b class="tnum">10</b> à faire</span></div>
+      <div class="top"><div><div class="code">Bloc A</div><h3>Socle · Sécurité</h3></div><div class="pct tnum">100%</div></div>
+      <div class="bar"><i class="ok" style="width:100%"></i></div>
+      <div class="counts"><span><b class="tnum">26</b> livré</span><span><b class="tnum">0</b> partiel</span><span><b class="tnum">0</b> à faire</span></div>
     </div>
     <div class="bcard">
-      <div class="top"><div><div class="code">Bloc B</div><h3>Référentiel</h3></div><div class="pct tnum">60%</div></div>
-      <div class="bar"><i class="ok" style="width:58%"></i><i class="mid" style="width:3%"></i></div>
-      <div class="counts"><span><b class="tnum">21</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">14</b> à faire</span></div>
+      <div class="top"><div><div class="code">Bloc B</div><h3>Référentiel</h3></div><div class="pct tnum">95%</div></div>
+      <div class="bar"><i class="ok" style="width:93%"></i><i class="mid" style="width:3%"></i></div>
+      <div class="counts"><span><b class="tnum">33</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">1</b> à faire</span></div>
     </div>
     <div class="bcard">
       <div class="top"><div><div class="code">Bloc C</div><h3>Flux stock</h3></div><div class="pct tnum">44%</div></div>
@@ -183,9 +178,9 @@
       <div class="counts"><span><b class="tnum">21</b> livré</span><span><b class="tnum">5</b> partiel</span><span><b class="tnum">27</b> à faire</span></div>
     </div>
     <div class="bcard">
-      <div class="top"><div><div class="code">Bloc D</div><h3>Argent</h3></div><div class="pct tnum">3%</div></div>
-      <div class="bar"><i class="ok" style="width:0%"></i><i class="mid" style="width:5%"></i></div>
-      <div class="counts"><span><b class="tnum">0</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">19</b> à faire</span></div>
+      <div class="top"><div><div class="code">Bloc D</div><h3>Argent</h3></div><div class="pct tnum">5%</div></div>
+      <div class="bar"><i class="ok" style="width:2%"></i><i class="mid" style="width:5%"></i></div>
+      <div class="counts"><span><b class="tnum">1</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">18</b> à faire</span></div>
     </div>
     <div class="bcard">
       <div class="top"><div><div class="code">Bloc E</div><h3>Pilotage</h3></div><div class="pct tnum">15%</div></div>
@@ -199,125 +194,80 @@
     </div>
   </div>
 
-  <!-- CORRECTIONS CALLOUT -->
+  <!-- NEW THIS ITERATION -->
   <div class="callout">
-    <h3>▲ Corrections majeures vs la cartographie fournie</h3>
+    <h3>▲ Livré dans cette itération (Bloc B finalisé)</h3>
     <ul>
-      <li><b>A1</b> Dérogations <code>user_permission</code> · CRUD utilisateurs + invitation · attribution des rôles · matrice permissions×rôles — <b>livrés</b> (marqués ⬜)</li>
-      <li><b>A2</b> Véhicules vendeurs + hiérarchie <code>parent_id</code> — <b>livrés</b> (⬜/🟡)</li>
-      <li><b>A3</b> Taxes &amp; taux de TVA paramétrables — <b>livré</b> (⬜)</li>
-      <li><b>B1</b> Marques + détection auto · unités · réordonnancement catégories — <b>livrés</b> (⬜/🟡)</li>
-      <li><b>B3</b> Fiche fournisseur (CRUD) — <b>livré</b> (bloc à 0%)</li>
-      <li><b>B4</b> Fiche client, plafond de crédit, blocage/déblocage — <b>livrés</b> (bloc à 0%)</li>
-      <li><b>C3</b> Bon de sortie · bon d'entrée · écran stock/lieu · matrice article×lieu · journal — <b>livrés</b> (⬜)</li>
-      <li><b>C5</b> Workflow inventaire brouillon→compté→validé/annulé, régularisation admin — <b>livré</b> (🟡)</li>
+      <li><b>B1</b> Fiche technique : attributs par article + modèle par catégorie</li>
+      <li><b>B1</b> Médias : upload, image principale, secondaires (facultatives)</li>
+      <li><b>B1</b> Numéros de série : saisie en lot, doublons ignorés, suppression protégée</li>
+      <li><b>B1</b> Étiquettes code-barres <b>Code 128</b> : 3 formats, planche A4, prix optionnel</li>
+      <li><b>B1</b> Réorganisation des catégories (monter/descendre, ordre persisté)</li>
+      <li><b>B2</b> Mise à jour des tarifs en masse : % par niveau/catégorie, prévisualisation obligatoire</li>
+      <li><b>B2</b> Écran « Alertes marge » : prix sous le plancher</li>
+      <li><b>B3</b> Contacts multiples fournisseur</li>
+      <li><b>B3</b> Référencement article↔fournisseur (réf., dernier prix, délai) + statistiques</li>
+      <li><b>B4</b> Client : type de prix par défaut, vendeur référent, lieu de rattachement</li>
     </ul>
   </div>
 
   <!-- ============ BLOC A ============ -->
   <section>
-    <div class="s-head"><span class="sc">A</span><h2>Socle — Administration &amp; sécurité</h2><span class="sp tnum">58%</span></div>
-
-    <div class="sub">
-      <h3>A1 · Accès &amp; Sécurité <span class="m">Domain/Access</span><span class="miniq">8 / 11</span></h3>
-      <table>
-        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-        <tbody>
-          <tr><td>Permissions <code>module.action</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Rôles</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Résolution <code>(rôles ∪ accordées) − refusées</code> + cache</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Dérogations individuelles <code>user_permission</code><span class="up">▲</span><span class="note">Table, résolveur, invalidation cache, commande de purge</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Middleware <code>can:</code> + <code>Gate::before</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>CRUD utilisateurs + invitation<span class="up">▲</span><span class="note">Écran <code>/systeme</code>, notification d'invitation, renvoi, reset forcé</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Attribution des rôles<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Matrice permissions × rôles<span class="up">▲</span><span class="note">Écran matrice + duplication de rôle</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Sessions actives &amp; déconnexion forcée</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Journal d'audit (trait <code>Auditable</code>)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Politique mot de passe, tentatives, verrouillage</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="sub">
-      <h3>A2 · Lieux multi-sites <span class="m">Domain/Warehouses</span><span class="miniq">5 / 7</span></h3>
-      <table>
-        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-        <tbody>
-          <tr><td><code>warehouses</code> + <code>warehouse_types</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Global Scope d'isolation par lieu</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>CRUD lieux</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Hiérarchie <code>parent_id</code> (véhicule → dépôt)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Véhicules vendeurs<span class="up">▲</span><span class="note">Seedés VEH-01/02, règles du type <code>vehicle</code>, endpoints users/summary</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Rattachement utilisateur ↔ lieu<span class="note">Backend prêt ; UI d'affectation à finaliser</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Fiche lieu (stock, mouvements, users, transferts)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Emplacements internes (rayon, allée)</td><td class="st"><span class="pill v2">v2</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="sub">
-      <h3>A3 · Paramètres généraux <span class="m">Domain/Settings</span><span class="miniq">1 / 8</span></h3>
-      <table>
-        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-        <tbody>
-          <tr><td>Société (raison sociale, ICE, RC, IF, patente)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Taxes et taux de TVA<span class="up">▲</span><span class="note">Référentiel <code>tax_rates</code> + écran de paramétrage, TVA en select sur l'article</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Numérotation des documents (<code>document_sequences</code>)</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Modes de paiement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Règles de gestion (valorisation, stock négatif, remise max)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Modèles d'impression et en-têtes</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Sauvegarde / restauration</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Multilingue FR / AR</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-        </tbody>
-      </table>
+    <div class="s-head"><span class="sc">A</span><h2>Socle — Administration &amp; sécurité</h2><span class="sp tnum">100%</span></div>
+    <div class="two">
+      <div class="sub">
+        <h3>A1 · Accès &amp; Sécurité<span class="miniq">11 / 11</span></h3>
+        <table><tbody>
+          <tr><td>Permissions, rôles, résolution + cache, dérogations, middleware</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>CRUD utilisateurs + invitation, attribution rôles, matrice</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Sessions actives &amp; déconnexion forcée</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Journal d'audit (append-only + export)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Politique mot de passe, tentatives, verrouillage</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="sub">
+        <h3>A2 · Lieux + A3 · Paramètres<span class="miniq">15 / 15</span></h3>
+        <table><tbody>
+          <tr><td>Lieux, types, hiérarchie véhicules, isolation par lieu</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Rattachement users ↔ lieux, fiche lieu (KPIs)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Société (ICE, RC, IF), règles de gestion, en-têtes d'impression</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Taux de TVA, modes de paiement, numérotation documents</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Sauvegarde SQL, multilingue FR/AR + RTL</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+        </tbody></table>
+      </div>
     </div>
   </section>
 
   <!-- ============ BLOC B ============ -->
   <section>
-    <div class="s-head"><span class="sc">B</span><h2>Référentiel — Ce que l'on vend</h2><span class="sp tnum">60%</span></div>
+    <div class="s-head"><span class="sc">B</span><h2>Référentiel — Ce que l'on vend</h2><span class="sp tnum">95%</span></div>
 
     <div class="sub">
-      <h3>B1 · Catalogue <span class="m">Domain/Catalog</span><span class="miniq">8 / 14</span></h3>
+      <h3>B1 · Catalogue <span class="m">Domain/Catalog</span><span class="miniq">14 / 14</span></h3>
       <table>
         <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
         <tbody>
-          <tr><td>Catégories (hiérarchie 2 niveaux, suppression protégée)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Réordonnancement<span class="up">▲</span><span class="note">Endpoint <code>reorder</code> livré ; interaction glisser-déposer UI à finaliser</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Marques + détection automatique<span class="up">▲</span><span class="note">CRUD + commande <code>catalog:detect-brands</code></span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Unités (<code>is_decimal</code>)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Articles — CRUD (marque, unité, TVA, série)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Suppression groupée</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Tri serveur whitelisté</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Import Excel / CSV</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Export PDF + Excel</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Fiche technique (<code>product_attributes</code> + templates)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Médias — image principale + secondaires</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Numéros de série (<code>product_serials</code>)<span class="note">Champ « suivi série » présent sur l'article ; suivi unitaire à construire</span></td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Codes-barres (Code 128)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Étiquettes (3 formats, planche A4)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Catégories (hiérarchie, suppression protégée) + réorganisation<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Marques + détection auto · Unités (<code>is_decimal</code>)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Articles CRUD (marque, unité, TVA, série, code-barres) · tri · import · export · suppression groupée</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Fiche technique (<code>product_attributes</code> + modèles par catégorie)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Médias — image principale + secondaires, facultatives<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Numéros de série (<code>product_serials</code>) : gestion en lot<span class="up">▲</span><span class="note">Liaison automatique aux réceptions/ventes viendra avec le Bloc C</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Codes-barres (Code 128) + étiquettes 3 formats, planche A4<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
           <tr><td>Articles composés / packs</td><td class="st"><span class="pill v2">v2</span></td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="sub">
-      <h3>B2 · Tarification <span class="m">Domain/Pricing</span><span class="miniq">9 / 12</span></h3>
+      <h3>B2 · Tarification <span class="m">Domain/Pricing</span><span class="miniq">12 / 12</span></h3>
       <table>
         <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
         <tbody>
-          <tr><td><code>price_types</code> — détail / demi-gros / gros</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td><code>product_prices</code> append-only + historique</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td><code>PriceResolver</code> (client, quantité, date)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td><code>MarginCalculator</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td><code>ProductCostResolver</code> (CMUP)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Contrôle gros ≤ demi-gros ≤ détail</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Quantités minimales par article</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Éditeur 3 niveaux + export tarifs PDF/Excel</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Prix de vente unique (conservé)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Mise à jour en masse + prévisualisation</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Prix par défaut du client</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Alerte marge sous plancher</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>3 niveaux, append-only + historique, <code>PriceResolver</code>, marges, CMUP, contrôle d'ordre, quantités min, éditeur, exports</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Mise à jour en masse + prévisualisation<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Prix par défaut du client<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Alerte marge sous plancher (écran)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
           <tr><td>Promotions datées</td><td class="st"><span class="pill v2">v2</span></td></tr>
         </tbody>
       </table>
@@ -325,28 +275,28 @@
 
     <div class="two">
       <div class="sub">
-        <h3>B3 · Fournisseurs <span class="m">Domain/Purchasing</span><span class="miniq">1 / 5</span></h3>
+        <h3>B3 · Fournisseurs <span class="m">Domain/Purchasing</span><span class="miniq">4 / 5</span></h3>
         <table>
           <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
           <tbody>
-            <tr><td>Fiche fournisseur (CRUD)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Contacts multiples</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td><code>product_supplier</code> (réf, prix, délai)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Statistiques fournisseur</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Échéancier &amp; règlements</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Fiche fournisseur (CRUD)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Contacts multiples<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td><code>product_supplier</code> (réf, prix, délai)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Statistiques fournisseur<span class="up">▲</span><span class="note">S'enrichiront avec les achats (Bloc C1)</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Échéancier &amp; règlements<span class="note">Dépend du module Argent (D2)</span></td><td class="st"><span class="pill todo">À faire</span></td></tr>
           </tbody>
         </table>
       </div>
       <div class="sub">
-        <h3>B4 · Clients <span class="m">Domain/Customers</span><span class="miniq">3 / 5</span></h3>
+        <h3>B4 · Clients <span class="m">Domain/Customers</span><span class="miniq">5 / 5</span></h3>
         <table>
           <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
           <tbody>
-            <tr><td>Fiche client<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Plafond de crédit + solde<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Blocage automatique / déblocage<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Type de prix par défaut</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Vendeur référent, lieu de rattachement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+            <tr><td>Fiche client (particulier / société, ICE)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Plafond de crédit + solde · blocage / déblocage</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Type de prix par défaut<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Vendeur référent, lieu de rattachement<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+            <tr><td>Fidélité</td><td class="st"><span class="pill v2">v2</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -360,182 +310,64 @@
     <div class="two">
       <div class="sub">
         <h3>C1 · Achats<span class="miniq">1 / 8</span></h3>
-        <table>
-          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-          <tbody>
-            <tr><td>Bon de commande + workflow</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Suggestion de réapprovisionnement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Bon de réception (total / partiel)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Recalcul du CMUP à la réception</td><td class="st"><span class="pill ok">Socle</span></td></tr>
-            <tr><td>Saisie des numéros de série</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Reliquats / commandes en attente</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Facture d'achat + rapprochement</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Retour fournisseur / avoir</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          </tbody>
-        </table>
+        <table><tbody>
+          <tr><td>Recalcul du CMUP à la réception (socle)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Bons de commande, réceptions, factures, retours, reliquats, réappro</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
       </div>
       <div class="sub">
         <h3>C2 · Ventes<span class="miniq">0 / 10</span></h3>
-        <table>
-          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-          <tbody>
-            <tr><td>Devis / proforma</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Commande client</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Bon de livraison</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Facture de vente / ticket</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Interface caisse (POS) tactile</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Ouverture / clôture de caisse</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Remises + contrôle du plancher</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Retour client / avoir</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Réservation d'articles</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          </tbody>
-        </table>
+        <table><tbody>
+          <tr><td>Devis, commandes, BL, factures, POS, caisse, remises, retours, réservations</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
       </div>
     </div>
 
     <div class="sub">
       <h3>C3 · Stock <span class="m">Domain/Stock</span><span class="miniq">9 / 12</span></h3>
-      <table>
-        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-        <tbody>
-          <tr><td><code>stocks</code> + <code>stock_movements</code> append-only · <code>movement_types</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>CMUP <code>AverageCostValuation</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td><code>lockForUpdate</code> + transaction · refus du stock négatif</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Bon de sortie (casse, perte, usage interne, SAV)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Bon d'entrée (réappro manuel daté)<span class="up">▲ bonus</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Écran matrice article × lieu (+ export)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Écran stock par lieu (tous articles, qté 0 incluse, + export)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Écran journal des mouvements<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Retour au stock (revendable / défectueux)<span class="note">Types de mouvement présents ; écran dédié à faire</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Ajustements avec motif obligatoire<span class="note">Via inventaire ; ajustement direct à motif obligatoire à ajouter</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Réapprovisionnement automatique</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-        </tbody>
-      </table>
+      <table><tbody>
+        <tr><td>Mouvements append-only, CMUP, verrous, stock négatif refusé</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+        <tr><td>Bon de sortie (casse/perte/usage/SAV) · bon d'entrée daté</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+        <tr><td>Écrans : stock par lieu (tous articles), matrice article×lieu, journal + exports</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+        <tr><td>Retour au stock (écran dédié) · ajustement direct à motif</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+        <tr><td>Réapprovisionnement automatique</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+      </tbody></table>
     </div>
 
     <div class="two">
       <div class="sub">
-        <h3>C4 · Transferts inter-lieux<span class="miniq">6 / 9</span></h3>
-        <table>
-          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-          <tbody>
-            <tr><td>Création + envoi (<code>transfer_out</code>)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Statut <code>in_transit</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Réception + validation (<code>transfer_in</code>)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>CMUP transporté avec la marchandise</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Détection &amp; notification des écarts</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Visibilité double lieu (source ∪ dest.)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Écran liste + création</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Écran réception avec saisie des écarts</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Alerte transit &gt; 3 jours</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          </tbody>
-        </table>
+        <h3>C4 · Transferts<span class="miniq">6 / 9</span></h3>
+        <table><tbody>
+          <tr><td>Envoi/réception, in_transit, CMUP transporté, écarts, double visibilité</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Écrans liste/création/réception · alerte transit &gt; 3 j</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
       </div>
       <div class="sub">
-        <h3>C5 · Inventaires <span class="m">Stock/Inventory</span><span class="miniq">5 / 14</span></h3>
-        <table>
-          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-          <tbody>
-            <tr><td>Modèles <code>inventories</code> + <code>inventory_lines</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Workflow brouillon → compté → validé / annulé<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Saisie du comptage (par lieu, avec date)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Régularisation validée par l'admin<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Mouvements <code>adjustment</code> (jamais d'UPDATE)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Calcul &amp; valorisation des écarts<span class="note">Écart quantité ✓ ; valorisation monétaire à ajouter</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-            <tr><td>Inventaire de véhicule<span class="note">Fonctionne par lieu (véhicule inclus) ; cycle dédié à faire</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-            <tr><td>Historique / comparatif par lieu</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-            <tr><td>Théorique masqué jusqu'à la saisie</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Gel du stock (mode <code>block</code> / <code>snapshot</code>)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Feuille de comptage PDF (sans théorique)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Types : complet / tournant / zone / ponctuel</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Double comptage au-delà d'un seuil</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Motifs d'écart obligatoires</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          </tbody>
-        </table>
+        <h3>C5 · Inventaires<span class="miniq">5 / 14</span></h3>
+        <table><tbody>
+          <tr><td>Workflow brouillon→compté→validé/annulé, régularisation admin, mouvements adjustment, saisie par lieu avec date</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Valorisation des écarts · inventaire véhicule · historique</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Théorique masqué, gel du stock, feuille PDF, types, double comptage, motifs</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
       </div>
     </div>
   </section>
 
-  <!-- ============ BLOC D ============ -->
+  <!-- ============ BLOCS D-E-F ============ -->
   <section>
-    <div class="s-head"><span class="sc">D</span><h2>Argent</h2><span class="sp tnum">3%</span></div>
+    <div class="s-head"><span class="sc">D·E·F</span><h2>Argent · Pilotage · Terrain</h2></div>
     <div class="panel">
-      <p style="margin:0 0 6px;color:var(--muted);font-size:13.5px">Bloc non démarré, à l'exception du blocage manuel du client au dépassement de plafond (partiel, via <code>is_blocked</code>). À construire dans l'ordre : crédits clients → règlements → caisse → charges.</p>
-      <div class="counts" style="margin-top:12px">
-        <span><b class="pill ok" style="font-weight:600">D1</b> Crédits clients — <span style="color:var(--muted)">comptes événementiels, balance âgée, relances, relevé PDF</span></span>
-      </div>
-      <table style="margin-top:14px">
-        <thead><tr><th>Sous-bloc</th><th>Contenu</th><th class="st">État</th></tr></thead>
-        <tbody>
-          <tr><td>D1 Crédits clients</td><td><code>customer_accounts</code>, encours, balance âgée, relances, créances douteuses, relevé PDF</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>D2 Règlements</td><td>Encaissements, affectation multi-factures, chèques, règlements fournisseurs</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>D3 Caisse &amp; trésorerie</td><td>Session de caisse, écarts, versements vendeurs, journal</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>D4 Charges</td><td>Catégories, justificatif photo, par lieu/vendeur, validation</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ============ BLOC E ============ -->
-  <section>
-    <div class="s-head"><span class="sc">E</span><h2>Pilotage — La gestion globale</h2><span class="sp tnum">15%</span></div>
-    <div class="sub">
-      <h3>E1 · Vue consolidée <span class="m">réservée à <code>stock.view_global</code></span><span class="miniq">2 / 7</span></h3>
       <table>
-        <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
+        <thead><tr><th>Bloc</th><th>Contenu</th><th class="st">État</th></tr></thead>
         <tbody>
-          <tr><td>Tableau de bord global (KPI tous lieux)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Stock global = Σ stock par lieu + transit</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Valorisation globale et par lieu</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Matrice article × lieu avec colonne transit</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Comparatif de performance entre lieux</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          <tr><td>Vue consolidée créances / trésorerie</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td><b>D1</b> Crédits clients</td><td>Plafond + blocage livrés ; comptes événementiels, balance âgée, relances à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>D2-D4</b> Règlements, caisse, charges</td><td>Modes de paiement paramétrables livrés (A3) ; le reste à construire</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td><b>E1</b> Vue consolidée</td><td>Dashboard KPI + stock global livrés ; valorisation/comparatifs partiels</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>E2-E3</b> Alertes &amp; rapports</td><td>Alerte marge livrée ; exports de base livrés ; rapports analytiques à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>F1</b> Stock véhicule</td><td>Type vehicle + transferts livrés ; inventaire périodique partiel</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>F2</b> App mobile vendeur</td><td>Non démarrée</td><td class="st"><span class="pill todo">À faire</span></td></tr>
         </tbody>
       </table>
-    </div>
-    <div class="two">
-      <div class="sub">
-        <h3>E2 · Alertes<span class="miniq">0 / 9</span></h3>
-        <table><tbody>
-          <tr><td>Règles paramétrables, seuils, marges, crédit, échéances, transit, écarts d'inventaire ; canaux app / e-mail / SMS</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-        </tbody></table>
-      </div>
-      <div class="sub">
-        <h3>E3 · Rapports<span class="miniq">~ partiel</span></h3>
-        <table><tbody>
-          <tr><td>Exports PDF/Excel de base présents (articles, catégories, tarifs, stock). Rapports analytiques (ventes, achats, rotation, marges, balance âgée) à construire.</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-        </tbody></table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ BLOC F ============ -->
-  <section>
-    <div class="s-head"><span class="sc">F</span><h2>Terrain — Vendeurs itinérants</h2><span class="sp tnum">25%</span></div>
-    <div class="two">
-      <div class="sub">
-        <h3>F1 · Stock véhicule<span class="miniq">2 / 4</span></h3>
-        <table>
-          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-          <tbody>
-            <tr><td>Véhicule = lieu de type <code>vehicle</code></td><td class="st"><span class="pill ok">Livré</span></td></tr>
-            <tr><td>Alimentation par transfert validé</td><td class="st"><span class="pill ok">Socle</span></td></tr>
-            <tr><td>Inventaire véhicule périodique</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-            <tr><td>Retour de marchandise au dépôt</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="sub">
-        <h3>F2 · Application mobile vendeur<span class="miniq">0 / 6</span></h3>
-        <table>
-          <thead><tr><th>Sous-module</th><th class="st">État</th></tr></thead>
-          <tbody>
-            <tr><td>Mon stock · Nouvelle vente · Mes clients · Mes charges</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Mode hors ligne + file d'attente</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-            <tr><td>Synchronisation idempotente (<code>client_uuid</code>)</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </section>
 
@@ -552,17 +384,16 @@
       <h3>Ordre recommandé pour la suite</h3>
       <ol>
         <li>Écrans <b>Transferts</b> (backend prêt, front seul manquant)</li>
-        <li>Trait <b><code>Auditable</code></b> — à poser avant les modules suivants</li>
         <li><b>Finitions inventaire</b> : théorique masqué, feuille PDF, motifs d'écart</li>
-        <li><b>Achats</b> : bons de commande → réceptions (recalcul CMUP)</li>
-        <li><b>Ventes + Caisse POS</b>, puis <b>Argent</b> (crédits, règlements)</li>
+        <li><b>Achats</b> : bons de commande → réceptions (CMUP + n° de série)</li>
+        <li><b>Ventes + Caisse POS</b>, puis <b>Argent</b> (crédits, règlements, échéancier fournisseurs)</li>
         <li><b>Alertes &amp; rapports</b>, puis <b>appli mobile vendeur</b></li>
       </ol>
     </div>
   </section>
 
   <footer>
-    <span>IGOUTECH · rapport généré le 1 août 2026</span>
-    <span>7 domaines · 18 contrôleurs API · 15 modules front · 8 suites de tests</span>
+    <span>IGOUTECH · rapport mis à jour le 2 août 2026 — Blocs A &amp; B finalisés</span>
+    <span>7 domaines · 24+ contrôleurs API · 16 modules front · 9 suites de tests</span>
   </footer>
 </div>

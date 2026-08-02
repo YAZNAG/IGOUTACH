@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
 import { usePermission } from '@/hooks/usePermission'
 import type { Supplier, SupplierInput } from '../api/suppliersApi'
+import { SupplierDetail } from '../components/SupplierDetail'
 import { useCreateSupplier, useDeleteSupplier, useSuppliers, useUpdateSupplier } from '../hooks'
 
 function errorMessage(error: unknown, fallback: string): string {
@@ -46,6 +47,7 @@ export function SuppliersPage() {
   const [editing, setEditing] = useState<Supplier | null>(null)
   const [form, setForm] = useState<SupplierInput>(EMPTY)
   const [deleting, setDeleting] = useState<Supplier | null>(null)
+  const [detail, setDetail] = useState<Supplier | null>(null)
 
   const suppliers = data?.data ?? []
   const meta = data?.meta
@@ -209,7 +211,7 @@ export function SuppliersPage() {
                   <SortableTh field="city" current={sort} onSort={setSort}>Ville</SortableTh>
                   <th className="px-5 py-3 text-right font-medium">Délai (j)</th>
                   <th className="px-5 py-3 font-medium">Statut</th>
-                  {canUpdate || canDelete ? <th className="px-5 py-3 text-right font-medium">Actions</th> : null}
+                  <th className="px-5 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -233,27 +235,28 @@ export function SuppliersPage() {
                       <td className="px-5 py-3">
                         {supplier.is_active ? <Badge tone="ok">Actif</Badge> : <Badge tone="bad">Inactif</Badge>}
                       </td>
-                      {canUpdate || canDelete ? (
-                        <td className="px-5 py-3">
-                          <div className="flex justify-end gap-1">
-                            {canUpdate ? (
-                              <Button variant="ghost" size="sm" onClick={() => openEdit(supplier)}>
-                                Modifier
-                              </Button>
-                            ) : null}
-                            {canDelete ? (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-bad hover:bg-bad-bg"
-                                onClick={() => setDeleting(supplier)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            ) : null}
-                          </div>
-                        </td>
-                      ) : null}
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => setDetail(supplier)}>
+                            Détail
+                          </Button>
+                          {canUpdate ? (
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(supplier)}>
+                              Modifier
+                            </Button>
+                          ) : null}
+                          {canDelete ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-bad hover:bg-bad-bg"
+                              onClick={() => setDeleting(supplier)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -285,6 +288,10 @@ export function SuppliersPage() {
             </div>
           ) : null}
         </div>
+      ) : null}
+
+      {detail !== null ? (
+        <SupplierDetail supplierId={detail.id} name={detail.name} onClose={() => setDetail(null)} />
       ) : null}
 
       <ConfirmDialog

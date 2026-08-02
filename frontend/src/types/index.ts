@@ -22,6 +22,7 @@ export interface Paginated<T> {
 export interface Category {
   id: number
   name: string
+  position?: number
   requires_serial: boolean
   is_active: boolean
   products_count?: number

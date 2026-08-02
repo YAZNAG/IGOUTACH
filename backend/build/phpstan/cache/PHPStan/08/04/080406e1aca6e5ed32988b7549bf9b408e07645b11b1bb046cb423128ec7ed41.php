@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Catalog\Models\Product.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Catalog\Models\Product
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-33832b91600aa704f2bbb1e8f0df8d196856a50189d86fdb79932a851afce94b',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-2ad3086480700fd2717d8aa14720c0b9f53f61021aea3f2c10e39deb11c7b324',
    'data' => 
   array (
     'locatedSource' => 
@@ -40,8 +40,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     'attributes' => 
     array (
     ),
-    'startLine' => 30,
-    'endLine' => 101,
+    'startLine' => 32,
+    'endLine' => 135,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -70,20 +70,20 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
           'code' => '[\'sku\', \'barcode\', \'name\', \'description\', \'category_id\', \'brand_id\', \'unit_id\', \'cost_price\', \'sale_price\', \'tax_rate\', \'is_serialized\', \'min_stock\', \'is_active\']',
           'attributes' => 
           array (
-            'startLine' => 35,
-            'endLine' => 49,
-            'startTokenPos' => 78,
-            'startFilePos' => 934,
-            'endTokenPos' => 119,
-            'endFilePos' => 1206,
+            'startLine' => 37,
+            'endLine' => 51,
+            'startTokenPos' => 88,
+            'startFilePos' => 1035,
+            'endTokenPos' => 129,
+            'endFilePos' => 1307,
           ),
         ),
         'docComment' => NULL,
         'attributes' => 
         array (
         ),
-        'startLine' => 35,
-        'endLine' => 49,
+        'startLine' => 37,
+        'endLine' => 51,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -116,8 +116,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 51,
-        'endLine' => 60,
+        'startLine' => 53,
+        'endLine' => 62,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -153,8 +153,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return Factory<self>
  */',
-        'startLine' => 65,
-        'endLine' => 68,
+        'startLine' => 67,
+        'endLine' => 70,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -190,8 +190,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Category, $this>
  */',
-        'startLine' => 73,
-        'endLine' => 76,
+        'startLine' => 75,
+        'endLine' => 78,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -227,8 +227,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Brand, $this>
  */',
-        'startLine' => 81,
-        'endLine' => 84,
+        'startLine' => 83,
+        'endLine' => 86,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -264,8 +264,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Unit, $this>
  */',
-        'startLine' => 89,
-        'endLine' => 92,
+        'startLine' => 91,
+        'endLine' => 94,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -301,8 +301,125 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return HasMany<ProductSerial, $this>
  */',
-        'startLine' => 97,
-        'endLine' => 100,
+        'startLine' => 99,
+        'endLine' => 102,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Catalog\\Models',
+        'declaringClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'implementingClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'currentClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'aliasName' => NULL,
+      ),
+      'attributes' => 
+      array (
+        'name' => 'attributes',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Fiche technique (attributs nom → valeur).
+ *
+ * @return HasMany<ProductAttribute, $this>
+ */',
+        'startLine' => 109,
+        'endLine' => 112,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Catalog\\Models',
+        'declaringClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'implementingClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'currentClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'aliasName' => NULL,
+      ),
+      'images' => 
+      array (
+        'name' => 'images',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Médias (image principale + secondaires).
+ *
+ * @return HasMany<ProductImage, $this>
+ */',
+        'startLine' => 119,
+        'endLine' => 122,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Catalog\\Models',
+        'declaringClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'implementingClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'currentClassName' => 'App\\Domain\\Catalog\\Models\\Product',
+        'aliasName' => NULL,
+      ),
+      'suppliers' => 
+      array (
+        'name' => 'suppliers',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Fournisseurs référencés pour cet article.
+ *
+ * @return BelongsToMany<Supplier, $this>
+ */',
+        'startLine' => 129,
+        'endLine' => 134,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

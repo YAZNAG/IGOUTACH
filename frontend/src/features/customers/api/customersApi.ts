@@ -12,6 +12,9 @@ export interface Customer {
   address: string | null
   city: string | null
   ice: string | null
+  price_type_id: number | null
+  seller_id: number | null
+  warehouse_id: number | null
   credit_limit: number
   balance: number
   available_credit: number
@@ -30,6 +33,9 @@ export interface CustomerInput {
   address?: string | null
   city?: string | null
   ice?: string | null
+  price_type_id?: number | null
+  seller_id?: number | null
+  warehouse_id?: number | null
   notes?: string | null
   is_active?: boolean
 }

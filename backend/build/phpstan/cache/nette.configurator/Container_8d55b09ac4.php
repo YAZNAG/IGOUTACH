@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
+class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 {
 	protected $tags = [
 		'phpstan.broker.allowedSubTypesClassReflectionExtension' => ['017' => true, '018' => true],
@@ -5915,7 +5915,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -5963,7 +5963,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -6021,7 +6021,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -6088,7 +6088,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -6108,7 +6108,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -6133,7 +6133,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -6153,7 +6153,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -6173,7 +6173,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_3699d082f7 $container)
+			public function __construct(Container_8d55b09ac4 $container)
 			{
 				$this->container = $container;
 			}
@@ -9684,7 +9684,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 	}
 
 
-	public function createServiceContainer(): Container_3699d082f7
+	public function createServiceContainer(): Container_8d55b09ac4
 	{
 		return $this;
 	}
@@ -10356,12 +10356,12 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 				'AWS_DEFAULT_REGION' => 'us-east-1',
 				'AWS_SECRET_ACCESS_KEY' => '',
 				'AWS_USE_PATH_STYLE_ENDPOINT' => 'false',
-				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.24012.9,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=7d3fb32af88241d0aa956e0560997c5d,sentry-org_id=1158394',
+				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.24012.9,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=3dc5223b01b542da8d7b8e5a9171eae1,sentry-org_id=1158394',
 				'BCRYPT_ROUNDS' => '12',
 				'BROADCAST_CONNECTION' => 'log',
 				'CACHE_PREFIX' => 'igoutech',
 				'CACHE_STORE' => 'file',
-				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_22616_SURTDWHADKCINUHM',
+				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_19716_JJWSJUTTDQSRTVKO',
 				'CLAUDECODE' => '1',
 				'CLAUDE_AGENT_SDK_VERSION' => '0.3.219',
 				'CLAUDE_CODE_CHILD_SESSION' => '1',
@@ -10378,7 +10378,7 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 				'CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH' => '1',
 				'CLAUDE_CODE_SESSION_ID' => '510dc35a-a4cb-47ce-8e8a-76cae8db278a',
 				'CLAUDE_EFFORT' => 'high',
-				'CLAUDE_PID' => '15040',
+				'CLAUDE_PID' => '23172',
 				'CLAUDE_PREVIEW_CLASSIFIER_FLOOR' => '1',
 				'COLUMNS' => '120',
 				'COMMONPROGRAMFILES' => 'C:\Program Files\Common Files',
@@ -10456,9 +10456,9 @@ class Container_3699d082f7 extends _PHPStan_02959ca10\Nette\DI\Container
 				'REDIS_PASSWORD' => 'null',
 				'REDIS_PORT' => '6379',
 				'SANCTUM_STATEFUL_DOMAINS' => 'localhost:5180,127.0.0.1:5180,localhost:5173,127.0.0.1:5173,localhost:8000',
-				'SENTRY-TRACE' => '7d3fb32af88241d0aa956e0560997c5d-a7dfc980156392cb',
+				'SENTRY-TRACE' => '3dc5223b01b542da8d7b8e5a9171eae1-b145bba47fba5166',
 				'SESSION_DOMAIN' => 'null',
-				'SESSION_DRIVER' => 'file',
+				'SESSION_DRIVER' => 'database',
 				'SESSION_ENCRYPT' => 'false',
 				'SESSION_LIFETIME' => '120',
 				'SESSION_PATH' => '/',

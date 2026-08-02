@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Purchasing\Models;
 
+use App\Domain\Catalog\Models\Product;
 use Database\Factories\SupplierFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -29,6 +32,26 @@ class Supplier extends Model
 {
     /** @use HasFactory<SupplierFactory> */
     use HasFactory, SoftDeletes;
+
+    /**
+     * @return HasMany<SupplierContact, $this>
+     */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(SupplierContact::class);
+    }
+
+    /**
+     * Articles référencés chez ce fournisseur.
+     *
+     * @return BelongsToMany<Product, $this>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_supplier')
+            ->withPivot(['supplier_reference', 'last_price', 'lead_time_days'])
+            ->withTimestamps();
+    }
 
     protected $fillable = [
         'code',

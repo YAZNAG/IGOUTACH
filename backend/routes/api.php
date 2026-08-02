@@ -13,13 +13,18 @@ use App\Http\Controllers\Api\V1\InventoryController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\PermissionController;
+use App\Http\Controllers\Api\V1\ProductAttributeController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ProductImageController;
 use App\Http\Controllers\Api\V1\ProductPriceController;
+use App\Http\Controllers\Api\V1\ProductSerialController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SessionController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\StockController;
+use App\Http\Controllers\Api\V1\SupplierContactController;
 use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\Api\V1\SupplierProductController;
 use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -81,8 +86,27 @@ Route::prefix('v1')->group(function () {
         // Tarifs de vente (prix unique — conservé)
         Route::put('products/{product}/pricing', [ProductController::class, 'updatePricing'])->middleware('can:product.set_price');
 
+        // Catalogue — fiche technique (attributs + modèle par catégorie)
+        Route::get('products/{product}/attributes', [ProductAttributeController::class, 'index'])->middleware('can:product.view');
+        Route::put('products/{product}/attributes', [ProductAttributeController::class, 'save'])->middleware('can:product.attributes_manage');
+        Route::put('categories/{categoryId}/attribute-template', [ProductAttributeController::class, 'saveTemplate'])
+            ->whereNumber('categoryId')->middleware('can:product.attributes_manage');
+
+        // Catalogue — médias des articles
+        Route::get('products/{product}/images', [ProductImageController::class, 'index'])->middleware('can:product.view');
+        Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('can:product.media_manage');
+        Route::patch('products/{product}/images/{image}/main', [ProductImageController::class, 'setMain'])->middleware('can:product.media_manage');
+        Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->middleware('can:product.media_manage');
+
+        // Catalogue — numéros de série
+        Route::get('products/{product}/serials', [ProductSerialController::class, 'index'])->middleware('can:serial.view');
+        Route::post('products/{product}/serials', [ProductSerialController::class, 'store'])->middleware('can:product.update');
+        Route::delete('products/{product}/serials/{serial}', [ProductSerialController::class, 'destroy'])->middleware('can:product.update');
+
         // Tarifs 3 niveaux (detail / demi-gros / gros)
+        Route::get('price-types', [ProductPriceController::class, 'priceTypes']);
         Route::get('prices', [ProductPriceController::class, 'list'])->middleware('can:price.view');
+        Route::post('prices/bulk-update', [ProductPriceController::class, 'bulkUpdate'])->middleware('can:price.bulk_update');
         Route::get('prices/export', [ProductPriceController::class, 'export'])->middleware('can:price.view');
         Route::get('products/{product}/prices', [ProductPriceController::class, 'index'])->middleware('can:price.view');
         Route::put('products/{product}/prices', [ProductPriceController::class, 'update'])->middleware('can:price.manage');
@@ -140,6 +164,18 @@ Route::prefix('v1')->group(function () {
         Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->middleware('can:supplier.view');
         Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('can:supplier.update');
         Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('can:supplier.delete');
+
+        // Achats — contacts fournisseur
+        Route::get('suppliers/{supplier}/contacts', [SupplierContactController::class, 'index'])->middleware('can:supplier.view');
+        Route::post('suppliers/{supplier}/contacts', [SupplierContactController::class, 'store'])->middleware('can:supplier.update');
+        Route::put('suppliers/{supplier}/contacts/{contact}', [SupplierContactController::class, 'update'])->middleware('can:supplier.update');
+        Route::delete('suppliers/{supplier}/contacts/{contact}', [SupplierContactController::class, 'destroy'])->middleware('can:supplier.update');
+
+        // Achats — articles référencés chez le fournisseur + statistiques
+        Route::get('suppliers/{supplier}/products', [SupplierProductController::class, 'index'])->middleware('can:supplier.view');
+        Route::put('suppliers/{supplier}/products/{product}', [SupplierProductController::class, 'attach'])->middleware('can:supplier.update');
+        Route::delete('suppliers/{supplier}/products/{product}', [SupplierProductController::class, 'detach'])->middleware('can:supplier.update');
+        Route::get('suppliers/{supplier}/stats', [SupplierProductController::class, 'stats'])->middleware('can:supplier.view');
 
         // Stock — consultation & bon de sortie
         Route::get('stock', [StockController::class, 'index'])->middleware('can:stock.view');

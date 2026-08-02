@@ -1,4 +1,4 @@
-import { Download, FileText, Plus, Trash2 } from 'lucide-react'
+import { ArrowUpDown, Download, FileText, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -10,6 +10,7 @@ import { usePermission } from '@/hooks/usePermission'
 import type { Category } from '@/types'
 import { exportCategories, type BulkDeleteResult, type CategoryInput } from '../api/categoriesApi'
 import { CategoryForm } from '../components/CategoryForm'
+import { ReorderPanel } from '../components/ReorderPanel'
 import {
   useBulkDeleteCategories,
   useCategories,
@@ -54,6 +55,7 @@ export function CategoriesPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkDeleteResult | null>(null)
+  const [reordering, setReordering] = useState(false)
   const isPending = createMutation.isPending || updateMutation.isPending
 
   const visibleIds = categories.map((c) => c.id)
@@ -104,6 +106,12 @@ export function CategoriesPage() {
           <p className="text-sm text-muted">Référentiel des familles d'articles.</p>
         </div>
         <div className="flex gap-2">
+          {canUpdate ? (
+            <Button variant="outline" size="sm" onClick={() => setReordering((v) => !v)}>
+              <ArrowUpDown className="h-4 w-4" />
+              Réorganiser
+            </Button>
+          ) : null}
           <Button variant="outline" size="sm" onClick={() => exportCategories('xlsx')}>
             <Download className="h-4 w-4" />
             Excel
@@ -135,6 +143,8 @@ export function CategoriesPage() {
           .
         </p>
       ) : null}
+
+      {reordering ? <ReorderPanel categories={rawCategories} onClose={() => setReordering(false)} /> : null}
 
       {panelOpen ? (
         <Card>

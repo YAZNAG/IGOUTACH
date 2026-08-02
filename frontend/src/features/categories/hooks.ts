@@ -5,6 +5,7 @@ import {
   createCategory,
   deleteCategory,
   fetchCategories,
+  reorderCategories,
   updateCategory,
   type CategoryInput,
 } from './api/categoriesApi'
@@ -46,6 +47,14 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }: { id: number; input: CategoryInput }) => updateCategory(id, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useReorderCategories() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (items: { id: number; position: number }[]) => reorderCategories(items),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
   })
 }

@@ -84,7 +84,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php' => 'c8069913f13ebc375ec973377dcbe7ebf991d0cad661992009043b81f1174417',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php' => '68cfb0f97df03ae464937aded4ca155f167f081888b1c68dc5bac76ca2c84c4f',
     ),
   ),
 ));

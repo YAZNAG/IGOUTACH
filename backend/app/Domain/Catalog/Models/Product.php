@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalog\Models;
 
+use App\Domain\Purchasing\Models\Supplier;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -97,5 +99,37 @@ class Product extends Model
     public function serials(): HasMany
     {
         return $this->hasMany(ProductSerial::class);
+    }
+
+    /**
+     * Fiche technique (attributs nom → valeur).
+     *
+     * @return HasMany<ProductAttribute, $this>
+     */
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(ProductAttribute::class)->orderBy('position');
+    }
+
+    /**
+     * Médias (image principale + secondaires).
+     *
+     * @return HasMany<ProductImage, $this>
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->orderByDesc('is_main')->orderBy('position');
+    }
+
+    /**
+     * Fournisseurs référencés pour cet article.
+     *
+     * @return BelongsToMany<Supplier, $this>
+     */
+    public function suppliers(): BelongsToMany
+    {
+        return $this->belongsToMany(Supplier::class, 'product_supplier')
+            ->withPivot(['supplier_reference', 'last_price', 'lead_time_days'])
+            ->withTimestamps();
     }
 }

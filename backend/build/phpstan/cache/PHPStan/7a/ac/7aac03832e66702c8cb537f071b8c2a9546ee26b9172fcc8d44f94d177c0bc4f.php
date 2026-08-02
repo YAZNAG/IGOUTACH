@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Controllers\Api\V1\ProductPriceController.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Controllers\Api\V1\ProductPriceController
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-bdf04861d022706b06c48988c31d7554df162b1a8bb38ca85475de8c2946471e',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-b2223f1fd134e019edcf73b8bf0102975bc2da9cc8686d063c8b5f7267d90075',
    'data' => 
   array (
     'locatedSource' => 
@@ -27,7 +27,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 28,
-    'endLine' => 225,
+    'endLine' => 287,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'App\\Http\\Controllers\\Controller',
@@ -243,6 +243,43 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'currentClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
         'aliasName' => NULL,
       ),
+      'priceTypes' => 
+      array (
+        'name' => 'priceTypes',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Http\\JsonResponse',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Référentiel des types de prix (pour les selects).
+ */',
+        'startLine' => 39,
+        'endLine' => 44,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+        'declaringClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'implementingClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'currentClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'aliasName' => NULL,
+      ),
       'list' => 
       array (
         'name' => 'list',
@@ -267,8 +304,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 36,
-            'endLine' => 36,
+            'startLine' => 46,
+            'endLine' => 46,
             'startColumn' => 26,
             'endColumn' => 41,
             'parameterIndex' => 0,
@@ -289,8 +326,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 36,
-        'endLine' => 90,
+        'startLine' => 46,
+        'endLine' => 100,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -328,8 +365,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 92,
-            'endLine' => 92,
+            'startLine' => 102,
+            'endLine' => 102,
             'startColumn' => 28,
             'endColumn' => 43,
             'parameterIndex' => 0,
@@ -369,8 +406,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 92,
-        'endLine' => 137,
+        'startLine' => 102,
+        'endLine' => 147,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -408,8 +445,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 139,
-            'endLine' => 139,
+            'startLine' => 149,
+            'endLine' => 149,
             'startColumn' => 27,
             'endColumn' => 42,
             'parameterIndex' => 0,
@@ -434,8 +471,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 139,
-            'endLine' => 139,
+            'startLine' => 149,
+            'endLine' => 149,
             'startColumn' => 45,
             'endColumn' => 60,
             'parameterIndex' => 1,
@@ -456,8 +493,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 139,
-        'endLine' => 171,
+        'startLine' => 149,
+        'endLine' => 181,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -495,8 +532,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 173,
-            'endLine' => 173,
+            'startLine' => 183,
+            'endLine' => 183,
             'startColumn' => 28,
             'endColumn' => 62,
             'parameterIndex' => 0,
@@ -521,8 +558,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 173,
-            'endLine' => 173,
+            'startLine' => 183,
+            'endLine' => 183,
             'startColumn' => 65,
             'endColumn' => 80,
             'parameterIndex' => 1,
@@ -547,8 +584,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 173,
-            'endLine' => 173,
+            'startLine' => 183,
+            'endLine' => 183,
             'startColumn' => 83,
             'endColumn' => 112,
             'parameterIndex' => 2,
@@ -569,8 +606,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 173,
-        'endLine' => 192,
+        'startLine' => 183,
+        'endLine' => 202,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -608,8 +645,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 194,
-            'endLine' => 194,
+            'startLine' => 204,
+            'endLine' => 204,
             'startColumn' => 29,
             'endColumn' => 44,
             'parameterIndex' => 0,
@@ -630,8 +667,98 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 194,
-        'endLine' => 204,
+        'startLine' => 204,
+        'endLine' => 214,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+        'declaringClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'implementingClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'currentClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'aliasName' => NULL,
+      ),
+      'bulkUpdate' => 
+      array (
+        'name' => 'bulkUpdate',
+        'parameters' => 
+        array (
+          'request' => 
+          array (
+            'name' => 'request',
+            'default' => NULL,
+            'type' => 
+            array (
+              'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+              'data' => 
+              array (
+                'name' => 'Illuminate\\Http\\Request',
+                'isIdentifier' => false,
+              ),
+            ),
+            'isVariadic' => false,
+            'byRef' => false,
+            'isPromoted' => false,
+            'attributes' => 
+            array (
+            ),
+            'startLine' => 220,
+            'endLine' => 220,
+            'startColumn' => 32,
+            'endColumn' => 47,
+            'parameterIndex' => 0,
+            'isOptional' => false,
+          ),
+          'action' => 
+          array (
+            'name' => 'action',
+            'default' => NULL,
+            'type' => 
+            array (
+              'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+              'data' => 
+              array (
+                'name' => 'App\\Domain\\Pricing\\Actions\\SetProductPricesAction',
+                'isIdentifier' => false,
+              ),
+            ),
+            'isVariadic' => false,
+            'byRef' => false,
+            'isPromoted' => false,
+            'attributes' => 
+            array (
+            ),
+            'startLine' => 220,
+            'endLine' => 220,
+            'startColumn' => 50,
+            'endColumn' => 79,
+            'parameterIndex' => 1,
+            'isOptional' => false,
+          ),
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Http\\JsonResponse',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Mise à jour des tarifs en masse : variation en % sur un type de prix,
+ * filtrée par catégorie. `apply=false` = prévisualisation seule.
+ */',
+        'startLine' => 220,
+        'endLine' => 266,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -665,8 +792,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 206,
-        'endLine' => 224,
+        'startLine' => 268,
+        'endLine' => 286,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

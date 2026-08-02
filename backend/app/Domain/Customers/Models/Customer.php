@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Customers\Models;
 
+use App\Domain\Pricing\Models\PriceType;
+use App\Domain\Warehouses\Models\Warehouse;
+use App\Models\User;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -21,6 +25,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $address
  * @property string|null $city
  * @property string|null $ice
+ * @property int|null $price_type_id
+ * @property int|null $seller_id
+ * @property int|null $warehouse_id
  * @property float $credit_limit
  * @property float $balance
  * @property bool $is_blocked
@@ -42,6 +49,9 @@ class Customer extends Model
         'address',
         'city',
         'ice',
+        'price_type_id',
+        'seller_id',
+        'warehouse_id',
         'credit_limit',
         'balance',
         'is_blocked',
@@ -74,5 +84,35 @@ class Customer extends Model
     public function availableCredit(): float
     {
         return round((float) $this->credit_limit - (float) $this->balance, 2);
+    }
+
+    /**
+     * Type de prix appliqué par défaut (détail / demi-gros / gros).
+     *
+     * @return BelongsTo<PriceType, $this>
+     */
+    public function priceType(): BelongsTo
+    {
+        return $this->belongsTo(PriceType::class);
+    }
+
+    /**
+     * Vendeur référent.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    /**
+     * Lieu de rattachement.
+     *
+     * @return BelongsTo<Warehouse, $this>
+     */
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 }

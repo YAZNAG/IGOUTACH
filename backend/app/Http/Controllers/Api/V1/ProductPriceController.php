@@ -33,6 +33,16 @@ final class ProductPriceController extends Controller
         private readonly ProductCostResolver $cost,
     ) {}
 
+    /**
+     * Référentiel des types de prix (pour les selects).
+     */
+    public function priceTypes(): JsonResponse
+    {
+        return response()->json(['data' => PriceType::query()
+            ->orderBy('rank')
+            ->get(['id', 'code', 'name'])]);
+    }
+
     public function list(Request $request): JsonResponse
     {
         $types = PriceType::query()->orderBy('rank')->get();
@@ -201,6 +211,58 @@ final class ProductPriceController extends Controller
         ])->all();
 
         return response()->json(['data' => $history]);
+    }
+
+    /**
+     * Mise à jour des tarifs en masse : variation en % sur un type de prix,
+     * filtrée par catégorie. `apply=false` = prévisualisation seule.
+     */
+    public function bulkUpdate(Request $request, SetProductPricesAction $action): JsonResponse
+    {
+        /** @var array{price_type_code: string, percent: float, category_id?: int|null, apply?: bool} $data */
+        $data = $request->validate([
+            'price_type_code' => ['required', 'string', 'exists:price_types,code'],
+            'percent' => ['required', 'numeric', 'between:-90,500'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'apply' => ['sometimes', 'boolean'],
+        ]);
+
+        $type = PriceType::query()->where('code', $data['price_type_code'])->firstOrFail();
+        $factor = 1 + ((float) $data['percent']) / 100;
+
+        $prices = ProductPrice::query()
+            ->with('product:id,sku,name,category_id')
+            ->where('price_type_id', $type->id)
+            ->whereNull('valid_to')
+            ->when(($data['category_id'] ?? 0) > 0, fn ($q) => $q->whereHas(
+                'product',
+                fn ($p) => $p->where('category_id', $data['category_id']),
+            ))
+            ->get();
+
+        $preview = $prices->map(fn (ProductPrice $price): array => [
+            'product_id' => $price->product_id,
+            'sku' => $price->product?->sku,
+            'name' => $price->product?->name,
+            'current' => (float) $price->amount,
+            'next' => round((float) $price->amount * $factor, 2),
+        ])->values();
+
+        if (! ($data['apply'] ?? false)) {
+            return response()->json(['data' => ['count' => $preview->count(), 'rows' => $preview->take(200)->all(), 'applied' => false]]);
+        }
+
+        $userId = $request->user()?->id;
+        foreach ($prices as $price) {
+            $action->execute($price->product_id, [new PriceLevelData(
+                priceTypeCode: $type->code,
+                amount: round((float) $price->amount * $factor, 2),
+                minMarginPercent: (float) $price->min_margin_percent,
+                minQuantity: $price->min_quantity,
+            )], $userId);
+        }
+
+        return response()->json(['data' => ['count' => $preview->count(), 'rows' => [], 'applied' => true]]);
     }
 
     public function belowFloor(): JsonResponse

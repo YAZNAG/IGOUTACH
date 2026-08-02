@@ -33,6 +33,9 @@ final class UpdateCustomerRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:120'],
             'ice' => ['nullable', 'string', 'max:30'],
+            'price_type_id' => ['nullable', 'integer', 'exists:price_types,id'],
+            'seller_id' => ['nullable', 'integer', 'exists:users,id'],
+            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['boolean'],
         ];

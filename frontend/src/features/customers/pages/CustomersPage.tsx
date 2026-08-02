@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { Ban, CircleCheck, CreditCard, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
@@ -6,8 +7,11 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
+import { useWarehouseOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
+import { api } from '@/lib/api'
 import { formatNumber } from '@/lib/utils'
 import type { Customer, CustomerInput } from '../api/customersApi'
 import {
@@ -56,6 +60,29 @@ export function CustomersPage() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [editing, setEditing] = useState<Customer | null>(null)
   const [form, setForm] = useState<CustomerInput>(EMPTY)
+
+  // Référentiels des valeurs par défaut du client.
+  const { data: priceTypes = [] } = useQuery<{ id: number; code: string; name: string }[]>({
+    queryKey: ['price-type-options'],
+    queryFn: async () => {
+      const { data: r } = await api.get<{ data: { id: number; code: string; name: string }[] }>('/price-types')
+      return r.data
+    },
+    staleTime: 5 * 60_000,
+  })
+  const { data: warehouses = [] } = useWarehouseOptions()
+  const canPickSeller = can('user.view')
+  const { data: sellers = [] } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['seller-options'],
+    queryFn: async () => {
+      const { data: r } = await api.get<{ data: { id: number; name: string }[] }>('/users', {
+        params: { per_page: 100 },
+      })
+      return r.data
+    },
+    enabled: canPickSeller && panelOpen,
+    staleTime: 5 * 60_000,
+  })
   const [deleting, setDeleting] = useState<Customer | null>(null)
   const [creditFor, setCreditFor] = useState<Customer | null>(null)
   const [creditValue, setCreditValue] = useState(0)
@@ -89,6 +116,9 @@ export function CustomersPage() {
       address: c.address ?? '',
       city: c.city ?? '',
       ice: c.ice ?? '',
+      price_type_id: c.price_type_id,
+      seller_id: c.seller_id,
+      warehouse_id: c.warehouse_id,
       notes: c.notes ?? '',
       is_active: c.is_active,
     })
@@ -157,6 +187,44 @@ export function CustomersPage() {
               </Field>
               <Field label="ICE (entreprise)" htmlFor="ice">
                 <Input id="ice" value={form.ice ?? ''} onChange={(e) => set('ice', e.target.value)} />
+              </Field>
+              <Field label="Type de prix par défaut" htmlFor="price-type">
+                <Select
+                  id="price-type"
+                  value={form.price_type_id ?? ''}
+                  onChange={(e) => set('price_type_id', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">— Détail (par défaut) —</option>
+                  {priceTypes.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </Select>
+              </Field>
+              {canPickSeller ? (
+                <Field label="Vendeur référent" htmlFor="seller">
+                  <Select
+                    id="seller"
+                    value={form.seller_id ?? ''}
+                    onChange={(e) => set('seller_id', e.target.value ? Number(e.target.value) : null)}
+                  >
+                    <option value="">— Aucun —</option>
+                    {sellers.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </Select>
+                </Field>
+              ) : null}
+              <Field label="Lieu de rattachement" htmlFor="cust-warehouse">
+                <Select
+                  id="cust-warehouse"
+                  value={form.warehouse_id ?? ''}
+                  onChange={(e) => set('warehouse_id', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">— Aucun —</option>
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
+                  ))}
+                </Select>
               </Field>
               <div className="flex items-center gap-6 self-end pb-2">
                 <label className="flex items-center gap-2 text-sm text-ink">

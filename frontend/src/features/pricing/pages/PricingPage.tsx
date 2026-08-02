@@ -1,4 +1,4 @@
-import { Download, FileText } from 'lucide-react'
+import { AlertTriangle, Download, FileText, Percent } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -9,8 +9,9 @@ import { paginationInfo, SortableTh, type SortState } from '@/components/ui/Sort
 import { usePermission } from '@/hooks/usePermission'
 import { formatNumber } from '@/lib/utils'
 import { exportPrices, type PriceCell, type PriceLevelInput, type PriceListItem } from '../api/pricingApi'
+import { BulkUpdatePanel } from '../components/BulkUpdatePanel'
 import { PriceLevelsForm } from '../components/PriceLevelsForm'
-import { usePriceList, usePricingCategories, useProductPrices, useUpdateProductPrices } from '../hooks'
+import { useBelowFloor, usePriceList, usePricingCategories, useProductPrices, useUpdateProductPrices } from '../hooks'
 
 function PriceValue({ cell }: { cell: PriceCell }) {
   if (cell.amount === null) {
@@ -34,6 +35,8 @@ export function PricingPage() {
   const [perPage, setPerPage] = useState(20)
   const [sort, setSort] = useState<SortState>({ sort: 'name', direction: 'asc' })
   const [editing, setEditing] = useState<PriceListItem | null>(null)
+  const [showBulk, setShowBulk] = useState(false)
+  const [showAlerts, setShowAlerts] = useState(false)
 
   const { data: categories = [] } = usePricingCategories()
   const { data, isLoading } = usePriceList({
@@ -50,6 +53,7 @@ export function PricingPage() {
   const items = data?.data ?? []
   const meta = data?.meta
   const categoryName = (id: number) => categories.find((c) => c.id === id)?.name ?? '—'
+  const belowFloor = useBelowFloor(showAlerts)
 
   function handleSubmit(prices: PriceLevelInput[]) {
     if (!editing) return
@@ -64,6 +68,16 @@ export function PricingPage() {
           <p className="text-sm text-muted">Trois niveaux : détail, demi-gros, gros — quantités configurables par article.</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowAlerts((v) => !v)}>
+            <AlertTriangle className="h-4 w-4" />
+            Alertes marge
+          </Button>
+          {can('price.bulk_update') ? (
+            <Button variant="outline" size="sm" onClick={() => setShowBulk((v) => !v)}>
+              <Percent className="h-4 w-4" />
+              MAJ en masse
+            </Button>
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -82,6 +96,42 @@ export function PricingPage() {
           </Button>
         </div>
       </div>
+
+      {showBulk ? <BulkUpdatePanel categories={categories} onClose={() => setShowBulk(false)} /> : null}
+
+      {showAlerts ? (
+        <Card>
+          <CardHeader title="Prix sous le plancher de marge" hint={belowFloor.data ? `${belowFloor.data.length} alerte(s)` : undefined} />
+          <CardBody className="p-0">
+            {belowFloor.isLoading ? (
+              <p className="p-5 text-sm text-muted">Chargement…</p>
+            ) : (belowFloor.data ?? []).length === 0 ? (
+              <p className="p-5 text-sm text-muted">Aucun prix sous le plancher — marges respectées.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line text-left text-muted">
+                    <th className="px-5 py-3 font-medium">Référence</th>
+                    <th className="px-5 py-3 font-medium">Article</th>
+                    <th className="px-5 py-3 font-medium">Niveau</th>
+                    <th className="px-5 py-3 text-right font-medium">Prix actuel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(belowFloor.data ?? []).map((r) => (
+                    <tr key={`${r.product_id}-${r.price_type}`} className="border-b border-line last:border-0">
+                      <td className="mono px-5 py-3 text-muted">{r.sku}</td>
+                      <td className="px-5 py-3 text-ink">{r.name}</td>
+                      <td className="px-5 py-3"><Badge tone="warn">{r.price_type}</Badge></td>
+                      <td className="tabular px-5 py-3 text-right font-medium text-bad">{formatNumber(Number(r.amount))} DH</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardBody>
+        </Card>
+      ) : null}
 
       {editing ? (
         <Card>

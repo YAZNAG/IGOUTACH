@@ -1,4 +1,4 @@
-import { Download, FileText, Plus, Trash2, Upload } from 'lucide-react'
+import { Download, FileText, Plus, Tag, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -19,6 +19,8 @@ import {
   type ImportResult,
 } from '../api/articlesApi'
 import { ArticleForm } from '../components/ArticleForm'
+import { ArticleSheet } from '../components/ArticleSheet'
+import { LabelsPanel } from '../components/LabelsPanel'
 import {
   useArticles,
   useBulkDeleteArticles,
@@ -42,6 +44,8 @@ export function ArticlesPage() {
   const canCreate = can('product.create')
   const canUpdate = can('product.update')
   const canDelete = can('product.delete')
+  const canLabels = can('product.labels_print')
+  const canSelect = canDelete || canLabels
   const canImport = can('product.import')
 
   const [search, setSearch] = useState('')
@@ -77,6 +81,8 @@ export function ArticlesPage() {
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkDeleteResult | null>(null)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
+  const [sheet, setSheet] = useState<Product | null>(null)
+  const [labelsOpen, setLabelsOpen] = useState(false)
 
   const articles = data?.data ?? []
   const meta = data?.meta
@@ -235,19 +241,46 @@ export function ArticlesPage() {
         </Card>
       ) : null}
 
-      {canDelete && selected.size > 0 ? (
+      {canSelect && selected.size > 0 ? (
         <div className="flex items-center justify-between rounded-lg border border-sky bg-sky-soft px-4 py-2">
           <span className="text-sm font-medium text-navy">{selected.size} sélectionné(s)</span>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
               Annuler
             </Button>
-            <Button size="sm" className="bg-bad hover:bg-bad" onClick={() => setBulkOpen(true)}>
-              <Trash2 className="h-4 w-4" />
-              Supprimer la sélection
-            </Button>
+            {canLabels ? (
+              <Button variant="outline" size="sm" onClick={() => setLabelsOpen(true)}>
+                <Tag className="h-4 w-4" />
+                Étiquettes
+              </Button>
+            ) : null}
+            {canDelete ? (
+              <Button size="sm" className="bg-bad hover:bg-bad" onClick={() => setBulkOpen(true)}>
+                <Trash2 className="h-4 w-4" />
+                Supprimer la sélection
+              </Button>
+            ) : null}
           </div>
         </div>
+      ) : null}
+
+      {labelsOpen && selected.size > 0 ? (
+        <LabelsPanel
+          articles={articles
+            .filter((a) => selected.has(a.id))
+            .map((a) => ({ id: a.id, sku: a.sku, name: a.name, barcode: a.barcode, sale_price: Number(a.sale_price) }))}
+          onClose={() => setLabelsOpen(false)}
+        />
+      ) : null}
+
+      {sheet !== null ? (
+        <ArticleSheet
+          productId={sheet.id}
+          sku={sheet.sku}
+          name={sheet.name}
+          isSerialized={sheet.is_serialized}
+          onClose={() => setSheet(null)}
+        />
       ) : null}
 
       <Card>
@@ -303,7 +336,7 @@ export function ArticlesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-muted">
-                  {canDelete ? (
+                  {canSelect ? (
                     <th className="w-10 px-5 py-3">
                       <input
                         type="checkbox"
@@ -336,7 +369,7 @@ export function ArticlesPage() {
                 ) : (
                   articles.map((a) => (
                     <tr key={a.id} className="border-b border-line last:border-0">
-                      {canDelete ? (
+                      {canSelect ? (
                         <td className="px-5 py-3">
                           <input
                             type="checkbox"
@@ -359,6 +392,9 @@ export function ArticlesPage() {
                       {canUpdate || canDelete ? (
                         <td className="px-5 py-3">
                           <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => setSheet(a)}>
+                              Fiche
+                            </Button>
                             {canUpdate ? (
                               <Button
                                 variant="ghost"

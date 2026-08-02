@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Purchasing\Models\Supplier.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Purchasing\Models\Supplier
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-2e4064d939e71b14fd8e4be748fbf8b3a758caf50002e7617b6f96fe6a884767',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-aa7993b205c536f4a095971468a3777c9c1a98a5d91cc69aace53e6819c9774e',
    'data' => 
   array (
     'locatedSource' => 
@@ -40,8 +40,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     'attributes' => 
     array (
     ),
-    'startLine' => 28,
-    'endLine' => 63,
+    'startLine' => 31,
+    'endLine' => 86,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -70,20 +70,20 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
           'code' => '[\'code\', \'name\', \'contact_name\', \'phone\', \'email\', \'address\', \'city\', \'ice\', \'rc\', \'payment_terms_days\', \'notes\', \'is_active\']',
           'attributes' => 
           array (
-            'startLine' => 33,
-            'endLine' => 46,
-            'startTokenPos' => 68,
-            'startFilePos' => 849,
-            'endTokenPos' => 106,
-            'endFilePos' => 1077,
+            'startLine' => 56,
+            'endLine' => 69,
+            'startTokenPos' => 163,
+            'startFilePos' => 1531,
+            'endTokenPos' => 201,
+            'endFilePos' => 1759,
           ),
         ),
         'docComment' => NULL,
         'attributes' => 
         array (
         ),
-        'startLine' => 33,
-        'endLine' => 46,
+        'startLine' => 56,
+        'endLine' => 69,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -96,6 +96,82 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'immediateMethods' => 
     array (
+      'contacts' => 
+      array (
+        'name' => 'contacts',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * @return HasMany<SupplierContact, $this>
+ */',
+        'startLine' => 39,
+        'endLine' => 42,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Purchasing\\Models',
+        'declaringClassName' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+        'implementingClassName' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+        'currentClassName' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+        'aliasName' => NULL,
+      ),
+      'products' => 
+      array (
+        'name' => 'products',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Articles référencés chez ce fournisseur.
+ *
+ * @return BelongsToMany<Product, $this>
+ */',
+        'startLine' => 49,
+        'endLine' => 54,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Purchasing\\Models',
+        'declaringClassName' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+        'implementingClassName' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+        'currentClassName' => 'App\\Domain\\Purchasing\\Models\\Supplier',
+        'aliasName' => NULL,
+      ),
       'casts' => 
       array (
         'name' => 'casts',
@@ -116,8 +192,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 48,
-        'endLine' => 54,
+        'startLine' => 71,
+        'endLine' => 77,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -153,8 +229,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return Factory<self>
  */',
-        'startLine' => 59,
-        'endLine' => 62,
+        'startLine' => 82,
+        'endLine' => 85,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
