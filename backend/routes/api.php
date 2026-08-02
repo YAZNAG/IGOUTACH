@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\StockController;
 use App\Http\Controllers\Api\V1\SupplierContactController;
 use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\Api\V1\SupplierCreditController;
 use App\Http\Controllers\Api\V1\SupplierProductController;
 use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\TransferController;
@@ -224,6 +225,11 @@ Route::prefix('v1')->group(function () {
         Route::get('goods-receipts', [GoodsReceiptController::class, 'index'])->middleware('can:receipt.view');
         Route::get('goods-receipts/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->middleware('can:receipt.view');
         Route::get('goods-receipts/{goodsReceipt}/pdf', [GoodsReceiptController::class, 'pdf'])->middleware('can:receipt.view');
+
+        // Crédits fournisseurs : reste à payer + règlements (total ou partiel)
+        Route::get('supplier-credits', [SupplierCreditController::class, 'index'])->middleware('can:receipt.view');
+        Route::get('goods-receipts/{goodsReceipt}/payments', [SupplierCreditController::class, 'payments'])->middleware('can:receipt.view');
+        Route::post('goods-receipts/{goodsReceipt}/pay', [SupplierCreditController::class, 'pay'])->middleware('can:receipt.pay');
 
         // Ventes — devis & factures
         Route::get('sales', [SaleController::class, 'index'])->middleware('can:sale.create');

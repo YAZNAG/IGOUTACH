@@ -26,7 +26,20 @@ import {
   type UpdatePurchaseOrderInput,
 } from './api/purchaseOrdersApi'
 
+import {
+  fetchPaymentMethods,
+  fetchReceiptPayments,
+  fetchSupplierCredits,
+  paySupplierCredit,
+  type PaymentMethodOption,
+  type PaySupplierCreditInput,
+  type SupplierCreditFilters,
+  type SupplierCredits,
+  type SupplierPaymentRow,
+} from './api/supplierCreditsApi'
+
 const KEY = ['purchase-orders'] as const
+const CREDITS_KEY = ['supplier-credits'] as const
 const DETAIL_KEY = ['purchase-orders', 'detail'] as const
 const PRODUCTS_KEY = ['purchase-orders', 'products'] as const
 const BELOW_THRESHOLD_KEY = ['purchase-orders', 'below-threshold'] as const
@@ -117,6 +130,43 @@ export function useGoodsReceipt(id: number) {
     queryKey: [...RECEIPT_DETAIL_KEY, id],
     queryFn: () => fetchGoodsReceipt(id),
     enabled: !!id,
+  })
+}
+
+export function useSupplierCredits(filters: SupplierCreditFilters) {
+  return useQuery<SupplierCredits>({
+    queryKey: [...CREDITS_KEY, filters],
+    queryFn: () => fetchSupplierCredits(filters),
+  })
+}
+
+export function usePaymentMethods() {
+  return useQuery<PaymentMethodOption[]>({
+    queryKey: ['payment-method-options'],
+    queryFn: fetchPaymentMethods,
+    staleTime: 5 * 60_000,
+  })
+}
+
+export function useReceiptPayments(receiptId: number | null) {
+  return useQuery<SupplierPaymentRow[]>({
+    queryKey: ['receipt-payments', receiptId],
+    queryFn: () => fetchReceiptPayments(receiptId as number),
+    enabled: receiptId !== null,
+  })
+}
+
+export function usePaySupplierCredit() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ receiptId, input }: { receiptId: number; input: PaySupplierCreditInput }) =>
+      paySupplierCredit(receiptId, input),
+    onSuccess: (_result, { receiptId }) => {
+      queryClient.invalidateQueries({ queryKey: CREDITS_KEY })
+      queryClient.invalidateQueries({ queryKey: RECEIPTS_KEY })
+      queryClient.invalidateQueries({ queryKey: RECEIPT_DETAIL_KEY })
+      queryClient.invalidateQueries({ queryKey: ['receipt-payments', receiptId] })
+    },
   })
 }
 

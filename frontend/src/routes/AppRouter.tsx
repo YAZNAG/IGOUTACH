@@ -21,6 +21,7 @@ import {
   PurchaseOrdersListPage,
   PurchasesPage,
   ReceivePurchaseOrderPage,
+  SupplierCreditsPage,
 } from '@/features/purchases'
 import { SalesPage } from '@/features/sales'
 import { TransfersPage } from '@/features/transfers'
@@ -67,6 +68,7 @@ export const router = createBrowserRouter([
           { path: '/purchase-orders/:id/receive', element: <ReceivePurchaseOrderPage /> },
           { path: '/goods-receipts', element: <GoodsReceiptsListPage /> },
           { path: '/goods-receipts/:id', element: <GoodsReceiptDetailPage /> },
+          { path: '/supplier-credits', element: <SupplierCreditsPage /> },
           { path: '/ventes', element: <SalesPage /> },
           { path: '/reglements', element: <PaymentsPage /> },
           { path: '/caisse', element: <CashPage /> },
