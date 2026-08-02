@@ -32,14 +32,23 @@ final class InventoryResource extends JsonResource
             'status' => $this->status,
             'note' => $this->note,
             'lines_count' => $this->whenCounted('lines'),
-            'lines' => $this->whenLoaded('lines', fn () => $this->lines->map(fn (InventoryLine $line): array => [
-                'product_id' => $line->product_id,
-                'sku' => $line->product?->sku,
-                'name' => $line->product?->name,
-                'system_quantity' => $line->system_quantity,
-                'counted_quantity' => $line->counted_quantity,
-                'difference' => $line->difference,
-            ])->all()),
+            'lines' => $this->whenLoaded('lines', function () use ($request) {
+                $canViewCost = $request->user()?->can('product.view_cost_price') ?? false;
+
+                return $this->lines->map(fn (InventoryLine $line): array => [
+                    'product_id' => $line->product_id,
+                    'sku' => $line->product?->sku,
+                    'name' => $line->product?->name,
+                    'system_quantity' => $line->system_quantity,
+                    'counted_quantity' => $line->counted_quantity,
+                    'difference' => $line->difference,
+                    'reason' => $line->reason,
+                    // Valorisation de l'écart au coût d'achat (CMUP simplifié).
+                    'variance_value' => $canViewCost && $line->product !== null
+                        ? round($line->difference * (float) $line->product->cost_price, 2)
+                        : null,
+                ])->all();
+            }),
         ];
     }
 }

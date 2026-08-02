@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Stock\Models\InventoryLine.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Stock\Models\InventoryLine
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-64c7efe86421aa22ff86d3e5eb8167e104f33bc5945f10af6b76634beb253df8',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-ddc72c5d3a5f0d6e4113e8165a8fd8f4faef6916162b6685f18451a5e930e526',
    'data' => 
   array (
     'locatedSource' => 
@@ -29,12 +29,13 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * @property int $counted_quantity
  * @property int $system_quantity
  * @property int $difference
+ * @property string|null $reason
  */',
     'attributes' => 
     array (
     ),
-    'startLine' => 19,
-    'endLine' => 53,
+    'startLine' => 20,
+    'endLine' => 55,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -58,23 +59,23 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'type' => NULL,
         'default' => 
         array (
-          'code' => '[\'inventory_id\', \'product_id\', \'counted_quantity\', \'system_quantity\', \'difference\']',
+          'code' => '[\'inventory_id\', \'product_id\', \'counted_quantity\', \'system_quantity\', \'difference\', \'reason\']',
           'attributes' => 
           array (
-            'startLine' => 21,
-            'endLine' => 27,
+            'startLine' => 22,
+            'endLine' => 29,
             'startTokenPos' => 48,
-            'startFilePos' => 452,
-            'endTokenPos' => 65,
-            'endFilePos' => 581,
+            'startFilePos' => 485,
+            'endTokenPos' => 68,
+            'endFilePos' => 632,
           ),
         ),
         'docComment' => NULL,
         'attributes' => 
         array (
         ),
-        'startLine' => 21,
-        'endLine' => 27,
+        'startLine' => 22,
+        'endLine' => 29,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -107,8 +108,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 29,
-        'endLine' => 36,
+        'startLine' => 31,
+        'endLine' => 38,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -144,8 +145,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Inventory, $this>
  */',
-        'startLine' => 41,
-        'endLine' => 44,
+        'startLine' => 43,
+        'endLine' => 46,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -181,8 +182,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Product, $this>
  */',
-        'startLine' => 49,
-        'endLine' => 52,
+        'startLine' => 51,
+        'endLine' => 54,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

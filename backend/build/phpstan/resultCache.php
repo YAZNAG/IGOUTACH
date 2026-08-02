@@ -3532,6 +3532,111 @@ return [
       ),
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+        1 => 'casts',
+        2 => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+        1 => 'customer',
+        2 => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+        1 => 'user',
+        2 => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Expenses\\Models\\Expense',
+        1 => 'casts',
+        2 => 'App\\Domain\\Expenses\\Models\\Expense',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Expenses\\Models\\Expense',
+        1 => 'category',
+        2 => 'App\\Domain\\Expenses\\Models\\Expense',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Expenses\\Models\\Expense',
+        1 => 'warehouse',
+        2 => 'App\\Domain\\Expenses\\Models\\Expense',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'App\\Domain\\Expenses\\Models\\Expense',
+        1 => 'user',
+        2 => 'App\\Domain\\Expenses\\Models\\Expense',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\ExpenseCategory.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+        1 => 'casts',
+        2 => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+        1 => 'expenses',
+        2 => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'hasmany',
+        ),
+      ),
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Actions\\SetProductPricesAction.php' => 
   array (
     'PHPStan\\Rules\\DeadCode\\ConstructorWithoutImpurePointsCollector' => 
@@ -3698,6 +3803,129 @@ return [
       ),
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\ConstructorWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+        1 => 
+        array (
+        ),
+      ),
+    ),
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 58,
+      ),
+      1 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 76,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        1 => 'casts',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        1 => 'supplier',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        1 => 'warehouse',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        1 => 'lines',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'hasmany',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        1 => 'casts',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        1 => 'purchaseOrder',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        1 => 'product',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        1 => 'remaining',
+        2 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        3 => 
+        array (
+        ),
+      ),
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php' => 
   array (
     'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
@@ -3740,6 +3968,298 @@ return [
         0 => 'App\\Domain\\Purchasing\\Models\\SupplierContact',
         1 => 'supplier',
         2 => 'App\\Domain\\Purchasing\\Models\\SupplierContact',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\ConstructorWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Actions\\CancelSaleAction',
+        1 => 
+        array (
+        ),
+      ),
+    ),
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+        ),
+        1 => 'record',
+        2 => 48,
+      ),
+      1 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 59,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\ConstructorWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Actions\\ConfirmSaleAction',
+        1 => 
+        array (
+        ),
+      ),
+    ),
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+        ),
+        1 => 'record',
+        2 => 69,
+      ),
+      1 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 80,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\ConstructorWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+        1 => 
+        array (
+        ),
+      ),
+    ),
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+        ),
+        1 => 'record',
+        2 => 57,
+      ),
+      1 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 72,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\CashSession',
+        1 => 'casts',
+        2 => 'App\\Domain\\Sales\\Models\\CashSession',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\CashSession',
+        1 => 'warehouse',
+        2 => 'App\\Domain\\Sales\\Models\\CashSession',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\CashSession',
+        1 => 'opener',
+        2 => 'App\\Domain\\Sales\\Models\\CashSession',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\CashSession',
+        1 => 'payments',
+        2 => 'App\\Domain\\Sales\\Models\\CashSession',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'hasmany',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Payment',
+        1 => 'casts',
+        2 => 'App\\Domain\\Sales\\Models\\Payment',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Payment',
+        1 => 'customer',
+        2 => 'App\\Domain\\Sales\\Models\\Payment',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Payment',
+        1 => 'sale',
+        2 => 'App\\Domain\\Sales\\Models\\Payment',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Payment',
+        1 => 'method',
+        2 => 'App\\Domain\\Sales\\Models\\Payment',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      4 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Payment',
+        1 => 'cashSession',
+        2 => 'App\\Domain\\Sales\\Models\\Payment',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Sale',
+        1 => 'casts',
+        2 => 'App\\Domain\\Sales\\Models\\Sale',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Sale',
+        1 => 'customer',
+        2 => 'App\\Domain\\Sales\\Models\\Sale',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Sale',
+        1 => 'warehouse',
+        2 => 'App\\Domain\\Sales\\Models\\Sale',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Sale',
+        1 => 'user',
+        2 => 'App\\Domain\\Sales\\Models\\Sale',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      4 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\Sale',
+        1 => 'lines',
+        2 => 'App\\Domain\\Sales\\Models\\Sale',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'hasmany',
+        ),
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\SaleLine',
+        1 => 'casts',
+        2 => 'App\\Domain\\Sales\\Models\\SaleLine',
+        3 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\SaleLine',
+        1 => 'sale',
+        2 => 'App\\Domain\\Sales\\Models\\SaleLine',
+        3 => 
+        array (
+          0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'App\\Domain\\Sales\\Models\\SaleLine',
+        1 => 'product',
+        2 => 'App\\Domain\\Sales\\Models\\SaleLine',
         3 => 
         array (
           0 => 'm' . "\0" . 'illuminate\\database\\eloquent\\model' . "\0" . 'belongsto',
@@ -4508,6 +5028,21 @@ return [
       ),
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 101,
+      ),
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php' => 
   array (
     'PHPStan\\Rules\\DeadCode\\PossiblyPureStaticCallCollector' => 
@@ -4547,6 +5082,21 @@ return [
       ),
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 112,
+      ),
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php' => 
   array (
     'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
@@ -4558,7 +5108,22 @@ return [
           0 => 'App\\Domain\\Stock\\Actions\\ApproveInventoryAction',
         ),
         1 => 'execute',
-        2 => 96,
+        2 => 142,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 89,
       ),
     ),
   ),
@@ -4705,6 +5270,39 @@ return [
       ),
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+        ),
+        1 => 'execute',
+        2 => 134,
+      ),
+      1 => 
+      array (
+        0 => 
+        array (
+          0 => 'Illuminate\\Database\\Eloquent\\Model',
+        ),
+        1 => 'update',
+        2 => 148,
+      ),
+    ),
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureStaticCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'Illuminate\\Database\\Connection',
+        1 => 'transaction',
+        2 => 169,
+      ),
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php' => 
   array (
     'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
@@ -4717,6 +5315,30 @@ return [
         ),
         1 => 'execute',
         2 => 86,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Sales\\Actions\\ConfirmSaleAction',
+        ),
+        1 => 'execute',
+        2 => 235,
+      ),
+      1 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Sales\\Actions\\CancelSaleAction',
+        ),
+        1 => 'execute',
+        2 => 246,
       ),
     ),
   ),
@@ -4841,6 +5463,18 @@ return [
       ),
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureStaticCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 'Illuminate\\Database\\Connection',
+        1 => 'transaction',
+        2 => 391,
+      ),
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php' => 
   array (
     'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
@@ -4899,6 +5533,21 @@ return [
         0 => 'Illuminate\\Database\\Connection',
         1 => 'transaction',
         2 => 44,
+      ),
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php' => 
+  array (
+    'PHPStan\\Rules\\DeadCode\\PossiblyPureMethodCallCollector' => 
+    array (
+      0 => 
+      array (
+        0 => 
+        array (
+          0 => 'App\\Domain\\Stock\\Actions\\ReceiveTransferAction',
+        ),
+        1 => 'execute',
+        2 => 146,
       ),
     ),
   ),
@@ -5781,7 +6430,7 @@ return [
       array (
         0 => 'Illuminate\\Database\\Eloquent\\Builder',
         1 => 'updateOrCreate',
-        2 => 130,
+        2 => 135,
       ),
     ),
   ),
@@ -6535,27 +7184,32 @@ return [
       16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Actions\\SetProductPricesAction.php',
       17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Models\\ProductPrice.php',
       18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\ProductCostResolver.php',
-      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php',
-      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\InventoryLine.php',
-      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Stock.php',
-      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\StockMovement.php',
-      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferLine.php',
-      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Services\\StockOverviewService.php',
-      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductAttributeController.php',
-      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
-      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductImageController.php',
-      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
-      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
-      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
-      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateProductRequest.php',
-      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php',
-      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\ProductResource.php',
-      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Imports\\ArticlesImport.php',
-      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\ProductFactory.php',
-      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\CatalogImportSeeder.php',
-      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoPricingSeeder.php',
-      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoStockSeeder.php',
+      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php',
+      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php',
+      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php',
+      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\InventoryLine.php',
+      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Stock.php',
+      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\StockMovement.php',
+      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferLine.php',
+      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Services\\StockOverviewService.php',
+      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductAttributeController.php',
+      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
+      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductImageController.php',
+      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
+      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
+      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateProductRequest.php',
+      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php',
+      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\ProductResource.php',
+      40 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Imports\\ArticlesImport.php',
+      41 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\ProductFactory.php',
+      42 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\CatalogImportSeeder.php',
+      43 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoPricingSeeder.php',
+      44 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoStockSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Catalog\\Models\\ProductAttribute.php' => 
@@ -6637,11 +7291,60 @@ return [
     'fileHash' => '21ef7a6f25a369bdf869d2b6592e1d4985fbd23c125cffee1d0ed44627832eb2',
     'dependentFiles' => 
     array (
-      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateCustomerRequest.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\CustomerFactory.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\CustomerSeeder.php',
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Services\\CustomerLedger.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateCustomerRequest.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\CustomerFactory.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\CustomerSeeder.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php' => 
+  array (
+    'fileHash' => '6d5328e54ab772d60835d361025b187ebb9057a3ce297a5d3d22b9f8325ec45a',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Services\\CustomerLedger.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Services\\CustomerLedger.php' => 
+  array (
+    'fileHash' => 'e88c552a43800584e947deaad076c5dc2affb20bdeb1c49962902327ae7194d1',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php' => 
+  array (
+    'fileHash' => 'b4b144ce8087bf4b7dcffb106c4db3ad305ee8d416200432305db2c754ecedd2',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\ExpenseCategory.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\ExpenseCategory.php' => 
+  array (
+    'fileHash' => 'e00f445f37972dbb5da2bb2646bdc7210d35bb3d5425345de9e7ea690cab18ee',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\ExpenseCategorySeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Actions\\SetProductPricesAction.php' => 
@@ -6660,7 +7363,8 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\MarginCalculator.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\PricingServiceProvider.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\PricingServiceProvider.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Contracts\\PriceResolverInterface.php' => 
@@ -6669,7 +7373,8 @@ return [
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\PricingServiceProvider.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\PricingServiceProvider.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface.php' => 
@@ -6703,6 +7408,7 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Contracts\\PriceResolverInterface.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Exceptions\\InvalidPriceOrderException.php' => 
@@ -6721,6 +7427,7 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Contracts\\PriceResolverInterface.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Models\\PriceType.php' => 
@@ -6773,7 +7480,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php' => 
   array (
-    'fileHash' => '9103125123d05ac867db9b547852118fd054411784a2492e7b56dccf2606fe7f',
+    'fileHash' => 'e027b147776074d2671579465b02ea03988626fc8aad13b110292a857fffe8cb',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\PricingServiceProvider.php',
@@ -6785,6 +7492,36 @@ return [
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php' => 
+  array (
+    'fileHash' => 'b1db33b339711f29c969c4b7c8aecb9d42575a9311075ed718ff7744c614c6d5',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php' => 
+  array (
+    'fileHash' => '016846f0bc970b6c40a9e9afee0b65c5efa9285c556ee24ec86fb512c2a19d27',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => 
+  array (
+    'fileHash' => 'b9eec9bbe268c35a5eb9a342bdd99dbfefcd696f2532fd8e0ca8969d5ab99799',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php' => 
@@ -6793,14 +7530,16 @@ return [
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Catalog\\Models\\Product.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\SupplierContact.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierController.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateSupplierRequest.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\SupplierResource.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\SupplierFactory.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\SupplierSeeder.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\SupplierContact.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateSupplierRequest.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\SupplierResource.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\SupplierFactory.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\SupplierSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\SupplierContact.php' => 
@@ -6811,6 +7550,74 @@ return [
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\Supplier.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php' => 
+  array (
+    'fileHash' => '41350d05f9b349a4f0ea7b64dc6e832d80291cfedcb7376ccada8652b3a38526',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php' => 
+  array (
+    'fileHash' => '55b4ea6021317c91b5534330b00e0649a4a450f0b730f2d6c8d7234a0db3ebdc',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php' => 
+  array (
+    'fileHash' => '1adeab614940af19a79bb34546862a27235eba4e00b38ec0652106cc61aa022a',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php' => 
+  array (
+    'fileHash' => 'b08e5d6e67b7de406d8b8f27a6a0622c8447885b2e7ccd2ffdd1ab25851cbfa0',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php' => 
+  array (
+    'fileHash' => 'e4657240c23ed4d127c4e207f4ddcd1ca63bbbbc70579dee99d4f100e4e6200f',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php' => 
+  array (
+    'fileHash' => '78a7a29b04d08001c0b948c2c5f5626c4eedcdba1d5a25e79514facffa1138e5',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php' => 
+  array (
+    'fileHash' => '32f38b520c623e2d7813ae9467e11695912e947dd97728bd892f8852849678ba',
+    'dependentFiles' => 
+    array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Settings\\Contracts\\SettingsRepositoryInterface.php' => 
@@ -6837,10 +7644,13 @@ return [
     'fileHash' => '2bdb2127da914e317f8d3e5175eefb94865d4d8b0074c89c7e56e09876a7d7a6',
     'dependentFiles' => 
     array (
-      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentMethodController.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SavePaymentMethodRequest.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\PaymentMethodResource.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\SettingsSeeder.php',
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentMethodController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SavePaymentMethodRequest.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\PaymentMethodResource.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\SettingsSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Settings\\Models\\Setting.php' => 
@@ -6881,6 +7691,7 @@ return [
     'fileHash' => 'aaec7f34bfc15073f862b22f5ad2c6969fe3849c8dce67902d3829fd6a902cc2',
     'dependentFiles' => 
     array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php' => 
@@ -6905,6 +7716,7 @@ return [
     'fileHash' => '99128d02cb1eff409f0bcace99ae9ba846da88d04eb1c7eaa1d2057a20f06cf0',
     'dependentFiles' => 
     array (
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php' => 
@@ -6946,15 +7758,20 @@ return [
     'fileHash' => '167b7c0c4b6779b4c0ed39f1ef66e82ebb5e72a9fcd43313825c063ec502c920',
     'dependentFiles' => 
     array (
-      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\StockServiceProvider.php',
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\StockServiceProvider.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\DTOs\\StockMovementData.php' => 
@@ -6962,15 +7779,20 @@ return [
     'fileHash' => '3ce101f9f3b79402cf0e2f62aeea02e8e7416b60a400055a8c2a7b25458f5c0e',
     'dependentFiles' => 
     array (
-      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\DTOs\\TransferData.php' => 
@@ -6979,6 +7801,7 @@ return [
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\DTOs\\TransferLineData.php' => 
@@ -6988,6 +7811,7 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\DTOs\\TransferData.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Events\\TransferDiscrepancyDetected.php' => 
@@ -7005,7 +7829,10 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Exceptions\\InvalidTransferException.php' => 
@@ -7015,6 +7842,7 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Inventory.php' => 
@@ -7030,7 +7858,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\InventoryLine.php' => 
   array (
-    'fileHash' => '64c7efe86421aa22ff86d3e5eb8167e104f33bc5945f10af6b76634beb253df8',
+    'fileHash' => 'ddc72c5d3a5f0d6e4113e8165a8fd8f4faef6916162b6685f18451a5e930e526',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Catalog\\Actions\\DeleteProductAction.php',
@@ -7072,21 +7900,25 @@ return [
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Catalog\\Actions\\DeleteProductAction.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
-      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php' => 
   array (
-    'fileHash' => '4df0f135d9767c868e50385fd02a3608f6099dde6cfd8d04ad22e6a2c2460597',
+    'fileHash' => 'b7f89bcea2f5f2fd236ad6448dd9203a1832ed135a6b26bc7d7c8348a5db8d0c',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
@@ -7094,6 +7926,7 @@ return [
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Events\\TransferDiscrepancyDetected.php',
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferLine.php',
       4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferLine.php' => 
@@ -7107,6 +7940,7 @@ return [
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Events\\TransferDiscrepancyDetected.php',
       4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php',
       5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferStatus.php' => 
@@ -7118,7 +7952,8 @@ return [
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php',
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\TransferStatusSeeder.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\TransferStatusSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php' => 
@@ -7209,28 +8044,38 @@ return [
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Access\\Actions\\WarehouseAssignmentGuard.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Catalog\\Models\\ProductSerial.php',
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\Customer.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Inventory.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Stock.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\StockMovement.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Services\\StockOverviewService.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Actions\\CreateWarehouseAction.php',
-      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Actions\\ToggleWarehouseAction.php',
-      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Actions\\UpdateWarehouseAction.php',
-      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Contracts\\WarehouseRepositoryInterface.php',
-      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\WarehouseType.php',
-      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Repositories\\WarehouseRepository.php',
-      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
-      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
-      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
-      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateWarehouseRequest.php',
-      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\AdminUserResource.php',
-      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php',
-      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php',
-      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\WarehouseResource.php',
-      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Models\\User.php',
-      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\WarehouseFactory.php',
-      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\WarehouseSeeder.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Inventory.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Stock.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\StockMovement.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Services\\StockOverviewService.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Actions\\CreateWarehouseAction.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Actions\\ToggleWarehouseAction.php',
+      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Actions\\UpdateWarehouseAction.php',
+      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Contracts\\WarehouseRepositoryInterface.php',
+      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\WarehouseType.php',
+      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Repositories\\WarehouseRepository.php',
+      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php',
+      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
+      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
+      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
+      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
+      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateWarehouseRequest.php',
+      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\AdminUserResource.php',
+      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php',
+      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php',
+      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\WarehouseResource.php',
+      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Models\\User.php',
+      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\WarehouseFactory.php',
+      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\WarehouseSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\WarehouseType.php' => 
@@ -7263,9 +8108,10 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php' => 
@@ -7285,6 +8131,13 @@ return [
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BrandController.php' => 
   array (
     'fileHash' => 'af747dca9ce97d22c7f0ae958effbbe85395cf36d72ee8d93df41b1ed6162961',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php' => 
+  array (
+    'fileHash' => 'e574ea9f36f95c02182f66cbadd0715355afdc3ef9757a7dd91a794839243d92',
     'dependentFiles' => 
     array (
     ),
@@ -7317,9 +8170,16 @@ return [
     array (
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php' => 
+  array (
+    'fileHash' => '012922233012742afe272a8ac6a43b9f397ee9b26bbda12884a7fc1111269a27',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php' => 
   array (
-    'fileHash' => '6338346d81ada5e08ea6790b1cac597d1c5f0cd3f82f40d232a961c39cc5122b',
+    'fileHash' => '77941381e60cfc5617c3b7150ec139e720c7ed289b89ba034f1feabec33a113b',
     'dependentFiles' => 
     array (
     ),
@@ -7327,6 +8187,13 @@ return [
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php' => 
   array (
     'fileHash' => 'b8bd0ac81d5b75d2e461b9364418f064ec4776a52707c96c3c7f0a89e2068f8a',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php' => 
+  array (
+    'fileHash' => 'b7b1e0d0047742f36fd5d07a744ee28dd0cb1b9ce534d4a6a3cfb2f31e3a922f',
     'dependentFiles' => 
     array (
     ),
@@ -7380,9 +8247,23 @@ return [
     array (
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php' => 
+  array (
+    'fileHash' => '85b9fec0783898e2b29bc7e412e9e4e1ed27aa843e8d1b96a72a7c1aab18f446',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php' => 
   array (
     'fileHash' => 'e7c2422ab44ac0458be8eea2ba1f6af3fedd71e2fc3e7d1d280afb55bf615021',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php' => 
+  array (
+    'fileHash' => 'f593f2d0c82cc7601617650b78b2e51a9ab567082c57247e983a9376a68925b4',
     'dependentFiles' => 
     array (
     ),
@@ -7403,7 +8284,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php' => 
   array (
-    'fileHash' => '0a26e54a8e5304eec8b5e0f4ad30d1a87a40de587d9a6978bbfb3b3f14bb5b64',
+    'fileHash' => 'ef50c94c97b2b336f54a9cb6fe41f5d8f5d225227daa6605af962be7447c9daa',
     'dependentFiles' => 
     array (
     ),
@@ -7432,6 +8313,13 @@ return [
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TaxRateController.php' => 
   array (
     'fileHash' => '6724f15c507577b2f57335ababf453a7ba2b8f3f5430edecfa86b994ac347586',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php' => 
+  array (
+    'fileHash' => '72b371878d2463dd7e6669efcdacad179728fee2fc50c357ce39a9b33b8e052b',
     'dependentFiles' => 
     array (
     ),
@@ -7486,38 +8374,44 @@ return [
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BackupController.php',
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BrandController.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DashboardController.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DocumentSequenceController.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php',
-      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentMethodController.php',
-      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PermissionController.php',
-      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductAttributeController.php',
-      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
-      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductImageController.php',
-      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
-      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php',
-      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SessionController.php',
-      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SettingController.php',
-      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
-      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
-      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierController.php',
-      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
-      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TaxRateController.php',
-      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UnitController.php',
-      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserController.php',
-      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserPermissionController.php',
-      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
-      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseTypeController.php',
-      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\AuthenticatedSessionController.php',
-      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\EmailVerificationNotificationController.php',
-      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\NewPasswordController.php',
-      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\PasswordResetLinkController.php',
-      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\RegisteredUserController.php',
-      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\VerifyEmailController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DashboardController.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DocumentSequenceController.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentMethodController.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PermissionController.php',
+      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductAttributeController.php',
+      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
+      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductImageController.php',
+      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
+      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php',
+      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SessionController.php',
+      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SettingController.php',
+      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
+      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierController.php',
+      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
+      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TaxRateController.php',
+      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UnitController.php',
+      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserController.php',
+      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserPermissionController.php',
+      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
+      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseTypeController.php',
+      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\AuthenticatedSessionController.php',
+      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\EmailVerificationNotificationController.php',
+      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\NewPasswordController.php',
+      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\PasswordResetLinkController.php',
+      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\RegisteredUserController.php',
+      40 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\VerifyEmailController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Middleware\\EnsureEmailIsVerified.php' => 
@@ -7569,7 +8463,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveInventoryLinesRequest.php' => 
   array (
-    'fileHash' => '0c32b492fffa275ee7f9741c9fde34c14b5c1e96ed656a81842cdc5c5c6d9ea4',
+    'fileHash' => '9e5ea29e017b8b8b506bada121bac26d8a78ecec18798746a810042b022e4a43',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
@@ -7841,7 +8735,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php' => 
   array (
-    'fileHash' => '4d8d428c5dc0c347459938240cd567ec6e01feac4b24ae57d84f384e5941ae56',
+    'fileHash' => '29afcf5227d22044377b2e1746551a9fb42e2bbfb66e24185ada2f6864dfb371',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
@@ -7958,59 +8852,70 @@ return [
       22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Access\\Services\\AuditLogger.php',
       23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Access\\Services\\PermissionResolver.php',
       24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\Customer.php',
-      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\Warehouse.php',
-      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php',
-      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BackupController.php',
-      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
-      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php',
-      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
-      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SessionController.php',
-      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SettingController.php',
-      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
-      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserController.php',
-      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserPermissionController.php',
-      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
-      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\EmailVerificationNotificationController.php',
-      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\RegisteredUserController.php',
-      40 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\VerifyEmailController.php',
-      41 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Middleware\\EnsureEmailIsVerified.php',
-      42 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\AssignRolesRequest.php',
-      43 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\AssignWarehouseUsersRequest.php',
-      44 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\Auth\\LoginRequest.php',
-      45 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\DuplicateRoleRequest.php',
-      46 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\ReorderCategoriesRequest.php',
-      47 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveInventoryLinesRequest.php',
-      48 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SavePaymentMethodRequest.php',
-      49 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveTaxRateRequest.php',
-      50 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SetCreditLimitRequest.php',
-      51 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SetRolePermissionsRequest.php',
-      52 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StockEntryRequest.php',
-      53 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StockIssueRequest.php',
-      54 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreBrandRequest.php',
-      55 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreCustomerRequest.php',
-      56 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreInventoryRequest.php',
-      57 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreRoleRequest.php',
-      58 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreSupplierRequest.php',
-      59 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreUnitRequest.php',
-      60 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreUserPermissionRequest.php',
-      61 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreUserRequest.php',
-      62 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateBrandRequest.php',
-      63 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateCustomerRequest.php',
-      64 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateRoleRequest.php',
-      65 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateSupplierRequest.php',
-      66 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateUnitRequest.php',
-      67 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateUserRequest.php',
-      68 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\AdminUserResource.php',
-      69 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\AuditLogResource.php',
-      70 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php',
-      71 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\ProductResource.php',
-      72 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\UserResource.php',
-      73 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Policies\\UserPolicy.php',
-      74 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\AccessServiceProvider.php',
-      75 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Support\\Scopes\\WarehouseScope.php',
-      76 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\UserFactory.php',
-      77 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\AdminSeeder.php',
+      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php',
+      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php',
+      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php',
+      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php',
+      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\Warehouse.php',
+      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php',
+      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BackupController.php',
+      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php',
+      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
+      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
+      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php',
+      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
+      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      40 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      41 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SessionController.php',
+      42 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SettingController.php',
+      43 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      44 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      45 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserController.php',
+      46 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserPermissionController.php',
+      47 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
+      48 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\EmailVerificationNotificationController.php',
+      49 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\RegisteredUserController.php',
+      50 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\VerifyEmailController.php',
+      51 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Middleware\\EnsureEmailIsVerified.php',
+      52 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\AssignRolesRequest.php',
+      53 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\AssignWarehouseUsersRequest.php',
+      54 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\Auth\\LoginRequest.php',
+      55 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\DuplicateRoleRequest.php',
+      56 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\ReorderCategoriesRequest.php',
+      57 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveInventoryLinesRequest.php',
+      58 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SavePaymentMethodRequest.php',
+      59 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveTaxRateRequest.php',
+      60 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SetCreditLimitRequest.php',
+      61 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SetRolePermissionsRequest.php',
+      62 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StockEntryRequest.php',
+      63 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StockIssueRequest.php',
+      64 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreBrandRequest.php',
+      65 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreCustomerRequest.php',
+      66 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreInventoryRequest.php',
+      67 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreRoleRequest.php',
+      68 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreSupplierRequest.php',
+      69 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreUnitRequest.php',
+      70 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreUserPermissionRequest.php',
+      71 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\StoreUserRequest.php',
+      72 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateBrandRequest.php',
+      73 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateCustomerRequest.php',
+      74 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateRoleRequest.php',
+      75 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateSupplierRequest.php',
+      76 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateUnitRequest.php',
+      77 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\UpdateUserRequest.php',
+      78 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\AdminUserResource.php',
+      79 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\AuditLogResource.php',
+      80 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\CustomerResource.php',
+      81 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php',
+      82 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\ProductResource.php',
+      83 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\UserResource.php',
+      84 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Policies\\UserPolicy.php',
+      85 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\AccessServiceProvider.php',
+      86 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Support\\Scopes\\WarehouseScope.php',
+      87 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\UserFactory.php',
+      88 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\AdminSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Policies\\UserPolicy.php' => 
@@ -8076,21 +8981,25 @@ return [
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Catalog\\Actions\\DeleteProductAction.php',
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\ProductCostResolver.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
-      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
-      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Stock.php',
-      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\StockMovement.php',
-      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Services\\StockOverviewService.php',
-      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\Warehouse.php',
-      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
-      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoStockSeeder.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ApproveInventoryAction.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\EntryStockAction.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\IssueStockAction.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockInAction.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\StockOutAction.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Contracts\\StockWriterInterface.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Stock.php',
+      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\StockMovement.php',
+      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
+      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Services\\StockOverviewService.php',
+      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Warehouses\\Models\\Warehouse.php',
+      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoStockSeeder.php',
     ),
     'usedTraitDependentFiles' => 
     array (
@@ -8103,9 +9012,12 @@ return [
     'fileHash' => '91eea9e01debff72e5da2a5a424ab729efb95254c0f5e4cdee346203861a032f',
     'dependentFiles' => 
     array (
-      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\StockServiceProvider.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Support\\Documents\\SequentialDocumentNumberGenerator.php',
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\CreateTransferAction.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Providers\\Domain\\StockServiceProvider.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Support\\Documents\\SequentialDocumentNumberGenerator.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Support\\Documents\\SequentialDocumentNumberGenerator.php' => 
@@ -8122,9 +9034,10 @@ return [
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Support\\Query\\Sortable.php' => 
@@ -8532,6 +9445,34 @@ return [
     array (
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100000_create_purchase_orders_tables.php' => 
+  array (
+    'fileHash' => '61c94105135f66fe6c242bb3d09e5f19f5067757fb0f9fe6b5ed191f0db68935',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100100_create_sales_tables.php' => 
+  array (
+    'fileHash' => 'be93965a289055799234c7379e4d907afabe1d2e3c319dd7f2ec0d9f9abab305',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100200_create_expenses_tables.php' => 
+  array (
+    'fileHash' => 'ffe80eb31c670189625439e658a077f85b774450d6b95d57a6431e757c61d86b',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100300_add_reason_to_inventory_lines.php' => 
+  array (
+    'fileHash' => '67a5e858ac533ac2dedf4eee838d8fc045e855be2d2ba2aa880414cfe8e3ffbe',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\AdminSeeder.php' => 
   array (
     'fileHash' => '2d579336ba950c529ccfd43b56c8ffd71b9849c69936bfa74cfaa23101040b1b',
@@ -8593,6 +9534,13 @@ return [
     array (
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\ExpenseCategorySeeder.php' => 
+  array (
+    'fileHash' => 'c42cfe03614b9fd8df3656297dc8b596c03c596bd5a4f7a7d72aefac6e74b556',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\MovementTypeSeeder.php' => 
   array (
     'fileHash' => '14b54fab889271ef917a9cdffe21cf6f75e67a72e7bc521ed73ebfe2d29bd815',
@@ -8603,7 +9551,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\PermissionSeeder.php' => 
   array (
-    'fileHash' => '0d995cf7b112826bdcd2e901bbba83906dc6876fb6804463a84de9b05a88bf3a',
+    'fileHash' => '2ce337fc73980404ee1a5b3e6eab4d4a07855787736dfb75ef7351f63976df58',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DatabaseSeeder.php',
@@ -8619,7 +9567,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\RolePermissionSeeder.php' => 
   array (
-    'fileHash' => '1dd6fb3a3bce3366a5921ec18672332ada975b85185cae07c29e54ff4dc41843',
+    'fileHash' => '9317f3a1fcd6b47ba73be35995587654b2290042b269f0c2f25b186ad503caf7',
     'dependentFiles' => 
     array (
       0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DatabaseSeeder.php',
@@ -9871,6 +10819,9 @@ return [
     1 => 'symfony/http-foundation',
     2 => 'nesbot/carbon',
     3 => 'laravel/sanctum',
+    4 => 'barryvdh/laravel-dompdf',
+    5 => 'dompdf/dompdf',
+    6 => 'maatwebsite/excel',
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveInventoryLinesRequest.php' => 
   array (
@@ -9895,6 +10846,7 @@ return [
     0 => 'laravel/framework',
     1 => 'symfony/http-foundation',
     2 => 'nesbot/carbon',
+    3 => 'laravel/sanctum',
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_07_31_140000_add_counted_at_to_inventories_table.php' => 
   array (
@@ -10091,6 +11043,130 @@ return [
     0 => 'laravel/framework',
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_01_110300_add_defaults_to_customers_table.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Services\\CustomerLedger.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\ExpenseCategory.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'nesbot/carbon',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'nesbot/carbon',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'laravel/sanctum',
+    3 => 'nesbot/carbon',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'laravel/sanctum',
+    3 => 'nesbot/carbon',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'nesbot/carbon',
+    3 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'nesbot/carbon',
+    3 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'nesbot/carbon',
+    3 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'nesbot/carbon',
+    3 => 'laravel/sanctum',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100000_create_purchase_orders_tables.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100100_create_sales_tables.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100200_create_expenses_tables.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100300_add_reason_to_inventory_lines.php' => 
+  array (
+    0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\ExpenseCategorySeeder.php' => 
   array (
     0 => 'laravel/framework',
   ),
@@ -18847,6 +19923,827 @@ return [
       ),
     )),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Écriture du grand-livre client : maintient l\'encours par événements
+ * (jamais de mise à jour directe du solde sans écriture).
+ *
+ * @property int $id
+ * @property int $customer_id
+ * @property string $type
+ * @property string $amount
+ * @property string $balance_after
+ * @property string|null $reference_type
+ * @property int|null $reference_id
+ * @property string|null $note
+ * @property int|null $user_id
+ */',
+         'namespace' => 'App\\Domain\\Customers\\Models',
+         'uses' => 
+        array (
+          'user' => 'App\\Models\\User',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'TYPE_INVOICE',
+               'value' => '\'invoice\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'TYPE_PAYMENT',
+               'value' => '\'payment\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'TYPE_RETURN',
+               'value' => '\'return\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'TYPE_ADJUSTMENT',
+               'value' => '\'adjustment\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Customers\\Models',
+             'uses' => 
+            array (
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'customer',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Customer, $this>
+     */',
+             'namespace' => 'App\\Domain\\Customers\\Models',
+             'uses' => 
+            array (
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        7 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'user',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<User, $this>
+     */',
+             'namespace' => 'App\\Domain\\Customers\\Models',
+             'uses' => 
+            array (
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Services\\CustomerLedger.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Grand-livre client : toute variation d\'encours passe par une écriture.
+ * Le blocage automatique s\'applique dès que l\'encours dépasse le plafond.
+ */',
+         'namespace' => 'App\\Domain\\Customers\\Services',
+         'uses' => 
+        array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+          'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => NULL,
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'record',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @param  float  $amount  signé : positif = augmente l\'encours (facture),
+     *                         négatif = le réduit (encaissement, retour).
+     */',
+             'namespace' => 'App\\Domain\\Customers\\Services',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'customerId',
+               'type' => 'int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'type',
+               'type' => 'string',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'amount',
+               'type' => 'float',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            3 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'referenceType',
+               'type' => '?string',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            4 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'referenceId',
+               'type' => '?int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            5 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'note',
+               'type' => '?string',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            6 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'userId',
+               'type' => '?int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Expenses\\Models\\Expense',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Charge (dépense) par lieu et par utilisateur, validée par le responsable.
+ *
+ * @property int $id
+ * @property int $expense_category_id
+ * @property int|null $warehouse_id
+ * @property int $user_id
+ * @property string $label
+ * @property string $amount
+ * @property Carbon $expense_date
+ * @property string|null $receipt_path
+ * @property string $status
+ * @property int|null $approved_by
+ */',
+         'namespace' => 'App\\Domain\\Expenses\\Models',
+         'uses' => 
+        array (
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_PENDING',
+               'value' => '\'pending\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_APPROVED',
+               'value' => '\'approved\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_REJECTED',
+               'value' => '\'rejected\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Expenses\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'category',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<ExpenseCategory, $this>
+     */',
+             'namespace' => 'App\\Domain\\Expenses\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'warehouse',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Warehouse, $this>
+     */',
+             'namespace' => 'App\\Domain\\Expenses\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        7 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'user',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<User, $this>
+     */',
+             'namespace' => 'App\\Domain\\Expenses\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\ExpenseCategory.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Catégorie de charge (loyer, carburant, fournitures…).
+ *
+ * @property int $id
+ * @property string $name
+ * @property bool $is_active
+ */',
+         'namespace' => 'App\\Domain\\Expenses\\Models',
+         'uses' => 
+        array (
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Expenses\\Models',
+             'uses' => 
+            array (
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'expenses',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return HasMany<Expense, $this>
+     */',
+             'namespace' => 'App\\Domain\\Expenses\\Models',
+             'uses' => 
+            array (
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Actions\\SetProductPricesAction.php' => 
   array (
     0 => 
@@ -20465,6 +22362,7 @@ return [
          'namespace' => 'App\\Domain\\Pricing\\Services',
          'uses' => 
         array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
           'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
           'productpricerepositoryinterface' => 'App\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface',
           'resolvedprice' => 'App\\Domain\\Pricing\\DTOs\\ResolvedPrice',
@@ -20659,6 +22557,653 @@ return [
                'phpDoc' => NULL,
                'flags' => 0,
             )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Réception (totale ou partielle) d\'un bon de commande :
+ * entrée en stock au prix d\'achat (recalcul du CMUP par le socle),
+ * mise à jour des reliquats et du dernier prix fournisseur.
+ */',
+         'namespace' => 'App\\Domain\\Purchasing\\Actions',
+         'uses' => 
+        array (
+          'purchaseorder' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+          'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+          'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => NULL,
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => '__construct',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => NULL,
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'stock',
+               'type' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'execute',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @param  array<int, int>  $quantities  [purchase_order_line_id => quantité reçue]
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Actions',
+             'uses' => 
+            array (
+              'purchaseorder' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'order',
+               'type' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'quantities',
+               'type' => 'array',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'userId',
+               'type' => '?int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Bon de commande fournisseur.
+ *
+ * @property int $id
+ * @property string $reference
+ * @property int $supplier_id
+ * @property int $warehouse_id
+ * @property string $status
+ * @property Carbon|null $expected_at
+ * @property int|null $created_by
+ * @property string|null $note
+ */',
+         'namespace' => 'App\\Domain\\Purchasing\\Models',
+         'uses' => 
+        array (
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+          'carbon' => 'Illuminate\\Support\\Carbon',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_DRAFT',
+               'value' => '\'draft\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_ORDERED',
+               'value' => '\'ordered\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_PARTIAL',
+               'value' => '\'partial\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_RECEIVED',
+               'value' => '\'received\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_CANCELLED',
+               'value' => '\'cancelled\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        7 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'supplier',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Supplier, $this>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        8 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'warehouse',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Warehouse, $this>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        9 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'lines',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return HasMany<PurchaseOrderLine, $this>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Ligne de bon de commande (reliquat = commandé − reçu).
+ *
+ * @property int $id
+ * @property int $purchase_order_id
+ * @property int $product_id
+ * @property int $quantity_ordered
+ * @property int $quantity_received
+ * @property string $unit_price
+ */',
+         'namespace' => 'App\\Domain\\Purchasing\\Models',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'purchaseOrder',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<PurchaseOrder, $this>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'product',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Product, $this>
+     */',
+             'namespace' => 'App\\Domain\\Purchasing\\Models',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'remaining',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'int',
+           'parameters' => 
+          array (
           ),
            'attributes' => 
           array (
@@ -20966,6 +23511,1566 @@ return [
              'namespace' => 'App\\Domain\\Purchasing\\Models',
              'uses' => 
             array (
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Actions\\CancelSaleAction',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Annule une vente confirmée : retour de la marchandise au stock
+ * (mouvement return_in, jamais d\'UPDATE des mouvements existants)
+ * et contre-passation de la créance.
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Actions',
+         'uses' => 
+        array (
+          'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+          'customerledger' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+          'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+          'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+          'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => NULL,
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => '__construct',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => NULL,
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'stock',
+               'type' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'ledger',
+               'type' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'execute',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'App\\Domain\\Sales\\Models\\Sale',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'sale',
+               'type' => 'App\\Domain\\Sales\\Models\\Sale',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'userId',
+               'type' => '?int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Actions\\ConfirmSaleAction',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Confirme une vente : contrôle du crédit client, sortie de stock
+ * (facture uniquement) et créance au grand-livre.
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Actions',
+         'uses' => 
+        array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+          'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+          'customerledger' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+          'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+          'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+          'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => NULL,
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => '__construct',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => NULL,
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'stock',
+               'type' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'ledger',
+               'type' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'execute',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'App\\Domain\\Sales\\Models\\Sale',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'sale',
+               'type' => 'App\\Domain\\Sales\\Models\\Sale',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'userId',
+               'type' => '?int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'allowOverCredit',
+               'type' => 'bool',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Encaissement client : réduit l\'encours, affecte éventuellement une
+ * facture, alimente la session de caisse ouverte pour les espèces.
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Actions',
+         'uses' => 
+        array (
+          'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+          'customerledger' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+          'payment' => 'App\\Domain\\Sales\\Models\\Payment',
+          'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+          'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+          'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => NULL,
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => '__construct',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => NULL,
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'ledger',
+               'type' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'numbers',
+               'type' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 68,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'execute',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @param  array{customer_id: int, amount: float, payment_method_id?: int|null, sale_id?: int|null, cash_session_id?: int|null, cheque_reference?: string|null, received_at: string, note?: string|null}  $data
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Actions',
+             'uses' => 
+            array (
+              'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+              'customerledger' => 'App\\Domain\\Customers\\Services\\CustomerLedger',
+              'payment' => 'App\\Domain\\Sales\\Models\\Payment',
+              'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+              'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+              'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'App\\Domain\\Sales\\Models\\Payment',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'data',
+               'type' => 'array',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'userId',
+               'type' => '?int',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => true,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Models\\CashSession',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Session de caisse : ouverture avec fonds, clôture avec écart.
+ *
+ * @property int $id
+ * @property int $warehouse_id
+ * @property int $opened_by
+ * @property Carbon $opened_at
+ * @property string $opening_amount
+ * @property Carbon|null $closed_at
+ * @property string|null $closing_amount
+ * @property string|null $expected_amount
+ * @property string|null $difference
+ * @property string $status
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Models',
+         'uses' => 
+        array (
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+          'carbon' => 'Illuminate\\Support\\Carbon',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_OPEN',
+               'value' => '\'open\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_CLOSED',
+               'value' => '\'closed\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'warehouse',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Warehouse, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'opener',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<User, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'payments',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return HasMany<Payment, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Models\\Payment',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Encaissement client (espèces, chèque, virement, carte).
+ *
+ * @property int $id
+ * @property string $reference
+ * @property int $customer_id
+ * @property int|null $sale_id
+ * @property int|null $payment_method_id
+ * @property int|null $cash_session_id
+ * @property string $amount
+ * @property string|null $cheque_status
+ * @property string|null $cheque_reference
+ * @property Carbon $received_at
+ * @property int|null $user_id
+ * @property string|null $note
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Models',
+         'uses' => 
+        array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+          'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'CHEQUE_RECEIVED',
+               'value' => '\'received\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'CHEQUE_DEPOSITED',
+               'value' => '\'deposited\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'CHEQUE_CLEARED',
+               'value' => '\'cleared\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'CHEQUE_BOUNCED',
+               'value' => '\'bounced\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'customer',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Customer, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        7 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'sale',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Sale, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        8 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'method',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<PaymentMethod, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        9 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'cashSession',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<CashSession, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'paymentmethod' => 'App\\Domain\\Settings\\Models\\PaymentMethod',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Models\\Sale',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Document de vente : devis (sans effet stock) ou facture
+ * (sortie de stock + créance client à la confirmation).
+ *
+ * @property int $id
+ * @property string $reference
+ * @property string $type
+ * @property string $status
+ * @property int $customer_id
+ * @property int $warehouse_id
+ * @property int|null $user_id
+ * @property string $subtotal
+ * @property string $discount_percent
+ * @property string $total
+ * @property string $paid_amount
+ * @property string $payment_status
+ * @property Carbon|null $confirmed_at
+ * @property string|null $note
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Models',
+         'uses' => 
+        array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+          'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+          'user' => 'App\\Models\\User',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+          'carbon' => 'Illuminate\\Support\\Carbon',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'TYPE_QUOTE',
+               'value' => '\'quote\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'TYPE_INVOICE',
+               'value' => '\'invoice\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_DRAFT',
+               'value' => '\'draft\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_CONFIRMED',
+               'value' => '\'confirmed\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode::__set_state(array(
+           'constants' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
+               'name' => 'STATUS_CANCELLED',
+               'value' => '\'cancelled\'',
+               'attributes' => 
+              array (
+              ),
+            )),
+          ),
+           'public' => true,
+           'private' => false,
+           'final' => false,
+           'phpDoc' => NULL,
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        7 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'customer',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Customer, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        8 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'warehouse',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Warehouse, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        9 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'user',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<User, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        10 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'lines',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return HasMany<SaleLine, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'user' => 'App\\Models\\User',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+              'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Domain\\Sales\\Models\\SaleLine',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Ligne de vente (prix résolu au moment de la saisie).
+ *
+ * @property int $id
+ * @property int $sale_id
+ * @property int $product_id
+ * @property int $quantity
+ * @property string $unit_price
+ * @property string|null $price_type_code
+ * @property string $line_total
+ */',
+         'namespace' => 'App\\Domain\\Sales\\Models',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Eloquent\\Model',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedPropertiesNode::__set_state(array(
+           'names' => 
+          array (
+            0 => 'fillable',
+          ),
+           'phpDoc' => NULL,
+           'type' => NULL,
+           'public' => false,
+           'private' => false,
+           'static' => false,
+           'readonly' => false,
+           'abstract' => false,
+           'final' => false,
+           'publicSet' => false,
+           'protectedSet' => false,
+           'privateSet' => false,
+           'virtual' => false,
+           'attributes' => 
+          array (
+          ),
+           'hooks' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'casts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return array<string, string>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => false,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'array',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'sale',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Sale, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'model' => 'Illuminate\\Database\\Eloquent\\Model',
+              'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'product',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * @return BelongsTo<Product, $this>
+     */',
+             'namespace' => 'App\\Domain\\Sales\\Models',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'model' => 'Illuminate\\Database\\Eloquent\\Model',
               'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
             ),
@@ -23908,6 +28013,7 @@ return [
  * @property int $counted_quantity
  * @property int $system_quantity
  * @property int $difference
+ * @property string|null $reason
  */',
          'namespace' => 'App\\Domain\\Stock\\Models',
          'uses' => 
@@ -24582,6 +28688,9 @@ return [
  * @property int $from_warehouse_id
  * @property int $to_warehouse_id
  * @property int $transfer_status_id
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $received_at
+ * @property string|null $note
  */',
          'namespace' => 'App\\Domain\\Stock\\Models',
          'uses' => 
@@ -24590,6 +28699,7 @@ return [
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
           'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
           'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+          'carbon' => 'Illuminate\\Support\\Carbon',
         ),
          'constUses' => 
         array (
@@ -24667,6 +28777,7 @@ return [
               'model' => 'Illuminate\\Database\\Eloquent\\Model',
               'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
               'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
             ),
              'constUses' => 
             array (
@@ -24701,6 +28812,7 @@ return [
               'model' => 'Illuminate\\Database\\Eloquent\\Model',
               'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
               'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
             ),
              'constUses' => 
             array (
@@ -24735,6 +28847,7 @@ return [
               'model' => 'Illuminate\\Database\\Eloquent\\Model',
               'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
               'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
             ),
              'constUses' => 
             array (
@@ -24769,6 +28882,7 @@ return [
               'model' => 'Illuminate\\Database\\Eloquent\\Model',
               'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
               'hasmany' => 'Illuminate\\Database\\Eloquent\\Relations\\HasMany',
+              'carbon' => 'Illuminate\\Support\\Carbon',
             ),
              'constUses' => 
             array (
@@ -27401,6 +31515,203 @@ return [
       ),
     )),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\CashSessionController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Sessions de caisse : ouverture avec fonds, clôture avec calcul d\'écart.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'cashsession' => 'App\\Domain\\Sales\\Models\\CashSession',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'current',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Session ouverte pour un lieu (au plus une à la fois).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'cashsession' => 'App\\Domain\\Sales\\Models\\CashSession',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'open',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'close',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'cashSession',
+               'type' => 'App\\Domain\\Sales\\Models\\CashSession',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php' => 
   array (
     0 => 
@@ -28227,6 +32538,206 @@ return [
       ),
     )),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\ExpenseController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Charges : catégories, saisie avec justificatif photo (facultatif),
+ * validation ou rejet par le responsable.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'expense' => 'App\\Domain\\Expenses\\Models\\Expense',
+          'expensecategory' => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'uploadedfile' => 'Illuminate\\Http\\UploadedFile',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'categories',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'storeCategory',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'store',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'decide',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'expense',
+               'type' => 'App\\Domain\\Expenses\\Models\\Expense',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php' => 
   array (
     0 => 
@@ -28342,6 +32853,79 @@ return [
         )),
         3 => 
         \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'sheet',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Feuille de comptage (sans le stock théorique, pour compter sans recopier) :
+     * tous les articles du lieu avec une colonne « Compté » vide.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'approveinventoryaction' => 'App\\Domain\\Stock\\Actions\\ApproveInventoryAction',
+              'stockreaderinterface' => 'App\\Domain\\Stock\\Contracts\\StockReaderInterface',
+              'inventory' => 'App\\Domain\\Stock\\Models\\Inventory',
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'saveinventorylinesrequest' => 'App\\Http\\Requests\\SaveInventoryLinesRequest',
+              'storeinventoryrequest' => 'App\\Http\\Requests\\StoreInventoryRequest',
+              'inventoryresource' => 'App\\Http\\Resources\\InventoryResource',
+              'htmltable' => 'App\\Support\\Export\\HtmlTable',
+              'pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'anonymousresourcecollection' => 'Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'mixed',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'inventory',
+               'type' => 'App\\Domain\\Stock\\Models\\Inventory',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
            'name' => 'saveLines',
            'phpDoc' => 
           \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
@@ -28354,13 +32938,18 @@ return [
               'approveinventoryaction' => 'App\\Domain\\Stock\\Actions\\ApproveInventoryAction',
               'stockreaderinterface' => 'App\\Domain\\Stock\\Contracts\\StockReaderInterface',
               'inventory' => 'App\\Domain\\Stock\\Models\\Inventory',
+              'arrayexport' => 'App\\Exports\\ArrayExport',
               'controller' => 'App\\Http\\Controllers\\Controller',
               'saveinventorylinesrequest' => 'App\\Http\\Requests\\SaveInventoryLinesRequest',
               'storeinventoryrequest' => 'App\\Http\\Requests\\StoreInventoryRequest',
               'inventoryresource' => 'App\\Http\\Resources\\InventoryResource',
+              'htmltable' => 'App\\Support\\Export\\HtmlTable',
+              'pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
               'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
               'request' => 'Illuminate\\Http\\Request',
               'anonymousresourcecollection' => 'Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
               'runtimeexception' => 'RuntimeException',
             ),
              'constUses' => 
@@ -28420,7 +33009,7 @@ return [
           array (
           ),
         )),
-        4 => 
+        5 => 
         \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
            'name' => 'cancel',
            'phpDoc' => NULL,
@@ -28451,7 +33040,7 @@ return [
           array (
           ),
         )),
-        5 => 
+        6 => 
         \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
            'name' => 'approve',
            'phpDoc' => NULL,
@@ -28567,6 +33156,284 @@ return [
             \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
                'name' => 'request',
                'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\PaymentController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Encaissements clients, cycle des chèques, balance âgée et relevé client.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+          'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+          'recordpaymentaction' => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+          'payment' => 'App\\Domain\\Sales\\Models\\Payment',
+          'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'store',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'action',
+               'type' => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'chequeStatus',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Cycle du chèque : received → deposited → cleared | bounced.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+              'recordpaymentaction' => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+              'payment' => 'App\\Domain\\Sales\\Models\\Payment',
+              'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'payment',
+               'type' => 'App\\Domain\\Sales\\Models\\Payment',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'aging',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Balance âgée : encours par tranches d\'ancienneté des factures impayées.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+              'recordpaymentaction' => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+              'payment' => 'App\\Domain\\Sales\\Models\\Payment',
+              'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'statement',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Relevé client : écritures du grand-livre, plus récentes en premier.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+              'customerledgerentry' => 'App\\Domain\\Customers\\Models\\CustomerLedgerEntry',
+              'recordpaymentaction' => 'App\\Domain\\Sales\\Actions\\RecordPaymentAction',
+              'payment' => 'App\\Domain\\Sales\\Models\\Payment',
+              'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'customer',
+               'type' => 'App\\Domain\\Customers\\Models\\Customer',
                'byRef' => false,
                'variadic' => false,
                'hasDefault' => false,
@@ -30190,6 +35057,360 @@ return [
       ),
     )),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\PurchaseOrderController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Achats : bons de commande (création, passage en commande, réception
+ * partielle/totale avec reliquats), retours fournisseur et suggestions
+ * de réapprovisionnement.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'receivepurchaseorderaction' => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+          'purchaseorder' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+          'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+          'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+          'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'store',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'numbers',
+               'type' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'show',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'purchaseOrder',
+               'type' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'receive',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'purchaseOrder',
+               'type' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'action',
+               'type' => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'cancel',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'purchaseOrder',
+               'type' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'supplierReturn',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Retour fournisseur : sortie de stock tracée (mouvement return_out).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'receivepurchaseorderaction' => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+              'purchaseorder' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+              'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'stock',
+               'type' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        6 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'replenishment',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Suggestions de réapprovisionnement : articles sous leur seuil minimal
+     * (stock total tous lieux < seuil).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'receivepurchaseorderaction' => 'App\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction',
+              'purchaseorder' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrder',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+              'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php' => 
   array (
     0 => 
@@ -30447,6 +35668,416 @@ return [
             \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
                'name' => 'action',
                'type' => 'App\\Domain\\Access\\Actions\\DuplicateRoleAction',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\SaleController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Ventes : devis et factures. Prix résolus côté serveur (type de prix du
+ * client puis paliers de quantité), contrôle du prix plancher et du crédit.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'margincalculatorinterface' => 'App\\Domain\\Pricing\\Contracts\\MarginCalculatorInterface',
+          'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
+          'nopricedefinedexception' => 'App\\Domain\\Pricing\\Exceptions\\NoPriceDefinedException',
+          'productcostresolver' => 'App\\Domain\\Pricing\\Services\\ProductCostResolver',
+          'cancelsaleaction' => 'App\\Domain\\Sales\\Actions\\CancelSaleAction',
+          'confirmsaleaction' => 'App\\Domain\\Sales\\Actions\\ConfirmSaleAction',
+          'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+          'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'runtimeexception' => 'RuntimeException',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'price',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Prix applicable pour un article / client / quantité (aide à la saisie).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'margincalculatorinterface' => 'App\\Domain\\Pricing\\Contracts\\MarginCalculatorInterface',
+              'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
+              'nopricedefinedexception' => 'App\\Domain\\Pricing\\Exceptions\\NoPriceDefinedException',
+              'productcostresolver' => 'App\\Domain\\Pricing\\Services\\ProductCostResolver',
+              'cancelsaleaction' => 'App\\Domain\\Sales\\Actions\\CancelSaleAction',
+              'confirmsaleaction' => 'App\\Domain\\Sales\\Actions\\ConfirmSaleAction',
+              'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+              'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'documentnumbergeneratorinterface' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'runtimeexception' => 'RuntimeException',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'resolver',
+               'type' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'margins',
+               'type' => 'App\\Domain\\Pricing\\Contracts\\MarginCalculatorInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            3 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'cost',
+               'type' => 'App\\Domain\\Pricing\\Services\\ProductCostResolver',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'store',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'resolver',
+               'type' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'margins',
+               'type' => 'App\\Domain\\Pricing\\Contracts\\MarginCalculatorInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            3 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'cost',
+               'type' => 'App\\Domain\\Pricing\\Services\\ProductCostResolver',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            4 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'numbers',
+               'type' => 'App\\Support\\Documents\\DocumentNumberGeneratorInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'show',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'sale',
+               'type' => 'App\\Domain\\Sales\\Models\\Sale',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        4 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'confirm',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'sale',
+               'type' => 'App\\Domain\\Sales\\Models\\Sale',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'action',
+               'type' => 'App\\Domain\\Sales\\Actions\\ConfirmSaleAction',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        5 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'cancel',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'sale',
+               'type' => 'App\\Domain\\Sales\\Models\\Sale',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'action',
+               'type' => 'App\\Domain\\Sales\\Actions\\CancelSaleAction',
                'byRef' => false,
                'variadic' => false,
                'hasDefault' => false,
@@ -30864,6 +36495,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -30928,6 +36561,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -30992,6 +36627,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -31043,6 +36680,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -31107,6 +36746,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -31171,6 +36812,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -31235,6 +36878,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -31312,6 +36957,8 @@ return [
               'product' => 'App\\Domain\\Catalog\\Models\\Product',
               'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
               'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
               'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
               'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
               'stock' => 'App\\Domain\\Stock\\Models\\Stock',
@@ -31361,6 +37008,165 @@ return [
             \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
                'name' => 'action',
                'type' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        8 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'adjust',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Ajustement direct (±) avec motif obligatoire.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
+              'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+              'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+              'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
+              'stock' => 'App\\Domain\\Stock\\Models\\Stock',
+              'stockmovement' => 'App\\Domain\\Stock\\Models\\StockMovement',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'stockentryrequest' => 'App\\Http\\Requests\\StockEntryRequest',
+              'stockissuerequest' => 'App\\Http\\Requests\\StockIssueRequest',
+              'user' => 'App\\Models\\User',
+              'htmltable' => 'App\\Support\\Export\\HtmlTable',
+              'pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+              'httpresponse' => 'Symfony\\Component\\HttpFoundation\\Response',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'writer',
+               'type' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        9 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'returnIn',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Retour au stock (client) : revendable → retour en stock ;
+     * défectueux → retour tracé puis sortie SAV immédiate (net zéro).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'product' => 'App\\Domain\\Catalog\\Models\\Product',
+              'entrystockaction' => 'App\\Domain\\Stock\\Actions\\EntryStockAction',
+              'issuestockaction' => 'App\\Domain\\Stock\\Actions\\IssueStockAction',
+              'stockwriterinterface' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
+              'stockmovementdata' => 'App\\Domain\\Stock\\DTOs\\StockMovementData',
+              'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+              'movementtype' => 'App\\Domain\\Stock\\Models\\MovementType',
+              'stock' => 'App\\Domain\\Stock\\Models\\Stock',
+              'stockmovement' => 'App\\Domain\\Stock\\Models\\StockMovement',
+              'warehouse' => 'App\\Domain\\Warehouses\\Models\\Warehouse',
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'stockentryrequest' => 'App\\Http\\Requests\\StockEntryRequest',
+              'stockissuerequest' => 'App\\Http\\Requests\\StockIssueRequest',
+              'user' => 'App\\Models\\User',
+              'htmltable' => 'App\\Support\\Export\\HtmlTable',
+              'pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+              'httpresponse' => 'Symfony\\Component\\HttpFoundation\\Response',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'writer',
+               'type' => 'App\\Domain\\Stock\\Contracts\\StockWriterInterface',
                'byRef' => false,
                'variadic' => false,
                'hasDefault' => false,
@@ -32150,6 +37956,234 @@ return [
             \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
                'name' => 'taxRate',
                'type' => 'App\\Domain\\Catalog\\Models\\TaxRate',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\TransferController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Transferts inter-lieux : liste (avec alerte transit > 3 jours),
+ * création (envoi) et réception avec saisie des écarts.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'productcostresolver' => 'App\\Domain\\Pricing\\Services\\ProductCostResolver',
+          'createtransferaction' => 'App\\Domain\\Stock\\Actions\\CreateTransferAction',
+          'receivetransferaction' => 'App\\Domain\\Stock\\Actions\\ReceiveTransferAction',
+          'transferdata' => 'App\\Domain\\Stock\\DTOs\\TransferData',
+          'transferlinedata' => 'App\\Domain\\Stock\\DTOs\\TransferLineData',
+          'insufficientstockexception' => 'App\\Domain\\Stock\\Exceptions\\InsufficientStockException',
+          'invalidtransferexception' => 'App\\Domain\\Stock\\Exceptions\\InvalidTransferException',
+          'transfer' => 'App\\Domain\\Stock\\Models\\Transfer',
+          'transferstatus' => 'App\\Domain\\Stock\\Models\\TransferStatus',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'store',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'action',
+               'type' => 'App\\Domain\\Stock\\Actions\\CreateTransferAction',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'cost',
+               'type' => 'App\\Domain\\Pricing\\Services\\ProductCostResolver',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'show',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'transfer',
+               'type' => 'App\\Domain\\Stock\\Models\\Transfer',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'receive',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            1 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'transfer',
+               'type' => 'App\\Domain\\Stock\\Models\\Transfer',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+            2 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'action',
+               'type' => 'App\\Domain\\Stock\\Actions\\ReceiveTransferAction',
                'byRef' => false,
                'variadic' => false,
                'hasDefault' => false,
@@ -41140,6 +47174,64 @@ return [
       ),
     )),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\ExpenseCategorySeeder.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'Database\\Seeders\\ExpenseCategorySeeder',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Catégories de charges par défaut.
+ */',
+         'namespace' => 'Database\\Seeders',
+         'uses' => 
+        array (
+          'expensecategory' => 'App\\Domain\\Expenses\\Models\\ExpenseCategory',
+          'seeder' => 'Illuminate\\Database\\Seeder',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'Illuminate\\Database\\Seeder',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'run',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'void',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\MovementTypeSeeder.php' => 
   array (
     0 => 
@@ -41309,6 +47401,10 @@ return [
     [\'name\' => \'customer.update\', \'module\' => \'customers\', \'display_name\' => \'Modifier un client\'],
     [\'name\' => \'customer.delete\', \'module\' => \'customers\', \'display_name\' => \'Supprimer un client\'],
     [\'name\' => \'customer.set_credit_limit\', \'module\' => \'customers\', \'display_name\' => \'Définir un plafond de crédit / débloquer\'],
+    // Règlements & caisse
+    [\'name\' => \'payment.view\', \'module\' => \'payments\', \'display_name\' => \'Consulter les encaissements\'],
+    [\'name\' => \'payment.create\', \'module\' => \'payments\', \'display_name\' => \'Enregistrer un encaissement\'],
+    [\'name\' => \'cash.manage\', \'module\' => \'payments\', \'display_name\' => \'Gérer la caisse (ouverture / clôture)\'],
     // Charges
     [\'name\' => \'expense.create\', \'module\' => \'expenses\', \'display_name\' => \'Créer une charge\'],
     [\'name\' => \'expense.approve\', \'module\' => \'expenses\', \'display_name\' => \'Valider une charge\'],
@@ -41489,7 +47585,7 @@ return [
             0 => 
             \PHPStan\Dependency\ExportedNode\ExportedClassConstantNode::__set_state(array(
                'name' => 'MATRIX',
-               'value' => '[\'manager\' => [\'stock.view\', \'stock.issue\', \'stock.entry\', \'stock.adjust\', \'inventory.create\', \'inventory.approve\', \'user.view\', \'warehouse.view\', \'category.view\', \'product.view\', \'price.view\', \'unit.view\', \'brand.view\', \'tax_rate.view\', \'serial.view\', \'product.labels_print\', \'supplier.view\', \'supplier.create\', \'supplier.update\', \'customer.view\', \'customer.create\', \'customer.update\', \'customer.set_credit_limit\', \'purchase.create\', \'receipt.create\', \'transfer.create\', \'transfer.receive\', \'sale.create\', \'expense.create\', \'inventory.create\', \'audit.view\', \'settings.view\', \'payment_method.view\'], \'seller\' => [\'stock.view\', \'serial.view\', \'customer.view\', \'customer.create\', \'sale.create\', \'expense.create\']]',
+               'value' => '[\'manager\' => [\'stock.view\', \'stock.issue\', \'stock.entry\', \'stock.adjust\', \'inventory.create\', \'inventory.approve\', \'user.view\', \'warehouse.view\', \'category.view\', \'product.view\', \'price.view\', \'unit.view\', \'brand.view\', \'tax_rate.view\', \'serial.view\', \'product.labels_print\', \'supplier.view\', \'supplier.create\', \'supplier.update\', \'customer.view\', \'customer.create\', \'customer.update\', \'customer.set_credit_limit\', \'purchase.create\', \'receipt.create\', \'transfer.create\', \'transfer.receive\', \'sale.create\', \'sale.cancel\', \'payment.view\', \'payment.create\', \'cash.manage\', \'expense.create\', \'expense.approve\', \'inventory.create\', \'audit.view\', \'settings.view\', \'payment_method.view\'], \'seller\' => [\'stock.view\', \'serial.view\', \'customer.view\', \'customer.create\', \'sale.create\', \'payment.create\', \'expense.create\']]',
                'attributes' => 
               array (
               ),

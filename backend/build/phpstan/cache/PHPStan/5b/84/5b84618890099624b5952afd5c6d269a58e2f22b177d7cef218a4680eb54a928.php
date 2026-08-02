@@ -548,7 +548,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\PermissionSeeder.php' => 
     array (
-      0 => '0d995cf7b112826bdcd2e901bbba83906dc6876fb6804463a84de9b05a88bf3a',
+      0 => '2ce337fc73980404ee1a5b3e6eab4d4a07855787736dfb75ef7351f63976df58',
       1 => 
       array (
         0 => 'database\\seeders\\permissionseeder',
@@ -563,7 +563,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\RolePermissionSeeder.php' => 
     array (
-      0 => '1dd6fb3a3bce3366a5921ec18672332ada975b85185cae07c29e54ff4dc41843',
+      0 => '9317f3a1fcd6b47ba73be35995587654b2290042b269f0c2f25b186ad503caf7',
       1 => 
       array (
         0 => 'database\\seeders\\rolepermissionseeder',
@@ -1097,6 +1097,81 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
       array (
         0 => 'up',
         1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100000_create_purchase_orders_tables.php' => 
+    array (
+      0 => '61c94105135f66fe6c242bb3d09e5f19f5067757fb0f9fe6b5ed191f0db68935',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100100_create_sales_tables.php' => 
+    array (
+      0 => 'be93965a289055799234c7379e4d907afabe1d2e3c319dd7f2ec0d9f9abab305',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100200_create_expenses_tables.php' => 
+    array (
+      0 => 'ffe80eb31c670189625439e658a077f85b774450d6b95d57a6431e757c61d86b',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100300_add_reason_to_inventory_lines.php' => 
+    array (
+      0 => '67a5e858ac533ac2dedf4eee838d8fc045e855be2d2ba2aa880414cfe8e3ffbe',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\ExpenseCategorySeeder.php' => 
+    array (
+      0 => 'c42cfe03614b9fd8df3656297dc8b596c03c596bd5a4f7a7d72aefac6e74b556',
+      1 => 
+      array (
+        0 => 'database\\seeders\\expensecategoryseeder',
+      ),
+      2 => 
+      array (
+        0 => 'database\\seeders\\run',
       ),
       3 => 
       array (

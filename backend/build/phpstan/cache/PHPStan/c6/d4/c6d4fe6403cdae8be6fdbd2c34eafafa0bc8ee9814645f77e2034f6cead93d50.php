@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Controllers\Api\V1\InventoryController.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Controllers\Api\V1\InventoryController
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-6338346d81ada5e08ea6790b1cac597d1c5f0cd3f82f40d232a961c39cc5122b',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-77941381e60cfc5617c3b7150ec139e720c7ed289b89ba034f1feabec33a113b',
    'data' => 
   array (
     'locatedSource' => 
@@ -26,8 +26,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     'attributes' => 
     array (
     ),
-    'startLine' => 19,
-    'endLine' => 103,
+    'startLine' => 24,
+    'endLine' => 149,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'App\\Http\\Controllers\\Controller',
@@ -69,8 +69,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 21,
-            'endLine' => 21,
+            'startLine' => 26,
+            'endLine' => 26,
             'startColumn' => 27,
             'endColumn' => 42,
             'parameterIndex' => 0,
@@ -91,8 +91,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 21,
-        'endLine' => 31,
+        'startLine' => 26,
+        'endLine' => 36,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -130,8 +130,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 33,
-            'endLine' => 33,
+            'startLine' => 38,
+            'endLine' => 38,
             'startColumn' => 27,
             'endColumn' => 56,
             'parameterIndex' => 0,
@@ -152,8 +152,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 33,
-        'endLine' => 48,
+        'startLine' => 38,
+        'endLine' => 53,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -191,8 +191,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 50,
-            'endLine' => 50,
+            'startLine' => 55,
+            'endLine' => 55,
             'startColumn' => 26,
             'endColumn' => 45,
             'parameterIndex' => 0,
@@ -213,8 +213,98 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 50,
-        'endLine' => 53,
+        'startLine' => 55,
+        'endLine' => 58,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+        'declaringClassName' => 'App\\Http\\Controllers\\Api\\V1\\InventoryController',
+        'implementingClassName' => 'App\\Http\\Controllers\\Api\\V1\\InventoryController',
+        'currentClassName' => 'App\\Http\\Controllers\\Api\\V1\\InventoryController',
+        'aliasName' => NULL,
+      ),
+      'sheet' => 
+      array (
+        'name' => 'sheet',
+        'parameters' => 
+        array (
+          'request' => 
+          array (
+            'name' => 'request',
+            'default' => NULL,
+            'type' => 
+            array (
+              'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+              'data' => 
+              array (
+                'name' => 'Illuminate\\Http\\Request',
+                'isIdentifier' => false,
+              ),
+            ),
+            'isVariadic' => false,
+            'byRef' => false,
+            'isPromoted' => false,
+            'attributes' => 
+            array (
+            ),
+            'startLine' => 64,
+            'endLine' => 64,
+            'startColumn' => 27,
+            'endColumn' => 42,
+            'parameterIndex' => 0,
+            'isOptional' => false,
+          ),
+          'inventory' => 
+          array (
+            'name' => 'inventory',
+            'default' => NULL,
+            'type' => 
+            array (
+              'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+              'data' => 
+              array (
+                'name' => 'App\\Domain\\Stock\\Models\\Inventory',
+                'isIdentifier' => false,
+              ),
+            ),
+            'isVariadic' => false,
+            'byRef' => false,
+            'isPromoted' => false,
+            'attributes' => 
+            array (
+            ),
+            'startLine' => 64,
+            'endLine' => 64,
+            'startColumn' => 45,
+            'endColumn' => 64,
+            'parameterIndex' => 1,
+            'isOptional' => false,
+          ),
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'mixed',
+            'isIdentifier' => true,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Feuille de comptage (sans le stock théorique, pour compter sans recopier) :
+ * tous les articles du lieu avec une colonne « Compté » vide.
+ */',
+        'startLine' => 64,
+        'endLine' => 88,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -252,8 +342,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 58,
-            'endLine' => 58,
+            'startLine' => 93,
+            'endLine' => 93,
             'startColumn' => 31,
             'endColumn' => 64,
             'parameterIndex' => 0,
@@ -278,8 +368,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 58,
-            'endLine' => 58,
+            'startLine' => 93,
+            'endLine' => 93,
             'startColumn' => 67,
             'endColumn' => 86,
             'parameterIndex' => 1,
@@ -304,8 +394,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 58,
-            'endLine' => 58,
+            'startLine' => 93,
+            'endLine' => 93,
             'startColumn' => 89,
             'endColumn' => 116,
             'parameterIndex' => 2,
@@ -347,8 +437,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * Enregistre les quantités comptées : calcule le théorique et l\'écart.
  */',
-        'startLine' => 58,
-        'endLine' => 80,
+        'startLine' => 93,
+        'endLine' => 126,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -386,8 +476,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 82,
-            'endLine' => 82,
+            'startLine' => 128,
+            'endLine' => 128,
             'startColumn' => 28,
             'endColumn' => 47,
             'parameterIndex' => 0,
@@ -427,8 +517,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 82,
-        'endLine' => 91,
+        'startLine' => 128,
+        'endLine' => 137,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -466,8 +556,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 93,
-            'endLine' => 93,
+            'startLine' => 139,
+            'endLine' => 139,
             'startColumn' => 29,
             'endColumn' => 48,
             'parameterIndex' => 0,
@@ -492,8 +582,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 93,
-            'endLine' => 93,
+            'startLine' => 139,
+            'endLine' => 139,
             'startColumn' => 51,
             'endColumn' => 80,
             'parameterIndex' => 1,
@@ -518,8 +608,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 93,
-            'endLine' => 93,
+            'startLine' => 139,
+            'endLine' => 139,
             'startColumn' => 83,
             'endColumn' => 98,
             'parameterIndex' => 2,
@@ -559,8 +649,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 93,
-        'endLine' => 102,
+        'startLine' => 139,
+        'endLine' => 148,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Stock\Actions\EntryStockAction;
 use App\Domain\Stock\Actions\IssueStockAction;
+use App\Domain\Stock\Contracts\StockWriterInterface;
+use App\Domain\Stock\DTOs\StockMovementData;
 use App\Domain\Stock\Exceptions\InsufficientStockException;
 use App\Domain\Stock\Models\MovementType;
 use App\Domain\Stock\Models\Stock;
@@ -336,5 +338,86 @@ final class StockController extends Controller
         }
 
         return response()->json(['data' => ['count' => count($movements)]], 201);
+    }
+
+    /**
+     * Ajustement direct (±) avec motif obligatoire.
+     */
+    public function adjust(Request $request, StockWriterInterface $writer): JsonResponse
+    {
+        /** @var array{warehouse_id: int, product_id: int, quantity: int, reason: string} $data */
+        $data = $request->validate([
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'integer', 'not_in:0', 'between:-100000,100000'],
+            'reason' => ['required', 'string', 'min:3', 'max:191'],
+        ]);
+
+        $movement = new StockMovementData(
+            warehouseId: $data['warehouse_id'],
+            productId: $data['product_id'],
+            quantity: abs($data['quantity']),
+            movementTypeCode: 'adjustment',
+            referenceType: 'manual_adjustment',
+            referenceId: null,
+            userId: $request->user()?->id,
+            note: $data['reason'],
+        );
+
+        try {
+            $data['quantity'] > 0 ? $writer->increase($movement) : $writer->decrease($movement);
+        } catch (InsufficientStockException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['message' => 'Ajustement enregistré.'], 201);
+    }
+
+    /**
+     * Retour au stock (client) : revendable → retour en stock ;
+     * défectueux → retour tracé puis sortie SAV immédiate (net zéro).
+     */
+    public function returnIn(Request $request, StockWriterInterface $writer): JsonResponse
+    {
+        /** @var array{warehouse_id: int, product_id: int, quantity: int, condition: string, note?: string|null} $data */
+        $data = $request->validate([
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'condition' => ['required', 'in:resellable,defective'],
+            'note' => ['nullable', 'string', 'max:191'],
+        ]);
+
+        DB::transaction(function () use ($data, $writer, $request): void {
+            $note = ($data['condition'] === 'resellable' ? 'Retour client revendable' : 'Retour client défectueux')
+                .(isset($data['note']) && $data['note'] !== '' ? ' — '.$data['note'] : '');
+
+            $writer->increase(new StockMovementData(
+                warehouseId: $data['warehouse_id'],
+                productId: $data['product_id'],
+                quantity: $data['quantity'],
+                movementTypeCode: 'return_in',
+                referenceType: 'customer_return',
+                referenceId: null,
+                userId: $request->user()?->id,
+                note: $note,
+            ));
+
+            if ($data['condition'] === 'defective') {
+                // L'article défectueux ne reste pas en stock vendable : sortie SAV.
+                $writer->decrease(new StockMovementData(
+                    warehouseId: $data['warehouse_id'],
+                    productId: $data['product_id'],
+                    quantity: $data['quantity'],
+                    movementTypeCode: 'out',
+                    referenceType: 'customer_return_defective',
+                    referenceId: null,
+                    userId: $request->user()?->id,
+                    note: 'Sortie SAV — '.$note,
+                ));
+            }
+        });
+
+        return response()->json(['message' => 'Retour enregistré.'], 201);
     }
 }

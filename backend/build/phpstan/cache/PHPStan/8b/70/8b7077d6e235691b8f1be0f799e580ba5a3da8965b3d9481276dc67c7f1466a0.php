@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Stock\Models\Transfer.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Stock\Models\Transfer
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-4df0f135d9767c868e50385fd02a3608f6099dde6cfd8d04ad22e6a2c2460597',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-b7f89bcea2f5f2fd236ad6448dd9203a1832ed135a6b26bc7d7c8348a5db8d0c',
    'data' => 
   array (
     'locatedSource' => 
@@ -28,12 +28,15 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * @property int $from_warehouse_id
  * @property int $to_warehouse_id
  * @property int $transfer_status_id
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $received_at
+ * @property string|null $note
  */',
     'attributes' => 
     array (
     ),
-    'startLine' => 19,
-    'endLine' => 72,
+    'startLine' => 23,
+    'endLine' => 76,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -60,20 +63,20 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
           'code' => '[\'reference\', \'from_warehouse_id\', \'to_warehouse_id\', \'transfer_status_id\', \'created_by\', \'received_by\', \'sent_at\', \'received_at\', \'note\']',
           'attributes' => 
           array (
-            'startLine' => 21,
-            'endLine' => 31,
-            'startTokenPos' => 53,
-            'startFilePos' => 484,
-            'endTokenPos' => 82,
-            'endFilePos' => 700,
+            'startLine' => 25,
+            'endLine' => 35,
+            'startTokenPos' => 58,
+            'startFilePos' => 618,
+            'endTokenPos' => 87,
+            'endFilePos' => 834,
           ),
         ),
         'docComment' => NULL,
         'attributes' => 
         array (
         ),
-        'startLine' => 21,
-        'endLine' => 31,
+        'startLine' => 25,
+        'endLine' => 35,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -106,8 +109,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 33,
-        'endLine' => 39,
+        'startLine' => 37,
+        'endLine' => 43,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -143,8 +146,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Warehouse, $this>
  */',
-        'startLine' => 44,
-        'endLine' => 47,
+        'startLine' => 48,
+        'endLine' => 51,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -180,8 +183,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Warehouse, $this>
  */',
-        'startLine' => 52,
-        'endLine' => 55,
+        'startLine' => 56,
+        'endLine' => 59,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -217,8 +220,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<TransferStatus, $this>
  */',
-        'startLine' => 60,
-        'endLine' => 63,
+        'startLine' => 64,
+        'endLine' => 67,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -254,8 +257,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return HasMany<TransferLine, $this>
  */',
-        'startLine' => 68,
-        'endLine' => 71,
+        'startLine' => 72,
+        'endLine' => 75,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

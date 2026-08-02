@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Requests\SaveInventoryLinesRequest.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Requests\SaveInventoryLinesRequest
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-0c32b492fffa275ee7f9741c9fde34c14b5c1e96ed656a81842cdc5c5c6d9ea4',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-9e5ea29e017b8b8b506bada121bac26d8a78ecec18798746a810042b022e4a43',
    'data' => 
   array (
     'locatedSource' => 
@@ -27,7 +27,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 9,
-    'endLine' => 27,
+    'endLine' => 28,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Foundation\\Http\\FormRequest',
@@ -103,7 +103,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * @return array<string, mixed>
  */',
         'startLine' => 19,
-        'endLine' => 26,
+        'endLine' => 27,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

@@ -8,6 +8,8 @@ export interface InventoryLine {
   system_quantity: number
   counted_quantity: number
   difference: number
+  reason: string | null
+  variance_value: number | null
 }
 
 export interface Inventory {
@@ -42,7 +44,7 @@ export async function fetchInventory(id: number): Promise<Inventory> {
 
 export async function saveInventoryLines(
   id: number,
-  lines: { product_id: number; counted_quantity: number }[],
+  lines: { product_id: number; counted_quantity: number; reason?: string | null }[],
 ): Promise<Inventory> {
   await ensureCsrfCookie()
   const { data } = await api.put<{ data: Inventory }>(`/inventories/${id}/lines`, { lines })

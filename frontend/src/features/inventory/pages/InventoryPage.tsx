@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { api } from '@/lib/api'
+import { downloadFile } from '@/lib/download'
 import { usePermission } from '@/hooks/usePermission'
-import { cn } from '@/lib/utils'
+import { cn, formatNumber } from '@/lib/utils'
 import { useApproveInventory, useCancelInventory, useCreateInventory, useInventories, useInventory, useSaveInventoryLines } from '../hooks'
 
 function errorMessage(error: unknown, fallback: string): string {
@@ -196,10 +197,12 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
   })
 
   const [counts, setCounts] = useState<Record<number, number>>({})
+  const [reasons, setReasons] = useState<Record<number, string>>({})
   const [confirmApprove, setConfirmApprove] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
 
-  // Pré-remplit les quantités : celles déjà saisies au comptage sinon le théorique.
+  // Pré-remplit uniquement depuis un comptage déjà enregistré — jamais depuis
+  // le théorique : le compteur doit saisir son chiffre sans le recopier.
   useEffect(() => {
     const saved = inventory?.lines
     if (saved && saved.length > 0) {
@@ -208,25 +211,28 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
         for (const l of saved) if (!(l.product_id in next)) next[l.product_id] = l.counted_quantity
         return next
       })
-    }
-  }, [inventory])
-
-  useEffect(() => {
-    if (stock) {
-      setCounts((prev) => {
+      setReasons((prev) => {
         const next = { ...prev }
-        for (const s of stock) if (!(s.product_id in next)) next[s.product_id] = s.quantity
+        for (const l of saved) if (l.reason && !(l.product_id in next)) next[l.product_id] = l.reason
         return next
       })
     }
-  }, [stock])
+  }, [inventory])
 
   const rows = useMemo(() => stock ?? [], [stock])
+  const countedRows = rows.filter((r) => counts[r.product_id] !== undefined)
+  const missingReasons = countedRows.filter(
+    (r) => (counts[r.product_id] ?? 0) !== r.quantity && (reasons[r.product_id] ?? '').trim() === '',
+  ).length
 
   function save() {
     saveMutation.mutate({
       id,
-      lines: rows.map((r) => ({ product_id: r.product_id, counted_quantity: counts[r.product_id] ?? r.quantity })),
+      lines: countedRows.map((r) => ({
+        product_id: r.product_id,
+        counted_quantity: counts[r.product_id] ?? 0,
+        reason: (reasons[r.product_id] ?? '').trim() || null,
+      })),
     })
   }
 
@@ -247,11 +253,19 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
         </div>
         {isDraft ? (
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => downloadFile(`/inventories/${id}/sheet`, `comptage-${inventory?.reference}.xlsx`)}>
+              Feuille de comptage
+            </Button>
             <Button variant="ghost" onClick={() => setConfirmCancel(true)} disabled={cancelMutation.isPending}>
               <XCircle className="h-4 w-4" />
               Annuler
             </Button>
-            <Button variant="outline" onClick={save} disabled={saveMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={save}
+              disabled={saveMutation.isPending || countedRows.length === 0 || missingReasons > 0}
+              title={missingReasons > 0 ? `${missingReasons} écart(s) sans motif` : countedRows.length === 0 ? 'Saisissez au moins un comptage' : undefined}
+            >
               <Save className="h-4 w-4" />
               {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer le comptage'}
             </Button>
@@ -288,7 +302,16 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
       ) : null}
 
       <Card>
-        <CardHeader title={isApproved ? 'Écarts régularisés' : isCancelled ? 'Comptage (annulé)' : 'Comptage'} />
+        <CardHeader
+          title={isApproved ? 'Écarts régularisés' : isCancelled ? 'Comptage (annulé)' : 'Comptage'}
+          hint={
+            !isDraft && (inventory?.lines ?? []).some((l) => l.variance_value !== null)
+              ? `Valorisation des écarts : ${formatNumber((inventory?.lines ?? []).reduce((s, l) => s + (l.variance_value ?? 0), 0))} DH`
+              : isDraft
+                ? `${countedRows.length} / ${rows.length} comptés`
+                : undefined
+          }
+        />
         <CardBody className="p-0">
           <table className="w-full text-sm">
             <thead>
@@ -298,6 +321,8 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                 <th className="px-5 py-3 text-right font-medium">Théorique</th>
                 <th className="px-5 py-3 text-right font-medium">Compté</th>
                 <th className="px-5 py-3 text-right font-medium">Écart</th>
+                <th className="px-5 py-3 font-medium">{isDraft ? 'Motif (si écart)' : 'Motif'}</th>
+                {!isDraft ? <th className="px-5 py-3 text-right font-medium">Valorisation</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -311,30 +336,60 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                     <td className={cn('tabular px-5 py-3 text-right font-medium', l.difference === 0 ? 'text-muted' : l.difference > 0 ? 'text-ok' : 'text-bad')}>
                       {l.difference > 0 ? `+${l.difference}` : l.difference}
                     </td>
+                    <td className="px-5 py-3 text-muted">{l.reason ?? '—'}</td>
+                    <td className={cn('tabular px-5 py-3 text-right', (l.variance_value ?? 0) === 0 ? 'text-muted' : (l.variance_value ?? 0) > 0 ? 'text-ok' : 'text-bad')}>
+                      {l.variance_value !== null ? `${formatNumber(l.variance_value)} DH` : '—'}
+                    </td>
                   </tr>
                 ))
               ) : rows.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-muted">Aucun article en stock dans ce lieu.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-muted">Aucun article en stock dans ce lieu.</td></tr>
               ) : (
                 rows.map((r) => {
-                  const counted = counts[r.product_id] ?? r.quantity
-                  const diff = counted - r.quantity
+                  const entered = counts[r.product_id] !== undefined
+                  const counted = counts[r.product_id] ?? 0
+                  const diff = entered ? counted - r.quantity : 0
                   return (
                     <tr key={r.product_id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{r.sku}</td>
                       <td className="px-5 py-3 text-ink">{r.name}</td>
-                      <td className="tabular px-5 py-3 text-right text-muted">{r.quantity}</td>
+                      {/* Théorique masqué tant que le compteur n'a pas saisi son chiffre. */}
+                      <td className="tabular px-5 py-3 text-right text-muted">{entered ? r.quantity : '•••'}</td>
                       <td className="px-5 py-3 text-right">
                         <Input
                           type="number"
                           min={0}
-                          value={counted}
-                          onChange={(e) => setCounts((prev) => ({ ...prev, [r.product_id]: Number(e.target.value) }))}
+                          value={entered ? counted : ''}
+                          placeholder="—"
+                          onChange={(e) => {
+                            const v = e.target.value
+                            setCounts((prev) => {
+                              const next = { ...prev }
+                              if (v === '') {
+                                delete next[r.product_id]
+                              } else {
+                                next[r.product_id] = Number(v)
+                              }
+                              return next
+                            })
+                          }}
                           className="ml-auto w-24"
                         />
                       </td>
-                      <td className={cn('tabular px-5 py-3 text-right font-medium', diff === 0 ? 'text-muted' : diff > 0 ? 'text-ok' : 'text-bad')}>
-                        {diff > 0 ? `+${diff}` : diff}
+                      <td className={cn('tabular px-5 py-3 text-right font-medium', !entered || diff === 0 ? 'text-muted' : diff > 0 ? 'text-ok' : 'text-bad')}>
+                        {entered ? (diff > 0 ? `+${diff}` : diff) : '—'}
+                      </td>
+                      <td className="px-5 py-3">
+                        {entered && diff !== 0 ? (
+                          <Input
+                            value={reasons[r.product_id] ?? ''}
+                            placeholder="Motif obligatoire…"
+                            onChange={(e) => setReasons((prev) => ({ ...prev, [r.product_id]: e.target.value }))}
+                            className={cn('w-44', (reasons[r.product_id] ?? '').trim() === '' ? 'border-bad' : '')}
+                          />
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
                       </td>
                     </tr>
                   )

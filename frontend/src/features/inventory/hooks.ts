@@ -38,7 +38,7 @@ export function useCreateInventory() {
 export function useSaveInventoryLines() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, lines }: { id: number; lines: { product_id: number; counted_quantity: number }[] }) =>
+    mutationFn: ({ id, lines }: { id: number; lines: { product_id: number; counted_quantity: number; reason?: string | null }[] }) =>
       saveInventoryLines(id, lines),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })

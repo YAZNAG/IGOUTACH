@@ -22,6 +22,7 @@ final class SaveInventoryLinesRequest extends FormRequest
             'lines' => ['present', 'array'],
             'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'lines.*.counted_quantity' => ['required', 'integer', 'min:0'],
+            'lines.*.reason' => ['nullable', 'string', 'max:191'],
         ];
     }
 }

@@ -58,7 +58,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\PermissionSeeder.php' => '0d995cf7b112826bdcd2e901bbba83906dc6876fb6804463a84de9b05a88bf3a',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\PermissionSeeder.php' => '2ce337fc73980404ee1a5b3e6eab4d4a07855787736dfb75ef7351f63976df58',
     ),
   ),
 ));

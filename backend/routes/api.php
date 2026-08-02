@@ -5,12 +5,15 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
+use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DocumentSequenceController;
+use App\Http\Controllers\Api\V1\ExpenseController;
 use App\Http\Controllers\Api\V1\InventoryController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\ProductAttributeController;
@@ -18,7 +21,9 @@ use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductImageController;
 use App\Http\Controllers\Api\V1\ProductPriceController;
 use App\Http\Controllers\Api\V1\ProductSerialController;
+use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\SaleController;
 use App\Http\Controllers\Api\V1\SessionController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\StockController;
@@ -26,6 +31,7 @@ use App\Http\Controllers\Api\V1\SupplierContactController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\SupplierProductController;
 use App\Http\Controllers\Api\V1\TaxRateController;
+use App\Http\Controllers\Api\V1\TransferController;
 use App\Http\Controllers\Api\V1\UnitController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserPermissionController;
@@ -186,11 +192,57 @@ Route::prefix('v1')->group(function () {
         Route::get('stock/movement-types', [StockController::class, 'movementTypes'])->middleware('can:stock.view');
         Route::post('stock/entry', [StockController::class, 'entry'])->middleware('can:stock.entry');
         Route::post('stock/issue', [StockController::class, 'issue'])->middleware('can:stock.issue');
+        Route::post('stock/adjust', [StockController::class, 'adjust'])->middleware('can:stock.adjust');
+        Route::post('stock/return', [StockController::class, 'returnIn'])->middleware('can:stock.entry');
+
+        // Transferts inter-lieux (alerte transit > 3 jours incluse)
+        Route::get('transfers', [TransferController::class, 'index'])->middleware('can:stock.view');
+        Route::post('transfers', [TransferController::class, 'store'])->middleware('can:transfer.create');
+        Route::get('transfers/{transfer}', [TransferController::class, 'show'])->middleware('can:stock.view');
+        Route::post('transfers/{transfer}/receive', [TransferController::class, 'receive'])->middleware('can:transfer.receive');
+
+        // Achats — bons de commande, réceptions, retours, réappro
+        Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->middleware('can:purchase.create');
+        Route::post('purchase-orders', [PurchaseOrderController::class, 'store'])->middleware('can:purchase.create');
+        Route::get('purchase-orders/replenishment', [PurchaseOrderController::class, 'replenishment'])->middleware('can:purchase.create');
+        Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->middleware('can:purchase.create');
+        Route::post('purchase-orders/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->middleware('can:receipt.create');
+        Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->middleware('can:purchase.create');
+        Route::post('supplier-returns', [PurchaseOrderController::class, 'supplierReturn'])->middleware('can:receipt.create');
+
+        // Ventes — devis & factures
+        Route::get('sales', [SaleController::class, 'index'])->middleware('can:sale.create');
+        Route::post('sales', [SaleController::class, 'store'])->middleware('can:sale.create');
+        Route::get('sales/price', [SaleController::class, 'price'])->middleware('can:sale.create');
+        Route::get('sales/{sale}', [SaleController::class, 'show'])->middleware('can:sale.create');
+        Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])->middleware('can:sale.create');
+        Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])->middleware('can:sale.cancel');
+
+        // Règlements — encaissements, chèques, balance âgée, relevé
+        Route::get('payments', [PaymentController::class, 'index'])->middleware('can:payment.view');
+        Route::post('payments', [PaymentController::class, 'store'])->middleware('can:payment.create');
+        Route::patch('payments/{payment}/cheque', [PaymentController::class, 'chequeStatus'])->middleware('can:payment.create');
+        Route::get('customers-aging', [PaymentController::class, 'aging'])->middleware('can:payment.view');
+        Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
+
+        // Caisse — sessions
+        Route::get('cash-sessions', [CashSessionController::class, 'index'])->middleware('can:cash.manage');
+        Route::get('cash-sessions/current', [CashSessionController::class, 'current'])->middleware('can:payment.create');
+        Route::post('cash-sessions/open', [CashSessionController::class, 'open'])->middleware('can:cash.manage');
+        Route::post('cash-sessions/{cashSession}/close', [CashSessionController::class, 'close'])->middleware('can:cash.manage');
+
+        // Charges
+        Route::get('expense-categories', [ExpenseController::class, 'categories'])->middleware('can:expense.create');
+        Route::post('expense-categories', [ExpenseController::class, 'storeCategory'])->middleware('can:expense.approve');
+        Route::get('expenses', [ExpenseController::class, 'index'])->middleware('can:expense.create');
+        Route::post('expenses', [ExpenseController::class, 'store'])->middleware('can:expense.create');
+        Route::patch('expenses/{expense}/decide', [ExpenseController::class, 'decide'])->middleware('can:expense.approve');
 
         // Inventaires physiques (par lieu, avec date et régularisation)
         Route::get('inventories', [InventoryController::class, 'index'])->middleware('can:inventory.create');
         Route::post('inventories', [InventoryController::class, 'store'])->middleware('can:inventory.create');
         Route::get('inventories/{inventory}', [InventoryController::class, 'show'])->middleware('can:inventory.create');
+        Route::get('inventories/{inventory}/sheet', [InventoryController::class, 'sheet'])->middleware('can:inventory.create');
         Route::put('inventories/{inventory}/lines', [InventoryController::class, 'saveLines'])->middleware('can:inventory.create');
         Route::post('inventories/{inventory}/approve', [InventoryController::class, 'approve'])->middleware('can:inventory.approve');
         Route::post('inventories/{inventory}/cancel', [InventoryController::class, 'cancel'])->middleware('can:inventory.create');

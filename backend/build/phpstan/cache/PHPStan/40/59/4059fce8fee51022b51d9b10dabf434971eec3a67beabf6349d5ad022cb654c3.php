@@ -12,6 +12,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Pricing\\Services',
          'uses' => 
         array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
           'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
           'productpricerepositoryinterface' => 'App\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface',
           'resolvedprice' => 'App\\Domain\\Pricing\\DTOs\\ResolvedPrice',
@@ -40,6 +41,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Pricing\\Services',
          'uses' => 
         array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
           'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
           'productpricerepositoryinterface' => 'App\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface',
           'resolvedprice' => 'App\\Domain\\Pricing\\DTOs\\ResolvedPrice',
@@ -57,6 +59,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Pricing\\Services',
            'uses' => 
           array (
+            'customer' => 'App\\Domain\\Customers\\Models\\Customer',
             'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
             'productpricerepositoryinterface' => 'App\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface',
             'resolvedprice' => 'App\\Domain\\Pricing\\DTOs\\ResolvedPrice',
@@ -95,6 +98,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'namespace' => 'App\\Domain\\Pricing\\Services',
          'uses' => 
         array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
           'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
           'productpricerepositoryinterface' => 'App\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface',
           'resolvedprice' => 'App\\Domain\\Pricing\\DTOs\\ResolvedPrice',
@@ -112,6 +116,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'namespace' => 'App\\Domain\\Pricing\\Services',
            'uses' => 
           array (
+            'customer' => 'App\\Domain\\Customers\\Models\\Customer',
             'priceresolverinterface' => 'App\\Domain\\Pricing\\Contracts\\PriceResolverInterface',
             'productpricerepositoryinterface' => 'App\\Domain\\Pricing\\Contracts\\ProductPriceRepositoryInterface',
             'resolvedprice' => 'App\\Domain\\Pricing\\DTOs\\ResolvedPrice',
@@ -148,7 +153,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php' => '9103125123d05ac867db9b547852118fd054411784a2492e7b56dccf2606fe7f',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php' => 'e027b147776074d2671579465b02ea03988626fc8aad13b110292a857fffe8cb',
     ),
   ),
 ));

@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\database\seeders\PermissionSeeder.php-PHPStan\BetterReflection\Reflection\ReflectionClass-Database\Seeders\PermissionSeeder
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-0d995cf7b112826bdcd2e901bbba83906dc6876fb6804463a84de9b05a88bf3a',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-2ce337fc73980404ee1a5b3e6eab4d4a07855787736dfb75ef7351f63976df58',
    'data' => 
   array (
     'locatedSource' => 
@@ -27,7 +27,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 10,
-    'endLine' => 139,
+    'endLine' => 144,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Seeder',
@@ -114,6 +114,10 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     [\'name\' => \'customer.update\', \'module\' => \'customers\', \'display_name\' => \'Modifier un client\'],
     [\'name\' => \'customer.delete\', \'module\' => \'customers\', \'display_name\' => \'Supprimer un client\'],
     [\'name\' => \'customer.set_credit_limit\', \'module\' => \'customers\', \'display_name\' => \'Définir un plafond de crédit / débloquer\'],
+    // Règlements & caisse
+    [\'name\' => \'payment.view\', \'module\' => \'payments\', \'display_name\' => \'Consulter les encaissements\'],
+    [\'name\' => \'payment.create\', \'module\' => \'payments\', \'display_name\' => \'Enregistrer un encaissement\'],
+    [\'name\' => \'cash.manage\', \'module\' => \'payments\', \'display_name\' => \'Gérer la caisse (ouverture / clôture)\'],
     // Charges
     [\'name\' => \'expense.create\', \'module\' => \'expenses\', \'display_name\' => \'Créer une charge\'],
     [\'name\' => \'expense.approve\', \'module\' => \'expenses\', \'display_name\' => \'Valider une charge\'],
@@ -143,11 +147,11 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
           'attributes' => 
           array (
             'startLine' => 18,
-            'endLine' => 125,
+            'endLine' => 130,
             'startTokenPos' => 47,
             'startFilePos' => 452,
-            'endTokenPos' => 1762,
-            'endFilePos' => 8833,
+            'endTokenPos' => 1833,
+            'endFilePos' => 9206,
           ),
         ),
         'docComment' => '/**
@@ -160,7 +164,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'startLine' => 18,
-        'endLine' => 125,
+        'endLine' => 130,
         'startColumn' => 5,
         'endColumn' => 6,
       ),
@@ -190,8 +194,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 127,
-        'endLine' => 138,
+        'startLine' => 132,
+        'endLine' => 143,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

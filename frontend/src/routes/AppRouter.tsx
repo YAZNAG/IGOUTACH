@@ -6,9 +6,15 @@ import { ArticlesPage } from '@/features/articles'
 import { AuditPage } from '@/features/audit'
 import { LoginPage } from '@/features/auth'
 import { BrandsPage } from '@/features/brands'
+import { CashPage } from '@/features/cash'
 import { CategoriesPage } from '@/features/categories'
 import { CustomersPage } from '@/features/customers'
+import { ExpensesPage } from '@/features/expenses'
 import { InventoryPage } from '@/features/inventory'
+import { PaymentsPage } from '@/features/payments'
+import { PurchasesPage } from '@/features/purchases'
+import { SalesPage } from '@/features/sales'
+import { TransfersPage } from '@/features/transfers'
 import { PricingPage } from '@/features/pricing'
 import { SessionsPage } from '@/features/sessions'
 import {
@@ -43,15 +49,17 @@ export const router = createBrowserRouter([
           { path: '/rapports', element: <PlaceholderPage title="Rapports" /> },
           { path: '/stock', element: <StockPage /> },
           { path: '/inventaire', element: <InventoryPage /> },
-          { path: '/transferts', element: <PlaceholderPage title="Transferts" /> },
-          { path: '/achats', element: <PlaceholderPage title="Achats" /> },
-          { path: '/ventes', element: <PlaceholderPage title="Ventes" /> },
+          { path: '/transferts', element: <TransfersPage /> },
+          { path: '/achats', element: <PurchasesPage /> },
+          { path: '/ventes', element: <SalesPage /> },
+          { path: '/reglements', element: <PaymentsPage /> },
+          { path: '/caisse', element: <CashPage /> },
           { path: '/categories', element: <CategoriesPage /> },
           { path: '/articles', element: <ArticlesPage /> },
           { path: '/tarifs', element: <PricingPage /> },
           { path: '/fournisseurs', element: <SuppliersPage /> },
           { path: '/clients', element: <CustomersPage /> },
-          { path: '/charges', element: <PlaceholderPage title="Charges" /> },
+          { path: '/charges', element: <ExpensesPage /> },
           { path: '/lieux', element: <WarehousesPage /> },
           { path: '/lieux/:id', element: <WarehouseDetailPage /> },
           { path: '/utilisateurs', element: <UsersPage /> },

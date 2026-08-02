@@ -51,6 +51,8 @@ export const navGroups: NavGroup[] = [
       { label: 'Transferts', to: '/transferts', icon: ArrowLeftRight, permission: 'transfer.create' },
       { label: 'Achats', to: '/achats', icon: ShoppingCart, permission: 'purchase.create' },
       { label: 'Ventes', to: '/ventes', icon: Store, permission: 'sale.create' },
+      { label: 'Règlements', to: '/reglements', icon: Receipt, permission: 'payment.view' },
+      { label: 'Caisse', to: '/caisse', icon: Wallet, permission: 'cash.manage' },
       { label: 'Catégories', to: '/categories', icon: Tags, permission: 'category.view' },
       { label: 'Articles', to: '/articles', icon: Package, permission: 'product.view' },
       { label: 'Tarifs de vente', to: '/tarifs', icon: Tag, permission: 'price.view' },

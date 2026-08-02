@@ -8,6 +8,7 @@ use App\Domain\Warehouses\Models\Warehouse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -15,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $from_warehouse_id
  * @property int $to_warehouse_id
  * @property int $transfer_status_id
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $received_at
+ * @property string|null $note
  */
 class Transfer extends Model
 {

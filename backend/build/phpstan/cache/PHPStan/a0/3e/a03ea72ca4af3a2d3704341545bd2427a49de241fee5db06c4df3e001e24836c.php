@@ -475,7 +475,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\InventoryLine.php' => 
     array (
-      0 => '64c7efe86421aa22ff86d3e5eb8167e104f33bc5945f10af6b76634beb253df8',
+      0 => 'ddc72c5d3a5f0d6e4113e8165a8fd8f4faef6916162b6685f18451a5e930e526',
       1 => 
       array (
         0 => 'app\\domain\\stock\\models\\inventoryline',
@@ -540,7 +540,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php' => 
     array (
-      0 => '4df0f135d9767c868e50385fd02a3608f6099dde6cfd8d04ad22e6a2c2460597',
+      0 => 'b7f89bcea2f5f2fd236ad6448dd9203a1832ed135a6b26bc7d7c8348a5db8d0c',
       1 => 
       array (
         0 => 'app\\domain\\stock\\models\\transfer',
@@ -1591,7 +1591,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Pricing\\Services\\PriceResolver.php' => 
     array (
-      0 => '9103125123d05ac867db9b547852118fd054411784a2492e7b56dccf2606fe7f',
+      0 => 'e027b147776074d2671579465b02ea03988626fc8aad13b110292a857fffe8cb',
       1 => 
       array (
         0 => 'app\\domain\\pricing\\services\\priceresolver',
@@ -3031,7 +3031,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php' => 
     array (
-      0 => '0a26e54a8e5304eec8b5e0f4ad30d1a87a40de587d9a6978bbfb3b3f14bb5b64',
+      0 => 'ef50c94c97b2b336f54a9cb6fe41f5d8f5d225227daa6605af962be7447c9daa',
       1 => 
       array (
         0 => 'app\\http\\controllers\\api\\v1\\stockcontroller',
@@ -3048,6 +3048,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         7 => 'app\\http\\controllers\\api\\v1\\quantitiesbyproductandwarehouse',
         8 => 'app\\http\\controllers\\api\\v1\\entry',
         9 => 'app\\http\\controllers\\api\\v1\\issue',
+        10 => 'app\\http\\controllers\\api\\v1\\adjust',
+        11 => 'app\\http\\controllers\\api\\v1\\returnin',
       ),
       3 => 
       array (
@@ -3104,7 +3106,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php' => 
     array (
-      0 => '6338346d81ada5e08ea6790b1cac597d1c5f0cd3f82f40d232a961c39cc5122b',
+      0 => '77941381e60cfc5617c3b7150ec139e720c7ed289b89ba034f1feabec33a113b',
       1 => 
       array (
         0 => 'app\\http\\controllers\\api\\v1\\inventorycontroller',
@@ -3114,9 +3116,10 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         0 => 'app\\http\\controllers\\api\\v1\\index',
         1 => 'app\\http\\controllers\\api\\v1\\store',
         2 => 'app\\http\\controllers\\api\\v1\\show',
-        3 => 'app\\http\\controllers\\api\\v1\\savelines',
-        4 => 'app\\http\\controllers\\api\\v1\\cancel',
-        5 => 'app\\http\\controllers\\api\\v1\\approve',
+        3 => 'app\\http\\controllers\\api\\v1\\sheet',
+        4 => 'app\\http\\controllers\\api\\v1\\savelines',
+        5 => 'app\\http\\controllers\\api\\v1\\cancel',
+        6 => 'app\\http\\controllers\\api\\v1\\approve',
       ),
       3 => 
       array (
@@ -3124,7 +3127,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Requests\\SaveInventoryLinesRequest.php' => 
     array (
-      0 => '0c32b492fffa275ee7f9741c9fde34c14b5c1e96ed656a81842cdc5c5c6d9ea4',
+      0 => '9e5ea29e017b8b8b506bada121bac26d8a78ecec18798746a810042b022e4a43',
       1 => 
       array (
         0 => 'app\\http\\requests\\saveinventorylinesrequest',
@@ -3172,7 +3175,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Resources\\InventoryResource.php' => 
     array (
-      0 => '4d8d428c5dc0c347459938240cd567ec6e01feac4b24ae57d84f384e5941ae56',
+      0 => '29afcf5227d22044377b2e1746551a9fb42e2bbfb66e24185ada2f6864dfb371',
       1 => 
       array (
         0 => 'app\\http\\resources\\inventoryresource',
@@ -3695,6 +3698,361 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         2 => 'app\\http\\controllers\\api\\v1\\detach',
         3 => 'app\\http\\controllers\\api\\v1\\stats',
         4 => 'app\\http\\controllers\\api\\v1\\list',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Models\\CustomerLedgerEntry.php' => 
+    array (
+      0 => '6d5328e54ab772d60835d361025b187ebb9057a3ce297a5d3d22b9f8325ec45a',
+      1 => 
+      array (
+        0 => 'app\\domain\\customers\\models\\customerledgerentry',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\customers\\models\\casts',
+        1 => 'app\\domain\\customers\\models\\customer',
+        2 => 'app\\domain\\customers\\models\\user',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Customers\\Services\\CustomerLedger.php' => 
+    array (
+      0 => 'e88c552a43800584e947deaad076c5dc2affb20bdeb1c49962902327ae7194d1',
+      1 => 
+      array (
+        0 => 'app\\domain\\customers\\services\\customerledger',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\customers\\services\\record',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\Expense.php' => 
+    array (
+      0 => 'b4b144ce8087bf4b7dcffb106c4db3ad305ee8d416200432305db2c754ecedd2',
+      1 => 
+      array (
+        0 => 'app\\domain\\expenses\\models\\expense',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\expenses\\models\\casts',
+        1 => 'app\\domain\\expenses\\models\\category',
+        2 => 'app\\domain\\expenses\\models\\warehouse',
+        3 => 'app\\domain\\expenses\\models\\user',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Expenses\\Models\\ExpenseCategory.php' => 
+    array (
+      0 => 'e00f445f37972dbb5da2bb2646bdc7210d35bb3d5425345de9e7ea690cab18ee',
+      1 => 
+      array (
+        0 => 'app\\domain\\expenses\\models\\expensecategory',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\expenses\\models\\casts',
+        1 => 'app\\domain\\expenses\\models\\expenses',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Actions\\ReceivePurchaseOrderAction.php' => 
+    array (
+      0 => 'b1db33b339711f29c969c4b7c8aecb9d42575a9311075ed718ff7744c614c6d5',
+      1 => 
+      array (
+        0 => 'app\\domain\\purchasing\\actions\\receivepurchaseorderaction',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\purchasing\\actions\\__construct',
+        1 => 'app\\domain\\purchasing\\actions\\execute',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrder.php' => 
+    array (
+      0 => '016846f0bc970b6c40a9e9afee0b65c5efa9285c556ee24ec86fb512c2a19d27',
+      1 => 
+      array (
+        0 => 'app\\domain\\purchasing\\models\\purchaseorder',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\purchasing\\models\\casts',
+        1 => 'app\\domain\\purchasing\\models\\supplier',
+        2 => 'app\\domain\\purchasing\\models\\warehouse',
+        3 => 'app\\domain\\purchasing\\models\\lines',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => 
+    array (
+      0 => 'b9eec9bbe268c35a5eb9a342bdd99dbfefcd696f2532fd8e0ca8969d5ab99799',
+      1 => 
+      array (
+        0 => 'app\\domain\\purchasing\\models\\purchaseorderline',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\purchasing\\models\\casts',
+        1 => 'app\\domain\\purchasing\\models\\purchaseorder',
+        2 => 'app\\domain\\purchasing\\models\\product',
+        3 => 'app\\domain\\purchasing\\models\\remaining',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\CancelSaleAction.php' => 
+    array (
+      0 => '41350d05f9b349a4f0ea7b64dc6e832d80291cfedcb7376ccada8652b3a38526',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\actions\\cancelsaleaction',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\actions\\__construct',
+        1 => 'app\\domain\\sales\\actions\\execute',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\ConfirmSaleAction.php' => 
+    array (
+      0 => '55b4ea6021317c91b5534330b00e0649a4a450f0b730f2d6c8d7234a0db3ebdc',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\actions\\confirmsaleaction',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\actions\\__construct',
+        1 => 'app\\domain\\sales\\actions\\execute',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php' => 
+    array (
+      0 => '1adeab614940af19a79bb34546862a27235eba4e00b38ec0652106cc61aa022a',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\actions\\recordpaymentaction',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\actions\\__construct',
+        1 => 'app\\domain\\sales\\actions\\execute',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\CashSession.php' => 
+    array (
+      0 => 'b08e5d6e67b7de406d8b8f27a6a0622c8447885b2e7ccd2ffdd1ab25851cbfa0',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\cashsession',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\casts',
+        1 => 'app\\domain\\sales\\models\\warehouse',
+        2 => 'app\\domain\\sales\\models\\opener',
+        3 => 'app\\domain\\sales\\models\\payments',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php' => 
+    array (
+      0 => 'e4657240c23ed4d127c4e207f4ddcd1ca63bbbbc70579dee99d4f100e4e6200f',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\payment',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\casts',
+        1 => 'app\\domain\\sales\\models\\customer',
+        2 => 'app\\domain\\sales\\models\\sale',
+        3 => 'app\\domain\\sales\\models\\method',
+        4 => 'app\\domain\\sales\\models\\cashsession',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Sale.php' => 
+    array (
+      0 => '78a7a29b04d08001c0b948c2c5f5626c4eedcdba1d5a25e79514facffa1138e5',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\sale',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\casts',
+        1 => 'app\\domain\\sales\\models\\customer',
+        2 => 'app\\domain\\sales\\models\\warehouse',
+        3 => 'app\\domain\\sales\\models\\user',
+        4 => 'app\\domain\\sales\\models\\lines',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php' => 
+    array (
+      0 => '32f38b520c623e2d7813ae9467e11695912e947dd97728bd892f8852849678ba',
+      1 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\saleline',
+      ),
+      2 => 
+      array (
+        0 => 'app\\domain\\sales\\models\\casts',
+        1 => 'app\\domain\\sales\\models\\sale',
+        2 => 'app\\domain\\sales\\models\\product',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php' => 
+    array (
+      0 => 'e574ea9f36f95c02182f66cbadd0715355afdc3ef9757a7dd91a794839243d92',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\cashsessioncontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\index',
+        1 => 'app\\http\\controllers\\api\\v1\\current',
+        2 => 'app\\http\\controllers\\api\\v1\\open',
+        3 => 'app\\http\\controllers\\api\\v1\\close',
+        4 => 'app\\http\\controllers\\api\\v1\\serialize',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php' => 
+    array (
+      0 => '012922233012742afe272a8ac6a43b9f397ee9b26bbda12884a7fc1111269a27',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\expensecontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\categories',
+        1 => 'app\\http\\controllers\\api\\v1\\storecategory',
+        2 => 'app\\http\\controllers\\api\\v1\\index',
+        3 => 'app\\http\\controllers\\api\\v1\\store',
+        4 => 'app\\http\\controllers\\api\\v1\\decide',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php' => 
+    array (
+      0 => 'b7b1e0d0047742f36fd5d07a744ee28dd0cb1b9ce534d4a6a3cfb2f31e3a922f',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\paymentcontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\index',
+        1 => 'app\\http\\controllers\\api\\v1\\store',
+        2 => 'app\\http\\controllers\\api\\v1\\chequestatus',
+        3 => 'app\\http\\controllers\\api\\v1\\aging',
+        4 => 'app\\http\\controllers\\api\\v1\\statement',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php' => 
+    array (
+      0 => '85b9fec0783898e2b29bc7e412e9e4e1ed27aa843e8d1b96a72a7c1aab18f446',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\purchaseordercontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\index',
+        1 => 'app\\http\\controllers\\api\\v1\\store',
+        2 => 'app\\http\\controllers\\api\\v1\\show',
+        3 => 'app\\http\\controllers\\api\\v1\\receive',
+        4 => 'app\\http\\controllers\\api\\v1\\cancel',
+        5 => 'app\\http\\controllers\\api\\v1\\supplierreturn',
+        6 => 'app\\http\\controllers\\api\\v1\\replenishment',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php' => 
+    array (
+      0 => 'f593f2d0c82cc7601617650b78b2e51a9ab567082c57247e983a9376a68925b4',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\salecontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\index',
+        1 => 'app\\http\\controllers\\api\\v1\\price',
+        2 => 'app\\http\\controllers\\api\\v1\\store',
+        3 => 'app\\http\\controllers\\api\\v1\\show',
+        4 => 'app\\http\\controllers\\api\\v1\\confirm',
+        5 => 'app\\http\\controllers\\api\\v1\\cancel',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php' => 
+    array (
+      0 => '72b371878d2463dd7e6669efcdacad179728fee2fc50c357ce39a9b33b8e052b',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\transfercontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\index',
+        1 => 'app\\http\\controllers\\api\\v1\\store',
+        2 => 'app\\http\\controllers\\api\\v1\\show',
+        3 => 'app\\http\\controllers\\api\\v1\\receive',
       ),
       3 => 
       array (

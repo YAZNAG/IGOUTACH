@@ -135,7 +135,7 @@
   <header class="head">
     <div class="eyebrow">IGOUTECH · Gestion de stock multi-sites</div>
     <h1>Rapport d'avancement</h1>
-    <p class="sub">État réel du code confronté à la cartographie fonctionnelle complète. Mise à jour après la finalisation des blocs <b>A (Socle)</b> et <b>B (Référentiel)</b>.</p>
+    <p class="sub">État réel du code confronté à la cartographie fonctionnelle complète. Mise à jour après la finalisation des blocs <b>A (Socle)</b>, <b>B (Référentiel)</b>, <b>C (Flux)</b> et <b>D (Argent)</b>.</p>
     <div class="meta">
       <span><b>Date</b> 2 août 2026</span>
       <span><b>Backend</b> Laravel 11 · PHP 8.3 · MariaDB</span>
@@ -145,12 +145,12 @@
   </header>
 
   <div class="hero">
-    <div class="ring" style="--p:55">
-      <div class="val"><div class="n tnum">~55%</div><div class="l">Global</div></div>
+    <div class="ring" style="--p:72">
+      <div class="val"><div class="n tnum">~72%</div><div class="l">Global</div></div>
     </div>
     <div class="txt">
-      <h2>Socle et Référentiel terminés — cap sur les Flux</h2>
-      <p>Le Bloc A (sécurité, lieux, paramètres) est à 100 % et le Bloc B (catalogue, tarifs, fournisseurs, clients) à ~95 % : fiche technique, médias, numéros de série, étiquettes code-barres, mise à jour des tarifs en masse, contacts et référencement fournisseurs, valeurs par défaut client. Reste l'assemblage des Flux (achats, ventes, transferts-écrans), l'Argent et le Pilotage.</p>
+      <h2>La chaîne complète achat → stock → vente → encaissement fonctionne</h2>
+      <p>Blocs A et B terminés ; le Bloc C livre les bons de commande avec réceptions partielles (reliquats, CMUP), les ventes (devis/factures, prix résolus par client, contrôle plancher et crédit), les écrans transferts avec alerte transit, retours et ajustements motivés, et l'inventaire durci (théorique masqué, motifs, valorisation, feuille de comptage). Le Bloc D apporte le grand-livre client (blocage auto), les encaissements avec cycle des chèques, la balance âgée, la caisse et les charges validées.</p>
       <div class="legend">
         <span><i class="dot ok"></i> Livré</span>
         <span><i class="dot mid"></i> Partiel</span>
@@ -173,14 +173,14 @@
       <div class="counts"><span><b class="tnum">33</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">1</b> à faire</span></div>
     </div>
     <div class="bcard">
-      <div class="top"><div><div class="code">Bloc C</div><h3>Flux stock</h3></div><div class="pct tnum">44%</div></div>
-      <div class="bar"><i class="ok" style="width:40%"></i><i class="mid" style="width:9%"></i></div>
-      <div class="counts"><span><b class="tnum">21</b> livré</span><span><b class="tnum">5</b> partiel</span><span><b class="tnum">27</b> à faire</span></div>
+      <div class="top"><div><div class="code">Bloc C</div><h3>Flux stock</h3></div><div class="pct tnum">78%</div></div>
+      <div class="bar"><i class="ok" style="width:72%"></i><i class="mid" style="width:6%"></i></div>
+      <div class="counts"><span><b class="tnum">40</b> livré</span><span><b class="tnum">4</b> partiel</span><span><b class="tnum">9</b> à faire</span></div>
     </div>
     <div class="bcard">
-      <div class="top"><div><div class="code">Bloc D</div><h3>Argent</h3></div><div class="pct tnum">5%</div></div>
-      <div class="bar"><i class="ok" style="width:2%"></i><i class="mid" style="width:5%"></i></div>
-      <div class="counts"><span><b class="tnum">1</b> livré</span><span><b class="tnum">1</b> partiel</span><span><b class="tnum">18</b> à faire</span></div>
+      <div class="top"><div><div class="code">Bloc D</div><h3>Argent</h3></div><div class="pct tnum">75%</div></div>
+      <div class="bar"><i class="ok" style="width:70%"></i><i class="mid" style="width:5%"></i></div>
+      <div class="counts"><span><b class="tnum">15</b> livré</span><span><b class="tnum">2</b> partiel</span><span><b class="tnum">3</b> à faire</span></div>
     </div>
     <div class="bcard">
       <div class="top"><div><div class="code">Bloc E</div><h3>Pilotage</h3></div><div class="pct tnum">15%</div></div>
@@ -196,18 +196,18 @@
 
   <!-- NEW THIS ITERATION -->
   <div class="callout">
-    <h3>▲ Livré dans cette itération (Bloc B finalisé)</h3>
+    <h3>▲ Livré dans cette itération (Blocs C &amp; D)</h3>
     <ul>
-      <li><b>B1</b> Fiche technique : attributs par article + modèle par catégorie</li>
-      <li><b>B1</b> Médias : upload, image principale, secondaires (facultatives)</li>
-      <li><b>B1</b> Numéros de série : saisie en lot, doublons ignorés, suppression protégée</li>
-      <li><b>B1</b> Étiquettes code-barres <b>Code 128</b> : 3 formats, planche A4, prix optionnel</li>
-      <li><b>B1</b> Réorganisation des catégories (monter/descendre, ordre persisté)</li>
-      <li><b>B2</b> Mise à jour des tarifs en masse : % par niveau/catégorie, prévisualisation obligatoire</li>
-      <li><b>B2</b> Écran « Alertes marge » : prix sous le plancher</li>
-      <li><b>B3</b> Contacts multiples fournisseur</li>
-      <li><b>B3</b> Référencement article↔fournisseur (réf., dernier prix, délai) + statistiques</li>
-      <li><b>B4</b> Client : type de prix par défaut, vendeur référent, lieu de rattachement</li>
+      <li><b>C1</b> Bons de commande + réception partielle/totale (reliquats, CMUP, dernier prix fournisseur)</li>
+      <li><b>C1</b> Retour fournisseur tracé + suggestions de réapprovisionnement</li>
+      <li><b>C2</b> Ventes : devis &amp; factures, prix résolus par client/quantité, remise contrôlée, plancher</li>
+      <li><b>C2</b> Confirmation = sortie de stock + créance ; annulation = retour + contre-passation</li>
+      <li><b>C3</b> Ajustement direct à motif obligatoire · retour client revendable/défectueux</li>
+      <li><b>C4</b> Écrans transferts : envoi, réception avec écarts, alerte transit &gt; 3 jours</li>
+      <li><b>C5</b> Inventaire durci : théorique masqué, motifs d'écart obligatoires, valorisation, feuille de comptage</li>
+      <li><b>D1</b> Grand-livre client par événements + blocage automatique au plafond + balance âgée</li>
+      <li><b>D2</b> Encaissements (espèces/chèque/virement/carte) + cycle des chèques + relevé client</li>
+      <li><b>D3</b> Sessions de caisse (fonds, clôture, écart) · <b>D4</b> Charges avec justificatif et validation</li>
     </ul>
   </div>
 
@@ -305,65 +305,100 @@
 
   <!-- ============ BLOC C ============ -->
   <section>
-    <div class="s-head"><span class="sc">C</span><h2>Flux — Ce qui fait bouger le stock</h2><span class="sp tnum">44%</span></div>
+    <div class="s-head"><span class="sc">C</span><h2>Flux — Ce qui fait bouger le stock</h2><span class="sp tnum">78%</span></div>
 
     <div class="two">
       <div class="sub">
-        <h3>C1 · Achats<span class="miniq">1 / 8</span></h3>
+        <h3>C1 · Achats<span class="miniq">6 / 9</span></h3>
         <table><tbody>
-          <tr><td>Recalcul du CMUP à la réception (socle)</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Bons de commande, réceptions, factures, retours, reliquats, réappro</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Bon de commande + passage en commande<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Réception totale / partielle avec reliquats<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Recalcul CMUP + dernier prix fournisseur mémorisé<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Retour fournisseur (return_out tracé)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Suggestions de réapprovisionnement (sous seuil)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Facture d'achat + rapprochement · workflow d'approbation · n° série à la réception</td><td class="st"><span class="pill todo">À faire</span></td></tr>
         </tbody></table>
       </div>
       <div class="sub">
-        <h3>C2 · Ventes<span class="miniq">0 / 10</span></h3>
+        <h3>C2 · Ventes<span class="miniq">6 / 10</span></h3>
         <table><tbody>
-          <tr><td>Devis, commandes, BL, factures, POS, caisse, remises, retours, réservations</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Devis / proforma<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Facture (sortie stock + créance à la confirmation)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Prix par client (type par défaut + paliers), contrôle plancher<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Remises + autorisation au-delà de la limite<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Retour client / annulation avec contre-passation<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Ouverture / clôture de caisse, écarts<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Interface POS tactile · ticket de caisse · réservations</td><td class="st"><span class="pill todo">À faire</span></td></tr>
         </tbody></table>
       </div>
     </div>
 
-    <div class="sub">
-      <h3>C3 · Stock <span class="m">Domain/Stock</span><span class="miniq">9 / 12</span></h3>
-      <table><tbody>
-        <tr><td>Mouvements append-only, CMUP, verrous, stock négatif refusé</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-        <tr><td>Bon de sortie (casse/perte/usage/SAV) · bon d'entrée daté</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-        <tr><td>Écrans : stock par lieu (tous articles), matrice article×lieu, journal + exports</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-        <tr><td>Retour au stock (écran dédié) · ajustement direct à motif</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-        <tr><td>Réapprovisionnement automatique</td><td class="st"><span class="pill todo">À faire</span></td></tr>
-      </tbody></table>
-    </div>
-
     <div class="two">
       <div class="sub">
-        <h3>C4 · Transferts<span class="miniq">6 / 9</span></h3>
+        <h3>C3 · Stock + C4 · Transferts<span class="miniq">20 / 21</span></h3>
         <table><tbody>
-          <tr><td>Envoi/réception, in_transit, CMUP transporté, écarts, double visibilité</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Écrans liste/création/réception · alerte transit &gt; 3 j</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Socle : append-only, CMUP, verrous, stock négatif refusé</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Bons de sortie / d'entrée · écrans stock, matrice, journal + exports</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Ajustement direct à motif obligatoire<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Retour au stock : revendable / défectueux (sortie SAV nette)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Transferts : écrans envoi + réception avec écarts<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Alerte transit &gt; 3 jours<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Réapprovisionnement automatique (commande générée)</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
         </tbody></table>
       </div>
       <div class="sub">
-        <h3>C5 · Inventaires<span class="miniq">5 / 14</span></h3>
+        <h3>C5 · Inventaires<span class="miniq">9 / 14</span></h3>
         <table><tbody>
-          <tr><td>Workflow brouillon→compté→validé/annulé, régularisation admin, mouvements adjustment, saisie par lieu avec date</td><td class="st"><span class="pill ok">Livré</span></td></tr>
-          <tr><td>Valorisation des écarts · inventaire véhicule · historique</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td>Théorique masqué, gel du stock, feuille PDF, types, double comptage, motifs</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td>Workflow complet + régularisation admin + mouvements adjustment</td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Théorique masqué jusqu'à la saisie du comptage<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Motifs d'écart obligatoires<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Valorisation des écarts (au coût d'achat)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Feuille de comptage sans théorique (Excel/PDF)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Inventaire véhicule (par lieu) · historique par lieu</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Gel du stock (snapshot) · types d'inventaire · double comptage</td><td class="st"><span class="pill todo">À faire</span></td></tr>
         </tbody></table>
       </div>
     </div>
   </section>
 
-  <!-- ============ BLOCS D-E-F ============ -->
+  <!-- ============ BLOC D ============ -->
   <section>
-    <div class="s-head"><span class="sc">D·E·F</span><h2>Argent · Pilotage · Terrain</h2></div>
+    <div class="s-head"><span class="sc">D</span><h2>Argent</h2><span class="sp tnum">75%</span></div>
+    <div class="two">
+      <div class="sub">
+        <h3>D1 · Crédits + D2 · Règlements<span class="miniq">9 / 12</span></h3>
+        <table><tbody>
+          <tr><td>Grand-livre client par événements (jamais d'UPDATE direct du solde)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Blocage automatique au dépassement du plafond<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Balance âgée (0-30 / 31-60 / 61-90 / +90)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Encaissements + affectation à une facture (statut payé/partiel)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Cycle des chèques : reçu → déposé → encaissé / impayé<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Relevé client (API)<span class="up">▲</span><span class="note">Écran de consultation à brancher côté Clients</span></td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td>Relances multi-niveaux · créances douteuses · règlements fournisseurs</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="sub">
+        <h3>D3 · Caisse + D4 · Charges<span class="miniq">6 / 8</span></h3>
+        <table><tbody>
+          <tr><td>Session de caisse : ouverture, fonds, clôture, écart calculé<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Historique des sessions par lieu<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Catégories de charges + saisie avec justificatif photo<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Charges par lieu/vendeur + validation du responsable<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td>Versements des vendeurs · journal de caisse détaillé</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BLOCS E-F ============ -->
+  <section>
+    <div class="s-head"><span class="sc">E·F</span><h2>Pilotage · Terrain</h2></div>
     <div class="panel">
       <table>
         <thead><tr><th>Bloc</th><th>Contenu</th><th class="st">État</th></tr></thead>
         <tbody>
-          <tr><td><b>D1</b> Crédits clients</td><td>Plafond + blocage livrés ; comptes événementiels, balance âgée, relances à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td><b>D2-D4</b> Règlements, caisse, charges</td><td>Modes de paiement paramétrables livrés (A3) ; le reste à construire</td><td class="st"><span class="pill todo">À faire</span></td></tr>
           <tr><td><b>E1</b> Vue consolidée</td><td>Dashboard KPI + stock global livrés ; valorisation/comparatifs partiels</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td><b>E2-E3</b> Alertes &amp; rapports</td><td>Alerte marge livrée ; exports de base livrés ; rapports analytiques à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>E2-E3</b> Alertes &amp; rapports</td><td>Alertes marge, transit &gt; 3 j et balance âgée livrées ; règles paramétrables et rapports analytiques à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
           <tr><td><b>F1</b> Stock véhicule</td><td>Type vehicle + transferts livrés ; inventaire périodique partiel</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
           <tr><td><b>F2</b> App mobile vendeur</td><td>Non démarrée</td><td class="st"><span class="pill todo">À faire</span></td></tr>
         </tbody>
@@ -383,17 +418,17 @@
     <div class="panel">
       <h3>Ordre recommandé pour la suite</h3>
       <ol>
-        <li>Écrans <b>Transferts</b> (backend prêt, front seul manquant)</li>
-        <li><b>Finitions inventaire</b> : théorique masqué, feuille PDF, motifs d'écart</li>
-        <li><b>Achats</b> : bons de commande → réceptions (CMUP + n° de série)</li>
-        <li><b>Ventes + Caisse POS</b>, puis <b>Argent</b> (crédits, règlements, échéancier fournisseurs)</li>
-        <li><b>Alertes &amp; rapports</b>, puis <b>appli mobile vendeur</b></li>
+        <li><b>Interface POS tactile</b> + ticket de caisse (la vente back-office existe déjà)</li>
+        <li><b>Rapports analytiques</b> (ventes, marges, rotation) + règles d'alertes paramétrables</li>
+        <li><b>Factures d'achat</b> + règlements fournisseurs (clôt le cycle achats)</li>
+        <li><b>Finitions inventaire</b> : gel snapshot, types, double comptage</li>
+        <li><b>Appli mobile vendeur</b> (mon stock, vente, encaissement, hors ligne)</li>
       </ol>
     </div>
   </section>
 
   <footer>
-    <span>IGOUTECH · rapport mis à jour le 2 août 2026 — Blocs A &amp; B finalisés</span>
-    <span>7 domaines · 24+ contrôleurs API · 16 modules front · 9 suites de tests</span>
+    <span>IGOUTECH · rapport mis à jour le 2 août 2026 — Blocs A, B, C &amp; D finalisés</span>
+    <span>9 domaines · 30+ contrôleurs API · 22 modules front · 10 suites de tests</span>
   </footer>
 </div>

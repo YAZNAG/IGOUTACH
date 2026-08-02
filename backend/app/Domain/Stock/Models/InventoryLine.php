@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $counted_quantity
  * @property int $system_quantity
  * @property int $difference
+ * @property string|null $reason
  */
 class InventoryLine extends Model
 {
@@ -24,6 +25,7 @@ class InventoryLine extends Model
         'counted_quantity',
         'system_quantity',
         'difference',
+        'reason',
     ];
 
     protected function casts(): array

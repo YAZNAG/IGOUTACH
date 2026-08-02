@@ -93,6 +93,11 @@ final class PermissionSeeder extends Seeder
         ['name' => 'customer.delete', 'module' => 'customers', 'display_name' => 'Supprimer un client'],
         ['name' => 'customer.set_credit_limit', 'module' => 'customers', 'display_name' => 'Définir un plafond de crédit / débloquer'],
 
+        // Règlements & caisse
+        ['name' => 'payment.view', 'module' => 'payments', 'display_name' => 'Consulter les encaissements'],
+        ['name' => 'payment.create', 'module' => 'payments', 'display_name' => 'Enregistrer un encaissement'],
+        ['name' => 'cash.manage', 'module' => 'payments', 'display_name' => 'Gérer la caisse (ouverture / clôture)'],
+
         // Charges
         ['name' => 'expense.create', 'module' => 'expenses', 'display_name' => 'Créer une charge'],
         ['name' => 'expense.approve', 'module' => 'expenses', 'display_name' => 'Valider une charge'],

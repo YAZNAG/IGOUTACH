@@ -7,13 +7,18 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Stock\Actions\ApproveInventoryAction;
 use App\Domain\Stock\Contracts\StockReaderInterface;
 use App\Domain\Stock\Models\Inventory;
+use App\Exports\ArrayExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveInventoryLinesRequest;
 use App\Http\Requests\StoreInventoryRequest;
 use App\Http\Resources\InventoryResource;
+use App\Support\Export\HtmlTable;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use RuntimeException;
 
 final class InventoryController extends Controller
@@ -49,7 +54,37 @@ final class InventoryController extends Controller
 
     public function show(Inventory $inventory): InventoryResource
     {
-        return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name']));
+        return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name,cost_price']));
+    }
+
+    /**
+     * Feuille de comptage (sans le stock théorique, pour compter sans recopier) :
+     * tous les articles du lieu avec une colonne « Compté » vide.
+     */
+    public function sheet(Request $request, Inventory $inventory): mixed
+    {
+        $rows = DB::table('products')
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get(['sku', 'name'])
+            ->map(fn (\stdClass $row): array => [$row->sku, $row->name, ''])
+            ->values()
+            ->all();
+
+        $headings = ['Référence', 'Article', 'Quantité comptée'];
+        $warehouseCode = $inventory->warehouse !== null ? $inventory->warehouse->code : '';
+        $title = 'Feuille de comptage '.$inventory->reference.' — '.$warehouseCode;
+
+        if ($request->string('format')->value() === 'pdf') {
+            return Pdf::loadHtml(
+                HtmlTable::render($title, $headings, $rows),
+            )->download('comptage-'.$inventory->reference.'.pdf');
+        }
+
+        return Excel::download(
+            new ArrayExport($headings, $rows),
+            'comptage-'.$inventory->reference.'.xlsx',
+        );
     }
 
     /**
@@ -61,8 +96,18 @@ final class InventoryController extends Controller
             return response()->json(['message' => 'Seul un inventaire en brouillon est modifiable.'], 422);
         }
 
-        /** @var array{lines: list<array{product_id: int, counted_quantity: int}>} $data */
+        /** @var array{lines: list<array{product_id: int, counted_quantity: int, reason?: string|null}>} $data */
         $data = $request->validated();
+
+        // Motif obligatoire pour toute ligne en écart avec le théorique.
+        foreach ($data['lines'] as $line) {
+            $system = $reader->quantityFor($inventory->warehouse_id, $line['product_id']);
+            if ($line['counted_quantity'] !== $system && trim((string) ($line['reason'] ?? '')) === '') {
+                return response()->json([
+                    'message' => "Motif d'écart obligatoire pour l'article #{$line['product_id']} (compté {$line['counted_quantity']}, théorique {$system}).",
+                ], 422);
+            }
+        }
 
         $inventory->lines()->delete();
 
@@ -73,10 +118,11 @@ final class InventoryController extends Controller
                 'counted_quantity' => $line['counted_quantity'],
                 'system_quantity' => $system,
                 'difference' => $line['counted_quantity'] - $system,
+                'reason' => $line['reason'] ?? null,
             ]);
         }
 
-        return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name']));
+        return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name,cost_price']));
     }
 
     public function cancel(Inventory $inventory): JsonResponse|InventoryResource

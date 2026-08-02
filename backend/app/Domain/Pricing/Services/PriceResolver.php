@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pricing\Services;
 
+use App\Domain\Customers\Models\Customer;
 use App\Domain\Pricing\Contracts\PriceResolverInterface;
 use App\Domain\Pricing\Contracts\ProductPriceRepositoryInterface;
 use App\Domain\Pricing\DTOs\ResolvedPrice;
@@ -28,6 +29,27 @@ final class PriceResolver implements PriceResolverInterface
         ?int $customerId = null,
         ?CarbonInterface $at = null,
     ): ResolvedPrice {
+        // Type de prix par défaut du client : prioritaire s'il est défini.
+        if ($customerId !== null) {
+            $customerTypeId = Customer::query()
+                ->whereKey($customerId)
+                ->value('price_type_id');
+
+            if ($customerTypeId !== null) {
+                $customerType = PriceType::query()->whereKey($customerTypeId)->where('is_active', true)->first();
+                $price = $customerType !== null ? $this->prices->activePrice($productId, $customerType->id, $at) : null;
+
+                if ($customerType !== null && $price !== null) {
+                    return new ResolvedPrice(
+                        amount: (float) $price->amount,
+                        priceTypeId: $customerType->id,
+                        priceTypeCode: $customerType->code,
+                        reason: "Type de prix par défaut du client (« {$customerType->name} »).",
+                    );
+                }
+            }
+        }
+
         $types = PriceType::query()
             ->where('is_active', true)
             ->orderByDesc('rank')

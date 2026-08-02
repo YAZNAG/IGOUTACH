@@ -182,7 +182,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\InventoryLine.php' => '64c7efe86421aa22ff86d3e5eb8167e104f33bc5945f10af6b76634beb253df8',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\InventoryLine.php' => 'ddc72c5d3a5f0d6e4113e8165a8fd8f4faef6916162b6685f18451a5e930e526',
     ),
   ),
 ));
