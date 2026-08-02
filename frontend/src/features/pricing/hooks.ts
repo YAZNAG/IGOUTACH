@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Category, Paginated } from '@/types'
 import {
+  bulkMarginPrices,
   bulkUpdatePrices,
   fetchBelowFloor,
   fetchCategoryOptions,
@@ -52,6 +53,16 @@ export function useBulkUpdatePrices() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: bulkUpdatePrices,
+    onSuccess: (result) => {
+      if (result.applied) queryClient.invalidateQueries({ queryKey: KEY })
+    },
+  })
+}
+
+export function useBulkMarginPrices() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: bulkMarginPrices,
     onSuccess: (result) => {
       if (result.applied) queryClient.invalidateQueries({ queryKey: KEY })
     },

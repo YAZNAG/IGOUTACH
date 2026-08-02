@@ -121,6 +121,7 @@ Route::prefix('v1')->group(function () {
         Route::get('price-types', [ProductPriceController::class, 'priceTypes']);
         Route::get('prices', [ProductPriceController::class, 'list'])->middleware('can:price.view');
         Route::post('prices/bulk-update', [ProductPriceController::class, 'bulkUpdate'])->middleware('can:price.bulk_update');
+        Route::post('prices/bulk-margin', [ProductPriceController::class, 'bulkMargin'])->middleware('can:price.bulk_update');
         Route::get('prices/export', [ProductPriceController::class, 'export'])->middleware('can:price.view');
         Route::get('products/{product}/prices', [ProductPriceController::class, 'index'])->middleware('can:price.view');
         Route::put('products/{product}/prices', [ProductPriceController::class, 'update'])->middleware('can:price.manage');

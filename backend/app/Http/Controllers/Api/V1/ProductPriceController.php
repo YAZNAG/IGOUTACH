@@ -265,6 +265,121 @@ final class ProductPriceController extends Controller
         return response()->json(['data' => ['count' => $preview->count(), 'rows' => [], 'applied' => true]]);
     }
 
+    /**
+     * Mise à jour en masse par MARGE sur le prix d'achat : pour chaque niveau
+     * renseigné (détail / demi-gros / gros), le nouveau tarif vaut
+     * coût unitaire × (1 + marge %). `apply=false` = prévisualisation seule.
+     */
+    public function bulkMargin(Request $request, SetProductPricesAction $action): JsonResponse
+    {
+        /** @var array{margins: array{detail?: float|null, semi_gros?: float|null, gros?: float|null}, category_id?: int|null, apply?: bool} $data */
+        $data = $request->validate([
+            'margins' => ['required', 'array'],
+            'margins.detail' => ['nullable', 'numeric', 'between:0,1000'],
+            'margins.semi_gros' => ['nullable', 'numeric', 'between:0,1000'],
+            'margins.gros' => ['nullable', 'numeric', 'between:0,1000'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'apply' => ['sometimes', 'boolean'],
+        ]);
+
+        /** @var array<string, float> $margins marge par code de type, uniquement les niveaux renseignés */
+        $margins = [];
+        foreach ([PriceType::DETAIL, PriceType::SEMI_GROS, PriceType::GROS] as $code) {
+            if (isset($data['margins'][$code]) && $data['margins'][$code] !== null) {
+                $margins[$code] = (float) $data['margins'][$code];
+            }
+        }
+
+        if ($margins === []) {
+            return response()->json(['message' => 'Renseignez au moins une marge (détail, demi-gros ou gros).'], 422);
+        }
+
+        $types = PriceType::query()->whereIn('code', array_keys($margins))->get()->keyBy('code');
+
+        $products = Product::query()
+            ->when(($data['category_id'] ?? 0) > 0, fn ($q) => $q->where('category_id', $data['category_id']))
+            ->orderBy('name')
+            ->get(['id', 'sku', 'name', 'cost_price', 'category_id']);
+
+        $current = ProductPrice::query()
+            ->whereIn('product_id', $products->pluck('id'))
+            ->whereNull('valid_to')
+            ->get()
+            ->groupBy('product_id');
+
+        $rows = [];
+        $skipped = 0;
+        foreach ($products as $product) {
+            $cost = $this->cost->unitCost($product);
+            if ($cost <= 0) {
+                $skipped++;
+
+                continue; // Sans prix d'achat, aucune marge calculable.
+            }
+
+            $byType = $current->get($product->id, collect())->keyBy('price_type_id');
+
+            $levels = [];
+            foreach ($margins as $code => $percent) {
+                $type = $types[$code];
+                $existing = $byType->get($type->id);
+                $levels[$code] = [
+                    'current' => $existing !== null ? (float) $existing->amount : null,
+                    'next' => round($cost * (1 + $percent / 100), 2),
+                ];
+            }
+
+            $rows[] = [
+                'product_id' => $product->id,
+                'sku' => $product->sku,
+                'name' => $product->name,
+                'cost' => round($cost, 2),
+                'levels' => $levels,
+            ];
+        }
+
+        if (! ($data['apply'] ?? false)) {
+            return response()->json(['data' => [
+                'count' => count($rows),
+                'skipped' => $skipped,
+                'rows' => array_slice($rows, 0, 200),
+                'applied' => false,
+            ]]);
+        }
+
+        $userId = $request->user()?->id;
+        $errors = 0;
+        foreach ($rows as $row) {
+            $byType = $current->get($row['product_id'], collect())->keyBy('price_type_id');
+
+            $levels = [];
+            foreach ($margins as $code => $percent) {
+                $type = $types[$code];
+                $existing = $byType->get($type->id);
+                $levels[] = new PriceLevelData(
+                    priceTypeCode: $code,
+                    amount: $row['levels'][$code]['next'],
+                    minMarginPercent: $existing !== null ? (float) $existing->min_margin_percent : 0.0,
+                    minQuantity: $existing?->min_quantity ?? $type->min_quantity,
+                );
+            }
+
+            try {
+                $action->execute($row['product_id'], $levels, $userId);
+            } catch (InvalidPriceOrderException) {
+                $errors++;
+            }
+        }
+
+        return response()->json(['data' => [
+            'count' => count($rows) - $errors,
+            'skipped' => $skipped,
+            'errors' => $errors,
+            'rows' => [],
+            'applied' => true,
+        ]]);
+    }
+
     public function belowFloor(): JsonResponse
     {
         $rows = ProductPrice::query()

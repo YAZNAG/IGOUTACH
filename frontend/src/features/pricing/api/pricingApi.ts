@@ -109,6 +109,37 @@ export async function bulkUpdatePrices(input: {
   return data.data
 }
 
+export interface BulkMarginLevel {
+  current: number | null
+  next: number
+}
+
+export interface BulkMarginRow {
+  product_id: number
+  sku: string
+  name: string
+  cost: number
+  levels: Partial<Record<'detail' | 'semi_gros' | 'gros', BulkMarginLevel>>
+}
+
+export interface BulkMarginResult {
+  count: number
+  skipped: number
+  errors?: number
+  rows: BulkMarginRow[]
+  applied: boolean
+}
+
+export async function bulkMarginPrices(input: {
+  margins: { detail?: number; semi_gros?: number; gros?: number }
+  category_id?: number
+  apply: boolean
+}): Promise<BulkMarginResult> {
+  await ensureCsrfCookie()
+  const { data } = await api.post<{ data: BulkMarginResult }>('/prices/bulk-margin', input)
+  return data.data
+}
+
 export interface BelowFloorRow {
   product_id: number
   sku: string

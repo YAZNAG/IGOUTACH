@@ -1,4 +1,4 @@
-import { AlertTriangle, Download, FileText, Percent } from 'lucide-react'
+import { AlertTriangle, Calculator, Download, FileText, Percent } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -9,6 +9,7 @@ import { paginationInfo, SortableTh, type SortState } from '@/components/ui/Sort
 import { usePermission } from '@/hooks/usePermission'
 import { formatNumber } from '@/lib/utils'
 import { exportPrices, type PriceCell, type PriceLevelInput, type PriceListItem } from '../api/pricingApi'
+import { BulkMarginPanel } from '../components/BulkMarginPanel'
 import { BulkUpdatePanel } from '../components/BulkUpdatePanel'
 import { PriceLevelsForm } from '../components/PriceLevelsForm'
 import { useBelowFloor, usePriceList, usePricingCategories, useProductPrices, useUpdateProductPrices } from '../hooks'
@@ -36,6 +37,7 @@ export function PricingPage() {
   const [sort, setSort] = useState<SortState>({ sort: 'name', direction: 'asc' })
   const [editing, setEditing] = useState<PriceListItem | null>(null)
   const [showBulk, setShowBulk] = useState(false)
+  const [showMargin, setShowMargin] = useState(false)
   const [showAlerts, setShowAlerts] = useState(false)
 
   const { data: categories = [] } = usePricingCategories()
@@ -73,9 +75,15 @@ export function PricingPage() {
             Alertes marge
           </Button>
           {can('price.bulk_update') ? (
-            <Button variant="outline" size="sm" onClick={() => setShowBulk((v) => !v)}>
+            <Button variant="outline" size="sm" onClick={() => { setShowBulk((v) => !v); setShowMargin(false) }}>
               <Percent className="h-4 w-4" />
               MAJ en masse
+            </Button>
+          ) : null}
+          {can('price.bulk_update') ? (
+            <Button variant="outline" size="sm" onClick={() => { setShowMargin((v) => !v); setShowBulk(false) }}>
+              <Calculator className="h-4 w-4" />
+              Marges sur achat
             </Button>
           ) : null}
           <Button
@@ -98,6 +106,8 @@ export function PricingPage() {
       </div>
 
       {showBulk ? <BulkUpdatePanel categories={categories} onClose={() => setShowBulk(false)} /> : null}
+
+      {showMargin ? <BulkMarginPanel categories={categories} onClose={() => setShowMargin(false)} /> : null}
 
       {showAlerts ? (
         <Card>
