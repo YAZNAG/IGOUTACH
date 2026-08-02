@@ -9,14 +9,13 @@ use App\Domain\Access\DTOs\UserData;
 use App\Domain\Access\Events\UserCreated;
 use App\Domain\Access\Exceptions\UserManagementException;
 use App\Domain\Access\Models\Role;
-use App\Domain\Access\Notifications\UserInvitationNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Crée un utilisateur par invitation : aucun mot de passe saisi par l'admin,
- * l'utilisateur reçoit un lien signé (72 h) pour définir le sien.
+ * Crée un utilisateur directement : l'admin saisit l'e-mail et le mot de passe.
+ * Aucune invitation n'est envoyée.
  */
 final class CreateUserAction
 {
@@ -36,16 +35,13 @@ final class CreateUserAction
                 'phone' => $data->phone,
                 'warehouse_id' => $data->warehouseId,
                 'is_active' => $data->isActive,
-                // Mot de passe temporaire inutilisable : remplacé par l'invitation.
-                'password' => Str::password(32),
+                // Mot de passe saisi par l'admin (haché via le cast) ; fallback aléatoire si absent.
+                'password' => $data->password ?? Str::password(32),
             ]);
 
             $this->assignRoles->execute($user, $data->roleIds, $author);
 
             UserCreated::dispatch($user);
-
-            $token = UserInvitationNotification::tokenFor($user);
-            $user->notify(new UserInvitationNotification($token));
 
             return $user->load('roles');
         });

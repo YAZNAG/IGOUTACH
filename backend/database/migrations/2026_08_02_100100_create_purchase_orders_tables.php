@@ -7,7 +7,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Achats : bons de commande + lignes (reliquats = commandé − reçu).
+ * Achats : bons de commande + lignes.
+ *
+ * Aucun champ de prix sur les lignes ni l'en-tête.
  */
 return new class extends Migration
 {
@@ -15,29 +17,31 @@ return new class extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table): void {
             $table->id();
-            $table->string('reference')->unique();
+            $table->string('number')->unique(); // BC-YYYY-0001
             $table->foreignId('supplier_id')->constrained('suppliers')->restrictOnDelete();
             $table->foreignId('warehouse_id')->constrained('warehouses')->restrictOnDelete();
-            // draft → ordered → partial → received (ou cancelled)
-            $table->string('status', 20)->default('draft');
+            $table->timestamp('ordered_at')->nullable();
             $table->date('expected_at')->nullable();
+            $table->foreignId('status_id')->constrained('purchase_order_statuses')->restrictOnDelete();
+            $table->string('notes')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('note')->nullable();
             $table->timestamps();
 
-            $table->index(['supplier_id', 'status']);
+            $table->index(['supplier_id', 'status_id']);
+            $table->index(['warehouse_id', 'status_id']);
         });
 
         Schema::create('purchase_order_lines', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('purchase_order_id')->constrained('purchase_orders')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')->restrictOnDelete();
-            $table->unsignedInteger('quantity_ordered');
-            $table->unsignedInteger('quantity_received')->default(0);
-            $table->decimal('unit_price', 12, 2)->default(0);
+            $table->unsignedInteger('quantity');
+            $table->unsignedInteger('received_quantity')->default(0);
+            $table->unsignedSmallInteger('position')->default(0);
             $table->timestamps();
 
             $table->unique(['purchase_order_id', 'product_id']);
+            $table->index(['purchase_order_id', 'position']);
         });
     }
 

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "igoutech-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "C:\\OPTIZAWORKS\\igoutech\\frontend",
+      "port": 5180
+    }
+  ]
+}

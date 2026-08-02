@@ -1,5 +1,6 @@
 import { Download, FileText, Plus, Tag, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -40,6 +41,7 @@ function errorMessage(error: unknown): string {
 }
 
 export function ArticlesPage() {
+  const navigate = useNavigate()
   const can = usePermission()
   const canCreate = can('product.create')
   const canUpdate = can('product.update')
@@ -381,7 +383,14 @@ export function ArticlesPage() {
                         </td>
                       ) : null}
                       <td className="mono px-5 py-3 text-muted">{a.sku}</td>
-                      <td className="px-5 py-3 text-ink">{a.name}</td>
+                      <td className="px-5 py-3">
+                        <button
+                          onClick={() => navigate(`/articles/${a.id}`)}
+                          className="text-ink hover:underline"
+                        >
+                          {a.name}
+                        </button>
+                      </td>
                       <td className="px-5 py-3">
                         <Badge tone="sky">{categoryName(a.category_id)}</Badge>
                       </td>

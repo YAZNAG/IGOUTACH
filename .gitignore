@@ -39,3 +39,4 @@ node_modules
 .zed
 *.suo
 *.sln
+.claude/

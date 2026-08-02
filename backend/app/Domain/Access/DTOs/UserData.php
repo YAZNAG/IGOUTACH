@@ -19,6 +19,7 @@ final readonly class UserData
         public ?int $warehouseId,
         public array $roleIds,
         public bool $isActive = true,
+        public ?string $password = null,
     ) {}
 
     /**
@@ -36,6 +37,7 @@ final readonly class UserData
             warehouseId: isset($data['warehouse_id']) ? (int) $data['warehouse_id'] : null,
             roleIds: $roleIds,
             isActive: (bool) ($data['is_active'] ?? true),
+            password: isset($data['password']) ? (string) $data['password'] : null,
         );
     }
 }

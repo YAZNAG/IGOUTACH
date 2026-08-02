@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DocumentSequenceController;
 use App\Http\Controllers\Api\V1\ExpenseController;
+use App\Http\Controllers\Api\V1\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\InventoryController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\PaymentController;
@@ -93,6 +94,11 @@ Route::prefix('v1')->group(function () {
         Route::delete('products/{product}', [ProductController::class, 'destroy'])->middleware('can:product.delete');
         // Tarifs de vente (prix unique — conservé)
         Route::put('products/{product}/pricing', [ProductController::class, 'updatePricing'])->middleware('can:product.set_price');
+        // Détail article — stock, mouvements, prix, fournisseurs
+        Route::get('products/{product}/stock', [ProductController::class, 'stock'])->middleware('can:product.view');
+        Route::get('products/{product}/movements', [ProductController::class, 'movements'])->middleware('can:product.view');
+        Route::get('products/{product}/statistics', [ProductController::class, 'statistics'])->middleware('can:product.view');
+        Route::get('products/{product}/suppliers', [ProductController::class, 'suppliers'])->middleware('can:product.view');
 
         // Catalogue — fiche technique (attributs + modèle par catégorie)
         Route::get('products/{product}/attributes', [ProductAttributeController::class, 'index'])->middleware('can:product.view');
@@ -128,8 +134,7 @@ Route::prefix('v1')->group(function () {
         Route::put('users/{user}', [UserController::class, 'update'])->middleware('can:user.update');
         Route::patch('users/{user}/toggle', [UserController::class, 'toggle'])->middleware('can:user.deactivate');
         Route::put('users/{user}/roles', [UserController::class, 'roles'])->middleware('can:user.assign_role');
-        Route::post('users/{user}/resend-invitation', [UserController::class, 'resendInvitation'])->middleware('can:user.update');
-        Route::post('users/{user}/force-password-reset', [UserController::class, 'forcePasswordReset'])->middleware('can:user.update');
+        Route::put('users/{user}/password', [UserController::class, 'changePassword'])->middleware('can:user.update');
 
         // Accès — journal d'audit
         Route::get('audit', [AuditController::class, 'index'])->middleware('can:audit.view');
@@ -203,14 +208,21 @@ Route::prefix('v1')->group(function () {
         Route::get('transfers/{transfer}', [TransferController::class, 'show'])->middleware('can:stock.view');
         Route::post('transfers/{transfer}/receive', [TransferController::class, 'receive'])->middleware('can:transfer.receive');
 
-        // Achats — bons de commande, réceptions, retours, réappro
-        Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->middleware('can:purchase.create');
+        // Achats — bons de commande
+        Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->middleware('can:purchase.view');
         Route::post('purchase-orders', [PurchaseOrderController::class, 'store'])->middleware('can:purchase.create');
-        Route::get('purchase-orders/replenishment', [PurchaseOrderController::class, 'replenishment'])->middleware('can:purchase.create');
-        Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->middleware('can:purchase.create');
+        Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->middleware('can:purchase.view');
+        Route::put('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'update'])->middleware('can:purchase.create');
+        Route::get('purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'pdf'])->middleware('can:purchase.view');
+        Route::post('purchase-orders/{purchaseOrder}/send', [PurchaseOrderController::class, 'send'])->middleware('can:purchase.create');
+        Route::post('purchase-orders/{purchaseOrder}/approve', [PurchaseOrderController::class, 'approve'])->middleware('can:purchase.approve');
         Route::post('purchase-orders/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->middleware('can:receipt.create');
         Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->middleware('can:purchase.create');
-        Route::post('supplier-returns', [PurchaseOrderController::class, 'supplierReturn'])->middleware('can:receipt.create');
+
+        // Achats — bons de réception
+        Route::get('goods-receipts', [GoodsReceiptController::class, 'index'])->middleware('can:receipt.view');
+        Route::get('goods-receipts/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->middleware('can:receipt.view');
+        Route::get('goods-receipts/{goodsReceipt}/pdf', [GoodsReceiptController::class, 'pdf'])->middleware('can:receipt.view');
 
         // Ventes — devis & factures
         Route::get('sales', [SaleController::class, 'index'])->middleware('can:sale.create');

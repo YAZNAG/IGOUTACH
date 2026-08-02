@@ -83,3 +83,78 @@ export async function importArticles(file: File): Promise<ImportResult> {
   const { data } = await api.post<{ data: ImportResult }>('/products/import', form)
   return data.data
 }
+
+export interface ProductDetail extends Product {
+  brand?: { id: number; name: string }
+  unit?: { id: number; name: string; symbol: string }
+  category?: { id: number; name: string }
+  cost_price: string
+  created_at: string
+  updated_at: string
+}
+
+export interface StockLocation {
+  id: number
+  warehouse_id: number
+  warehouse_name: string
+  quantity: number
+  reserved: number
+  available: number
+  valuation: string
+}
+
+export interface StockDetail {
+  product_id: number
+  total_quantity: number
+  total_reserved: number
+  total_available: number
+  total_valuation: string
+  in_transit: number
+  locations: StockLocation[]
+}
+
+export interface Movement {
+  id: number
+  product_id: number
+  warehouse_id: number
+  warehouse_name: string
+  type: string
+  quantity: number
+  reference: string | null
+  notes: string | null
+  created_at: string
+  user: { id: number; name: string }
+}
+
+export interface PriceInfo {
+  cost_price: string
+  sale_price: string
+  quantity_on_hand: number
+  turnover_rate: number
+}
+
+export async function fetchProductDetail(id: number): Promise<ProductDetail> {
+  const { data } = await api.get<{ data: ProductDetail }>(`/products/${id}`)
+  return data.data
+}
+
+export async function fetchProductStock(id: number): Promise<StockDetail> {
+  const { data } = await api.get<{ data: StockDetail }>(`/products/${id}/stock`)
+  return data.data
+}
+
+export interface MovementFilters {
+  type?: string
+  warehouse_id?: number
+  date_from?: string
+  date_to?: string
+  limit?: number
+}
+
+export async function fetchProductMovements(
+  id: number,
+  filters?: MovementFilters,
+): Promise<Paginated<Movement>> {
+  const { data } = await api.get<Paginated<Movement>>(`/products/${id}/movements`, { params: filters })
+  return data
+}

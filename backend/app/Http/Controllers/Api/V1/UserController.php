@@ -6,13 +6,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Access\Actions\AssignRolesAction;
 use App\Domain\Access\Actions\CreateUserAction;
-use App\Domain\Access\Actions\ResetUserPasswordAction;
 use App\Domain\Access\Actions\ToggleUserAction;
 use App\Domain\Access\Actions\UpdateUserAction;
 use App\Domain\Access\DTOs\UserData;
 use App\Domain\Access\Exceptions\UserManagementException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignRolesRequest;
+use App\Http\Requests\ChangeUserPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\AdminUserResource;
@@ -113,17 +113,17 @@ final class UserController extends Controller
         return AdminUserResource::make($user->load(['roles', 'warehouse']));
     }
 
-    public function resendInvitation(User $user, ResetUserPasswordAction $action): JsonResponse
+    public function changePassword(ChangeUserPasswordRequest $request, User $user): JsonResponse
     {
-        $action->execute($user);
+        /** @var array{password: string} $data */
+        $data = $request->validated();
 
-        return response()->json(['message' => 'Invitation renvoyée.']);
-    }
+        // Haché via le cast 'password' => 'hashed' du modèle.
+        $user->forceFill(['password' => $data['password']])->save();
 
-    public function forcePasswordReset(User $user, ResetUserPasswordAction $action): JsonResponse
-    {
-        $action->execute($user);
+        // Invalide les sessions existantes de l'utilisateur.
+        $user->tokens()->delete();
 
-        return response()->json(['message' => 'Lien de réinitialisation envoyé.']);
+        return response()->json(['message' => 'Mot de passe modifié.']);
     }
 }

@@ -24,6 +24,7 @@ export interface AdminUser {
 export interface UserInput {
   name: string
   email: string
+  password?: string
   phone?: string | null
   warehouse_id?: number | null
   role_ids: number[]
@@ -70,7 +71,7 @@ export async function assignRoles(id: number, roleIds: number[]): Promise<AdminU
   return data.data
 }
 
-export async function resendInvitation(id: number): Promise<void> {
+export async function changeUserPassword(id: number, password: string, passwordConfirmation: string): Promise<void> {
   await ensureCsrfCookie()
-  await api.post(`/users/${id}/resend-invitation`)
+  await api.put(`/users/${id}/password`, { password, password_confirmation: passwordConfirmation })
 }

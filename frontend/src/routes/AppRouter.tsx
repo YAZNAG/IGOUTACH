@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { RolesPage, UsersPage } from '@/features/access'
-import { ArticlesPage } from '@/features/articles'
+import { ArticlesPage, ProductDetailPage } from '@/features/articles'
 import { AuditPage } from '@/features/audit'
 import { LoginPage } from '@/features/auth'
 import { BrandsPage } from '@/features/brands'
@@ -12,7 +12,16 @@ import { ExpensesPage } from '@/features/expenses'
 import { InventoryPage } from '@/features/inventory'
 import { PaymentsPage } from '@/features/payments'
 import { AlertsPage, ReportsPage } from '@/features/pilotage'
-import { PurchasesPage } from '@/features/purchases'
+import {
+  CreatePurchaseOrderPage,
+  EditPurchaseOrderPage,
+  GoodsReceiptDetailPage,
+  GoodsReceiptsListPage,
+  PurchaseOrderDetailPage,
+  PurchaseOrdersListPage,
+  PurchasesPage,
+  ReceivePurchaseOrderPage,
+} from '@/features/purchases'
 import { SalesPage } from '@/features/sales'
 import { TransfersPage } from '@/features/transfers'
 import { PricingPage } from '@/features/pricing'
@@ -51,11 +60,19 @@ export const router = createBrowserRouter([
           { path: '/inventaire', element: <InventoryPage /> },
           { path: '/transferts', element: <TransfersPage /> },
           { path: '/achats', element: <PurchasesPage /> },
+          { path: '/purchase-orders', element: <PurchaseOrdersListPage /> },
+          { path: '/purchase-orders/create', element: <CreatePurchaseOrderPage /> },
+          { path: '/purchase-orders/:id', element: <PurchaseOrderDetailPage /> },
+          { path: '/purchase-orders/:id/edit', element: <EditPurchaseOrderPage /> },
+          { path: '/purchase-orders/:id/receive', element: <ReceivePurchaseOrderPage /> },
+          { path: '/goods-receipts', element: <GoodsReceiptsListPage /> },
+          { path: '/goods-receipts/:id', element: <GoodsReceiptDetailPage /> },
           { path: '/ventes', element: <SalesPage /> },
           { path: '/reglements', element: <PaymentsPage /> },
           { path: '/caisse', element: <CashPage /> },
           { path: '/categories', element: <CategoriesPage /> },
           { path: '/articles', element: <ArticlesPage /> },
+          { path: '/articles/:id', element: <ProductDetailPage /> },
           { path: '/tarifs', element: <PricingPage /> },
           { path: '/fournisseurs', element: <SuppliersPage /> },
           { path: '/clients', element: <CustomersPage /> },

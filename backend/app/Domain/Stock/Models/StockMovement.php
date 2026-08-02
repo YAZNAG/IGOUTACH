@@ -6,6 +6,9 @@ namespace App\Domain\Stock\Models;
 
 use App\Domain\Catalog\Models\Product;
 use App\Support\Concerns\BelongsToWarehouse;
+use Database\Factories\StockMovementFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +26,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class StockMovement extends Model
 {
+    /** @use HasFactory<StockMovementFactory> */
+    use HasFactory;
+
     use BelongsToWarehouse;
 
     public const UPDATED_AT = null;
@@ -38,6 +44,9 @@ class StockMovement extends Model
         'reference_id',
         'user_id',
         'note',
+        // Date du document (réception, inventaire…) : si fournie, elle remplace
+        // l'horodatage courant comme date du mouvement.
+        'created_at',
     ];
 
     protected function casts(): array
@@ -64,5 +73,13 @@ class StockMovement extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return Factory<self>
+     */
+    protected static function newFactory(): Factory
+    {
+        return StockMovementFactory::new();
     }
 }

@@ -15,9 +15,9 @@ import {
 } from './api/rolesApi'
 import {
   assignRoles,
+  changeUserPassword,
   createUser,
   fetchUsers,
-  resendInvitation,
   toggleUser,
   updateUser,
   type AdminUser,
@@ -35,11 +35,28 @@ export interface WarehouseOption {
   name: string
 }
 
+export interface SupplierOption {
+  id: number
+  code: string
+  name: string
+}
+
 export function useWarehouseOptions() {
   return useQuery<WarehouseOption[]>({
     queryKey: ['warehouse-options'],
     queryFn: async () => {
       const { data } = await api.get<Paginated<WarehouseOption>>('/warehouses')
+      return data.data
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
+export function useSupplierOptions() {
+  return useQuery<SupplierOption[]>({
+    queryKey: ['supplier-options'],
+    queryFn: async () => {
+      const { data } = await api.get<Paginated<SupplierOption>>('/suppliers', { params: { per_page: 100 } })
       return data.data
     },
     staleTime: 5 * 60_000,
@@ -139,6 +156,9 @@ export function useAssignRoles() {
   })
 }
 
-export function useResendInvitation() {
-  return useMutation({ mutationFn: (id: number) => resendInvitation(id) })
+export function useChangeUserPassword() {
+  return useMutation({
+    mutationFn: ({ id, password, passwordConfirmation }: { id: number; password: string; passwordConfirmation: string }) =>
+      changeUserPassword(id, password, passwordConfirmation),
+  })
 }

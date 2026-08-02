@@ -6,6 +6,9 @@ namespace App\Domain\Stock\Models;
 
 use App\Domain\Catalog\Models\Product;
 use App\Support\Concerns\BelongsToWarehouse;
+use Database\Factories\StockFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,6 +24,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Stock extends Model
 {
+    /** @use HasFactory<StockFactory> */
+    use HasFactory;
+
     use BelongsToWarehouse;
 
     protected $fillable = [
@@ -46,5 +52,13 @@ class Stock extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return Factory<self>
+     */
+    protected static function newFactory(): Factory
+    {
+        return StockFactory::new();
     }
 }

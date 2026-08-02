@@ -1,4 +1,4 @@
-import { Mail, Plus, Power } from 'lucide-react'
+import { KeyRound, Plus, Power } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -10,8 +10,8 @@ import { usePermission } from '@/hooks/usePermission'
 import type { AdminUser } from '../api/usersApi'
 import {
   useAssignRoles,
+  useChangeUserPassword,
   useCreateUser,
-  useResendInvitation,
   useRoles,
   useToggleUser,
   useUpdateUser,
@@ -30,12 +30,13 @@ function errorMessage(error: unknown, fallback: string): string {
 interface FormState {
   name: string
   email: string
+  password: string
   phone: string
   warehouse_id: number | null
   role_ids: number[]
 }
 
-const EMPTY: FormState = { name: '', email: '', phone: '', warehouse_id: null, role_ids: [] }
+const EMPTY: FormState = { name: '', email: '', password: '', phone: '', warehouse_id: null, role_ids: [] }
 
 export function UsersPage() {
   const can = usePermission()
@@ -53,12 +54,15 @@ export function UsersPage() {
   const updateMutation = useUpdateUser()
   const toggleMutation = useToggleUser()
   const assignMutation = useAssignRoles()
-  const inviteMutation = useResendInvitation()
+  const passwordMutation = useChangeUserPassword()
 
   const [panelOpen, setPanelOpen] = useState(false)
   const [editing, setEditing] = useState<AdminUser | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY)
   const [notice, setNotice] = useState<string | null>(null)
+  const [passwordFor, setPasswordFor] = useState<AdminUser | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
 
   const users = data?.data ?? []
   const isPending = createMutation.isPending || updateMutation.isPending || assignMutation.isPending
@@ -80,6 +84,7 @@ export function UsersPage() {
     setForm({
       name: user.name,
       email: user.email,
+      password: '',
       phone: user.phone ?? '',
       warehouse_id: user.warehouse_id,
       role_ids: user.roles.map((r) => r.id),
@@ -87,6 +92,27 @@ export function UsersPage() {
     setPanelOpen(true)
     updateMutation.reset()
     assignMutation.reset()
+  }
+
+  function openPassword(user: AdminUser) {
+    setPasswordFor(user)
+    setNewPassword('')
+    setNewPasswordConfirm('')
+    passwordMutation.reset()
+  }
+
+  function submitPassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (!passwordFor) return
+    passwordMutation.mutate(
+      { id: passwordFor.id, password: newPassword, passwordConfirmation: newPasswordConfirm },
+      {
+        onSuccess: () => {
+          setPasswordFor(null)
+          setNotice(`Mot de passe de ${passwordFor.name} modifié.`)
+        },
+      },
+    )
   }
 
   function toggleRole(id: number) {
@@ -122,11 +148,11 @@ export function UsersPage() {
       )
     } else {
       createMutation.mutate(
-        { ...base, role_ids: form.role_ids },
+        { ...base, password: form.password, role_ids: form.role_ids },
         {
           onSuccess: () => {
             setPanelOpen(false)
-            setNotice('Utilisateur créé. Une invitation a été envoyée pour définir le mot de passe.')
+            setNotice('Utilisateur créé. Il peut se connecter immédiatement avec son e-mail et le mot de passe défini.')
           },
         },
       )
@@ -143,7 +169,7 @@ export function UsersPage() {
         {canCreate && !panelOpen ? (
           <Button onClick={openCreate}>
             <Plus className="h-4 w-4" />
-            Inviter un utilisateur
+            Créer un utilisateur
           </Button>
         ) : null}
       </div>
@@ -152,9 +178,54 @@ export function UsersPage() {
         <p className="rounded border border-line bg-ok-bg px-3 py-2 text-sm text-ok">{notice}</p>
       ) : null}
 
+      {passwordFor ? (
+        <Card>
+          <CardHeader title={`Mot de passe — ${passwordFor.name}`} />
+          <CardBody>
+            {passwordMutation.isError ? (
+              <p className="mb-4 rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
+                {errorMessage(passwordMutation.error, 'Modification impossible.')}
+              </p>
+            ) : null}
+            <form onSubmit={submitPassword} className="grid gap-4 sm:grid-cols-2">
+              <Field label="Nouveau mot de passe (min. 8 caractères)" htmlFor="npwd">
+                <Input
+                  id="npwd"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                />
+              </Field>
+              <Field label="Confirmer le mot de passe" htmlFor="npwd2">
+                <Input
+                  id="npwd2"
+                  type="password"
+                  value={newPasswordConfirm}
+                  onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                />
+              </Field>
+              <div className="flex gap-2 sm:col-span-2">
+                <Button type="submit" disabled={passwordMutation.isPending}>
+                  {passwordMutation.isPending ? 'Modification…' : 'Modifier le mot de passe'}
+                </Button>
+                <Button type="button" variant="ghost" onClick={() => setPasswordFor(null)}>
+                  Annuler
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
+      ) : null}
+
       {panelOpen ? (
         <Card>
-          <CardHeader title={editing ? `Modifier ${editing.name}` : 'Nouvel utilisateur (invitation)'} />
+          <CardHeader title={editing ? `Modifier ${editing.name}` : 'Nouvel utilisateur'} />
           <CardBody>
             {saveError ? (
               <p className="mb-4 rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
@@ -171,6 +242,19 @@ export function UsersPage() {
               <Field label="E-mail" htmlFor="uemail">
                 <Input id="uemail" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
               </Field>
+              {!editing ? (
+                <Field label="Mot de passe (min. 8 caractères)" htmlFor="upassword">
+                  <Input
+                    id="upassword"
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    minLength={8}
+                    required
+                    autoComplete="new-password"
+                  />
+                </Field>
+              ) : null}
               <Field label="Téléphone" htmlFor="uphone">
                 <Input id="uphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </Field>
@@ -269,9 +353,7 @@ export function UsersPage() {
                       </td>
                       <td className="px-5 py-3 text-muted">{user.warehouse ? user.warehouse.code : 'Tous'}</td>
                       <td className="px-5 py-3">
-                        {user.invited ? (
-                          <Badge tone="warn">Invité</Badge>
-                        ) : user.is_active ? (
+                        {user.is_active ? (
                           <Badge tone="ok">Actif</Badge>
                         ) : (
                           <Badge tone="bad">Inactif</Badge>
@@ -279,13 +361,14 @@ export function UsersPage() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex justify-end gap-1">
-                          {user.invited ? (
+                          {canUpdate ? (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => inviteMutation.mutate(user.id, { onSuccess: () => setNotice('Invitation renvoyée.') })}
+                              onClick={() => openPassword(user)}
+                              title="Modifier le mot de passe"
                             >
-                              <Mail className="h-4 w-4" />
+                              <KeyRound className="h-4 w-4" />
                             </Button>
                           ) : null}
                           {canUpdate ? (

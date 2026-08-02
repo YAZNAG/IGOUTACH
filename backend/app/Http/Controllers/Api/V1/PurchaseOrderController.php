@@ -4,47 +4,76 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Domain\Purchasing\Actions\ReceivePurchaseOrderAction;
+use App\Domain\Purchasing\Actions\ApprovePurchaseOrderAction;
+use App\Domain\Purchasing\Actions\CancelPurchaseOrderAction;
+use App\Domain\Purchasing\Actions\CreatePurchaseOrderAction;
+use App\Domain\Purchasing\Actions\ReceiveGoodsAction;
+use App\Domain\Purchasing\Actions\SendPurchaseOrderAction;
+use App\Domain\Purchasing\Actions\UpdatePurchaseOrderAction;
 use App\Domain\Purchasing\Models\PurchaseOrder;
-use App\Domain\Stock\Contracts\StockWriterInterface;
-use App\Domain\Stock\DTOs\StockMovementData;
-use App\Domain\Stock\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
-use App\Support\Documents\DocumentNumberGeneratorInterface;
+use App\Http\Resources\GoodsReceiptDetailResource;
+use App\Http\Resources\PurchaseOrderDetailResource;
+use App\Http\Resources\PurchaseOrderResource;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Achats : bons de commande (création, passage en commande, réception
- * partielle/totale avec reliquats), retours fournisseur et suggestions
- * de réapprovisionnement.
+ * Gestion des bons de commande : création, envoi, approbation, réception, annulation.
  */
 final class PurchaseOrderController extends Controller
 {
+    /**
+     * Liste les bons de commande avec filtres.
+     * GET /purchase-orders
+     *
+     * @returns list of purchase orders
+     */
     public function index(Request $request): JsonResponse
     {
-        $orders = PurchaseOrder::query()
-            ->with(['supplier:id,code,name', 'warehouse:id,code'])
+        $query = PurchaseOrder::query()
+            ->with(['supplier', 'warehouse', 'status', 'createdBy'])
             ->withCount('lines')
-            ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
-            ->orderByDesc('id')
-            ->paginate(20);
+            ->withSum('lines as total_quantity', 'quantity')
+            ->withSum('lines as total_received', 'received_quantity');
 
-        $orders->through(fn (PurchaseOrder $o): array => [
-            'id' => $o->id,
-            'reference' => $o->reference,
-            'supplier' => $o->supplier?->name,
-            'warehouse' => $o->warehouse?->code,
-            'status' => $o->status,
-            'expected_at' => $o->expected_at?->format('Y-m-d'),
-            'lines_count' => $o->lines_count,
-            'created_at' => $o->created_at?->format('Y-m-d'),
-        ]);
+        // Recherche par numéro
+        if ($request->filled('search')) {
+            $query->where('number', 'like', '%'.$request->string('search')->value().'%');
+        }
+
+        // Filtrer par date
+        if ($request->filled('date_from')) {
+            $query->where('ordered_at', '>=', $request->date('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->where('ordered_at', '<=', $request->date('date_to'));
+        }
+
+        // Filtrer par fournisseur
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', (int) $request->input('supplier_id'));
+        }
+
+        // Filtrer par statut (status_code ou status)
+        $statusCode = $request->filled('status_code') ? $request->string('status_code')->value() : $request->string('status')->value();
+        if ($statusCode !== '') {
+            $query->byStatus($statusCode);
+        }
+
+        // Filtrer par lieu
+        if ($request->filled('warehouse_id')) {
+            $query->where('warehouse_id', (int) $request->input('warehouse_id'));
+        }
+
+        $perPage = in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20;
+        $orders = $query->orderByDesc('id')->paginate($perPage);
 
         return response()->json([
-            'data' => $orders->items(),
+            'data' => PurchaseOrderResource::collection($orders),
             'meta' => [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
@@ -54,161 +83,214 @@ final class PurchaseOrderController extends Controller
         ]);
     }
 
-    public function store(Request $request, DocumentNumberGeneratorInterface $numbers): JsonResponse
+    /**
+     * Crée un nouveau bon de commande en brouillon.
+     * POST /purchase-orders
+     */
+    public function store(Request $request, CreatePurchaseOrderAction $action): JsonResponse
     {
-        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, note?: string|null, lines: list<array{product_id: int, quantity: int, unit_price: float}>} $data */
+        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, notes?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
         $data = $request->validate([
             'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
             'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
             'expected_at' => ['nullable', 'date'],
-            'note' => ['nullable', 'string', 'max:255'],
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.product_id' => ['required', 'integer', 'exists:products,id', 'distinct'],
-            'lines.*.quantity' => ['required', 'integer', 'min:1'],
-            'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $order = DB::transaction(function () use ($data, $numbers, $request): PurchaseOrder {
-            $order = PurchaseOrder::query()->create([
-                'reference' => $numbers->next('purchase'),
-                'supplier_id' => $data['supplier_id'],
-                'warehouse_id' => $data['warehouse_id'],
-                'status' => PurchaseOrder::STATUS_ORDERED,
-                'expected_at' => $data['expected_at'] ?? null,
-                'created_by' => $request->user()?->id,
-                'note' => $data['note'] ?? null,
-            ]);
-
-            foreach ($data['lines'] as $line) {
-                $order->lines()->create([
-                    'product_id' => $line['product_id'],
-                    'quantity_ordered' => $line['quantity'],
-                    'unit_price' => $line['unit_price'],
-                ]);
-            }
-
-            return $order;
-        });
-
-        return response()->json(['data' => ['id' => $order->id, 'reference' => $order->reference]], 201);
-    }
-
-    public function show(PurchaseOrder $purchaseOrder): JsonResponse
-    {
-        $purchaseOrder->load(['supplier:id,code,name', 'warehouse:id,code,name', 'lines.product:id,sku,name']);
-
-        return response()->json(['data' => [
-            'id' => $purchaseOrder->id,
-            'reference' => $purchaseOrder->reference,
-            'supplier' => $purchaseOrder->supplier?->name,
-            'warehouse' => $purchaseOrder->warehouse?->code,
-            'status' => $purchaseOrder->status,
-            'expected_at' => $purchaseOrder->expected_at?->format('Y-m-d'),
-            'note' => $purchaseOrder->note,
-            'lines' => $purchaseOrder->lines->map(fn ($l): array => [
-                'id' => $l->id,
-                'sku' => $l->product?->sku,
-                'name' => $l->product?->name,
-                'quantity_ordered' => $l->quantity_ordered,
-                'quantity_received' => $l->quantity_received,
-                'remaining' => $l->remaining(),
-                'unit_price' => (float) $l->unit_price,
-            ])->values()->all(),
-        ]]);
-    }
-
-    public function receive(Request $request, PurchaseOrder $purchaseOrder, ReceivePurchaseOrderAction $action): JsonResponse
-    {
-        /** @var array{quantities: array<int|string, int>} $data */
-        $data = $request->validate([
-            'quantities' => ['required', 'array'],
-            'quantities.*' => ['integer', 'min:0'],
-        ]);
-
-        $quantities = [];
-        foreach ($data['quantities'] as $lineId => $qty) {
-            $quantities[(int) $lineId] = (int) $qty;
-        }
-
-        try {
-            $action->execute($purchaseOrder, $quantities, $request->user()?->id);
-        } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
-        }
-
-        return $this->show($purchaseOrder->refresh());
-    }
-
-    public function cancel(PurchaseOrder $purchaseOrder): JsonResponse
-    {
-        if (! in_array($purchaseOrder->status, [PurchaseOrder::STATUS_DRAFT, PurchaseOrder::STATUS_ORDERED], true)) {
-            return response()->json(['message' => 'Seule une commande non réceptionnée peut être annulée.'], 422);
-        }
-
-        $purchaseOrder->update(['status' => PurchaseOrder::STATUS_CANCELLED]);
-
-        return $this->show($purchaseOrder->refresh());
-    }
-
-    /**
-     * Retour fournisseur : sortie de stock tracée (mouvement return_out).
-     */
-    public function supplierReturn(Request $request, StockWriterInterface $stock): JsonResponse
-    {
-        /** @var array{supplier_id: int, warehouse_id: int, note?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
-        $data = $request->validate([
-            'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
-            'note' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:500'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         try {
-            DB::transaction(function () use ($data, $stock, $request): void {
-                foreach ($data['lines'] as $line) {
-                    $stock->decrease(new StockMovementData(
-                        warehouseId: $data['warehouse_id'],
-                        productId: $line['product_id'],
-                        quantity: $line['quantity'],
-                        movementTypeCode: 'return_out',
-                        referenceType: 'supplier_return',
-                        referenceId: $data['supplier_id'],
-                        userId: $request->user()?->id,
-                        note: $data['note'] ?? 'Retour fournisseur',
-                    ));
-                }
-            });
-        } catch (InsufficientStockException $e) {
+            $order = $action->execute(
+                supplierId: $data['supplier_id'],
+                warehouseId: $data['warehouse_id'],
+                expectedAt: isset($data['expected_at']) && $data['expected_at'] !== null ? new \DateTime($data['expected_at']) : null,
+                notes: $data['notes'] ?? null,
+                createdBy: $request->user()?->id ?? 0,
+                lines: $data['lines'],
+            );
+
+            return response()->json(
+                new PurchaseOrderDetailResource($order->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product'])),
+                201
+            );
+        } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
-
-        return response()->json(['message' => 'Retour fournisseur enregistré.'], 201);
     }
 
     /**
-     * Suggestions de réapprovisionnement : articles sous leur seuil minimal
-     * (stock total tous lieux < seuil).
+     * Affiche les détails d'un bon de commande.
+     * GET /purchase-orders/{id}
      */
-    public function replenishment(): JsonResponse
+    public function show(PurchaseOrder $purchaseOrder): JsonResponse
     {
-        $rows = DB::table('products')
-            ->leftJoin('stocks', 'stocks.product_id', '=', 'products.id')
-            ->whereNotNull('products.min_stock')
-            ->where('products.min_stock', '>', 0)
-            ->whereNull('products.deleted_at')
-            ->groupBy('products.id', 'products.sku', 'products.name', 'products.min_stock')
-            ->havingRaw('COALESCE(SUM(stocks.quantity), 0) < products.min_stock')
-            ->orderBy('products.name')
-            ->get([
-                'products.id as product_id',
-                'products.sku',
-                'products.name',
-                'products.min_stock',
-                DB::raw('COALESCE(SUM(stocks.quantity), 0) as current_stock'),
-            ]);
+        $purchaseOrder->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product']);
 
-        return response()->json(['data' => $rows]);
+        return response()->json(
+            new PurchaseOrderDetailResource($purchaseOrder)
+        );
+    }
+
+    /**
+     * Envoie un bon de commande (brouillon → sent ou pending_approval).
+     * POST /purchase-orders/{id}/send
+     */
+    public function send(PurchaseOrder $purchaseOrder, SendPurchaseOrderAction $action): JsonResponse
+    {
+        try {
+            // Vérifier si l'approbation est requise (via setting ou paramètre)
+            $requireApproval = (bool) \DB::table('settings')->where('key', 'purchase.require_approval')->value('value');
+
+            $order = $action->execute($purchaseOrder, $requireApproval);
+            $order->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product']);
+
+            return response()->json(
+                new PurchaseOrderDetailResource($order)
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Approuve un bon de commande (pending_approval → sent).
+     * POST /purchase-orders/{id}/approve
+     */
+    public function approve(PurchaseOrder $purchaseOrder, ApprovePurchaseOrderAction $action): JsonResponse
+    {
+        try {
+            $order = $action->execute($purchaseOrder);
+            $order->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product']);
+
+            return response()->json(
+                new PurchaseOrderDetailResource($order)
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Modifie un bon de commande en brouillon (remplacement intégral des lignes).
+     * PUT /purchase-orders/{id}
+     */
+    public function update(
+        Request $request,
+        PurchaseOrder $purchaseOrder,
+        UpdatePurchaseOrderAction $action
+    ): JsonResponse {
+        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, notes?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
+        $data = $request->validate([
+            'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'expected_at' => ['nullable', 'date'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        try {
+            $order = $action->execute(
+                order: $purchaseOrder,
+                supplierId: $data['supplier_id'],
+                warehouseId: $data['warehouse_id'],
+                expectedAt: isset($data['expected_at']) && $data['expected_at'] !== null ? new \DateTime($data['expected_at']) : null,
+                notes: $data['notes'] ?? null,
+                lines: $data['lines'],
+            );
+            $order->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product']);
+
+            return response()->json(
+                new PurchaseOrderDetailResource($order)
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * PDF du bon de commande (sans aucun montant : règle métier).
+     * GET /purchase-orders/{id}/pdf
+     */
+    public function pdf(PurchaseOrder $purchaseOrder): Response
+    {
+        // Le PDF n'existe que pour un bon envoyé ou plus (jamais en brouillon).
+        if ($purchaseOrder->status()->first()?->code === 'draft') {
+            return response()->json(['message' => 'Le PDF n\'est disponible que pour un bon de commande envoyé.'], 422);
+        }
+
+        $purchaseOrder->load(['supplier', 'warehouse', 'status']);
+        $lines = $purchaseOrder->lines()->with('product.unit')->orderBy('position')->get();
+
+        $pdf = Pdf::loadView('pdf.purchase-order', [
+            'order' => $purchaseOrder,
+            'lines' => $lines,
+        ])->setPaper('a4');
+
+        return $pdf->download("{$purchaseOrder->number}.pdf");
+    }
+
+    /**
+     * Réceptionne des marchandises : crée un bon de réception (BR-YYYY-0001),
+     * incrémente le stock au prix réel (CMUP) et met à jour le bon de commande.
+     * POST /purchase-orders/{id}/receive
+     *
+     * Body: { received_at, invoice_number?, notes?, lines: [{ purchase_order_line_id, quantity, unit_price, over_receipt_reason? }] }
+     */
+    public function receive(
+        Request $request,
+        PurchaseOrder $purchaseOrder,
+        ReceiveGoodsAction $action
+    ): JsonResponse {
+        /** @var array{received_at: string, invoice_number?: string|null, notes?: string|null, lines: list<array{purchase_order_line_id: int, quantity: int, unit_price: float, over_receipt_reason?: string|null}>} $data */
+        $data = $request->validate([
+            'received_at' => ['required', 'date'],
+            'invoice_number' => ['nullable', 'string', 'max:100'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.purchase_order_line_id' => ['required', 'integer', 'exists:purchase_order_lines,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+            'lines.*.unit_price' => ['required', 'numeric', 'gt:0'],
+            'lines.*.over_receipt_reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $receipt = $action->execute(
+                order: $purchaseOrder,
+                receivedAt: $data['received_at'],
+                invoiceNumber: $data['invoice_number'] ?? null,
+                notes: $data['notes'] ?? null,
+                lines: $data['lines'],
+                createdBy: $request->user()?->id,
+            );
+            $receipt->load(['purchaseOrder', 'supplier', 'warehouse', 'createdBy']);
+
+            return response()->json(
+                new GoodsReceiptDetailResource($receipt),
+                201
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Annule un bon de commande.
+     * POST /purchase-orders/{id}/cancel
+     */
+    public function cancel(PurchaseOrder $purchaseOrder, CancelPurchaseOrderAction $action): JsonResponse
+    {
+        try {
+            $order = $action->execute($purchaseOrder);
+            $order->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product']);
+
+            return response()->json(
+                new PurchaseOrderDetailResource($order)
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 use App\Domain\Access\Models\Permission;
 use App\Domain\Access\Models\Role;
-use App\Domain\Access\Notifications\UserInvitationNotification;
 use App\Domain\Warehouses\Models\Warehouse;
 use App\Models\User;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Crée un acteur doté d'un rôle de rang donné possédant les permissions listées.
@@ -45,8 +44,7 @@ function roleWith(array $perms, int $level = 10): Role
     return $role;
 }
 
-it('crée un utilisateur par invitation sans saisir de mot de passe', function () {
-    Notification::fake();
+it('crée un utilisateur avec e-mail et mot de passe, connectable immédiatement', function () {
     $admin = actorWith(['user.create', 'user.assign_role']);
     $role = roleWith([]);
     $warehouse = Warehouse::factory()->create();
@@ -54,18 +52,45 @@ it('crée un utilisateur par invitation sans saisir de mot de passe', function (
     $response = $this->actingAs($admin)->postJson('/api/v1/users', [
         'name' => 'Nouveau Vendeur',
         'email' => 'vendeur@igoutech.ma',
+        'password' => 'MotDePasse!123',
         'role_ids' => [$role->id],
         'warehouse_id' => $warehouse->id,
     ]);
 
     $response->assertCreated()
-        ->assertJsonPath('data.email', 'vendeur@igoutech.ma')
-        ->assertJsonPath('data.invited', true);
+        ->assertJsonPath('data.email', 'vendeur@igoutech.ma');
 
     $this->assertDatabaseHas('users', ['email' => 'vendeur@igoutech.ma', 'is_active' => true]);
 
     $created = User::where('email', 'vendeur@igoutech.ma')->firstOrFail();
-    Notification::assertSentTo($created, UserInvitationNotification::class);
+    expect(Hash::check('MotDePasse!123', $created->password))->toBeTrue();
+});
+
+it('refuse la création sans mot de passe', function () {
+    $admin = actorWith(['user.create', 'user.assign_role']);
+    $role = roleWith([]);
+    $warehouse = Warehouse::factory()->create();
+
+    $this->actingAs($admin)->postJson('/api/v1/users', [
+        'name' => 'Sans Mot de Passe',
+        'email' => 'sanspwd@igoutech.ma',
+        'role_ids' => [$role->id],
+        'warehouse_id' => $warehouse->id,
+    ])->assertStatus(422)->assertJsonValidationErrors(['password']);
+});
+
+it('permet à l\'admin de modifier le mot de passe d\'un utilisateur', function () {
+    $admin = actorWith(['user.update']);
+    $target = User::factory()->create();
+    $target->createToken('mobile');
+
+    $this->actingAs($admin)->putJson("/api/v1/users/{$target->id}/password", [
+        'password' => 'NouveauPass!456',
+        'password_confirmation' => 'NouveauPass!456',
+    ])->assertOk();
+
+    expect(Hash::check('NouveauPass!456', $target->fresh()->password))->toBeTrue()
+        ->and($target->tokens()->count())->toBe(0);
 });
 
 it('exige un lieu pour un utilisateur sans accès global', function () {
@@ -75,18 +100,19 @@ it('exige un lieu pour un utilisateur sans accès global', function () {
     $this->actingAs($admin)->postJson('/api/v1/users', [
         'name' => 'Sans Lieu',
         'email' => 'sanslieu@igoutech.ma',
+        'password' => 'MotDePasse!123',
         'role_ids' => [$role->id],
     ])->assertStatus(422);
 });
 
 it('dispense de lieu un rôle à accès global', function () {
-    Notification::fake();
     $admin = actorWith(['user.create', 'user.assign_role']);
     $role = roleWith(['stock.view_global']);
 
     $this->actingAs($admin)->postJson('/api/v1/users', [
         'name' => 'Direction',
         'email' => 'direction@igoutech.ma',
+        'password' => 'MotDePasse!123',
         'role_ids' => [$role->id],
     ])->assertCreated();
 });
@@ -119,6 +145,7 @@ it('interdit d\'attribuer un rôle de rang supérieur au sien', function () {
     $this->actingAs($manager)->postJson('/api/v1/users', [
         'name' => 'Tentative Admin',
         'email' => 'tentative@igoutech.ma',
+        'password' => 'MotDePasse!123',
         'role_ids' => [$adminRole->id],
         'warehouse_id' => $warehouse->id,
     ])->assertStatus(422);

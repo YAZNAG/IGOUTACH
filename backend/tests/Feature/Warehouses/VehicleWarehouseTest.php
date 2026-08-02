@@ -9,7 +9,6 @@ use App\Domain\Stock\Models\Stock;
 use App\Domain\Warehouses\Models\Warehouse;
 use App\Domain\Warehouses\Models\WarehouseType;
 use App\Models\User;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * @param  list<string>  $perms
@@ -65,13 +64,13 @@ it('refuse un second vendeur sur un véhicule', function () {
     $this->actingAs($admin)->postJson('/api/v1/users', [
         'name' => 'Vendeur B',
         'email' => 'vendeurb@igoutech.ma',
+        'password' => 'MotDePasse!123',
         'role_ids' => [$role->id],
         'warehouse_id' => $vehicle->id,
     ])->assertStatus(422);
 });
 
 it('accepte le premier vendeur d\'un véhicule', function () {
-    Notification::fake();
     $admin = whActor(['user.create', 'user.assign_role']);
     $vehicle = vehicleWarehouse();
     $role = whRole();
@@ -79,6 +78,7 @@ it('accepte le premier vendeur d\'un véhicule', function () {
     $this->actingAs($admin)->postJson('/api/v1/users', [
         'name' => 'Vendeur A',
         'email' => 'vendeura@igoutech.ma',
+        'password' => 'MotDePasse!123',
         'role_ids' => [$role->id],
         'warehouse_id' => $vehicle->id,
     ])->assertCreated();

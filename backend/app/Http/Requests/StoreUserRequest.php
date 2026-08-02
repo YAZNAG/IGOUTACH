@@ -21,6 +21,7 @@ final class StoreUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
             'role_ids' => ['array'],

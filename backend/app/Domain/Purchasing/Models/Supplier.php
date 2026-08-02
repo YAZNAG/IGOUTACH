@@ -42,6 +42,16 @@ class Supplier extends Model
     }
 
     /**
+     * Bons de commande de ce fournisseur.
+     *
+     * @return HasMany<PurchaseOrder, $this>
+     */
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+
+    /**
      * Articles référencés chez ce fournisseur.
      *
      * @return BelongsToMany<Product, $this>

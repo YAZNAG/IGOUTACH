@@ -12,12 +12,17 @@ use App\Domain\Catalog\DTOs\PricingData;
 use App\Domain\Catalog\DTOs\ProductData;
 use App\Domain\Catalog\Exceptions\ProductInUseException;
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Stock\Models\Stock;
+use App\Domain\Stock\Models\StockMovement;
 use App\Exports\ArrayExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdatePricingRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductSupplierResource;
+use App\Http\Resources\StockMovementResource;
+use App\Http\Resources\StockResource;
 use App\Imports\ArticlesImport;
 use App\Support\Export\HtmlTable;
 use App\Support\Query\Sortable;
@@ -54,7 +59,24 @@ final class ProductController extends Controller
                         ->orWhere('barcode', $term);
                 });
             })
-            ->when($request->integer('category_id') > 0, fn ($q) => $q->where('category_id', $request->integer('category_id')));
+            ->when($request->integer('category_id') > 0, fn ($q) => $q->where('category_id', $request->integer('category_id')))
+            // Stock du lieu demandé, exposé comme current_stock (écran bon de commande).
+            ->when($request->integer('warehouse_id') > 0, function ($q) use ($request) {
+                $q->addSelect(['current_stock' => \DB::table('stocks')
+                    ->selectRaw('COALESCE(SUM(quantity), 0)')
+                    ->whereColumn('product_id', 'products.id')
+                    ->where('warehouse_id', $request->integer('warehouse_id')),
+                ]);
+            })
+            // Articles sous leur seuil d'alerte sur le lieu demandé.
+            ->when($request->boolean('below_threshold') && $request->integer('warehouse_id') > 0, function ($q) use ($request) {
+                $q->whereNotNull('min_stock')
+                    ->where('min_stock', '>', 0)
+                    ->whereRaw(
+                        'COALESCE((SELECT SUM(s.quantity) FROM stocks s WHERE s.product_id = products.id AND s.warehouse_id = ?), 0) < products.min_stock',
+                        [$request->integer('warehouse_id')],
+                    );
+            });
 
         Sortable::apply($products, $request, [
             'sku' => 'sku',
@@ -78,7 +100,13 @@ final class ProductController extends Controller
     public function show(Product $product): ProductResource
     {
         return ProductResource::make(
-            $product->load(['category:id,name', 'brand:id,name', 'unit:id,code']),
+            $product->load([
+                'category:id,name',
+                'brand:id,name',
+                'unit:id,code,name',
+                'images:id,product_id,path,is_main,position',
+                'attributes:id,product_id,name,value,position',
+            ]),
         );
     }
 
@@ -190,5 +218,88 @@ final class ProductController extends Controller
                 'skipped' => $import->skipped,
             ],
         ]);
+    }
+
+    /**
+     * Stock du produit dans tous les lieux (ou un lieu spécifique).
+     * GET /products/{id}/stock?warehouse_id=1
+     */
+    public function stock(Request $request, Product $product): AnonymousResourceCollection
+    {
+        $query = Stock::query()
+            ->with('warehouse:id,code,name')
+            ->where('product_id', $product->id);
+
+        if ($request->integer('warehouse_id') > 0) {
+            $query->where('warehouse_id', $request->integer('warehouse_id'));
+        }
+
+        $stocks = $query->get();
+
+        return StockResource::collection($stocks);
+    }
+
+    /**
+     * Mouvements de stock du produit avec filtres.
+     * GET /products/{id}/movements?warehouse_id=&type=&date_from=&page=
+     */
+    public function movements(Request $request, Product $product): JsonResponse
+    {
+        $paginator = StockMovement::query()
+            ->with(['movementType:id,code,name'])
+            ->where('product_id', $product->id)
+            ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
+            ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->whereHas('movementType', fn ($t) => $t->where('code', $request->string('type')->value())))
+            ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->where('created_at', '>=', $request->string('date_from')->value()))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(min(100, max(1, $request->integer('per_page', 20))));
+
+        return response()->json([
+            'data' => StockMovementResource::collection($paginator->items()),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Fournisseurs référencés pour ce produit.
+     * GET /products/{id}/suppliers
+     */
+    public function suppliers(Product $product): AnonymousResourceCollection
+    {
+        $suppliers = $product->suppliers()
+            ->orderBy('product_supplier.supplier_reference')
+            ->get();
+
+        return ProductSupplierResource::collection($suppliers);
+    }
+
+    /**
+     * Statistiques du produit (pour une période donnée).
+     * GET /products/{id}/statistics?period=12m
+     */
+    public function statistics(Request $request, Product $product): JsonResponse
+    {
+        $period = $request->string('period')->value() !== '' ? $request->string('period')->value() : '12m';
+
+        // Pour l'instant, retourner une structure de base
+        // À enrichir avec logique métier réelle
+        $stats = [
+            'product_id' => $product->id,
+            'period' => $period,
+            'sales_volume' => 0,
+            'revenue' => 0.0,
+            'average_sale_price' => (float) $product->sale_price,
+            'cost_of_goods' => 0.0,
+            'gross_margin' => 0.0,
+            'margin_percent' => 0.0,
+        ];
+
+        return response()->json(['data' => $stats]);
     }
 }
