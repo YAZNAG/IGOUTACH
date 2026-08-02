@@ -42,6 +42,9 @@ final class GoodsReceiptResource extends JsonResource
             'lines_count' => (int) ($this->lines_count ?? $this->lines()->count()),
             'total_quantity' => (int) ($this->total_quantity ?? 0),
             'total_amount' => round((float) ($this->total_amount ?? 0), 2),
+            'payment_status' => $this->payment_status,
+            'amount_paid' => round((float) $this->amount_paid, 2),
+            'remaining_amount' => round(max(0, (float) ($this->total_amount ?? 0) - (float) $this->amount_paid), 2),
             'created_by' => [
                 'id' => $this->createdBy?->id,
                 'name' => $this->createdBy?->name,

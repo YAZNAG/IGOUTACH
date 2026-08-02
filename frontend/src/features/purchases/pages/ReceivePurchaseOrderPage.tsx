@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { usePermission } from '@/hooks/usePermission'
 import { cn, formatNumber } from '@/lib/utils'
 import { usePurchaseOrder, useReceivePurchaseOrder } from '../hooks'
-import type { PurchaseOrderLine, ReceivePurchaseOrderLineInput } from '../api/purchaseOrdersApi'
+import type { PaymentStatus, PurchaseOrderLine, ReceivePurchaseOrderLineInput } from '../api/purchaseOrdersApi'
 
 interface ReceiveLineState {
   /** Case cochée = réception du reliquat complet. */
@@ -63,6 +64,8 @@ export function ReceivePurchaseOrderPage() {
   const [invoiceNumber, setInvoiceNumber] = useState('')
   const [notes, setNotes] = useState('')
   const [lineStates, setLineStates] = useState<Record<number, ReceiveLineState>>({})
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('unpaid')
+  const [amountPaidInput, setAmountPaidInput] = useState('')
 
   const headerCheckboxRef = useRef<HTMLInputElement>(null)
 
@@ -167,6 +170,13 @@ export function ReceivePurchaseOrderPage() {
     return toNumber(state.quantity) > l.remaining && state.reason.trim() === ''
   })
 
+  // Paiement : montant payé selon le statut, reste = crédit fournisseur.
+  const amountPaid =
+    paymentStatus === 'paid' ? totalAmount : paymentStatus === 'partial' ? toNumber(amountPaidInput) : 0
+  const remainingCredit = Math.max(0, totalAmount - amountPaid)
+  const invalidPartial =
+    paymentStatus === 'partial' && (amountPaid <= 0 || amountPaid >= totalAmount)
+
   let validationMessage: string | null = null
   if (retainedLines.length === 0) {
     validationMessage = 'Saisissez au moins une quantité reçue.'
@@ -176,6 +186,8 @@ export function ReceivePurchaseOrderPage() {
     validationMessage = 'Un motif est obligatoire pour toute sur-réception.'
   } else if (!receivedAt) {
     validationMessage = 'La date de réception est obligatoire.'
+  } else if (invalidPartial) {
+    validationMessage = `Paiement partiel : le montant payé doit être entre 0 et ${formatMoney(totalAmount)} DH (exclus).`
   }
 
   const canSubmit = validationMessage === null && !receiveMutation.isPending
@@ -200,6 +212,8 @@ export function ReceivePurchaseOrderPage() {
           received_at: receivedAt,
           invoice_number: invoiceNumber.trim() || null,
           notes: notes.trim() || null,
+          payment_status: paymentStatus,
+          amount_paid: paymentStatus === 'partial' ? amountPaid : undefined,
           lines: payloadLines,
         },
       })
@@ -446,6 +460,70 @@ export function ReceivePurchaseOrderPage() {
         </CardBody>
       </Card>
 
+      {/* Paiement fournisseur */}
+      <Card>
+        <CardHeader title="Paiement fournisseur" />
+        <CardBody>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <Field label="Règlement" htmlFor="payment-status">
+              <Select
+                id="payment-status"
+                value={paymentStatus}
+                onChange={(e) => {
+                  setPaymentStatus(e.target.value as PaymentStatus)
+                  setAmountPaidInput('')
+                }}
+              >
+                <option value="unpaid">Non payé (tout en crédit)</option>
+                <option value="partial">Paiement partiel</option>
+                <option value="paid">Payé intégralement</option>
+              </Select>
+            </Field>
+
+            {paymentStatus === 'partial' ? (
+              <Field label="Montant payé (DH)" htmlFor="amount-paid">
+                <Input
+                  id="amount-paid"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={amountPaidInput}
+                  onChange={(e) => setAmountPaidInput(e.target.value)}
+                  className={cn('text-right', invalidPartial && amountPaidInput !== '' ? 'border-bad' : '')}
+                  placeholder="0.00"
+                />
+              </Field>
+            ) : null}
+
+            <div>
+              <p className="mb-1.5 block text-sm font-medium text-ink">Montant payé</p>
+              <p className="flex h-10 items-center justify-end rounded border border-line bg-bg px-3 text-sm font-medium text-ok">
+                {formatMoney(amountPaid)} DH
+              </p>
+            </div>
+
+            <div>
+              <p className="mb-1.5 block text-sm font-medium text-ink">Reste — crédit fournisseur</p>
+              <p
+                className={`flex h-10 items-center justify-end rounded border border-line bg-bg px-3 text-sm font-semibold ${
+                  remainingCredit > 0 ? 'text-bad' : 'text-ok'
+                }`}
+              >
+                {formatMoney(remainingCredit)} DH
+              </p>
+            </div>
+          </div>
+
+          {remainingCredit > 0 && retainedLines.length > 0 ? (
+            <p className="mt-3 text-xs text-muted">
+              Le reste de {formatMoney(remainingCredit)} DH sera enregistré comme crédit chez{' '}
+              <span className="font-medium text-ink">{order.supplier.name ?? 'le fournisseur'}</span>, à régler
+              ultérieurement.
+            </p>
+          ) : null}
+        </CardBody>
+      </Card>
+
       {/* Bandeau bas fixe */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-line-2 bg-card px-6 py-4 shadow-lg">
         <div className="mx-auto max-w-6xl">
@@ -459,6 +537,11 @@ export function ReceivePurchaseOrderPage() {
               <p className="text-sm text-muted">
                 Montant total HT :{' '}
                 <span className="font-semibold text-ink">{formatMoney(totalAmount)} DH</span>
+                {' · '}Payé : <span className="font-medium text-ok">{formatMoney(amountPaid)} DH</span>
+                {' · '}Crédit :{' '}
+                <span className={`font-medium ${remainingCredit > 0 ? 'text-bad' : 'text-ok'}`}>
+                  {formatMoney(remainingCredit)} DH
+                </span>
               </p>
               {validationMessage ? <p className="text-xs text-bad">{validationMessage}</p> : null}
             </div>

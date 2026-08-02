@@ -236,3 +236,52 @@ it('refuse la liste des réceptions sans la permission receipt.view', function (
 
     $this->actingAs($user)->getJson('/api/v1/goods-receipts')->assertForbidden();
 });
+
+it('enregistre un paiement intégral à la réception', function (): void {
+    $user = grantUser(['receipt.create']);
+    [$order, $line] = makeReceivablePo(10);
+
+    $response = $this->actingAs($user)->postJson("/api/v1/purchase-orders/{$order->id}/receive", [
+        'received_at' => now()->format('Y-m-d H:i:s'),
+        'payment_status' => 'paid',
+        'lines' => [
+            ['purchase_order_line_id' => $line->id, 'quantity' => 10, 'unit_price' => 20.00],
+        ],
+    ])->assertCreated();
+
+    expect($response->json('payment_status'))->toBe('paid')
+        ->and((float) $response->json('amount_paid'))->toBe(200.0)
+        ->and((float) $response->json('remaining_amount'))->toBe(0.0);
+});
+
+it('enregistre un paiement partiel : le reste devient crédit fournisseur', function (): void {
+    $user = grantUser(['receipt.create']);
+    [$order, $line] = makeReceivablePo(10);
+
+    $response = $this->actingAs($user)->postJson("/api/v1/purchase-orders/{$order->id}/receive", [
+        'received_at' => now()->format('Y-m-d H:i:s'),
+        'payment_status' => 'partial',
+        'amount_paid' => 80,
+        'lines' => [
+            ['purchase_order_line_id' => $line->id, 'quantity' => 10, 'unit_price' => 20.00],
+        ],
+    ])->assertCreated();
+
+    expect($response->json('payment_status'))->toBe('partial')
+        ->and((float) $response->json('amount_paid'))->toBe(80.0)
+        ->and((float) $response->json('remaining_amount'))->toBe(120.0);
+});
+
+it('refuse un paiement partiel supérieur ou égal au total', function (): void {
+    $user = grantUser(['receipt.create']);
+    [$order, $line] = makeReceivablePo(10);
+
+    $this->actingAs($user)->postJson("/api/v1/purchase-orders/{$order->id}/receive", [
+        'received_at' => now()->format('Y-m-d H:i:s'),
+        'payment_status' => 'partial',
+        'amount_paid' => 200,
+        'lines' => [
+            ['purchase_order_line_id' => $line->id, 'quantity' => 10, 'unit_price' => 20.00],
+        ],
+    ])->assertStatus(422);
+});

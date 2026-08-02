@@ -1,5 +1,6 @@
 import { ArrowLeft, Download } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { downloadFile } from '@/lib/download'
@@ -156,7 +157,7 @@ export function GoodsReceiptDetailPage() {
       <Card>
         <CardHeader title="Synthèse" />
         <CardBody>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <div>
               <p className="text-xs font-medium text-muted">Unités reçues</p>
               <p className="text-lg font-semibold text-ink">{formatNumber(totalQuantity)}</p>
@@ -164,6 +165,32 @@ export function GoodsReceiptDetailPage() {
             <div>
               <p className="text-xs font-medium text-muted">Montant total HT</p>
               <p className="text-lg font-semibold text-ink">{formatMoney(totalAmount)} DH</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">Règlement</p>
+              <div className="mt-1">
+                {receipt.payment_status === 'paid' ? (
+                  <Badge tone="ok">Payé</Badge>
+                ) : receipt.payment_status === 'partial' ? (
+                  <Badge tone="warn">Partiel</Badge>
+                ) : (
+                  <Badge tone="bad">Non payé</Badge>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">Montant payé</p>
+              <p className="text-lg font-semibold text-ok">{formatMoney(Number(receipt.amount_paid))} DH</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">Crédit fournisseur (reste)</p>
+              <p
+                className={`text-lg font-semibold ${
+                  Number(receipt.remaining_amount) > 0 ? 'text-bad' : 'text-ok'
+                }`}
+              >
+                {formatMoney(Number(receipt.remaining_amount))} DH
+              </p>
             </div>
           </div>
         </CardBody>

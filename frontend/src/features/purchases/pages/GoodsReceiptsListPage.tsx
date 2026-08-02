@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Download, Eye, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
@@ -190,6 +191,7 @@ export function GoodsReceiptsListPage() {
                     <th className="px-5 py-3 text-right font-medium">Références</th>
                     <th className="px-5 py-3 text-right font-medium">Unités</th>
                     <th className="px-5 py-3 text-right font-medium">Montant HT</th>
+                    <th className="px-5 py-3 font-medium">Paiement</th>
                     <th className="px-5 py-3 text-right font-medium">Actions</th>
                   </tr>
                 </thead>
@@ -226,6 +228,25 @@ export function GoodsReceiptsListPage() {
                       </td>
                       <td className="tabular px-5 py-3 text-right font-medium text-ink">
                         {formatNumber(Number(receipt.total_amount))} DH
+                      </td>
+                      <td className="px-5 py-3">
+                        {receipt.payment_status === 'paid' ? (
+                          <Badge tone="ok">Payé</Badge>
+                        ) : receipt.payment_status === 'partial' ? (
+                          <div>
+                            <Badge tone="warn">Partiel</Badge>
+                            <p className="tabular mt-1 text-xs text-bad">
+                              Crédit : {formatNumber(Number(receipt.remaining_amount))} DH
+                            </p>
+                          </div>
+                        ) : (
+                          <div>
+                            <Badge tone="bad">Non payé</Badge>
+                            <p className="tabular mt-1 text-xs text-bad">
+                              Crédit : {formatNumber(Number(receipt.remaining_amount))} DH
+                            </p>
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">

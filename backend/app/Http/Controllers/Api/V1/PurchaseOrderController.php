@@ -249,6 +249,8 @@ final class PurchaseOrderController extends Controller
             'received_at' => ['required', 'date'],
             'invoice_number' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'payment_status' => ['nullable', 'in:unpaid,partial,paid'],
+            'amount_paid' => ['nullable', 'numeric', 'min:0'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.purchase_order_line_id' => ['required', 'integer', 'exists:purchase_order_lines,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
@@ -264,6 +266,8 @@ final class PurchaseOrderController extends Controller
                 notes: $data['notes'] ?? null,
                 lines: $data['lines'],
                 createdBy: $request->user()?->id,
+                paymentStatus: $data['payment_status'] ?? 'unpaid',
+                amountPaid: (float) ($data['amount_paid'] ?? 0),
             );
             $receipt->load(['purchaseOrder', 'supplier', 'warehouse', 'createdBy']);
 

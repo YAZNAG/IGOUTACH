@@ -104,10 +104,14 @@ export interface ReceivePurchaseOrderLineInput {
   over_receipt_reason?: string
 }
 
+export type PaymentStatus = 'unpaid' | 'partial' | 'paid'
+
 export interface ReceivePurchaseOrderInput {
   received_at: string
   invoice_number?: string | null
   notes?: string | null
+  payment_status?: PaymentStatus
+  amount_paid?: number
   lines: ReceivePurchaseOrderLineInput[]
 }
 

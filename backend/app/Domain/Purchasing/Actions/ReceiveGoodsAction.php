@@ -34,9 +34,11 @@ final class ReceiveGoodsAction
         ?string $invoiceNumber,
         ?string $notes,
         array $lines,
-        ?int $createdBy
+        ?int $createdBy,
+        string $paymentStatus = GoodsReceipt::PAYMENT_UNPAID,
+        float $amountPaid = 0.0
     ): GoodsReceipt {
-        return DB::transaction(function () use ($order, $receivedAt, $invoiceNumber, $notes, $lines, $createdBy): GoodsReceipt {
+        return DB::transaction(function () use ($order, $receivedAt, $invoiceNumber, $notes, $lines, $createdBy, $paymentStatus, $amountPaid): GoodsReceipt {
             if (! $order->canReceive()) {
                 throw new RuntimeException('Ce bon de commande ne peut pas recevoir d\'articles.');
             }
@@ -120,11 +122,44 @@ final class ReceiveGoodsAction
                 unset($receiptLine);
             }
 
-            // 3. Statut du bon de commande (partially_received / received)
+            // 3. Paiement fournisseur : payé / partiel (reste en crédit) / non payé.
+            $this->applyPayment($receipt, $paymentStatus, $amountPaid);
+
+            // 4. Statut du bon de commande (partially_received / received)
             $this->syncOrderStatus($order);
 
             return $receipt->refresh();
         });
+    }
+
+    private function applyPayment(GoodsReceipt $receipt, string $paymentStatus, float $amountPaid): void
+    {
+        $receipt->load('lines');
+        $total = $receipt->totalAmount();
+
+        switch ($paymentStatus) {
+            case GoodsReceipt::PAYMENT_PAID:
+                // Payé intégralement à la réception.
+                $amountPaid = $total;
+                break;
+            case GoodsReceipt::PAYMENT_PARTIAL:
+                if ($amountPaid <= 0 || $amountPaid >= $total) {
+                    throw new RuntimeException(
+                        'Paiement partiel : le montant payé doit être supérieur à 0 et inférieur au total ('.number_format($total, 2, '.', '').' DH).'
+                    );
+                }
+                break;
+            case GoodsReceipt::PAYMENT_UNPAID:
+                $amountPaid = 0.0;
+                break;
+            default:
+                throw new RuntimeException('Statut de paiement invalide.');
+        }
+
+        $receipt->update([
+            'payment_status' => $paymentStatus,
+            'amount_paid' => number_format($amountPaid, 2, '.', ''),
+        ]);
     }
 
     private function syncOrderStatus(PurchaseOrder $order): void

@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property int $warehouse_id
  * @property Carbon $received_at
  * @property string|null $invoice_number
+ * @property string $payment_status
+ * @property string $amount_paid
  * @property string|null $notes
  * @property int|null $created_by
  * @property Carbon $created_at
@@ -29,6 +31,12 @@ use Illuminate\Support\Carbon;
  */
 final class GoodsReceipt extends Model
 {
+    public const PAYMENT_UNPAID = 'unpaid';
+
+    public const PAYMENT_PARTIAL = 'partial';
+
+    public const PAYMENT_PAID = 'paid';
+
     protected $fillable = [
         'number',
         'purchase_order_id',
@@ -36,6 +44,8 @@ final class GoodsReceipt extends Model
         'warehouse_id',
         'received_at',
         'invoice_number',
+        'payment_status',
+        'amount_paid',
         'notes',
         'created_by',
     ];
@@ -47,7 +57,27 @@ final class GoodsReceipt extends Model
     {
         return [
             'received_at' => 'datetime',
+            'amount_paid' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Montant total HT du bon (somme des lignes).
+     */
+    public function totalAmount(): float
+    {
+        return round(
+            $this->lines->sum(fn (GoodsReceiptLine $line): float => $line->lineTotal()),
+            2,
+        );
+    }
+
+    /**
+     * Reste à payer au fournisseur (crédit fournisseur).
+     */
+    public function remainingAmount(): float
+    {
+        return round(max(0, $this->totalAmount() - (float) $this->amount_paid), 2);
     }
 
     /**
