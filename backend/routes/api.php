@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\V1\SaleController;
 use App\Http\Controllers\Api\V1\SessionController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\StockController;
+use App\Http\Controllers\Api\V1\StockEntryController;
 use App\Http\Controllers\Api\V1\SupplierContactController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\SupplierCreditController;
@@ -198,6 +199,10 @@ Route::prefix('v1')->group(function () {
         Route::get('stock/matrix', [StockController::class, 'matrix'])->middleware('can:stock.view');
         Route::get('stock/matrix/export', [StockController::class, 'matrixExport'])->middleware('can:stock.view');
         Route::get('stock/movements', [StockController::class, 'movements'])->middleware('can:stock.view');
+        // Entrées de stock (mouvements d'entrée, créés par les documents)
+        Route::get('stock/entries', [StockEntryController::class, 'index'])->middleware('can:stock.view');
+        Route::get('stock/entries/export', [StockEntryController::class, 'export'])->middleware('can:stock.view');
+        Route::get('stock/entries/{movement}', [StockEntryController::class, 'show'])->whereNumber('movement')->middleware('can:stock.view');
         Route::get('stock/movement-types', [StockController::class, 'movementTypes'])->middleware('can:stock.view');
         Route::post('stock/entry', [StockController::class, 'entry'])->middleware('can:stock.entry');
         Route::post('stock/issue', [StockController::class, 'issue'])->middleware('can:stock.issue');

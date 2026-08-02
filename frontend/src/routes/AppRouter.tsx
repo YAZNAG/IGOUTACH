@@ -35,7 +35,7 @@ import {
   PaymentMethodsPage,
   TaxRatesSettingsPage,
 } from '@/features/settings'
-import { StockPage } from '@/features/stock'
+import { StockEntriesPage, StockEntryDetailPage, StockPage } from '@/features/stock'
 import { SuppliersPage } from '@/features/suppliers'
 import { UnitsPage } from '@/features/units'
 import { WarehouseDetailPage, WarehousesPage } from '@/features/warehouses'
@@ -58,6 +58,8 @@ export const router = createBrowserRouter([
           { path: '/alertes', element: <AlertsPage /> },
           { path: '/rapports', element: <ReportsPage /> },
           { path: '/stock', element: <StockPage /> },
+          { path: '/stock-entries', element: <StockEntriesPage /> },
+          { path: '/stock-entries/:id', element: <StockEntryDetailPage /> },
           { path: '/inventaire', element: <InventoryPage /> },
           { path: '/transferts', element: <TransfersPage /> },
           { path: '/achats', element: <PurchasesPage /> },
