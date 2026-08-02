@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
+class Container_d30f121317 extends _PHPStan_02959ca10\Nette\DI\Container
 {
 	protected $tags = [
 		'phpstan.broker.allowedSubTypesClassReflectionExtension' => ['017' => true, '018' => true],
@@ -5915,7 +5915,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -5963,7 +5963,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -6021,7 +6021,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -6088,7 +6088,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -6108,7 +6108,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -6133,7 +6133,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -6153,7 +6153,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -6173,7 +6173,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_8d55b09ac4 $container)
+			public function __construct(Container_d30f121317 $container)
 			{
 				$this->container = $container;
 			}
@@ -9684,7 +9684,7 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 	}
 
 
-	public function createServiceContainer(): Container_8d55b09ac4
+	public function createServiceContainer(): Container_d30f121317
 	{
 		return $this;
 	}
@@ -10334,33 +10334,13 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 			'usedLevel' => '8',
 			'cliAutoloadFile' => null,
 			'env' => [
-				'ADMIN_EMAIL' => 'admin@igoutech.ma',
-				'ADMIN_PASSWORD' => 'ChangeMe!2026',
+				'ACLOCAL_PATH' => 'C:\Program Files\Git\mingw64\share\aclocal;C:\Program Files\Git\usr\share\aclocal',
 				'AI_AGENT' => 'claude-code_2-1-219_agent',
 				'ALLUSERSPROFILE' => 'C:\ProgramData',
 				'ANTHROPIC_BASE_URL' => 'https://api.anthropic.com',
 				'API_TIMEOUT_MS' => '900000',
 				'APPDATA' => 'C:\Users\yassi\AppData\Roaming',
-				'APP_DEBUG' => 'true',
-				'APP_ENV' => 'local',
-				'APP_FAKER_LOCALE' => 'fr_FR',
-				'APP_FALLBACK_LOCALE' => 'fr',
-				'APP_KEY' => 'base64:H+DgTJ2ssmm7MW+7ER5Tz33AjMKGOq9RBi9oGArQhS4=',
-				'APP_LOCALE' => 'fr',
-				'APP_MAINTENANCE_DRIVER' => 'file',
-				'APP_NAME' => 'IGOUTECH',
-				'APP_TIMEZONE' => 'Africa/Casablanca',
-				'APP_URL' => 'http://localhost:8000',
-				'AWS_ACCESS_KEY_ID' => '',
-				'AWS_BUCKET' => '',
-				'AWS_DEFAULT_REGION' => 'us-east-1',
-				'AWS_SECRET_ACCESS_KEY' => '',
-				'AWS_USE_PATH_STYLE_ENDPOINT' => 'false',
 				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.24012.9,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=3dc5223b01b542da8d7b8e5a9171eae1,sentry-org_id=1158394',
-				'BCRYPT_ROUNDS' => '12',
-				'BROADCAST_CONNECTION' => 'log',
-				'CACHE_PREFIX' => 'igoutech',
-				'CACHE_STORE' => 'file',
 				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_19716_JJWSJUTTDQSRTVKO',
 				'CLAUDECODE' => '1',
 				'CLAUDE_AGENT_SDK_VERSION' => '0.3.219',
@@ -10376,73 +10356,70 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 				'CLAUDE_CODE_REPORT_FINDINGS' => '1',
 				'CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH' => '1',
 				'CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH' => '1',
-				'CLAUDE_CODE_SESSION_ID' => '510dc35a-a4cb-47ce-8e8a-76cae8db278a',
+				'CLAUDE_CODE_SESSION_ID' => 'bc2871a4-5b42-4537-a18f-816ec6780fcf',
 				'CLAUDE_EFFORT' => 'high',
-				'CLAUDE_PID' => '23172',
+				'CLAUDE_PID' => '16044',
 				'CLAUDE_PREVIEW_CLASSIFIER_FLOOR' => '1',
 				'COLUMNS' => '120',
 				'COMMONPROGRAMFILES' => 'C:\Program Files\Common Files',
 				'COMPUTERNAME' => 'DESKTOP-CP2CHH3',
 				'COMSPEC' => 'C:\WINDOWS\system32\cmd.exe',
+				'CONFIG_SITE' => 'C:/Program Files/Git/etc/config.site',
 				'COREPACK_ENABLE_AUTO_PIN' => '0',
 				'ChocolateyInstall' => 'C:\ProgramData\chocolatey',
 				'ChocolateyLastPathUpdate' => '133951945344405617',
 				'CommonProgramFiles(x86)' => 'C:\Program Files (x86)\Common Files',
 				'CommonProgramW6432' => 'C:\Program Files\Common Files',
-				'DB_CONNECTION' => 'mysql',
-				'DB_DATABASE' => 'igoutech',
-				'DB_HOST' => '127.0.0.1',
-				'DB_PASSWORD' => '',
-				'DB_PORT' => '3307',
-				'DB_USERNAME' => 'root',
 				'DISABLE_AUTOUPDATER' => '1',
 				'DISABLE_MICROCOMPACT' => '1',
+				'DISPLAY' => 'needs-to-be-defined',
 				'DriverData' => 'C:\Windows\System32\Drivers\DriverData',
 				'ERLANG_HOME' => 'C:\Program Files\Erlang OTP',
 				'EXEPATH' => 'C:\Program Files\Git\bin',
-				'FILESYSTEM_DISK' => 'local',
-				'FRONTEND_URL' => 'http://localhost:5180',
 				'GIT_EDITOR' => 'true',
 				'HOME' => 'C:\Users\yassi',
 				'HOMEDRIVE' => 'C:',
 				'HOMEPATH' => '\Users\yassi',
+				'HOSTNAME' => 'DESKTOP-CP2CHH3',
+				'INFOPATH' => 'C:\Program Files\Git\mingw64\local\info;C:\Program Files\Git\mingw64\share\info;C:\Program Files\Git\usr\local\info;C:\Program Files\Git\usr\share\info;C:\Program Files\Git\usr\info;C:\Program Files\Git\share\info',
 				'INTEL_DEV_REDIST' => 'C:\Program Files (x86)\Common Files\Intel\Shared Libraries\\',
 				'JAVA_HOME' => 'C:\Program Files\Java\jdk-17',
+				'LANG' => 'fr_FR.UTF-8',
 				'LINES' => '9001',
 				'LOCALAPPDATA' => 'C:\Users\yassi\AppData\Local',
 				'LOGONSERVER' => '\\\DESKTOP-CP2CHH3',
-				'LOG_CHANNEL' => 'stack',
-				'LOG_DEPRECATIONS_CHANNEL' => 'null',
-				'LOG_LEVEL' => 'debug',
-				'LOG_STACK' => 'single',
-				'MAIL_FROM_ADDRESS' => 'no-reply@igoutech.ma',
-				'MAIL_FROM_NAME' => 'IGOUTECH',
-				'MAIL_HOST' => '127.0.0.1',
-				'MAIL_MAILER' => 'log',
-				'MAIL_PASSWORD' => 'null',
-				'MAIL_PORT' => '2525',
-				'MAIL_SCHEME' => 'null',
-				'MAIL_USERNAME' => 'null',
+				'MANPATH' => 'C:\Program Files\Git\mingw64\local\man;C:\Program Files\Git\mingw64\share\man;C:\Program Files\Git\usr\local\man;C:\Program Files\Git\usr\share\man;C:\Program Files\Git\usr\man;C:\Program Files\Git\share\man',
 				'MCP_CONNECTION_NONBLOCKING' => 'true',
-				'MEMCACHED_HOST' => '127.0.0.1',
 				'MIC_LD_LIBRARY_PATH' => 'C:\Program Files (x86)\Common Files\Intel\Shared Libraries\compiler\lib\mic',
+				'MINGW_CHOST' => 'x86_64-w64-mingw32',
+				'MINGW_PACKAGE_PREFIX' => 'mingw-w64-x86_64',
+				'MINGW_PREFIX' => 'C:/Program Files/Git/mingw64',
 				'MSYSTEM' => 'MINGW64',
+				'MSYSTEM_CARCH' => 'x86_64',
+				'MSYSTEM_CHOST' => 'x86_64-w64-mingw32',
+				'MSYSTEM_PREFIX' => 'C:/Program Files/Git/mingw64',
 				'NODE_USE_SYSTEM_CA' => '1',
 				'NUMBER_OF_PROCESSORS' => '8',
 				'NoDefaultCurrentDirectoryInExePath' => '1',
 				'OLDPWD' => 'C:/Users/yassi',
+				'ORIGINAL_PATH' => 'C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\yassi\bin;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\nodejs;C:\ProgramData\ComposerSetup\bin;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\php;C:\Users\yassi\AppData\Roaming\Composer\vendor\bin;C:\Users\yassi\AppData\Roaming\npm;C:\Users\yassi\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\yassi\AppData\Local\Python\bin;C:\flutter\bin;C:\flutter\bin;C:\Windows\System32;C:\Users\yassi\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\yassi\AppData\Local\Programs\Python\Python312;C:\Users\yassi\AppData\Local\Programs\Python\Python310;C:\Program Files\nodejs;C:\Program Files\Git\mingw64\bin',
+				'ORIGINAL_TEMP' => 'C:/Users/yassi/AppData/Local/Temp',
+				'ORIGINAL_TMP' => 'C:/Users/yassi/AppData/Local/Temp',
 				'OS' => 'Windows_NT',
 				'OneDrive' => 'C:\Users\yassi\OneDrive - OFPPT',
 				'OneDriveCommercial' => 'C:\Users\yassi\OneDrive - OFPPT',
-				'PATH' => 'C:\Users\yassi\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\yassi\bin;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\nodejs;C:\ProgramData\ComposerSetup\bin;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\php;C:\Users\yassi\AppData\Roaming\Composer\vendor\bin;C:\Users\yassi\AppData\Roaming\npm;C:\Users\yassi\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\yassi\AppData\Local\Python\bin;C:\flutter\bin;C:\flutter\bin;C:\Windows\System32;C:\Users\yassi\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\yassi\AppData\Local\Programs\Python\Python312;C:\Users\yassi\AppData\Local\Programs\Python\Python310;C:\Program Files\nodejs;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\yassi\AppData\Roaming\Claude\local-agent-mode-sessions\skills-plugin\f021c062-6465-4d05-8d86-8de0d5b6343b\a22a2285-828d-4fa8-a9df-77a86ff7042e\bin',
+				'PATH' => 'C:\Users\yassi\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\yassi\bin;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\nodejs;C:\ProgramData\ComposerSetup\bin;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\php;C:\Users\yassi\AppData\Roaming\Composer\vendor\bin;C:\Users\yassi\AppData\Roaming\npm;C:\Users\yassi\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\yassi\AppData\Local\Python\bin;C:\flutter\bin;C:\flutter\bin;C:\Windows\System32;C:\Users\yassi\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\yassi\AppData\Local\Programs\Python\Python312;C:\Users\yassi\AppData\Local\Programs\Python\Python310;C:\Program Files\nodejs;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl',
 				'PATHEXT' => '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC',
-				'PHP_CLI_SERVER_WORKERS' => '4',
+				'PKG_CONFIG_PATH' => 'C:\Program Files\Git\mingw64\lib\pkgconfig;C:\Program Files\Git\mingw64\share\pkgconfig',
+				'PKG_CONFIG_SYSTEM_INCLUDE_PATH' => 'C:/Program Files/Git/mingw64/include',
+				'PKG_CONFIG_SYSTEM_LIBRARY_PATH' => 'C:/Program Files/Git/mingw64/lib',
 				'PLINK_PROTOCOL' => 'ssh',
 				'PROCESSOR_ARCHITECTURE' => 'AMD64',
 				'PROCESSOR_IDENTIFIER' => 'AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD',
 				'PROCESSOR_LEVEL' => '23',
 				'PROCESSOR_REVISION' => '1801',
 				'PROGRAMFILES' => 'C:\Program Files',
+				'PS1' => '\[\033]0;$TITLEPREFIX:$PWD\007\]\n\[\033[32m\]\u@\h \[\033[35m\]$MSYSTEM \[\033[33m\]\w\[\033[36m\]`__git_ps1`\[\033[0m\]\n$ ',
 				'PSModulePath' => 'C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules',
 				'PT8HOME' => 'C:\Program Files\Cisco Packet Tracer 8.2.2',
 				'PUBLIC' => 'C:\Users\Public',
@@ -10450,26 +10427,17 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 				'ProgramData' => 'C:\ProgramData',
 				'ProgramFiles(x86)' => 'C:\Program Files (x86)',
 				'ProgramW6432' => 'C:\Program Files',
-				'QUEUE_CONNECTION' => 'database',
-				'REDIS_CLIENT' => 'phpredis',
-				'REDIS_HOST' => '127.0.0.1',
-				'REDIS_PASSWORD' => 'null',
-				'REDIS_PORT' => '6379',
-				'SANCTUM_STATEFUL_DOMAINS' => 'localhost:5180,127.0.0.1:5180,localhost:5173,127.0.0.1:5173,localhost:8000',
-				'SENTRY-TRACE' => '3dc5223b01b542da8d7b8e5a9171eae1-b145bba47fba5166',
-				'SESSION_DOMAIN' => 'null',
-				'SESSION_DRIVER' => 'database',
-				'SESSION_ENCRYPT' => 'false',
-				'SESSION_LIFETIME' => '120',
-				'SESSION_PATH' => '/',
+				'SENTRY-TRACE' => '3dc5223b01b542da8d7b8e5a9171eae1-bd89397015f6e8ee',
 				'SHELL' => 'C:\Program Files\Git\usr\bin\bash.exe',
 				'SHELL_VERBOSITY' => '0',
 				'SHLVL' => '1',
+				'SSH_ASKPASS' => 'C:/Program Files/Git/mingw64/bin/git-askpass.exe',
 				'SYSTEMDRIVE' => 'C:',
 				'SYSTEMROOT' => 'C:\WINDOWS',
 				'TEMP' => 'C:\Users\yassi\AppData\Local\Temp',
 				'TERM' => 'xterm-256color',
 				'TMP' => 'C:\Users\yassi\AppData\Local\Temp',
+				'TMPDIR' => 'C:\Users\yassi\AppData\Local\Temp',
 				'USERDOMAIN' => 'DESKTOP-CP2CHH3',
 				'USERDOMAIN_ROAMINGPROFILE' => 'DESKTOP-CP2CHH3',
 				'USERNAME' => 'yassi',
@@ -10477,7 +10445,6 @@ class Container_8d55b09ac4 extends _PHPStan_02959ca10\Nette\DI\Container
 				'USE_LOCAL_OAUTH' => '',
 				'USE_STAGING_OAUTH' => '',
 				'VBOX_HWVIRTEX_IGNORE_SVM_IN_USE' => '1',
-				'VITE_APP_NAME' => 'IGOUTECH',
 				'WINDIR' => 'C:\WINDOWS',
 				'_' => 'vendor/bin/phpstan',
 			],

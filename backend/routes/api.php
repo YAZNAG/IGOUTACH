@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Api\V1\ProductImageController;
 use App\Http\Controllers\Api\V1\ProductPriceController;
 use App\Http\Controllers\Api\V1\ProductSerialController;
 use App\Http\Controllers\Api\V1\PurchaseOrderController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SaleController;
 use App\Http\Controllers\Api\V1\SessionController;
@@ -255,6 +257,13 @@ Route::prefix('v1')->group(function () {
         Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->middleware('can:customer.delete');
         Route::put('customers/{customer}/credit', [CustomerController::class, 'setCreditLimit'])->middleware('can:customer.set_credit_limit');
         Route::patch('customers/{customer}/block', [CustomerController::class, 'toggleBlock'])->middleware('can:customer.set_credit_limit');
+
+        // Pilotage — alertes consolidées & rapports
+        Route::get('alerts', [AlertController::class, 'index'])->middleware('can:report.consolidated');
+        Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:report.consolidated');
+        Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:report.consolidated');
+        Route::get('reports/dormant-products', [ReportController::class, 'dormantProducts'])->middleware('can:report.consolidated');
+        Route::get('reports/margins', [ReportController::class, 'margins'])->middleware('can:report.consolidated');
 
         // Lieux — types (référentiel) et lieux
         Route::get('warehouse-types', [WarehouseTypeController::class, 'index'])->middleware('can:warehouse.view');

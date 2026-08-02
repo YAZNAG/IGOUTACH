@@ -69,9 +69,9 @@ it('crée un inventaire, calcule l\'écart et régularise à la validation', fun
     ])->assertCreated();
     $inventoryId = $res->json('data.id');
 
-    // Comptage : 7 comptés vs 10 théoriques → écart -3
+    // Comptage : 7 comptés vs 10 théoriques → écart -3 (motif obligatoire)
     $this->actingAs($user)->putJson("/api/v1/inventories/{$inventoryId}/lines", [
-        'lines' => [['product_id' => $product->id, 'counted_quantity' => 7]],
+        'lines' => [['product_id' => $product->id, 'counted_quantity' => 7, 'reason' => 'Casse constatée']],
     ])->assertOk()->assertJsonPath('data.lines.0.difference', -3);
 
     // Validation → stock régularisé à 7
@@ -95,7 +95,7 @@ it('régularise à la hausse quand le comptage dépasse le théorique', function
     $id = $res->json('data.id');
 
     $this->actingAs($user)->putJson("/api/v1/inventories/{$id}/lines", [
-        'lines' => [['product_id' => $product->id, 'counted_quantity' => 9]],
+        'lines' => [['product_id' => $product->id, 'counted_quantity' => 9, 'reason' => 'Marchandise retrouvée']],
     ])->assertOk()->assertJsonPath('data.lines.0.difference', 4);
 
     $this->actingAs($user)->postJson("/api/v1/inventories/{$id}/approve")->assertOk();

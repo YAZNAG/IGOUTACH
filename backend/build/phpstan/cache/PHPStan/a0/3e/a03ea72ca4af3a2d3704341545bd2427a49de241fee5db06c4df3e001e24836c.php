@@ -3031,7 +3031,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php' => 
     array (
-      0 => 'ef50c94c97b2b336f54a9cb6fe41f5d8f5d225227daa6605af962be7447c9daa',
+      0 => 'e5ba19d3a4cb594e689295e5e8096e5b715ad673136470d2f2bc1584c02788a5',
       1 => 
       array (
         0 => 'app\\http\\controllers\\api\\v1\\stockcontroller',
@@ -4053,6 +4053,39 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         1 => 'app\\http\\controllers\\api\\v1\\store',
         2 => 'app\\http\\controllers\\api\\v1\\show',
         3 => 'app\\http\\controllers\\api\\v1\\receive',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php' => 
+    array (
+      0 => 'b12f83e516fe36e3ea712cda07c6438b5b511ea58c07289c398b2282b36a216f',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\alertcontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\index',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ReportController.php' => 
+    array (
+      0 => '769fb14c1ccf2c67131736381a1e3eb22fc1256fe790791fdcf5bed32eb9f157',
+      1 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\reportcontroller',
+      ),
+      2 => 
+      array (
+        0 => 'app\\http\\controllers\\api\\v1\\sales',
+        1 => 'app\\http\\controllers\\api\\v1\\stockvaluation',
+        2 => 'app\\http\\controllers\\api\\v1\\dormantproducts',
+        3 => 'app\\http\\controllers\\api\\v1\\margins',
       ),
       3 => 
       array (

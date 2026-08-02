@@ -145,12 +145,12 @@
   </header>
 
   <div class="hero">
-    <div class="ring" style="--p:72">
-      <div class="val"><div class="n tnum">~72%</div><div class="l">Global</div></div>
+    <div class="ring" style="--p:80">
+      <div class="val"><div class="n tnum">~80%</div><div class="l">Global</div></div>
     </div>
     <div class="txt">
-      <h2>La chaîne complète achat → stock → vente → encaissement fonctionne</h2>
-      <p>Blocs A et B terminés ; le Bloc C livre les bons de commande avec réceptions partielles (reliquats, CMUP), les ventes (devis/factures, prix résolus par client, contrôle plancher et crédit), les écrans transferts avec alerte transit, retours et ajustements motivés, et l'inventaire durci (théorique masqué, motifs, valorisation, feuille de comptage). Le Bloc D apporte le grand-livre client (blocage auto), les encaissements avec cycle des chèques, la balance âgée, la caisse et les charges validées.</p>
+      <h2>Achat → stock → vente → encaissement → pilotage : la boucle est fermée</h2>
+      <p>Blocs A et B terminés ; le Bloc C livre les bons de commande avec réceptions partielles (reliquats, CMUP), les ventes (devis/factures, prix résolus par client, contrôle plancher et crédit), les écrans transferts avec alerte transit, retours et ajustements motivés, et l'inventaire durci (théorique masqué, motifs, valorisation, feuille de comptage). Le Bloc D apporte le grand-livre client (blocage auto), les encaissements avec cycle des chèques, la balance âgée, la caisse et les charges. Le Bloc E ajoute les alertes consolidées (7 contrôles), les rapports (ventes, valorisation par lieu, marges, dormants) et la colonne transit dans la matrice — l'invariant <i>stock global = Σ lieux + transit</i> est visible à l'écran.</p>
       <div class="legend">
         <span><i class="dot ok"></i> Livré</span>
         <span><i class="dot mid"></i> Partiel</span>
@@ -183,9 +183,9 @@
       <div class="counts"><span><b class="tnum">15</b> livré</span><span><b class="tnum">2</b> partiel</span><span><b class="tnum">3</b> à faire</span></div>
     </div>
     <div class="bcard">
-      <div class="top"><div><div class="code">Bloc E</div><h3>Pilotage</h3></div><div class="pct tnum">15%</div></div>
-      <div class="bar"><i class="ok" style="width:8%"></i><i class="mid" style="width:13%"></i></div>
-      <div class="counts"><span><b class="tnum">2</b> livré</span><span><b class="tnum">3</b> partiel</span><span><b class="tnum">19</b> à faire</span></div>
+      <div class="top"><div><div class="code">Bloc E</div><h3>Pilotage</h3></div><div class="pct tnum">70%</div></div>
+      <div class="bar"><i class="ok" style="width:62%"></i><i class="mid" style="width:12%"></i></div>
+      <div class="counts"><span><b class="tnum">14</b> livré</span><span><b class="tnum">3</b> partiel</span><span><b class="tnum">6</b> à faire</span></div>
     </div>
     <div class="bcard">
       <div class="top"><div><div class="code">Bloc F</div><h3>Terrain</h3></div><div class="pct tnum">25%</div></div>
@@ -208,6 +208,9 @@
       <li><b>D1</b> Grand-livre client par événements + blocage automatique au plafond + balance âgée</li>
       <li><b>D2</b> Encaissements (espèces/chèque/virement/carte) + cycle des chèques + relevé client</li>
       <li><b>D3</b> Sessions de caisse (fonds, clôture, écart) · <b>D4</b> Charges avec justificatif et validation</li>
+      <li><b>E1</b> Valorisation du stock par lieu · matrice article×lieu avec colonne <i>transit</i></li>
+      <li><b>E2</b> Écran Alertes : 7 contrôles consolidés (seuils, plancher, crédit, transit, échéances, inventaires, charges) avec lien d'action</li>
+      <li><b>E3</b> Écran Rapports : ventes par lieu/vendeur/article (+ export Excel), marges réalisées, articles dormants</li>
     </ul>
   </div>
 
@@ -397,10 +400,11 @@
       <table>
         <thead><tr><th>Bloc</th><th>Contenu</th><th class="st">État</th></tr></thead>
         <tbody>
-          <tr><td><b>E1</b> Vue consolidée</td><td>Dashboard KPI + stock global livrés ; valorisation/comparatifs partiels</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td><b>E2-E3</b> Alertes &amp; rapports</td><td>Alertes marge, transit &gt; 3 j et balance âgée livrées ; règles paramétrables et rapports analytiques à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td><b>F1</b> Stock véhicule</td><td>Type vehicle + transferts livrés ; inventaire périodique partiel</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
-          <tr><td><b>F2</b> App mobile vendeur</td><td>Non démarrée</td><td class="st"><span class="pill todo">À faire</span></td></tr>
+          <tr><td><b>E1</b> Vue consolidée</td><td>Dashboard KPI, stock global, valorisation par lieu, matrice avec colonne transit, comparatif de performance par lieu (rapport ventes)<span class="up">▲</span></td><td class="st"><span class="pill ok">Livré</span></td></tr>
+          <tr><td><b>E2</b> Alertes</td><td>7 contrôles consolidés avec lien d'action (écran Alertes, rafraîchi chaque minute)<span class="up">▲</span> ; règles paramétrables (<code>alert_rules</code>) et canaux e-mail/SMS à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>E3</b> Rapports</td><td>Ventes par lieu/vendeur/article + export Excel, valorisation, marges, dormants<span class="up">▲</span> ; rotation et rapport achats à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>F1</b> Stock véhicule</td><td>Type vehicle, alimentation par transfert, inventaire par véhicule (via inventaire par lieu) livrés ; cycle hebdomadaire automatique à faire</td><td class="st"><span class="pill mid">Partiel</span></td></tr>
+          <tr><td><b>F2</b> App mobile vendeur</td><td>Non démarrée — projet séparé (Expo) ; l'interface web est responsive en attendant</td><td class="st"><span class="pill todo">À faire</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -419,16 +423,16 @@
       <h3>Ordre recommandé pour la suite</h3>
       <ol>
         <li><b>Interface POS tactile</b> + ticket de caisse (la vente back-office existe déjà)</li>
-        <li><b>Rapports analytiques</b> (ventes, marges, rotation) + règles d'alertes paramétrables</li>
+        <li><b>Règles d'alertes paramétrables</b> (<code>alert_rules</code>) + canaux e-mail/SMS</li>
         <li><b>Factures d'achat</b> + règlements fournisseurs (clôt le cycle achats)</li>
-        <li><b>Finitions inventaire</b> : gel snapshot, types, double comptage</li>
-        <li><b>Appli mobile vendeur</b> (mon stock, vente, encaissement, hors ligne)</li>
+        <li><b>Finitions inventaire</b> : gel snapshot, types, double comptage, cycle véhicule hebdomadaire</li>
+        <li><b>Appli mobile vendeur</b> (mon stock, vente, encaissement, hors ligne — projet Expo séparé)</li>
       </ol>
     </div>
   </section>
 
   <footer>
-    <span>IGOUTECH · rapport mis à jour le 2 août 2026 — Blocs A, B, C &amp; D finalisés</span>
-    <span>9 domaines · 30+ contrôleurs API · 22 modules front · 10 suites de tests</span>
+    <span>IGOUTECH · rapport mis à jour le 2 août 2026 — Blocs A, B, C, D &amp; E livrés</span>
+    <span>9 domaines · 32 contrôleurs API · 23 modules front · 133 tests verts · PHPStan niv. 8</span>
   </footer>
 </div>

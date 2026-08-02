@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { PlaceholderPage } from '@/components/layout/PlaceholderPage'
 import { RolesPage, UsersPage } from '@/features/access'
 import { ArticlesPage } from '@/features/articles'
 import { AuditPage } from '@/features/audit'
@@ -12,6 +11,7 @@ import { CustomersPage } from '@/features/customers'
 import { ExpensesPage } from '@/features/expenses'
 import { InventoryPage } from '@/features/inventory'
 import { PaymentsPage } from '@/features/payments'
+import { AlertsPage, ReportsPage } from '@/features/pilotage'
 import { PurchasesPage } from '@/features/purchases'
 import { SalesPage } from '@/features/sales'
 import { TransfersPage } from '@/features/transfers'
@@ -45,8 +45,8 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: '/', element: <HomePage /> },
-          { path: '/alertes', element: <PlaceholderPage title="Alertes" /> },
-          { path: '/rapports', element: <PlaceholderPage title="Rapports" /> },
+          { path: '/alertes', element: <AlertsPage /> },
+          { path: '/rapports', element: <ReportsPage /> },
           { path: '/stock', element: <StockPage /> },
           { path: '/inventaire', element: <InventoryPage /> },
           { path: '/transferts', element: <TransfersPage /> },

@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Controllers\Api\V1\StockController.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Controllers\Api\V1\StockController
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-ef50c94c97b2b336f54a9cb6fe41f5d8f5d225227daa6605af962be7447c9daa',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-e5ba19d3a4cb594e689295e5e8096e5b715ad673136470d2f2bc1584c02788a5',
    'data' => 
   array (
     'locatedSource' => 
@@ -27,7 +27,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 31,
-    'endLine' => 423,
+    'endLine' => 440,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'App\\Http\\Controllers\\Controller',
@@ -400,7 +400,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * Matrice article × lieu : quantités de chaque article dans tous les lieux.
  */',
         'startLine' => 203,
-        'endLine' => 248,
+        'endLine' => 265,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -438,8 +438,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 253,
-            'endLine' => 253,
+            'startLine' => 270,
+            'endLine' => 270,
             'startColumn' => 34,
             'endColumn' => 49,
             'parameterIndex' => 0,
@@ -481,8 +481,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * Export de la matrice article × lieu (Excel ou PDF).
  */',
-        'startLine' => 253,
-        'endLine' => 293,
+        'startLine' => 270,
+        'endLine' => 310,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -520,8 +520,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 299,
-            'endLine' => 299,
+            'startLine' => 316,
+            'endLine' => 316,
             'startColumn' => 54,
             'endColumn' => 70,
             'parameterIndex' => 0,
@@ -545,8 +545,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * @param  list<int>  $productIds
  * @return array<int, array<int, int>>
  */',
-        'startLine' => 299,
-        'endLine' => 311,
+        'startLine' => 316,
+        'endLine' => 328,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -584,8 +584,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 316,
-            'endLine' => 316,
+            'startLine' => 333,
+            'endLine' => 333,
             'startColumn' => 27,
             'endColumn' => 52,
             'parameterIndex' => 0,
@@ -610,8 +610,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 316,
-            'endLine' => 316,
+            'startLine' => 333,
+            'endLine' => 333,
             'startColumn' => 55,
             'endColumn' => 78,
             'parameterIndex' => 1,
@@ -634,8 +634,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * Bon d\'entrée : entrée manuelle de stock dans un lieu.
  */',
-        'startLine' => 316,
-        'endLine' => 324,
+        'startLine' => 333,
+        'endLine' => 341,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -673,8 +673,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 329,
-            'endLine' => 329,
+            'startLine' => 346,
+            'endLine' => 346,
             'startColumn' => 27,
             'endColumn' => 52,
             'parameterIndex' => 0,
@@ -699,8 +699,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 329,
-            'endLine' => 329,
+            'startLine' => 346,
+            'endLine' => 346,
             'startColumn' => 55,
             'endColumn' => 78,
             'parameterIndex' => 1,
@@ -723,8 +723,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * Bon de sortie : sortie manuelle de stock.
  */',
-        'startLine' => 329,
-        'endLine' => 341,
+        'startLine' => 346,
+        'endLine' => 358,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -762,8 +762,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 346,
-            'endLine' => 346,
+            'startLine' => 363,
+            'endLine' => 363,
             'startColumn' => 28,
             'endColumn' => 43,
             'parameterIndex' => 0,
@@ -788,8 +788,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 346,
-            'endLine' => 346,
+            'startLine' => 363,
+            'endLine' => 363,
             'startColumn' => 46,
             'endColumn' => 73,
             'parameterIndex' => 1,
@@ -812,8 +812,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * Ajustement direct (±) avec motif obligatoire.
  */',
-        'startLine' => 346,
-        'endLine' => 374,
+        'startLine' => 363,
+        'endLine' => 391,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -851,8 +851,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 380,
-            'endLine' => 380,
+            'startLine' => 397,
+            'endLine' => 397,
             'startColumn' => 30,
             'endColumn' => 45,
             'parameterIndex' => 0,
@@ -877,8 +877,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
             'attributes' => 
             array (
             ),
-            'startLine' => 380,
-            'endLine' => 380,
+            'startLine' => 397,
+            'endLine' => 397,
             'startColumn' => 48,
             'endColumn' => 75,
             'parameterIndex' => 1,
@@ -902,8 +902,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * Retour au stock (client) : revendable → retour en stock ;
  * défectueux → retour tracé puis sortie SAV immédiate (net zéro).
  */',
-        'startLine' => 380,
-        'endLine' => 422,
+        'startLine' => 397,
+        'endLine' => 439,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

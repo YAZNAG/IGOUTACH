@@ -5471,7 +5471,7 @@ return [
       array (
         0 => 'Illuminate\\Database\\Connection',
         1 => 'transaction',
-        2 => 391,
+        2 => 408,
       ),
     ),
   ),
@@ -7605,8 +7605,9 @@ return [
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Actions\\RecordPaymentAction.php',
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\Payment.php',
       4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Sales\\Models\\SaleLine.php' => 
@@ -7926,7 +7927,8 @@ return [
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Events\\TransferDiscrepancyDetected.php',
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferLine.php',
       4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\TransferLine.php' => 
@@ -7952,8 +7954,9 @@ return [
       1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Actions\\ReceiveTransferAction.php',
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Models\\Transfer.php',
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\TransferStatusSeeder.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\TransferStatusSeeder.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Stock\\Repositories\\StockRepository.php' => 
@@ -8111,7 +8114,15 @@ return [
       2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
       3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
       4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ReportController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+    ),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php' => 
+  array (
+    'fileHash' => 'b12f83e516fe36e3ea712cda07c6438b5b511ea58c07289c398b2282b36a216f',
+    'dependentFiles' => 
+    array (
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php' => 
@@ -8254,6 +8265,13 @@ return [
     array (
     ),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ReportController.php' => 
+  array (
+    'fileHash' => '769fb14c1ccf2c67131736381a1e3eb22fc1256fe790791fdcf5bed32eb9f157',
+    'dependentFiles' => 
+    array (
+    ),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php' => 
   array (
     'fileHash' => 'e7c2422ab44ac0458be8eea2ba1f6af3fedd71e2fc3e7d1d280afb55bf615021',
@@ -8284,7 +8302,7 @@ return [
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php' => 
   array (
-    'fileHash' => 'ef50c94c97b2b336f54a9cb6fe41f5d8f5d225227daa6605af962be7447c9daa',
+    'fileHash' => 'e5ba19d3a4cb594e689295e5e8096e5b715ad673136470d2f2bc1584c02788a5',
     'dependentFiles' => 
     array (
     ),
@@ -8371,47 +8389,49 @@ return [
     'fileHash' => '09e5cac5a69959ccf23d756cda697b993df937c106655d124ff27ca5fe24a705',
     'dependentFiles' => 
     array (
-      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php',
-      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BackupController.php',
-      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BrandController.php',
-      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php',
-      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php',
-      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php',
-      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DashboardController.php',
-      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DocumentSequenceController.php',
-      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
-      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
-      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php',
-      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
-      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentMethodController.php',
-      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PermissionController.php',
-      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductAttributeController.php',
-      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
-      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductImageController.php',
-      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
-      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
-      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
-      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php',
-      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
-      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SessionController.php',
-      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SettingController.php',
-      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
-      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
-      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierController.php',
-      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
-      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TaxRateController.php',
-      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
-      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UnitController.php',
-      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserController.php',
-      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserPermissionController.php',
-      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
-      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseTypeController.php',
-      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\AuthenticatedSessionController.php',
-      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\EmailVerificationNotificationController.php',
-      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\NewPasswordController.php',
-      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\PasswordResetLinkController.php',
-      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\RegisteredUserController.php',
-      40 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\VerifyEmailController.php',
+      0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php',
+      1 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php',
+      2 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BackupController.php',
+      3 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\BrandController.php',
+      4 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CashSessionController.php',
+      5 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CategoryController.php',
+      6 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php',
+      7 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DashboardController.php',
+      8 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\DocumentSequenceController.php',
+      9 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ExpenseController.php',
+      10 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\InventoryController.php',
+      11 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\MeController.php',
+      12 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentController.php',
+      13 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PaymentMethodController.php',
+      14 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PermissionController.php',
+      15 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductAttributeController.php',
+      16 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductController.php',
+      17 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductImageController.php',
+      18 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductPriceController.php',
+      19 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ProductSerialController.php',
+      20 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\PurchaseOrderController.php',
+      21 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ReportController.php',
+      22 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\RoleController.php',
+      23 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SaleController.php',
+      24 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SessionController.php',
+      25 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SettingController.php',
+      26 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\StockController.php',
+      27 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierContactController.php',
+      28 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierController.php',
+      29 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\SupplierProductController.php',
+      30 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TaxRateController.php',
+      31 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\TransferController.php',
+      32 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UnitController.php',
+      33 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserController.php',
+      34 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\UserPermissionController.php',
+      35 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseController.php',
+      36 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\WarehouseTypeController.php',
+      37 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\AuthenticatedSessionController.php',
+      38 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\EmailVerificationNotificationController.php',
+      39 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\NewPasswordController.php',
+      40 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\PasswordResetLinkController.php',
+      41 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\RegisteredUserController.php',
+      42 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Auth\\VerifyEmailController.php',
     ),
   ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Middleware\\EnsureEmailIsVerified.php' => 
@@ -11169,6 +11189,19 @@ return [
   'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\ExpenseCategorySeeder.php' => 
   array (
     0 => 'laravel/framework',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'nesbot/carbon',
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ReportController.php' => 
+  array (
+    0 => 'laravel/framework',
+    1 => 'symfony/http-foundation',
+    2 => 'nesbot/carbon',
+    3 => 'maatwebsite/excel',
   ),
 ),
 	'exportedNodesCallback' => static function (): array { return array (
@@ -31101,6 +31134,70 @@ return [
       ),
     )),
   ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AlertController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\AlertController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Alertes consolidées du pilotage : stock sous seuil, prix sous plancher,
+ * clients hors plafond, factures échues, transferts en retard, inventaires
+ * et charges en attente.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'sale' => 'App\\Domain\\Sales\\Models\\Sale',
+          'transfer' => 'App\\Domain\\Stock\\Models\\Transfer',
+          'transferstatus' => 'App\\Domain\\Stock\\Models\\TransferStatus',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'index',
+           'phpDoc' => NULL,
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
   'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\AuditController.php' => 
   array (
     0 => 
@@ -35400,6 +35497,239 @@ return [
            'returnType' => 'Illuminate\\Http\\JsonResponse',
            'parameters' => 
           array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+      ),
+       'attributes' => 
+      array (
+      ),
+    )),
+  ),
+  'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\ReportController.php' => 
+  array (
+    0 => 
+    \PHPStan\Dependency\ExportedNode\ExportedClassNode::__set_state(array(
+       'name' => 'App\\Http\\Controllers\\Api\\V1\\ReportController',
+       'phpDoc' => 
+      \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+         'phpDocString' => '/**
+ * Rapports du pilotage : ventes par période/lieu/vendeur, valorisation du
+ * stock par lieu, top ventes, articles dormants et marges réalisées.
+ */',
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'arrayexport' => 'App\\Exports\\ArrayExport',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'db' => 'Illuminate\\Support\\Facades\\DB',
+          'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+          'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+        ),
+         'constUses' => 
+        array (
+        ),
+      )),
+       'abstract' => false,
+       'final' => true,
+       'extends' => 'App\\Http\\Controllers\\Controller',
+       'implements' => 
+      array (
+      ),
+       'usedTraits' => 
+      array (
+      ),
+       'traitUseAdaptations' => 
+      array (
+      ),
+       'statements' => 
+      array (
+        0 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'sales',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Ventes agrégées sur une période, groupées par lieu, vendeur ou article.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse|Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        1 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'stockValuation',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Valorisation du stock (quantité × coût d\'achat) par lieu.
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        2 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'dormantProducts',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Articles dormants : aucun mouvement de sortie depuis N jours (défaut 90).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
+          ),
+           'attributes' => 
+          array (
+          ),
+        )),
+        3 => 
+        \PHPStan\Dependency\ExportedNode\ExportedMethodNode::__set_state(array(
+           'name' => 'margins',
+           'phpDoc' => 
+          \PHPStan\Dependency\ExportedNode\ExportedPhpDocNode::__set_state(array(
+             'phpDocString' => '/**
+     * Marges réalisées par article (ventes confirmées, coût CMUP actuel).
+     */',
+             'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+             'uses' => 
+            array (
+              'arrayexport' => 'App\\Exports\\ArrayExport',
+              'controller' => 'App\\Http\\Controllers\\Controller',
+              'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+              'request' => 'Illuminate\\Http\\Request',
+              'db' => 'Illuminate\\Support\\Facades\\DB',
+              'excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+              'binaryfileresponse' => 'Symfony\\Component\\HttpFoundation\\BinaryFileResponse',
+            ),
+             'constUses' => 
+            array (
+            ),
+          )),
+           'byRef' => false,
+           'public' => true,
+           'private' => false,
+           'abstract' => false,
+           'final' => false,
+           'static' => false,
+           'returnType' => 'Illuminate\\Http\\JsonResponse',
+           'parameters' => 
+          array (
+            0 => 
+            \PHPStan\Dependency\ExportedNode\ExportedParameterNode::__set_state(array(
+               'name' => 'request',
+               'type' => 'Illuminate\\Http\\Request',
+               'byRef' => false,
+               'variadic' => false,
+               'hasDefault' => false,
+               'attributes' => 
+              array (
+              ),
+               'phpDoc' => NULL,
+               'flags' => 0,
+            )),
           ),
            'attributes' => 
           array (

@@ -217,7 +217,20 @@ final class StockController extends Controller
 
         $map = $this->quantitiesByProductAndWarehouse($productIds);
 
-        $paginator->through(function (Product $product) use ($warehouses, $map): array {
+        // Marchandise en transit : lignes des transferts non encore reçus.
+        $transit = [];
+        DB::table('transfer_lines')
+            ->join('transfers', 'transfers.id', '=', 'transfer_lines.transfer_id')
+            ->join('transfer_statuses', 'transfer_statuses.id', '=', 'transfers.transfer_status_id')
+            ->where('transfer_statuses.code', 'in_transit')
+            ->whereIn('transfer_lines.product_id', $productIds)
+            ->groupBy('transfer_lines.product_id')
+            ->get(['transfer_lines.product_id', DB::raw('SUM(transfer_lines.quantity_sent) as qty')])
+            ->each(function (\stdClass $row) use (&$transit): void {
+                $transit[(int) $row->product_id] = (int) $row->qty;
+            });
+
+        $paginator->through(function (Product $product) use ($warehouses, $map, $transit): array {
             $quantities = [];
             $total = 0;
             foreach ($warehouses as $warehouse) {
@@ -226,10 +239,14 @@ final class StockController extends Controller
                 $total += $qty;
             }
 
+            $inTransit = $transit[$product->id] ?? 0;
+            $total += $inTransit;
+
             return [
                 'product_id' => $product->id,
                 'sku' => $product->sku,
                 'name' => $product->name,
+                'in_transit' => $inTransit,
                 'quantities' => $quantities,
                 'total' => $total,
             ];
