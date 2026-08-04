@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  Calculator,
   ArrowLeftRight,
   Boxes,
   Building2,
@@ -66,6 +67,7 @@ export const navGroups: NavGroup[] = [
       { label: 'Catégories', to: '/categories', icon: Tags, permission: 'category.view' },
       { label: 'Articles', to: '/articles', icon: Package, permission: 'product.view' },
       { label: 'Tarifs de vente', to: '/tarifs', icon: Tag, permission: 'price.view' },
+      { label: 'Coûts des articles', to: '/couts', icon: Calculator, permission: 'product.view_cost_price' },
     ],
   },
   {

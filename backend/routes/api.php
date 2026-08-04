@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\ProductAttributeController;
+use App\Http\Controllers\Api\V1\ProductCostController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductImageController;
 use App\Http\Controllers\Api\V1\ProductPriceController;
@@ -248,6 +249,10 @@ Route::prefix('v1')->group(function () {
         Route::post('sales/{sale}/convert', [SaleController::class, 'convert'])->middleware('can:sale.create');
         Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->middleware('can:sale.create');
         Route::get('sales/{sale}/exit-pdf', [SaleController::class, 'exitPdf'])->middleware('can:sale.create');
+
+        // Coûts des articles (CMUP global, valeur stock, dernier achat)
+        Route::get('product-costs', [ProductCostController::class, 'index'])->middleware('can:product.view_cost_price');
+        Route::get('product-costs/export', [ProductCostController::class, 'export'])->middleware('can:product.view_cost_price');
 
         // Sorties de stock (mouvements de sortie, créés par les documents)
         Route::get('stock/exits', [StockExitController::class, 'index'])->middleware('can:stock.view');
