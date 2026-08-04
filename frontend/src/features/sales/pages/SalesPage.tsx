@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Download, FileText, Lock, LockOpen, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -77,6 +77,16 @@ interface DraftLine {
 }
 
 const KEY = ['sales'] as const
+
+/** Valeur retardée : évite une requête serveur à chaque frappe. */
+function useDebouncedValue(value: string, delayMs: number): string {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs)
+    return () => clearTimeout(timer)
+  }, [value, delayMs])
+  return debounced
+}
 
 function errorMessage(error: unknown, fallback: string): string {
   if (error && typeof error === 'object' && 'response' in error) {
@@ -344,26 +354,34 @@ export function CreateSalePanel({
   const [customerSearch, setCustomerSearch] = useState('')
   const [productSearch, setProductSearch] = useState('')
 
+  // Recherches retardées : une requête au repos de frappe, pas par caractère.
+  const debouncedCustomerSearch = useDebouncedValue(customerSearch, 250)
+  const debouncedProductSearch = useDebouncedValue(productSearch, 250)
+
   const { data: customers = [] } = useQuery<CustomerOption[]>({
-    queryKey: ['sale-customer-search', customerSearch],
+    queryKey: ['sale-customer-search', debouncedCustomerSearch],
     queryFn: async () => {
       const { data: r } = await api.get<Paginated<CustomerOption>>('/customers', {
-        params: { q: customerSearch || undefined, per_page: 20 },
+        params: { q: debouncedCustomerSearch || undefined, per_page: 20 },
       })
       return r.data
     },
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   })
 
   const { data: products = [] } = useQuery<ProductOption[]>({
-    queryKey: ['sale-product-search', productSearch, warehouseId],
+    queryKey: ['sale-product-search', debouncedProductSearch, warehouseId],
     queryFn: async () => {
       const { data: r } = await api.get<{ data: ProductOption[] }>('/products', {
         // warehouse_id ajoute current_stock (stock du lieu) à chaque article.
-        params: { search: productSearch, warehouse_id: warehouseId || undefined, per_page: 20 },
+        params: { search: debouncedProductSearch, warehouse_id: warehouseId || undefined, per_page: 20 },
       })
       return r.data
     },
-    enabled: productSearch.trim().length >= 2,
+    enabled: debouncedProductSearch.trim().length >= 2,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   })
 
   const [priceWarning, setPriceWarning] = useState<string | null>(null)
@@ -414,9 +432,14 @@ export function CreateSalePanel({
     setProductSearch('')
   }
 
+  // Un timer de recalcul par article : la requête part 300 ms après la
+  // dernière frappe, pas à chaque caractère.
+  const priceTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
+
   /**
-   * Quantité modifiée : le prix se recalcule selon les paliers du client,
-   * sauf si la ligne est en saisie manuelle (prix déverrouillé).
+   * Quantité modifiée : le prix se recalcule selon les paliers du client
+   * (détail / demi-gros / gros par ligne), sauf si la ligne est en saisie
+   * manuelle (prix déverrouillé).
    */
   function changeQuantity(index: number, quantity: number) {
     const line = lines[index]
@@ -425,22 +448,26 @@ export function CreateSalePanel({
     setLines((prev) => prev.map((x, j) => (j === index ? { ...x, quantity: qty } : x)))
 
     if (line.manual) return
-    void api
-      .get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>('/sales/price', {
-        params: { product_id: line.product_id, quantity: qty, customer_id: customerId || undefined },
-      })
-      .then(({ data: r }) => {
-        setLines((prev) =>
-          prev.map((x) =>
-            x.product_id === line.product_id && !x.manual
-              ? { ...x, unit_price: r.data.unit_price, price_type_code: r.data.price_type_code, floor_price: r.data.floor_price }
-              : x,
-          ),
-        )
-      })
-      .catch(() => {
-        // Palier non recalculé (erreur réseau) : on garde le prix courant.
-      })
+
+    clearTimeout(priceTimers.current[line.product_id])
+    priceTimers.current[line.product_id] = setTimeout(() => {
+      void api
+        .get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>('/sales/price', {
+          params: { product_id: line.product_id, quantity: qty, customer_id: customerId || undefined },
+        })
+        .then(({ data: r }) => {
+          setLines((prev) =>
+            prev.map((x) =>
+              x.product_id === line.product_id && !x.manual
+                ? { ...x, unit_price: r.data.unit_price, price_type_code: r.data.price_type_code, floor_price: r.data.floor_price }
+                : x,
+            ),
+          )
+        })
+        .catch(() => {
+          // Palier non recalculé (erreur réseau) : on garde le prix courant.
+        })
+    }, 300)
   }
 
   const create = useMutation({
@@ -451,7 +478,14 @@ export function CreateSalePanel({
         customer_id: customerId,
         warehouse_id: warehouseId,
         discount_percent: discount,
-        lines: lines.map((l) => ({ product_id: l.product_id, quantity: l.quantity, unit_price: l.unit_price })),
+        // Prix envoyé seulement en saisie manuelle : sinon le serveur applique
+        // lui-même le palier (détail / demi-gros / gros) selon la quantité de
+        // chaque ligne — l'affichage n'est qu'indicatif.
+        lines: lines.map((l) => ({
+          product_id: l.product_id,
+          quantity: l.quantity,
+          ...(l.manual ? { unit_price: l.unit_price } : {}),
+        })),
       })
       return r.data
     },
