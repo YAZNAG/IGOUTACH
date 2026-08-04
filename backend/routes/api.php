@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\ExpenseController;
 use App\Http\Controllers\Api\V1\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\InventoryController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\MobileAuthController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\PermissionController;
@@ -49,6 +50,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // Authentification (login / logout)
     require __DIR__.'/auth.php';
+
+    // Authentification mobile (jeton Sanctum, app Flutter)
+    Route::post('mobile/login', [MobileAuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('mobile/logout', [MobileAuthController::class, 'logout'])->middleware('auth:sanctum');
 
     Route::middleware('auth:sanctum')->group(function () {
         // Utilisateur courant + permissions effectives
