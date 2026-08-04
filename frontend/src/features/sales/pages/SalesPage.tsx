@@ -377,9 +377,8 @@ export function CreateSalePanel({
         price_type_code: r.data.price_type_code,
         floor_price: r.data.floor_price,
       }])
-    } catch {
-      // Aucun tarif défini pour cet article : on l'ajoute quand même,
-      // le vendeur saisit le prix manuellement (accepté par le serveur).
+    } catch (error) {
+      // L'article est ajouté quand même, le prix se saisit manuellement.
       setLines((prev) => [...prev, {
         product_id: p.id,
         sku: p.sku,
@@ -389,7 +388,16 @@ export function CreateSalePanel({
         price_type_code: null,
         floor_price: 0,
       }])
-      setPriceWarning(`${p.sku} : aucun tarif défini — saisissez le prix manuellement.`)
+      const status =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { status?: number } }).response?.status
+          : undefined
+      // 422 = vraiment aucun tarif ; sinon (réseau, serveur) message honnête.
+      setPriceWarning(
+        status === 422
+          ? `${p.sku} : aucun tarif défini — saisissez le prix manuellement.`
+          : `${p.sku} : tarif non récupéré (serveur injoignable ?) — retirez la ligne et réessayez, ou saisissez le prix manuellement.`,
+      )
     }
     setProductSearch('')
   }
