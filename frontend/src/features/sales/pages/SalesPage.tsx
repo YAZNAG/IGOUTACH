@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, FileText, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
+import { downloadFile } from '@/lib/download'
 import { formatNumber } from '@/lib/utils'
 import type { Paginated } from '@/types'
 
@@ -452,6 +453,30 @@ function SaleDetailView({ id, onBack }: { id: number; onBack: () => void }) {
           </div>
         </div>
         <div className="flex gap-2">
+          {sale ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadFile(`/sales/${sale.id}/pdf`, `${sale.reference}.pdf`)}
+                title={sale.type === 'quote' ? 'Devis PDF' : 'Facture PDF'}
+              >
+                <Download className="h-4 w-4" />
+                {sale.type === 'quote' ? 'Devis PDF' : 'Facture PDF'}
+              </Button>
+              {sale.type === 'invoice' && sale.status === 'confirmed' ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadFile(`/sales/${sale.id}/exit-pdf`, `BS-${sale.reference}.pdf`)}
+                  title="Bon de sortie (quantités seules)"
+                >
+                  <FileText className="h-4 w-4" />
+                  Bon de sortie
+                </Button>
+              ) : null}
+            </>
+          ) : null}
           {sale?.status === 'draft' ? (
             <Button onClick={() => setConfirmOpen(true)} disabled={confirm.isPending}>
               Confirmer {sale.type === 'invoice' ? '(sortie de stock)' : ''}

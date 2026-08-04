@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\SessionController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\StockController;
 use App\Http\Controllers\Api\V1\StockEntryController;
+use App\Http\Controllers\Api\V1\StockExitController;
 use App\Http\Controllers\Api\V1\SupplierContactController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\SupplierCreditController;
@@ -244,6 +245,13 @@ Route::prefix('v1')->group(function () {
         Route::get('sales/{sale}', [SaleController::class, 'show'])->middleware('can:sale.create');
         Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])->middleware('can:sale.create');
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])->middleware('can:sale.cancel');
+        Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->middleware('can:sale.create');
+        Route::get('sales/{sale}/exit-pdf', [SaleController::class, 'exitPdf'])->middleware('can:sale.create');
+
+        // Sorties de stock (mouvements de sortie, créés par les documents)
+        Route::get('stock/exits', [StockExitController::class, 'index'])->middleware('can:stock.view');
+        Route::get('stock/exits/export', [StockExitController::class, 'export'])->middleware('can:stock.view');
+        Route::get('stock/exits/{movement}', [StockExitController::class, 'show'])->whereNumber('movement')->middleware('can:stock.view');
 
         // Règlements — encaissements, chèques, balance âgée, relevé
         Route::get('payments', [PaymentController::class, 'index'])->middleware('can:payment.view');

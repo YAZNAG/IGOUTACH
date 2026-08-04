@@ -1,3 +1,5 @@
 export { StockPage } from './pages/StockPage'
 export { StockEntriesPage } from './pages/StockEntriesPage'
 export { StockEntryDetailPage } from './pages/StockEntryDetailPage'
+export { StockExitsPage } from './pages/StockExitsPage'
+export { StockExitDetailPage } from './pages/StockExitDetailPage'

@@ -10,6 +10,7 @@ import {
   MonitorSmartphone,
   Package,
   PackageCheck,
+  PackageMinus,
   PackagePlus,
   Receipt,
   Settings,
@@ -51,6 +52,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { label: 'Stock', to: '/stock', icon: Boxes, permission: 'stock.view' },
       { label: 'Entrées de stock', to: '/stock-entries', icon: PackagePlus, permission: 'stock.view' },
+      { label: 'Sorties de stock', to: '/stock-exits', icon: PackageMinus, permission: 'stock.view' },
       { label: 'Inventaire', to: '/inventaire', icon: ClipboardList, permission: 'inventory.create' },
       { label: 'Transferts', to: '/transferts', icon: ArrowLeftRight, permission: 'transfer.create' },
       { label: 'Achats', to: '/purchase-orders', icon: ShoppingCart, permission: 'purchase.create' },

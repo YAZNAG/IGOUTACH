@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
  * Ventes : devis et factures. Prix résolus côté serveur (type de prix du
@@ -33,8 +34,12 @@ final class SaleController extends Controller
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->where('type', $request->string('type')->value()))
             ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
+            ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
+            ->when($request->string('search')->isNotEmpty(), fn ($q) => $q->where('reference', 'like', '%'.$request->string('search')->value().'%'))
+            ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '>=', $request->string('date_from')->value()))
+            ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()))
             ->orderByDesc('id')
-            ->paginate(20);
+            ->paginate(in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20);
 
         $sales->through(fn (Sale $s): array => [
             'id' => $s->id,
@@ -249,5 +254,35 @@ final class SaleController extends Controller
         }
 
         return $this->show($sale->refresh());
+    }
+
+    /**
+     * PDF de la facture / du devis (avec montants).
+     * GET /sales/{sale}/pdf
+     */
+    public function pdf(Sale $sale): HttpResponse
+    {
+        $sale->load(['customer', 'warehouse']);
+        $lines = $sale->lines()->with('product:id,sku,name')->get();
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.sale-invoice', [
+            'sale' => $sale,
+            'lines' => $lines,
+        ])->download($sale->reference.'.pdf');
+    }
+
+    /**
+     * PDF du bon de sortie (quantités seules, aucun montant).
+     * GET /sales/{sale}/exit-pdf
+     */
+    public function exitPdf(Sale $sale): HttpResponse
+    {
+        $sale->load(['customer', 'warehouse']);
+        $lines = $sale->lines()->with('product:id,sku,name')->get();
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.delivery-note', [
+            'sale' => $sale,
+            'lines' => $lines,
+        ])->download('BS-'.$sale->reference.'.pdf');
     }
 }
