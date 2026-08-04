@@ -687,6 +687,11 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
 
+  // Règlement saisi au moment de la confirmation d'une facture.
+  const [payMode, setPayMode] = useState<'unpaid' | 'paid'>('paid')
+  const [payAmount, setPayAmount] = useState('')
+  const [payMethodId, setPayMethodId] = useState(0)
+
   const { data: sale } = useQuery<SaleDetail>({
     queryKey: [...KEY, 'detail', id],
     queryFn: async () => {
@@ -695,10 +700,48 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
     },
   })
 
+  const canRecordPayment = can('payment.create')
+  const { data: payMethods = [] } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['payment-method-options'],
+    queryFn: async () => {
+      const { data: r } = await api.get<{ data: { id: number; name: string }[] }>('/payment-methods')
+      return r.data
+    },
+    enabled: confirmOpen && canRecordPayment,
+    staleTime: 5 * 60_000,
+  })
+
+  function openConfirm() {
+    setPayMode('paid')
+    setPayAmount(sale ? String(sale.total) : '')
+    setPayMethodId(0)
+    setConfirmOpen(true)
+  }
+
   const confirm = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
       await api.post(`/sales/${id}/confirm`)
+
+      // Règlement enregistré dans la foulée : le reste part au crédit client.
+      const amount = Number(payAmount)
+      if (
+        sale?.type === 'invoice' &&
+        canRecordPayment &&
+        payMode === 'paid' &&
+        Number.isFinite(amount) &&
+        amount > 0 &&
+        sale.customer
+      ) {
+        await api.post('/payments', {
+          customer_id: sale.customer.id,
+          amount: Math.min(amount, sale.total),
+          payment_method_id: payMethodId || null,
+          sale_id: id,
+          received_at: new Date().toISOString().slice(0, 10),
+          note: `Règlement à la validation de ${sale.reference}`,
+        })
+      }
     },
     onSuccess: () => {
       setConfirmOpen(false)
@@ -706,6 +749,7 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
       qc.invalidateQueries({ queryKey: ['stock'] })
       qc.invalidateQueries({ queryKey: ['stock-exits'] })
       qc.invalidateQueries({ queryKey: ['customers'] })
+      qc.invalidateQueries({ queryKey: ['payments'] })
       // Bon de sortie généré automatiquement à la validation d'une facture.
       if (sale?.type === 'invoice') {
         void downloadFile(`/sales/${id}/exit-pdf`, `BS-${sale.reference}.pdf`)
@@ -769,7 +813,7 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
             </>
           ) : null}
           {sale?.status === 'draft' ? (
-            <Button onClick={() => setConfirmOpen(true)} disabled={confirm.isPending}>
+            <Button onClick={openConfirm} disabled={confirm.isPending}>
               Confirmer {sale.type === 'invoice' ? '(sortie de stock)' : ''}
             </Button>
           ) : null}
@@ -833,15 +877,122 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
         </CardBody>
       </Card>
 
+      {/* Confirmation d'une facture : sortie de stock + règlement (total, partiel ou crédit). */}
+      {confirmOpen && sale?.type === 'invoice' ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={() => setConfirmOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-lg border border-line bg-card p-5 shadow-lg"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-semibold text-ink">Confirmer {sale.reference}</h2>
+            <p className="mt-1 text-sm text-muted">
+              Le stock sera sorti automatiquement. Total : <strong className="text-ink">{formatNumber(sale.total)} DH</strong>
+            </p>
+
+            {confirm.isError ? (
+              <p className="mt-3 rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
+                {errorMessage(confirm.error, 'Confirmation impossible.')}
+              </p>
+            ) : null}
+
+            {canRecordPayment ? (
+              <div className="mt-4 space-y-4">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setPayMode('paid'); setPayAmount(String(sale.total)) }}
+                    className={`flex-1 rounded border px-3 py-2 text-sm font-medium transition-colors ${
+                      payMode === 'paid' ? 'border-sky bg-bg text-sky' : 'border-line text-muted hover:text-ink'
+                    }`}
+                  >
+                    💵 Payé (total ou partiel)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayMode('unpaid')}
+                    className={`flex-1 rounded border px-3 py-2 text-sm font-medium transition-colors ${
+                      payMode === 'unpaid' ? 'border-warn bg-warn-bg text-warn' : 'border-line text-muted hover:text-ink'
+                    }`}
+                  >
+                    🕐 Non payé (tout au crédit)
+                  </button>
+                </div>
+
+                {payMode === 'paid' ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Montant payé (DH)" htmlFor="confirm-pay-amount">
+                      <div className="flex gap-2">
+                        <Input
+                          id="confirm-pay-amount"
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={payAmount}
+                          onChange={(e) => setPayAmount(e.target.value)}
+                          className="text-right"
+                        />
+                        <Button variant="outline" onClick={() => setPayAmount(String(sale.total))} title="Tout payer">
+                          Tout
+                        </Button>
+                      </div>
+                    </Field>
+                    <Field label="Méthode de paiement" htmlFor="confirm-pay-method">
+                      <Select
+                        id="confirm-pay-method"
+                        value={payMethodId}
+                        onChange={(e) => setPayMethodId(Number(e.target.value))}
+                      >
+                        <option value={0}>— Choisir —</option>
+                        {payMethods.map((m) => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <p className="text-sm sm:col-span-2">
+                      {(() => {
+                        const amount = Number(payAmount)
+                        const rest = sale.total - (Number.isFinite(amount) ? Math.min(amount, sale.total) : 0)
+                        return rest > 0.005 ? (
+                          <span className="font-medium text-warn">
+                            Reste {formatNumber(rest)} DH → ajouté au crédit du client
+                          </span>
+                        ) : (
+                          <span className="font-medium text-ok">Facture entièrement réglée — rien au crédit.</span>
+                        )
+                      })()}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="rounded border border-line bg-warn-bg px-3 py-2 text-sm text-warn">
+                    La totalité ({formatNumber(sale.total)} DH) sera ajoutée au <strong>crédit du client</strong>
+                    {sale.customer ? <> (encours actuel : {formatNumber(sale.customer.balance)} DH)</> : null}.
+                  </p>
+                )}
+              </div>
+            ) : null}
+
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setConfirmOpen(false)}>Annuler</Button>
+              <Button onClick={() => confirm.mutate()} disabled={confirm.isPending}>
+                {confirm.isPending ? 'Confirmation…' : 'Confirmer la vente'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Confirmation d'un devis : simple figement. */}
       <ConfirmDialog
-        open={confirmOpen}
-        title="Confirmer la vente"
+        open={confirmOpen && sale?.type !== 'invoice'}
+        title="Confirmer le devis"
         message={
           <>
-            Confirmer <strong>{sale?.reference}</strong> ?
-            {sale?.type === 'invoice' ? (
-              <> Le stock du lieu sera <strong>sorti automatiquement</strong> et la créance ajoutée à l'encours du client.</>
-            ) : ' Le devis sera figé.'}
+            Confirmer <strong>{sale?.reference}</strong> ? Le devis sera figé.
           </>
         }
         confirmLabel="Confirmer"
