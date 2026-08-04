@@ -57,6 +57,7 @@ class Customer extends Model
         'is_blocked',
         'notes',
         'is_active',
+        'created_by',
     ];
 
     protected function casts(): array
@@ -114,5 +115,15 @@ class Customer extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    /**
+     * Utilisateur ayant créé le client (portée de visibilité).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

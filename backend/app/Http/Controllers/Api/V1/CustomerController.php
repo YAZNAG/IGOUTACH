@@ -27,6 +27,8 @@ final class CustomerController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Customer::query()
+            // Sans « customer.view_all », chacun ne voit que les clients qu'il a créés.
+            ->when(! ($request->user()?->can('customer.view_all') ?? false), fn ($q) => $q->where('created_by', $request->user()?->id))
             ->when($request->string('q')->isNotEmpty(), function ($q) use ($request) {
                 $term = $request->string('q')->value();
                 $q->where(fn ($sub) => $sub->where('name', 'like', "%{$term}%")
@@ -49,14 +51,38 @@ final class CustomerController extends Controller
 
     public function store(StoreCustomerRequest $request): JsonResponse
     {
-        $customer = Customer::query()->create($request->validated());
+        $data = $request->validated();
+
+        // Code auto-généré (CL-0001) si non fourni : le formulaire reste simple.
+        if (! isset($data['code']) || $data['code'] === '') {
+            $last = Customer::withTrashed()->where('code', 'like', 'CL-%')->orderByDesc('id')->value('code');
+            $next = $last !== null ? ((int) substr((string) $last, 3)) + 1 : 1;
+            $data['code'] = 'CL-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        }
+
+        $data['created_by'] = $request->user()?->id;
+
+        $customer = Customer::query()->create($data);
 
         return CustomerResource::make($customer)->response()->setStatusCode(201);
     }
 
-    public function show(Customer $customer): CustomerResource
+    public function show(Request $request, Customer $customer): CustomerResource
     {
-        return CustomerResource::make($customer->load(['priceType:id,name', 'seller:id,name', 'warehouse:id,code']));
+        $this->assertCanSee($request, $customer);
+
+        return CustomerResource::make($customer->load(['priceType:id,name', 'seller:id,name', 'warehouse:id,code', 'createdBy:id,name']));
+    }
+
+    /**
+     * Refuse l'accès à un client créé par un autre utilisateur (sauf view_all).
+     */
+    private function assertCanSee(Request $request, Customer $customer): void
+    {
+        $user = $request->user();
+        if ($user !== null && ! $user->can('customer.view_all') && $customer->created_by !== null && $customer->created_by !== $user->id) {
+            abort(403, 'Ce client a été créé par un autre utilisateur.');
+        }
     }
 
     public function update(UpdateCustomerRequest $request, Customer $customer): CustomerResource

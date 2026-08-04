@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { Ban, CircleCheck, CreditCard, Plus, Trash2 } from 'lucide-react'
+import { Ban, CircleCheck, CreditCard, Eye, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -31,9 +32,10 @@ function errorMessage(error: unknown, fallback: string): string {
   return fallback
 }
 
-const EMPTY: CustomerInput = { code: '', name: '', is_company: false, is_active: true }
+const EMPTY: CustomerInput = { name: '', is_company: false, is_active: true, credit_limit: 0 }
 
 export function CustomersPage() {
+  const navigate = useNavigate()
   const can = usePermission()
   const canCreate = can('customer.create')
   const canUpdate = can('customer.update')
@@ -167,12 +169,21 @@ export function CustomersPage() {
               </p>
             ) : null}
             <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
-              <Field label="Code" htmlFor="code">
-                <Input id="code" value={form.code} onChange={(e) => set('code', e.target.value)} required />
-              </Field>
-              <Field label="Nom / Raison sociale" htmlFor="name">
+              <Field label="Nom / Raison sociale *" htmlFor="name">
                 <Input id="name" value={form.name} onChange={(e) => set('name', e.target.value)} required />
               </Field>
+              {!editing ? (
+                <Field label="Plafond de crédit (DH)" htmlFor="credit-limit">
+                  <Input
+                    id="credit-limit"
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={form.credit_limit ?? 0}
+                    onChange={(e) => set('credit_limit', Number(e.target.value))}
+                  />
+                </Field>
+              ) : null}
               <Field label="Contact" htmlFor="contact">
                 <Input id="contact" value={form.contact_name ?? ''} onChange={(e) => set('contact_name', e.target.value)} />
               </Field>
@@ -188,44 +199,48 @@ export function CustomersPage() {
               <Field label="ICE (entreprise)" htmlFor="ice">
                 <Input id="ice" value={form.ice ?? ''} onChange={(e) => set('ice', e.target.value)} />
               </Field>
-              <Field label="Type de prix par défaut" htmlFor="price-type">
-                <Select
-                  id="price-type"
-                  value={form.price_type_id ?? ''}
-                  onChange={(e) => set('price_type_id', e.target.value ? Number(e.target.value) : null)}
-                >
-                  <option value="">— Détail (par défaut) —</option>
-                  {priceTypes.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </Select>
-              </Field>
-              {canPickSeller ? (
-                <Field label="Vendeur référent" htmlFor="seller">
-                  <Select
-                    id="seller"
-                    value={form.seller_id ?? ''}
-                    onChange={(e) => set('seller_id', e.target.value ? Number(e.target.value) : null)}
-                  >
-                    <option value="">— Aucun —</option>
-                    {sellers.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </Select>
-                </Field>
+              {editing ? (
+                <>
+                  <Field label="Type de prix par défaut" htmlFor="price-type">
+                    <Select
+                      id="price-type"
+                      value={form.price_type_id ?? ''}
+                      onChange={(e) => set('price_type_id', e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">— Détail (par défaut) —</option>
+                      {priceTypes.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </Select>
+                  </Field>
+                  {canPickSeller ? (
+                    <Field label="Vendeur référent" htmlFor="seller">
+                      <Select
+                        id="seller"
+                        value={form.seller_id ?? ''}
+                        onChange={(e) => set('seller_id', e.target.value ? Number(e.target.value) : null)}
+                      >
+                        <option value="">— Aucun —</option>
+                        {sellers.map((s) => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                  ) : null}
+                  <Field label="Lieu de rattachement" htmlFor="cust-warehouse">
+                    <Select
+                      id="cust-warehouse"
+                      value={form.warehouse_id ?? ''}
+                      onChange={(e) => set('warehouse_id', e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">— Aucun —</option>
+                      {warehouses.map((w) => (
+                        <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
+                      ))}
+                    </Select>
+                  </Field>
+                </>
               ) : null}
-              <Field label="Lieu de rattachement" htmlFor="cust-warehouse">
-                <Select
-                  id="cust-warehouse"
-                  value={form.warehouse_id ?? ''}
-                  onChange={(e) => set('warehouse_id', e.target.value ? Number(e.target.value) : null)}
-                >
-                  <option value="">— Aucun —</option>
-                  {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
-                  ))}
-                </Select>
-              </Field>
               <div className="flex items-center gap-6 self-end pb-2">
                 <label className="flex items-center gap-2 text-sm text-ink">
                   <input
@@ -252,7 +267,9 @@ export function CustomersPage() {
                 </Field>
               </div>
               <p className="text-xs text-faint sm:col-span-2">
-                Le plafond de crédit se règle via l'action « Crédit » (permission dédiée).
+                {editing
+                  ? "Le plafond de crédit se règle via l'action « Crédit » (permission dédiée)."
+                  : 'Le code client est généré automatiquement (CL-0001).'}
               </p>
               <div className="flex gap-2 sm:col-span-2">
                 <Button type="submit" disabled={isPending}>
@@ -336,6 +353,10 @@ export function CustomersPage() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${c.id}`)} title="Voir le détail">
+                            <Eye className="h-4 w-4" />
+                            Voir
+                          </Button>
                           {canCredit ? (
                             <Button variant="ghost" size="sm" onClick={() => openCredit(c)} title="Plafond de crédit">
                               <CreditCard className="h-4 w-4" />

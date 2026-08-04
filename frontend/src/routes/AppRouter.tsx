@@ -7,7 +7,7 @@ import { LoginPage } from '@/features/auth'
 import { BrandsPage } from '@/features/brands'
 import { CashPage } from '@/features/cash'
 import { CategoriesPage } from '@/features/categories'
-import { CustomersPage } from '@/features/customers'
+import { CustomerDetailPage, CustomersPage } from '@/features/customers'
 import { ExpensesPage } from '@/features/expenses'
 import { InventoryPage } from '@/features/inventory'
 import { PaymentsPage } from '@/features/payments'
@@ -81,6 +81,7 @@ export const router = createBrowserRouter([
           { path: '/fournisseurs', element: <SuppliersPage /> },
           { path: '/fournisseurs/:id', element: <SupplierDetailPage /> },
           { path: '/clients', element: <CustomersPage /> },
+          { path: '/clients/:id', element: <CustomerDetailPage /> },
           { path: '/charges', element: <ExpensesPage /> },
           { path: '/lieux', element: <WarehousesPage /> },
           { path: '/lieux/:id', element: <WarehouseDetailPage /> },

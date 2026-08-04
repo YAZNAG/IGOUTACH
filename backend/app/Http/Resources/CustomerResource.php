@@ -41,6 +41,7 @@ final class CustomerResource extends JsonResource
             'is_blocked' => $this->is_blocked,
             'notes' => $this->notes,
             'is_active' => $this->is_active,
+            'created_by' => $this->whenLoaded('createdBy', fn () => $this->createdBy?->name),
         ];
     }
 }
