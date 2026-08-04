@@ -31,6 +31,7 @@ final class SaleController extends Controller
     {
         $sales = Sale::query()
             ->with(['customer:id,code,name', 'warehouse:id,code'])
+            ->withCount('lines')
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->where('type', $request->string('type')->value()))
             ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
@@ -40,6 +41,12 @@ final class SaleController extends Controller
             ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()))
             ->orderByDesc('id')
             ->paginate(in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20);
+
+        // Devis déjà convertis en facture (pour les griser dans la sélection).
+        $convertedQuoteIds = Sale::query()
+            ->whereNotNull('quote_id')
+            ->pluck('quote_id')
+            ->all();
 
         $sales->through(fn (Sale $s): array => [
             'id' => $s->id,
@@ -51,6 +58,9 @@ final class SaleController extends Controller
             'total' => (float) $s->total,
             'paid_amount' => (float) $s->paid_amount,
             'payment_status' => $s->payment_status,
+            'lines_count' => (int) ($s->lines_count ?? 0),
+            'quote_id' => $s->quote_id,
+            'converted' => $s->type === Sale::TYPE_QUOTE && in_array($s->id, $convertedQuoteIds, true),
             'created_at' => $s->created_at?->format('Y-m-d H:i'),
         ]);
 
@@ -254,6 +264,59 @@ final class SaleController extends Controller
         }
 
         return $this->show($sale->refresh());
+    }
+
+    /**
+     * Convertit un devis en vente (facture brouillon reliée au devis).
+     * POST /sales/{sale}/convert
+     */
+    public function convert(Request $request, Sale $sale, DocumentNumberGeneratorInterface $numbers): JsonResponse
+    {
+        if ($sale->type !== Sale::TYPE_QUOTE) {
+            return response()->json(['message' => 'Seul un devis peut être converti en vente.'], 422);
+        }
+
+        if ($sale->status === Sale::STATUS_CANCELLED) {
+            return response()->json(['message' => 'Ce devis est annulé.'], 422);
+        }
+
+        if (Sale::query()->where('quote_id', $sale->id)->exists()) {
+            return response()->json(['message' => 'Ce devis a déjà été converti en vente.'], 422);
+        }
+
+        $invoice = DB::transaction(function () use ($sale, $numbers, $request): Sale {
+            $invoice = Sale::query()->create([
+                'reference' => $numbers->next('sale'),
+                'type' => Sale::TYPE_INVOICE,
+                'status' => Sale::STATUS_DRAFT,
+                'customer_id' => $sale->customer_id,
+                'quote_id' => $sale->id,
+                'warehouse_id' => $sale->warehouse_id,
+                'user_id' => $request->user()?->id,
+                'subtotal' => $sale->subtotal,
+                'discount_percent' => $sale->discount_percent,
+                'total' => $sale->total,
+                'note' => trim('Issu du devis '.$sale->reference.'. '.($sale->note ?? '')),
+            ]);
+
+            foreach ($sale->lines()->get() as $line) {
+                $invoice->lines()->create([
+                    'product_id' => $line->product_id,
+                    'quantity' => $line->quantity,
+                    'unit_price' => $line->unit_price,
+                    'price_type_code' => $line->price_type_code,
+                    'line_total' => $line->line_total,
+                ]);
+            }
+
+            return $invoice;
+        });
+
+        return response()->json(['data' => [
+            'id' => $invoice->id,
+            'reference' => $invoice->reference,
+            'quote_reference' => $sale->reference,
+        ]], 201);
     }
 
     /**

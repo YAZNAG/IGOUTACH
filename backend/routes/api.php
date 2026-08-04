@@ -245,6 +245,7 @@ Route::prefix('v1')->group(function () {
         Route::get('sales/{sale}', [SaleController::class, 'show'])->middleware('can:sale.create');
         Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])->middleware('can:sale.create');
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])->middleware('can:sale.cancel');
+        Route::post('sales/{sale}/convert', [SaleController::class, 'convert'])->middleware('can:sale.create');
         Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->middleware('can:sale.create');
         Route::get('sales/{sale}/exit-pdf', [SaleController::class, 'exitPdf'])->middleware('can:sale.create');
 

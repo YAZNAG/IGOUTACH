@@ -48,6 +48,7 @@ final class Sale extends Model
         'type',
         'status',
         'customer_id',
+        'quote_id',
         'warehouse_id',
         'user_id',
         'subtotal',

@@ -15,7 +15,7 @@ import { downloadFile } from '@/lib/download'
 import { formatNumber } from '@/lib/utils'
 import type { Paginated } from '@/types'
 
-interface SaleRow {
+export interface SaleRow {
   id: number
   reference: string
   type: string
@@ -25,6 +25,9 @@ interface SaleRow {
   total: number
   paid_amount: number
   payment_status: string
+  lines_count: number
+  quote_id: number | null
+  converted: boolean
   created_at: string | null
 }
 
@@ -97,11 +100,12 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   const can = usePermission()
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
+  const [pickingQuote, setPickingQuote] = useState(false)
 
   const { data, isLoading } = useQuery<Paginated<SaleRow>>({
-    queryKey: [...KEY, page],
+    queryKey: [...KEY, 'invoices', page],
     queryFn: async () => {
-      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', { params: { page } })
+      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', { params: { page, type: 'invoice' } })
       return r
     },
   })
@@ -114,20 +118,33 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-ink">Ventes</h1>
-          <p className="text-sm text-muted">Devis et factures — contrôle du crédit et du prix plancher.</p>
+          <p className="text-sm text-muted">
+            Factures — la validation sort le stock et génère le bon de sortie. Les devis se créent dans la page Devis.
+          </p>
         </div>
-        {can('sale.create') && !creating ? (
-          <Button onClick={() => setCreating(true)}>
-            <Plus className="h-4 w-4" />
-            Nouvelle vente
-          </Button>
+        {can('sale.create') ? (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => { setPickingQuote((v) => !v); setCreating(false) }}
+            >
+              <FileText className="h-4 w-4" />
+              Depuis un devis
+            </Button>
+            <Button onClick={() => { setCreating((v) => !v); setPickingQuote(false) }}>
+              <Plus className="h-4 w-4" />
+              Vente directe
+            </Button>
+          </div>
         ) : null}
       </div>
 
-      {creating ? <CreateSalePanel onClose={() => setCreating(false)} onCreated={onOpen} /> : null}
+      {pickingQuote ? <QuotePicker onClose={() => setPickingQuote(false)} onConverted={onOpen} /> : null}
+
+      {creating ? <CreateSalePanel fixedType="invoice" onClose={() => setCreating(false)} onCreated={onOpen} /> : null}
 
       <Card>
-        <CardHeader title="Documents" hint={meta ? `${meta.total}` : undefined} />
+        <CardHeader title="Factures" hint={meta ? `${meta.total}` : undefined} />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -136,8 +153,9 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
               <thead>
                 <tr className="border-b border-line text-left text-muted">
                   <th className="px-5 py-3 font-medium">Référence</th>
-                  <th className="px-5 py-3 font-medium">Type</th>
+                  <th className="px-5 py-3 font-medium">Date</th>
                   <th className="px-5 py-3 font-medium">Client</th>
+                  <th className="px-5 py-3 text-right font-medium">Lignes</th>
                   <th className="px-5 py-3 text-right font-medium">Total (DH)</th>
                   <th className="px-5 py-3 font-medium">Statut</th>
                   <th className="px-5 py-3 font-medium">Règlement</th>
@@ -146,13 +164,17 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
               </thead>
               <tbody>
                 {sales.length === 0 ? (
-                  <tr><td colSpan={7} className="px-5 py-8 text-center text-muted">Aucune vente.</td></tr>
+                  <tr><td colSpan={8} className="px-5 py-8 text-center text-muted">Aucune vente.</td></tr>
                 ) : (
                   sales.map((s) => (
                     <tr key={s.id} className="border-b border-line last:border-0">
-                      <td className="mono px-5 py-3 text-muted">{s.reference}</td>
-                      <td className="px-5 py-3">{s.type === 'quote' ? <Badge tone="sky">Devis</Badge> : <Badge tone="neutral">Facture</Badge>}</td>
+                      <td className="mono px-5 py-3 text-muted">
+                        {s.reference}
+                        {s.quote_id !== null ? <span className="ml-1 text-xs text-faint" title="Issue d'un devis">↩</span> : null}
+                      </td>
+                      <td className="px-5 py-3 text-muted">{s.created_at ?? '—'}</td>
                       <td className="px-5 py-3 text-ink">{s.customer}</td>
+                      <td className="tabular px-5 py-3 text-right text-muted">{s.lines_count}</td>
                       <td className="tabular px-5 py-3 text-right text-ink">{formatNumber(s.total)}</td>
                       <td className="px-5 py-3">
                         {s.status === 'confirmed' ? <Badge tone="ok">Confirmé</Badge> : null}
@@ -160,14 +182,36 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                         {s.status === 'cancelled' ? <Badge tone="bad">Annulé</Badge> : null}
                       </td>
                       <td className="px-5 py-3">
-                        {s.type === 'invoice' && s.status === 'confirmed' ? (
+                        {s.status === 'confirmed' ? (
                           s.payment_status === 'paid' ? <Badge tone="ok">Payé</Badge>
                             : s.payment_status === 'partial' ? <Badge tone="warn">Partiel</Badge>
                               : <Badge tone="bad">Impayé</Badge>
                         ) : '—'}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        <Button variant="ghost" size="sm" onClick={() => onOpen(s.id)}>Ouvrir</Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => onOpen(s.id)} title="Consulter">
+                            Ouvrir
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => downloadFile(`/sales/${s.id}/pdf`, `${s.reference}.pdf`)}
+                            title="Facture PDF"
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          {s.status === 'confirmed' ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => downloadFile(`/sales/${s.id}/exit-pdf`, `BS-${s.reference}.pdf`)}
+                              title="Bon de sortie PDF"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -189,11 +233,105 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   )
 }
 
-function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreated: (id: number) => void }) {
+/**
+ * Sélecteur de devis : liste des devis non convertis, un clic crée la
+ * vente (facture brouillon) avec les mêmes lignes.
+ */
+function QuotePicker({ onClose, onConverted }: { onClose: () => void; onConverted: (invoiceId: number) => void }) {
+  const qc = useQueryClient()
+  const [error, setError] = useState<string | null>(null)
+
+  const { data, isLoading } = useQuery<Paginated<SaleRow>>({
+    queryKey: [...KEY, 'quotes-picker'],
+    queryFn: async () => {
+      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', { params: { type: 'quote', per_page: 50 } })
+      return r
+    },
+  })
+
+  const convert = useMutation({
+    mutationFn: async (quoteId: number) => {
+      await ensureCsrfCookie()
+      const { data: r } = await api.post<{ data: { id: number } }>(`/sales/${quoteId}/convert`)
+      return r.data
+    },
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: KEY })
+      onConverted(result.id)
+    },
+    onError: (e) => setError(errorMessage(e, 'Conversion impossible.')),
+  })
+
+  const quotes = (data?.data ?? []).filter((q) => q.status !== 'cancelled')
+
+  return (
+    <Card>
+      <CardHeader title="Créer une vente à partir d'un devis" hint="Les lignes et le client du devis sont repris tels quels." />
+      <CardBody className="space-y-3">
+        {error ? <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{error}</p> : null}
+        {isLoading ? (
+          <p className="text-sm text-muted">Chargement…</p>
+        ) : quotes.length === 0 ? (
+          <p className="text-sm text-muted">Aucun devis disponible — créez-en un dans la page Devis.</p>
+        ) : (
+          <div className="max-h-80 overflow-auto rounded border border-line">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line text-left text-muted">
+                  <th className="px-4 py-2 font-medium">Référence</th>
+                  <th className="px-4 py-2 font-medium">Date</th>
+                  <th className="px-4 py-2 font-medium">Client</th>
+                  <th className="px-4 py-2 text-right font-medium">Lignes</th>
+                  <th className="px-4 py-2 text-right font-medium">Total (DH)</th>
+                  <th className="px-4 py-2 text-right font-medium" />
+                </tr>
+              </thead>
+              <tbody>
+                {quotes.map((q) => (
+                  <tr key={q.id} className={`border-b border-line last:border-0 ${q.converted ? 'opacity-50' : ''}`}>
+                    <td className="mono px-4 py-2 text-muted">{q.reference}</td>
+                    <td className="px-4 py-2 text-muted">{q.created_at ?? '—'}</td>
+                    <td className="px-4 py-2 text-ink">{q.customer}</td>
+                    <td className="tabular px-4 py-2 text-right text-muted">{q.lines_count}</td>
+                    <td className="tabular px-4 py-2 text-right text-ink">{formatNumber(q.total)}</td>
+                    <td className="px-4 py-2 text-right">
+                      {q.converted ? (
+                        <Badge tone="neutral">Déjà converti</Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => convert.mutate(q.id)}
+                          disabled={convert.isPending}
+                        >
+                          Convertir en vente
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <Button variant="ghost" onClick={onClose}>Fermer</Button>
+      </CardBody>
+    </Card>
+  )
+}
+
+export function CreateSalePanel({
+  onClose,
+  onCreated,
+  fixedType = 'invoice',
+}: {
+  onClose: () => void
+  onCreated: (id: number) => void
+  fixedType?: 'invoice' | 'quote'
+}) {
   const qc = useQueryClient()
   const { data: warehouses = [] } = useWarehouseOptions()
 
-  const [type, setType] = useState<'invoice' | 'quote'>('invoice')
+  const type = fixedType
   const [customerId, setCustomerId] = useState(0)
   const [warehouseId, setWarehouseId] = useState(0)
   const [discount, setDiscount] = useState(0)
@@ -281,15 +419,12 @@ function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreate
 
   return (
     <Card>
-      <CardHeader title="Nouvelle vente" hint={`Total : ${formatNumber(total)} DH`} />
+      <CardHeader
+        title={type === 'quote' ? 'Nouveau devis' : 'Nouvelle vente directe'}
+        hint={`Total : ${formatNumber(total)} DH`}
+      />
       <CardBody className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-4">
-          <Field label="Type" htmlFor="sale-type">
-            <Select id="sale-type" value={type} onChange={(e) => setType(e.target.value as 'invoice' | 'quote')}>
-              <option value="invoice">Facture (sortie de stock)</option>
-              <option value="quote">Devis (sans effet stock)</option>
-            </Select>
-          </Field>
+        <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Client" htmlFor="sale-customer">
             <div className="space-y-1">
               <Input
@@ -417,7 +552,7 @@ function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreate
   )
 }
 
-function SaleDetailView({ id, onBack }: { id: number; onBack: () => void }) {
+export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void }) {
   const can = usePermission()
   const qc = useQueryClient()
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -440,7 +575,12 @@ function SaleDetailView({ id, onBack }: { id: number; onBack: () => void }) {
       setConfirmOpen(false)
       qc.invalidateQueries({ queryKey: KEY })
       qc.invalidateQueries({ queryKey: ['stock'] })
+      qc.invalidateQueries({ queryKey: ['stock-exits'] })
       qc.invalidateQueries({ queryKey: ['customers'] })
+      // Bon de sortie généré automatiquement à la validation d'une facture.
+      if (sale?.type === 'invoice') {
+        void downloadFile(`/sales/${id}/exit-pdf`, `BS-${sale.reference}.pdf`)
+      }
     },
   })
 
