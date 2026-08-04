@@ -120,7 +120,8 @@ final class SaleController extends Controller
         /** @var array{type: string, customer_id: int, warehouse_id: int, discount_percent?: float, note?: string|null, lines: list<array{product_id: int, quantity: int, unit_price?: float|null}>} $data */
         $data = $request->validate([
             'type' => ['required', 'in:quote,invoice'],
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            // Nullable : client de passage (vente comptoir sans fiche ni crédit).
+            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
             'discount_percent' => ['sometimes', 'numeric', 'between:0,100'],
             'note' => ['nullable', 'string', 'max:255'],
@@ -149,12 +150,12 @@ final class SaleController extends Controller
                         // Prix saisi par le vendeur : prioritaire, le niveau reste informatif.
                         $unitPrice = (float) $line['unit_price'];
                         try {
-                            $priceTypeCode = $resolver->resolve($line['product_id'], $line['quantity'], $data['customer_id'])->priceTypeCode;
+                            $priceTypeCode = $resolver->resolve($line['product_id'], $line['quantity'], $data['customer_id'] ?? null)->priceTypeCode;
                         } catch (NoPriceDefinedException) {
                             // Article sans tarif défini : le prix saisi fait foi.
                         }
                     } else {
-                        $resolved = $resolver->resolve($line['product_id'], $line['quantity'], $data['customer_id']);
+                        $resolved = $resolver->resolve($line['product_id'], $line['quantity'], $data['customer_id'] ?? null);
                         $unitPrice = $resolved->amount;
                         $priceTypeCode = $resolved->priceTypeCode;
                     }
@@ -190,7 +191,7 @@ final class SaleController extends Controller
                     'reference' => $numbers->next('sale'),
                     'type' => $data['type'],
                     'status' => Sale::STATUS_DRAFT,
-                    'customer_id' => $data['customer_id'],
+                    'customer_id' => $data['customer_id'] ?? null,
                     'warehouse_id' => $data['warehouse_id'],
                     'user_id' => $request->user()?->id,
                     'subtotal' => round($subtotal, 2),

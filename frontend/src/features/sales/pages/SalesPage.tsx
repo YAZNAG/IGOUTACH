@@ -188,7 +188,7 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                         {s.quote_id !== null ? <span className="ml-1 text-xs text-faint" title="Issue d'un devis">↩</span> : null}
                       </td>
                       <td className="px-5 py-3 text-muted">{s.created_at ?? '—'}</td>
-                      <td className="px-5 py-3 text-ink">{s.customer}</td>
+                      <td className="px-5 py-3 text-ink">{s.customer ?? <span className="text-muted">Passager</span>}</td>
                       <td className="tabular px-5 py-3 text-right text-muted">{s.lines_count}</td>
                       <td className="tabular px-5 py-3 text-right text-ink">{formatNumber(s.total)}</td>
                       <td className="px-5 py-3">
@@ -306,7 +306,7 @@ function QuotePicker({ onClose, onConverted }: { onClose: () => void; onConverte
                   <tr key={q.id} className={`border-b border-line last:border-0 ${q.converted ? 'opacity-50' : ''}`}>
                     <td className="mono px-4 py-2 text-muted">{q.reference}</td>
                     <td className="px-4 py-2 text-muted">{q.created_at ?? '—'}</td>
-                    <td className="px-4 py-2 text-ink">{q.customer}</td>
+                    <td className="px-4 py-2 text-ink">{q.customer ?? <span className="text-muted">Passager</span>}</td>
                     <td className="tabular px-4 py-2 text-right text-muted">{q.lines_count}</td>
                     <td className="tabular px-4 py-2 text-right text-ink">{formatNumber(q.total)}</td>
                     <td className="px-4 py-2 text-right">
@@ -347,6 +347,8 @@ export function CreateSalePanel({
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const type = fixedType
+  // Client de passage : vente comptoir sans fiche client ni crédit.
+  const [walkIn, setWalkIn] = useState(false)
   const [customerId, setCustomerId] = useState(0)
   const [warehouseId, setWarehouseId] = useState(0)
   const [discount, setDiscount] = useState(0)
@@ -475,7 +477,7 @@ export function CreateSalePanel({
       await ensureCsrfCookie()
       const { data: r } = await api.post<{ data: { id: number } }>('/sales', {
         type,
-        customer_id: customerId,
+        customer_id: walkIn ? null : customerId,
         warehouse_id: warehouseId,
         discount_percent: discount,
         // Prix envoyé seulement en saisie manuelle : sinon le serveur applique
@@ -510,13 +512,26 @@ export function CreateSalePanel({
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Client" htmlFor="sale-customer">
             <div className="space-y-1">
+              <label className="flex items-center gap-2 pb-1 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-sky"
+                  checked={walkIn}
+                  onChange={(e) => {
+                    setWalkIn(e.target.checked)
+                    if (e.target.checked) { setCustomerId(0); setCustomerSearch('') }
+                  }}
+                />
+                Client de passage (comptoir, sans crédit)
+              </label>
               <Input
                 id="sale-customer"
                 placeholder="Rechercher…"
                 value={customerSearch}
+                disabled={walkIn}
                 onChange={(e) => { setCustomerSearch(e.target.value); setCustomerId(0) }}
               />
-              {customerId === 0 && customers.length > 0 ? (
+              {!walkIn && customerId === 0 && customers.length > 0 ? (
                 <ul className="max-h-32 overflow-auto rounded border border-line">
                   {customers.map((c) => (
                     <li key={c.id}>
@@ -554,10 +569,10 @@ export function CreateSalePanel({
 
         <div className="space-y-2 rounded-lg border border-line p-3">
           <Input
-            placeholder={customerId === 0 ? 'Sélectionnez d\'abord un client…' : 'Rechercher un article…'}
+            placeholder={customerId === 0 && !walkIn ? 'Sélectionnez d\'abord un client…' : 'Rechercher un article…'}
             value={productSearch}
             onChange={(e) => setProductSearch(e.target.value)}
-            disabled={customerId === 0}
+            disabled={customerId === 0 && !walkIn}
           />
           {products.length > 0 && productSearch.trim().length >= 2 ? (
             <ul className="max-h-40 overflow-auto rounded border border-line">
@@ -671,7 +686,10 @@ export function CreateSalePanel({
         ) : null}
 
         <div className="flex gap-2">
-          <Button onClick={() => create.mutate()} disabled={create.isPending || !customerId || !warehouseId || lines.length === 0}>
+          <Button
+            onClick={() => create.mutate()}
+            disabled={create.isPending || (!customerId && !walkIn) || !warehouseId || lines.length === 0}
+          >
             {create.isPending ? 'Création…' : 'Créer le document'}
           </Button>
           <Button variant="ghost" onClick={onClose}>Annuler</Button>
@@ -780,7 +798,7 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
               {sale?.type === 'quote' ? 'Devis' : 'Facture'} {sale?.reference}
             </h1>
             <p className="text-sm text-muted">
-              {sale?.customer?.name} · {sale?.warehouse}{' '}
+              {sale?.customer?.name ?? 'Client de passage'} · {sale?.warehouse}{' '}
               {sale?.status === 'confirmed' ? <Badge tone="ok">Confirmé</Badge> : null}
               {sale?.status === 'draft' ? <Badge tone="warn">Brouillon</Badge> : null}
               {sale?.status === 'cancelled' ? <Badge tone="bad">Annulé</Badge> : null}
@@ -900,7 +918,13 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
               </p>
             ) : null}
 
-            {canRecordPayment ? (
+            {!sale.customer ? (
+              <p className="mt-4 rounded border border-line bg-ok-bg px-3 py-2 text-sm text-ok">
+                Client de passage : la vente sera marquée <strong>payée comptant intégralement</strong> — aucun crédit possible.
+              </p>
+            ) : null}
+
+            {canRecordPayment && sale.customer ? (
               <div className="mt-4 space-y-4">
                 <div className="flex gap-2">
                   <button

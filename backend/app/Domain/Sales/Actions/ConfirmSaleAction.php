@@ -35,22 +35,26 @@ final class ConfirmSaleAction
         }
 
         return DB::transaction(function () use ($sale, $userId, $allowOverCredit): Sale {
-            /** @var Customer $customer */
-            $customer = Customer::query()->lockForUpdate()->findOrFail($sale->customer_id);
+            // Client de passage : aucune fiche, aucun crédit possible.
+            $customer = $sale->customer_id !== null
+                ? Customer::query()->lockForUpdate()->findOrFail($sale->customer_id)
+                : null;
 
             if ($sale->type === Sale::TYPE_INVOICE) {
-                if ($customer->is_blocked) {
-                    throw new RuntimeException('Client bloqué : encours au-dessus du plafond. Déblocage requis.');
-                }
+                if ($customer !== null) {
+                    if ($customer->is_blocked) {
+                        throw new RuntimeException('Client bloqué : encours au-dessus du plafond. Déblocage requis.');
+                    }
 
-                $limit = (float) $customer->credit_limit;
-                $projected = (float) $customer->balance + (float) $sale->total;
-                if ($limit > 0 && $projected > $limit && ! $allowOverCredit) {
-                    throw new RuntimeException(sprintf(
-                        'Plafond de crédit dépassé (encours projeté %.2f DH > plafond %.2f DH).',
-                        $projected,
-                        $limit,
-                    ));
+                    $limit = (float) $customer->credit_limit;
+                    $projected = (float) $customer->balance + (float) $sale->total;
+                    if ($limit > 0 && $projected > $limit && ! $allowOverCredit) {
+                        throw new RuntimeException(sprintf(
+                            'Plafond de crédit dépassé (encours projeté %.2f DH > plafond %.2f DH).',
+                            $projected,
+                            $limit,
+                        ));
+                    }
                 }
 
                 foreach ($sale->lines as $line) {
@@ -66,18 +70,29 @@ final class ConfirmSaleAction
                     ));
                 }
 
-                $this->ledger->record(
-                    customerId: $customer->id,
-                    type: CustomerLedgerEntry::TYPE_INVOICE,
-                    amount: (float) $sale->total,
-                    referenceType: Sale::class,
-                    referenceId: $sale->id,
-                    note: 'Facture '.$sale->reference,
-                    userId: $userId,
-                );
+                if ($customer !== null) {
+                    $this->ledger->record(
+                        customerId: $customer->id,
+                        type: CustomerLedgerEntry::TYPE_INVOICE,
+                        amount: (float) $sale->total,
+                        referenceType: Sale::class,
+                        referenceId: $sale->id,
+                        note: 'Facture '.$sale->reference,
+                        userId: $userId,
+                    );
+                }
             }
 
-            $sale->update(['status' => Sale::STATUS_CONFIRMED, 'confirmed_at' => now()]);
+            $updates = ['status' => Sale::STATUS_CONFIRMED, 'confirmed_at' => now()];
+
+            // Sans fiche client, pas de crédit possible : la vente est
+            // considérée payée comptant dans son intégralité.
+            if ($customer === null && $sale->type === Sale::TYPE_INVOICE) {
+                $updates['paid_amount'] = $sale->total;
+                $updates['payment_status'] = 'paid';
+            }
+
+            $sale->update($updates);
 
             return $sale->refresh()->load(['lines.product:id,sku,name', 'customer:id,code,name']);
         });

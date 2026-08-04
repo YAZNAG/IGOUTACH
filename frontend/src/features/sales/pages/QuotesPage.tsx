@@ -128,7 +128,7 @@ export function QuotesPage() {
                     <tr key={q.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{q.reference}</td>
                       <td className="px-5 py-3 text-muted">{q.created_at ?? '—'}</td>
-                      <td className="px-5 py-3 text-ink">{q.customer}</td>
+                      <td className="px-5 py-3 text-ink">{q.customer ?? <span className="text-muted">Passager</span>}</td>
                       <td className="tabular px-5 py-3 text-right text-muted">{q.lines_count}</td>
                       <td className="tabular px-5 py-3 text-right text-ink">{formatNumber(q.total)}</td>
                       <td className="px-5 py-3">
