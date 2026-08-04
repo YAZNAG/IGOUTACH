@@ -220,21 +220,39 @@ function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreate
     enabled: productSearch.trim().length >= 2,
   })
 
+  const [priceWarning, setPriceWarning] = useState<string | null>(null)
+
   async function addProduct(p: ProductOption) {
-    // Prix résolu côté serveur : type de prix du client, puis paliers.
-    const { data: r } = await api.get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>(
-      '/sales/price',
-      { params: { product_id: p.id, quantity: 1, customer_id: customerId || undefined } },
-    )
-    setLines((prev) => [...prev, {
-      product_id: p.id,
-      sku: p.sku,
-      name: p.name,
-      quantity: 1,
-      unit_price: r.data.unit_price,
-      price_type_code: r.data.price_type_code,
-      floor_price: r.data.floor_price,
-    }])
+    setPriceWarning(null)
+    try {
+      // Prix résolu côté serveur : type de prix du client, puis paliers.
+      const { data: r } = await api.get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>(
+        '/sales/price',
+        { params: { product_id: p.id, quantity: 1, customer_id: customerId || undefined } },
+      )
+      setLines((prev) => [...prev, {
+        product_id: p.id,
+        sku: p.sku,
+        name: p.name,
+        quantity: 1,
+        unit_price: r.data.unit_price,
+        price_type_code: r.data.price_type_code,
+        floor_price: r.data.floor_price,
+      }])
+    } catch {
+      // Aucun tarif défini pour cet article : on l'ajoute quand même,
+      // le vendeur saisit le prix manuellement (accepté par le serveur).
+      setLines((prev) => [...prev, {
+        product_id: p.id,
+        sku: p.sku,
+        name: p.name,
+        quantity: 1,
+        unit_price: 0,
+        price_type_code: null,
+        floor_price: 0,
+      }])
+      setPriceWarning(`${p.sku} : aucun tarif défini — saisissez le prix manuellement.`)
+    }
     setProductSearch('')
   }
 
@@ -287,7 +305,7 @@ function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreate
                       <button
                         type="button"
                         onClick={() => { setCustomerId(c.id); setCustomerSearch(`${c.code} · ${c.name}`) }}
-                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface-2"
+                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-bg"
                       >
                         <span className="mono text-muted">{c.code}</span>
                         <span className="text-ink">{c.name}</span>
@@ -330,7 +348,7 @@ function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreate
                   <button
                     type="button"
                     onClick={() => void addProduct(o)}
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface-2"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-bg"
                   >
                     <span className="mono text-muted">{o.sku}</span>
                     <span className="text-ink">{o.name}</span>
@@ -338,6 +356,10 @@ function CreateSalePanel({ onClose, onCreated }: { onClose: () => void; onCreate
                 </li>
               ))}
             </ul>
+          ) : null}
+
+          {priceWarning ? (
+            <p className="rounded border border-line bg-warn-bg px-3 py-2 text-sm text-warn">{priceWarning}</p>
           ) : null}
 
           {lines.map((l, i) => (
