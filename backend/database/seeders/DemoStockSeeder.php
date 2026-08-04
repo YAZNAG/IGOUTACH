@@ -43,7 +43,9 @@ final class DemoStockSeeder extends Seeder
                 $cost = (float) $product->cost_price;
 
                 foreach ($baseByWarehouse as $warehouseId => $base) {
-                    Stock::withoutGlobalScopes()->updateOrCreate(
+                    // firstOrCreate : ne touche JAMAIS un stock existant
+                    // (un updateOrCreate écraserait les quantités réelles).
+                    Stock::withoutGlobalScopes()->firstOrCreate(
                         ['warehouse_id' => $warehouseId, 'product_id' => $product->id],
                         ['quantity' => $base + ($product->id % 12), 'average_cost' => (string) ($cost > 0 ? $cost : 0)],
                     );
