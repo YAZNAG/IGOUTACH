@@ -1,5 +1,6 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { Eye, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -9,7 +10,6 @@ import { Input } from '@/components/ui/Input'
 import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
 import { usePermission } from '@/hooks/usePermission'
 import type { Supplier, SupplierInput } from '../api/suppliersApi'
-import { SupplierDetail } from '../components/SupplierDetail'
 import { useCreateSupplier, useDeleteSupplier, useSuppliers, useUpdateSupplier } from '../hooks'
 
 function errorMessage(error: unknown, fallback: string): string {
@@ -23,6 +23,7 @@ function errorMessage(error: unknown, fallback: string): string {
 const EMPTY: SupplierInput = { code: '', name: '', payment_terms_days: 0, is_active: true }
 
 export function SuppliersPage() {
+  const navigate = useNavigate()
   const can = usePermission()
   const canCreate = can('supplier.create')
   const canUpdate = can('supplier.update')
@@ -47,7 +48,6 @@ export function SuppliersPage() {
   const [editing, setEditing] = useState<Supplier | null>(null)
   const [form, setForm] = useState<SupplierInput>(EMPTY)
   const [deleting, setDeleting] = useState<Supplier | null>(null)
-  const [detail, setDetail] = useState<Supplier | null>(null)
 
   const suppliers = data?.data ?? []
   const meta = data?.meta
@@ -237,8 +237,9 @@ export function SuppliersPage() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => setDetail(supplier)}>
-                            Détail
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/fournisseurs/${supplier.id}`)}>
+                            <Eye className="h-4 w-4" />
+                            Voir
                           </Button>
                           {canUpdate ? (
                             <Button variant="ghost" size="sm" onClick={() => openEdit(supplier)}>
@@ -288,10 +289,6 @@ export function SuppliersPage() {
             </div>
           ) : null}
         </div>
-      ) : null}
-
-      {detail !== null ? (
-        <SupplierDetail supplierId={detail.id} name={detail.name} onClose={() => setDetail(null)} />
       ) : null}
 
       <ConfirmDialog

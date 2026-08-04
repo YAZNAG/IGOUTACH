@@ -36,6 +36,7 @@ export interface StockEntryFilters {
   date_from?: string
   date_to?: string
   warehouse_id?: number
+  supplier_id?: number
   type?: string
   search?: string
   page?: number

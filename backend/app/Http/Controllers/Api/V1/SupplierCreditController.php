@@ -89,6 +89,37 @@ final class SupplierCreditController extends Controller
     }
 
     /**
+     * Historique de tous les règlements d'un fournisseur.
+     * GET /suppliers/{supplierId}/payments
+     */
+    public function supplierPayments(int $supplierId): JsonResponse
+    {
+        $payments = SupplierPayment::query()
+            ->with(['paymentMethod:id,name', 'createdBy:id,name', 'goodsReceipt:id,number'])
+            ->where('supplier_id', $supplierId)
+            ->orderByDesc('paid_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (SupplierPayment $payment): array => [
+                'id' => $payment->id,
+                'goods_receipt' => $payment->goodsReceipt !== null ? [
+                    'id' => $payment->goodsReceipt->id,
+                    'number' => $payment->goodsReceipt->number,
+                ] : null,
+                'amount' => (float) $payment->amount,
+                'paid_at' => $payment->paid_at->format('Y-m-d'),
+                'payment_method' => $payment->paymentMethod?->name,
+                'notes' => $payment->notes,
+                'created_by' => $payment->createdBy?->name,
+            ]);
+
+        return response()->json(['data' => [
+            'rows' => $payments->all(),
+            'total_paid' => round($payments->sum('amount'), 2),
+        ]]);
+    }
+
+    /**
      * Historique des règlements d'un bon de réception.
      * GET /goods-receipts/{id}/payments
      */

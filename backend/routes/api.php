@@ -233,6 +233,7 @@ Route::prefix('v1')->group(function () {
 
         // Crédits fournisseurs : reste à payer + règlements (total ou partiel)
         Route::get('supplier-credits', [SupplierCreditController::class, 'index'])->middleware('can:receipt.view');
+        Route::get('suppliers/{supplierId}/payments', [SupplierCreditController::class, 'supplierPayments'])->whereNumber('supplierId')->middleware('can:receipt.view');
         Route::get('goods-receipts/{goodsReceipt}/payments', [SupplierCreditController::class, 'payments'])->middleware('can:receipt.view');
         Route::post('goods-receipts/{goodsReceipt}/pay', [SupplierCreditController::class, 'pay'])->middleware('can:receipt.pay');
 

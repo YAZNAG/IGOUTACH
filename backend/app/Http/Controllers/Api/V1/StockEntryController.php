@@ -59,6 +59,13 @@ final class StockEntryController extends Controller
             ->when($request->string('search')->isNotEmpty(), function (Builder $q) use ($request): void {
                 $term = $request->string('search')->value();
                 $q->whereHas('product', fn (Builder $p) => $p->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%"));
+            })
+            // Entrées liées aux réceptions d'un fournisseur donné.
+            ->when($request->integer('supplier_id') > 0, function (Builder $q) use ($request): void {
+                $q->where('reference_type', 'goods_receipt')
+                    ->whereIn('reference_id', GoodsReceipt::query()
+                        ->where('supplier_id', $request->integer('supplier_id'))
+                        ->select('id'));
             });
     }
 

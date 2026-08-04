@@ -46,6 +46,31 @@ export async function fetchSuppliers(filters: SupplierFilters = {}): Promise<Pag
   return data
 }
 
+export async function fetchSupplier(id: number): Promise<Supplier> {
+  const { data } = await api.get<{ data: Supplier }>(`/suppliers/${id}`)
+  return data.data
+}
+
+export interface SupplierPaymentHistoryRow {
+  id: number
+  goods_receipt: { id: number; number: string } | null
+  amount: number
+  paid_at: string
+  payment_method: string | null
+  notes: string | null
+  created_by: string | null
+}
+
+export interface SupplierPaymentHistory {
+  rows: SupplierPaymentHistoryRow[]
+  total_paid: number
+}
+
+export async function fetchSupplierPayments(id: number): Promise<SupplierPaymentHistory> {
+  const { data } = await api.get<{ data: SupplierPaymentHistory }>(`/suppliers/${id}/payments`)
+  return data.data
+}
+
 export async function createSupplier(input: SupplierInput): Promise<Supplier> {
   await ensureCsrfCookie()
   const { data } = await api.post<{ data: Supplier }>('/suppliers', input)
