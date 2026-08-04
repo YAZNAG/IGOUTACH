@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Download, FileText, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, FileText, Lock, LockOpen, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -59,6 +59,7 @@ interface ProductOption {
   id: number
   sku: string
   name: string
+  current_stock?: number
 }
 
 interface DraftLine {
@@ -69,6 +70,10 @@ interface DraftLine {
   unit_price: number
   price_type_code: string | null
   floor_price: number
+  /** Stock disponible sur le lieu choisi. */
+  current_stock: number
+  /** Prix déverrouillé pour saisie manuelle. */
+  manual: boolean
 }
 
 const KEY = ['sales'] as const
@@ -350,9 +355,12 @@ export function CreateSalePanel({
   })
 
   const { data: products = [] } = useQuery<ProductOption[]>({
-    queryKey: ['sale-product-search', productSearch],
+    queryKey: ['sale-product-search', productSearch, warehouseId],
     queryFn: async () => {
-      const { data: r } = await api.get<{ data: ProductOption[] }>('/products', { params: { search: productSearch, per_page: 20 } })
+      const { data: r } = await api.get<{ data: ProductOption[] }>('/products', {
+        // warehouse_id ajoute current_stock (stock du lieu) à chaque article.
+        params: { search: productSearch, warehouse_id: warehouseId || undefined, per_page: 20 },
+      })
       return r.data
     },
     enabled: productSearch.trim().length >= 2,
@@ -376,6 +384,8 @@ export function CreateSalePanel({
         unit_price: r.data.unit_price,
         price_type_code: r.data.price_type_code,
         floor_price: r.data.floor_price,
+        current_stock: p.current_stock ?? 0,
+        manual: false,
       }])
     } catch (error) {
       // L'article est ajouté quand même, le prix se saisit manuellement.
@@ -387,6 +397,8 @@ export function CreateSalePanel({
         unit_price: 0,
         price_type_code: null,
         floor_price: 0,
+        current_stock: p.current_stock ?? 0,
+        manual: true,
       }])
       const status =
         error && typeof error === 'object' && 'response' in error
@@ -400,6 +412,35 @@ export function CreateSalePanel({
       )
     }
     setProductSearch('')
+  }
+
+  /**
+   * Quantité modifiée : le prix se recalcule selon les paliers du client,
+   * sauf si la ligne est en saisie manuelle (prix déverrouillé).
+   */
+  function changeQuantity(index: number, quantity: number) {
+    const line = lines[index]
+    if (!line) return
+    const qty = Math.max(1, quantity)
+    setLines((prev) => prev.map((x, j) => (j === index ? { ...x, quantity: qty } : x)))
+
+    if (line.manual) return
+    void api
+      .get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>('/sales/price', {
+        params: { product_id: line.product_id, quantity: qty, customer_id: customerId || undefined },
+      })
+      .then(({ data: r }) => {
+        setLines((prev) =>
+          prev.map((x) =>
+            x.product_id === line.product_id && !x.manual
+              ? { ...x, unit_price: r.data.unit_price, price_type_code: r.data.price_type_code, floor_price: r.data.floor_price }
+              : x,
+          ),
+        )
+      })
+      .catch(() => {
+        // Palier non recalculé (erreur réseau) : on garde le prix courant.
+      })
   }
 
   const create = useMutation({
@@ -505,42 +546,88 @@ export function CreateSalePanel({
             <p className="rounded border border-line bg-warn-bg px-3 py-2 text-sm text-warn">{priceWarning}</p>
           ) : null}
 
-          {lines.map((l, i) => (
-            <div key={l.product_id} className="flex items-center gap-2">
-              <span className="mono w-24 text-sm text-muted">{l.sku}</span>
-              <span className="flex-1 truncate text-sm text-ink">{l.name}</span>
-              {l.price_type_code ? <Badge tone="sky">{l.price_type_code}</Badge> : null}
-              <Input
-                type="number"
-                min={1}
-                value={l.quantity}
-                onChange={(e) => setLines((p) => p.map((x, j) => (j === i ? { ...x, quantity: Number(e.target.value) } : x)))}
-                className="w-20"
-                aria-label="Quantité"
-              />
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                value={l.unit_price}
-                onChange={(e) => setLines((p) => p.map((x, j) => (j === i ? { ...x, unit_price: Number(e.target.value) } : x)))}
-                className={`w-28 ${l.unit_price < l.floor_price ? 'border-bad' : ''}`}
-                aria-label="Prix unitaire"
-                title={l.unit_price < l.floor_price ? `Sous le plancher (${formatNumber(l.floor_price)} DH)` : undefined}
-              />
-              <span className="tabular w-24 text-right text-sm text-ink">{formatNumber(l.quantity * l.unit_price)}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-bad hover:bg-bad-bg"
-                onClick={() => setLines((p) => p.filter((_, j) => j !== i))}
-                aria-label={`Retirer ${l.name}`}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+          {lines.length > 0 ? (
+            <div className="grid grid-cols-[6rem_1fr_5.5rem_5.5rem_4.5rem_8rem_6rem_2rem_2rem] items-center gap-2 px-1 text-xs font-medium text-muted">
+              <span>Référence</span>
+              <span>Article</span>
+              <span className="text-right">Stock dispo</span>
+              <span className="text-right">Quantité</span>
+              <span>Niveau</span>
+              <span className="text-right">Prix unitaire (DH)</span>
+              <span className="text-right">Total ligne</span>
+              <span />
+              <span />
             </div>
-          ))}
-          {lines.length === 0 ? <p className="text-sm text-muted">Aucun article — le prix se remplit automatiquement selon le client.</p> : null}
+          ) : null}
+
+          {lines.map((l, i) => {
+            const overStock = type === 'invoice' && l.quantity > l.current_stock
+            return (
+              <div
+                key={l.product_id}
+                className="grid grid-cols-[6rem_1fr_5.5rem_5.5rem_4.5rem_8rem_6rem_2rem_2rem] items-center gap-2 rounded border border-line bg-card p-2"
+              >
+                <span className="mono text-sm text-muted">{l.sku}</span>
+                <span className="truncate text-sm text-ink">{l.name}</span>
+                <span className={`tabular text-right text-sm ${overStock ? 'font-medium text-bad' : 'text-muted'}`}>
+                  {formatNumber(l.current_stock)}
+                </span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={l.quantity}
+                  onChange={(e) => changeQuantity(i, Number(e.target.value))}
+                  className={`w-full text-right ${overStock ? 'border-bad' : ''}`}
+                  aria-label="Quantité"
+                  title={overStock ? `Stock insuffisant (${l.current_stock} disponibles)` : undefined}
+                />
+                <span>{l.price_type_code ? <Badge tone="sky">{l.price_type_code}</Badge> : <Badge tone="warn">manuel</Badge>}</span>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={l.unit_price}
+                  disabled={!l.manual}
+                  onChange={(e) => setLines((p) => p.map((x, j) => (j === i ? { ...x, unit_price: Number(e.target.value) } : x)))}
+                  className={`w-full text-right ${l.unit_price < l.floor_price ? 'border-bad' : ''} ${!l.manual ? 'opacity-70' : ''}`}
+                  aria-label="Prix unitaire"
+                  title={
+                    l.unit_price < l.floor_price
+                      ? `Sous le plancher (${formatNumber(l.floor_price)} DH)`
+                      : l.manual
+                        ? 'Prix manuel'
+                        : 'Prix appliqué automatiquement — déverrouillez pour modifier'
+                  }
+                />
+                <span className="tabular text-right text-sm font-medium text-ink">{formatNumber(l.quantity * l.unit_price)}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={l.manual ? 'text-warn' : 'text-muted'}
+                  onClick={() => {
+                    const wasManual = l.manual
+                    setLines((p) => p.map((x, j) => (j === i ? { ...x, manual: !x.manual } : x)))
+                    // Re-verrouillage : on reprend le prix automatique du palier.
+                    if (wasManual) changeQuantity(i, l.quantity)
+                  }}
+                  title={l.manual ? 'Reverrouiller (reprendre le prix automatique)' : 'Modifier le prix manuellement'}
+                  aria-label={l.manual ? 'Reverrouiller le prix' : 'Modifier le prix'}
+                >
+                  {l.manual ? <LockOpen className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-bad hover:bg-bad-bg"
+                  onClick={() => setLines((p) => p.filter((_, j) => j !== i))}
+                  aria-label={`Retirer ${l.name}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )
+          })}
+          {lines.length === 0 ? <p className="text-sm text-muted">Aucun article — le prix s'applique automatiquement selon le client et la quantité (paliers détail / demi-gros / gros).</p> : null}
         </div>
 
         {create.isError ? (

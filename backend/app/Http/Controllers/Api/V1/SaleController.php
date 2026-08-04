@@ -88,13 +88,18 @@ final class SaleController extends Controller
         ]);
 
         try {
-            $resolved = $resolver->resolve($data['product_id'], $data['quantity'], $data['customer_id'] ?? null);
+            // Les paramètres de requête GET arrivent en chaînes : cast explicite.
+            $resolved = $resolver->resolve(
+                (int) $data['product_id'],
+                (int) $data['quantity'],
+                isset($data['customer_id']) ? (int) $data['customer_id'] : null,
+            );
         } catch (NoPriceDefinedException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
         /** @var Product $product */
-        $product = Product::query()->findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail((int) $data['product_id']);
         $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
 
         return response()->json(['data' => [
