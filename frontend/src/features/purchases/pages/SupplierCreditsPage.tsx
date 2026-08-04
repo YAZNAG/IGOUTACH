@@ -10,7 +10,7 @@ import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { useSupplierOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
-import { cn, formatNumber } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import {
   usePaymentMethods,
   usePaySupplierCredit,

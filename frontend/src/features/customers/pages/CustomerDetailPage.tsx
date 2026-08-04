@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { api } from '@/lib/api'
-import { formatNumber } from '@/lib/utils'
 import {
   fetchCustomer,
   fetchCustomerStatement,
