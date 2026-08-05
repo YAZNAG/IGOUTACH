@@ -6,7 +6,9 @@ import {
   createInventory,
   fetchInventories,
   fetchInventory,
+  removeInventoryLine,
   saveInventoryLines,
+  updateInventory,
   type Inventory,
 } from './api/inventoryApi'
 
@@ -40,6 +42,23 @@ export function useSaveInventoryLines() {
   return useMutation({
     mutationFn: ({ id, lines }: { id: number; lines: { product_id: number; counted_quantity: number; reason?: string | null }[] }) =>
       saveInventoryLines(id, lines),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useUpdateInventory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: number; input: { counted_at?: string; note?: string | null } }) =>
+      updateInventory(id, input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useRemoveInventoryLine() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, productId }: { id: number; productId: number }) => removeInventoryLine(id, productId),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

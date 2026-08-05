@@ -289,7 +289,9 @@ Route::prefix('v1')->group(function () {
         Route::post('inventories', [InventoryController::class, 'store'])->middleware('can:inventory.create');
         Route::get('inventories/{inventory}', [InventoryController::class, 'show'])->middleware('can:inventory.create');
         Route::get('inventories/{inventory}/sheet', [InventoryController::class, 'sheet'])->middleware('can:inventory.create');
+        Route::put('inventories/{inventory}', [InventoryController::class, 'update'])->middleware('can:inventory.create');
         Route::put('inventories/{inventory}/lines', [InventoryController::class, 'saveLines'])->middleware('can:inventory.create');
+        Route::delete('inventories/{inventory}/lines/{productId}', [InventoryController::class, 'removeLine'])->whereNumber('productId')->middleware('can:inventory.create');
         Route::post('inventories/{inventory}/approve', [InventoryController::class, 'approve'])->middleware('can:inventory.approve');
         Route::post('inventories/{inventory}/cancel', [InventoryController::class, 'cancel'])->middleware('can:inventory.create');
 

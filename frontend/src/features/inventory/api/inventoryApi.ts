@@ -51,6 +51,23 @@ export async function saveInventoryLines(
   return data.data
 }
 
+/** Reprise un autre jour : met à jour la date de comptage / la note. */
+export async function updateInventory(
+  id: number,
+  input: { counted_at?: string; note?: string | null },
+): Promise<Inventory> {
+  await ensureCsrfCookie()
+  const { data } = await api.put<{ data: Inventory }>(`/inventories/${id}`, input)
+  return data.data
+}
+
+/** Retire un comptage saisi par erreur (l'article redevient non compté). */
+export async function removeInventoryLine(id: number, productId: number): Promise<Inventory> {
+  await ensureCsrfCookie()
+  const { data } = await api.delete<{ data: Inventory }>(`/inventories/${id}/lines/${productId}`)
+  return data.data
+}
+
 export async function approveInventory(id: number): Promise<Inventory> {
   await ensureCsrfCookie()
   const { data } = await api.post<{ data: Inventory }>(`/inventories/${id}/approve`)

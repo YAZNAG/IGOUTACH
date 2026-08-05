@@ -13,7 +13,16 @@ import { api } from '@/lib/api'
 import { downloadFile } from '@/lib/download'
 import { usePermission } from '@/hooks/usePermission'
 import { cn, formatNumber } from '@/lib/utils'
-import { useApproveInventory, useCancelInventory, useCreateInventory, useInventories, useInventory, useSaveInventoryLines } from '../hooks'
+import {
+  useApproveInventory,
+  useCancelInventory,
+  useCreateInventory,
+  useInventories,
+  useInventory,
+  useRemoveInventoryLine,
+  useSaveInventoryLines,
+  useUpdateInventory,
+} from '../hooks'
 
 function errorMessage(error: unknown, fallback: string): string {
   if (error && typeof error === 'object' && 'response' in error) {
@@ -179,6 +188,8 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
   const saveMutation = useSaveInventoryLines()
   const approveMutation = useApproveInventory()
   const cancelMutation = useCancelInventory()
+  const updateMutation = useUpdateInventory()
+  const removeLineMutation = useRemoveInventoryLine()
 
   const isApproved = inventory?.status === 'approved'
   const isCancelled = inventory?.status === 'cancelled'
@@ -200,6 +211,10 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
   const [reasons, setReasons] = useState<Record<number, string>>({})
   const [confirmApprove, setConfirmApprove] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
+  // Reprise du comptage : recherche + filtre sur ce qui reste à compter.
+  const [search, setSearch] = useState('')
+  const [onlyRemaining, setOnlyRemaining] = useState(false)
+  const [editDate, setEditDate] = useState('')
 
   // Pré-remplit uniquement depuis un comptage déjà enregistré — jamais depuis
   // le théorique : le compteur doit saisir son chiffre sans le recopier.
@@ -219,8 +234,19 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
     }
   }, [inventory])
 
-  const rows = useMemo(() => stock ?? [], [stock])
-  const countedRows = rows.filter((r) => counts[r.product_id] !== undefined)
+  const allRows = useMemo(() => stock ?? [], [stock])
+  const countedRows = allRows.filter((r) => counts[r.product_id] !== undefined)
+  // Lignes déjà enregistrées côté serveur (comptage des jours précédents).
+  const savedCount = inventory?.lines?.length ?? inventory?.lines_count ?? 0
+
+  const rows = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    return allRows.filter((r) => {
+      if (onlyRemaining && counts[r.product_id] !== undefined) return false
+      if (term === '') return true
+      return r.sku.toLowerCase().includes(term) || r.name.toLowerCase().includes(term)
+    })
+  }, [allRows, search, onlyRemaining, counts])
   const missingReasons = countedRows.filter(
     (r) => (counts[r.product_id] ?? 0) !== r.quantity && (reasons[r.product_id] ?? '').trim() === '',
   ).length
@@ -285,8 +311,84 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
 
       {saveMutation.isSuccess && !saveMutation.isPending ? (
         <p className="rounded border border-line bg-ok-bg px-3 py-2 text-sm text-ok">
-          Comptage enregistré ({inventory?.lines_count ?? 0} article{(inventory?.lines_count ?? 0) > 1 ? 's' : ''}). Vous pouvez maintenant valider pour régulariser le stock.
+          Comptage enregistré ({savedCount} article{savedCount > 1 ? 's' : ''}). Vous pouvez continuer plus tard
+          ou valider dès maintenant pour régulariser le stock.
         </p>
+      ) : null}
+
+      {/* Comptage en plusieurs fois : progression + reprise à une autre date. */}
+      {isDraft ? (
+        <Card>
+          <CardBody className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-sm text-ink">
+                  <strong>{countedRows.length}</strong> article{countedRows.length > 1 ? 's' : ''} compté
+                  {countedRows.length > 1 ? 's' : ''} sur {allRows.length} —{' '}
+                  <span className="text-muted">
+                    {allRows.length - countedRows.length} restant{allRows.length - countedRows.length > 1 ? 's' : ''}
+                  </span>
+                </p>
+                <p className="text-xs text-muted">
+                  Vous n'êtes pas obligé de tout compter : les articles laissés vides ne seront pas régularisés
+                  et garderont leur stock actuel.
+                </p>
+              </div>
+              <div className="h-2 w-40 overflow-hidden rounded-full bg-bg">
+                <div
+                  className="h-full rounded-full bg-ok"
+                  style={{ width: `${allRows.length ? (countedRows.length / allRows.length) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-end gap-3">
+              <Field label="Rechercher un article" htmlFor="inv-search">
+                <Input
+                  id="inv-search"
+                  placeholder="Référence ou nom…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-64"
+                />
+              </Field>
+              <label className="flex h-10 items-center gap-2 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-sky"
+                  checked={onlyRemaining}
+                  onChange={(e) => setOnlyRemaining(e.target.checked)}
+                />
+                Restant à compter uniquement
+              </label>
+              <Field label="Date du comptage" htmlFor="inv-date">
+                <div className="flex gap-2">
+                  <Input
+                    id="inv-date"
+                    type="date"
+                    value={editDate || (inventory?.counted_at ?? '')}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-40"
+                  />
+                  {editDate && editDate !== inventory?.counted_at ? (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        updateMutation.mutate(
+                          { id, input: { counted_at: editDate } },
+                          { onSuccess: () => setEditDate('') },
+                        )
+                      }
+                      disabled={updateMutation.isPending}
+                    >
+                      {updateMutation.isPending ? '…' : 'Changer'}
+                    </Button>
+                  ) : null}
+                </div>
+              </Field>
+            </div>
+          </CardBody>
+        </Card>
       ) : null}
 
       {saveMutation.isError ? (
@@ -323,6 +425,7 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                 <th className="px-5 py-3 text-right font-medium">Écart</th>
                 <th className="px-5 py-3 font-medium">{isDraft ? 'Motif (si écart)' : 'Motif'}</th>
                 {!isDraft ? <th className="px-5 py-3 text-right font-medium">Valorisation</th> : null}
+                {isDraft ? <th className="px-5 py-3 text-right font-medium">État</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -343,7 +446,15 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                   </tr>
                 ))
               ) : rows.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-muted">Aucun article en stock dans ce lieu.</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-5 py-8 text-center text-muted">
+                    {allRows.length === 0
+                      ? 'Aucun article en stock dans ce lieu.'
+                      : onlyRemaining
+                        ? 'Tous les articles affichés ont été comptés. ✓'
+                        : 'Aucun article ne correspond à la recherche.'}
+                  </td>
+                </tr>
               ) : (
                 rows.map((r) => {
                   const entered = counts[r.product_id] !== undefined
@@ -391,6 +502,36 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                           <span className="text-muted">—</span>
                         )}
                       </td>
+                      <td className="px-5 py-3 text-right">
+                        {entered ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted"
+                            title="Retirer ce comptage (l'article ne sera pas régularisé)"
+                            onClick={() => {
+                              setCounts((prev) => {
+                                const next = { ...prev }
+                                delete next[r.product_id]
+                                return next
+                              })
+                              setReasons((prev) => {
+                                const next = { ...prev }
+                                delete next[r.product_id]
+                                return next
+                              })
+                              // Supprime aussi côté serveur si déjà enregistré.
+                              if (inventory?.lines?.some((l) => l.product_id === r.product_id)) {
+                                removeLineMutation.mutate({ id, productId: r.product_id })
+                              }
+                            }}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-faint">à compter</span>
+                        )}
+                      </td>
                     </tr>
                   )
                 })
@@ -405,8 +546,20 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
         title="Valider l'inventaire"
         message={
           <>
-            Valider l'inventaire <strong>{inventory?.reference}</strong> ? Le stock du lieu sera
-            <strong> régularisé automatiquement</strong> selon les écarts. Cette action est définitive.
+            Valider l'inventaire <strong>{inventory?.reference}</strong> ?
+            <br />
+            <br />
+            <strong>{savedCount}</strong> article{savedCount > 1 ? 's' : ''} compté{savedCount > 1 ? 's' : ''}
+            {' '}ser{savedCount > 1 ? 'ont' : 'a'} régularisé{savedCount > 1 ? 's' : ''} selon les écarts.
+            {allRows.length > savedCount ? (
+              <>
+                {' '}Les <strong>{allRows.length - savedCount}</strong> autres articles du lieu, non comptés,
+                <strong> ne seront pas modifiés</strong> et garderont leur stock actuel.
+              </>
+            ) : null}
+            <br />
+            <br />
+            Cette action est définitive.
           </>
         }
         confirmLabel="Valider et régulariser"

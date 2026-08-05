@@ -109,18 +109,56 @@ final class InventoryController extends Controller
             }
         }
 
-        $inventory->lines()->delete();
-
+        // Enregistrement incrémental : on met à jour les articles envoyés et on
+        // conserve les comptages déjà saisis (comptage étalé sur plusieurs jours).
         foreach ($data['lines'] as $line) {
             $system = $reader->quantityFor($inventory->warehouse_id, $line['product_id']);
-            $inventory->lines()->create([
-                'product_id' => $line['product_id'],
-                'counted_quantity' => $line['counted_quantity'],
-                'system_quantity' => $system,
-                'difference' => $line['counted_quantity'] - $system,
-                'reason' => $line['reason'] ?? null,
-            ]);
+            $inventory->lines()->updateOrCreate(
+                ['product_id' => $line['product_id']],
+                [
+                    'counted_quantity' => $line['counted_quantity'],
+                    'system_quantity' => $system,
+                    'difference' => $line['counted_quantity'] - $system,
+                    'reason' => $line['reason'] ?? null,
+                ],
+            );
         }
+
+        return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name,cost_price']));
+    }
+
+    /**
+     * Met à jour l'en-tête d'un brouillon : date de comptage (reprise un autre
+     * jour) et note. Le lieu reste figé, les comptages y sont rattachés.
+     */
+    public function update(Request $request, Inventory $inventory): JsonResponse|InventoryResource
+    {
+        if ($inventory->status !== Inventory::STATUS_DRAFT) {
+            return response()->json(['message' => 'Seul un inventaire en brouillon est modifiable.'], 422);
+        }
+
+        /** @var array{counted_at?: string, note?: string|null} $data */
+        $data = $request->validate([
+            'counted_at' => ['sometimes', 'date'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $inventory->update($data);
+
+        return InventoryResource::make($inventory->refresh()->load(['warehouse', 'lines.product:id,sku,name,cost_price']));
+    }
+
+    /**
+     * Retire un comptage saisi par erreur : l'article redevient « non compté »
+     * et ne sera donc pas régularisé à la validation.
+     */
+    public function removeLine(Inventory $inventory, int $productId): JsonResponse|InventoryResource
+    {
+        if ($inventory->status !== Inventory::STATUS_DRAFT) {
+            return response()->json(['message' => 'Seul un inventaire en brouillon est modifiable.'], 422);
+        }
+
+        $inventory->lines()->where('product_id', $productId)->delete();
 
         return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name,cost_price']));
     }
