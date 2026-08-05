@@ -11,6 +11,7 @@ import '../../core/widgets.dart';
 import '../../models/customer.dart';
 import '../../models/product.dart';
 import '../../models/warehouse.dart';
+import '../shared/product_picker.dart';
 import 'sales_screen.dart' show downloadSalePdf;
 
 /// Ligne de vente en cours de saisie.
@@ -52,24 +53,12 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
 
   final List<_LineDraft> _lines = [];
 
-  final _productSearchController = TextEditingController();
-  Timer? _productDebounce;
-  List<Product> _productResults = [];
-  bool _searchingProducts = false;
-
   bool _creating = false;
 
   @override
   void initState() {
     super.initState();
     _loadWarehouses();
-  }
-
-  @override
-  void dispose() {
-    _productDebounce?.cancel();
-    _productSearchController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadWarehouses() async {
@@ -112,55 +101,9 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
     }
   }
 
-  // ── Recherche d'articles ────────────────────────────────────────────────
-
-  void _onProductSearchChanged(String value) {
-    _productDebounce?.cancel();
-    final query = value.trim();
-    if (query.isEmpty) {
-      setState(() => _productResults = []);
-      return;
-    }
-    _productDebounce = Timer(const Duration(milliseconds: 300), () {
-      _searchProducts(query);
-    });
-  }
-
-  Future<void> _searchProducts(String query) async {
-    setState(() => _searchingProducts = true);
-    try {
-      final res = await _api.dio.get<Map<String, dynamic>>(
-        '/products',
-        queryParameters: {
-          'search': query,
-          'per_page': 20,
-          if (_warehouseId != null) 'warehouse_id': _warehouseId,
-        },
-      );
-      final data = res.data!['data'] as List<dynamic>? ?? [];
-      if (!mounted) return;
-      setState(() {
-        _productResults = data
-            .map((e) => Product.fromJson(e as Map<String, dynamic>))
-            .toList();
-        _searchingProducts = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _searchingProducts = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(friendlyError(e)),
-          backgroundColor: AppTheme.danger,
-        ),
-      );
-    }
-  }
+  // ── Ajout d'articles (recherche mutualisée : ProductPickerField) ────────
 
   void _addProduct(Product product) {
-    _productSearchController.clear();
-    setState(() => _productResults = []);
-
     final existing =
         _lines.where((l) => l.product.id == product.id).firstOrNull;
     if (existing != null) {
@@ -508,56 +451,12 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            TextField(
-              controller: _productSearchController,
-              onChanged: _onProductSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Ajouter un article (nom, référence)…',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchingProducts
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : null,
-              ),
-            ),
-            if (_productResults.isNotEmpty)
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 240),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _productResults.length,
-                  itemBuilder: (context, index) {
-                    final product = _productResults[index];
-                    return ListTile(
-                      dense: true,
-                      title: Text(product.name),
-                      subtitle: Text(
-                        product.sku,
-                        style: const TextStyle(fontFamily: 'monospace'),
-                      ),
-                      trailing: product.currentStock == null
-                          ? null
-                          : StatusBadge(
-                              label:
-                                  'Stock : ${formatQuantity(product.currentStock)}',
-                              color: (product.currentStock ?? 0) > 0
-                                  ? AppTheme.success
-                                  : AppTheme.danger,
-                            ),
-                      onTap: () => _addProduct(product),
-                    );
-                  },
-                ),
-              ),
-          ],
+        child: ProductPickerField(
+          // La clé force la reconstruction du champ quand le lieu change,
+          // afin que les stocks affichés portent bien sur le lieu choisi.
+          key: ValueKey('product-picker-$_warehouseId'),
+          warehouseId: _warehouseId,
+          onSelected: _addProduct,
         ),
       ),
     );

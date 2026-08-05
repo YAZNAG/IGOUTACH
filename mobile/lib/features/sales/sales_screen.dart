@@ -12,6 +12,7 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/sale.dart';
+import '../shared/payment_sheet.dart';
 import 'create_sale_screen.dart';
 
 /// Télécharge la facture PDF d'une vente puis l'ouvre.
@@ -61,6 +62,7 @@ class _SalesScreenState extends State<SalesScreen> {
   bool _firstLoadDone = false;
   String? _error;
   int? _downloadingId;
+  int? _payingId;
 
   bool get _hasMore => _page < _lastPage;
 
@@ -138,6 +140,62 @@ class _SalesScreenState extends State<SalesScreen> {
     if (mounted) setState(() => _downloadingId = null);
   }
 
+  /// Ouvre la feuille de règlement pour une vente.
+  ///
+  /// La liste `/sales` ne porte pas l'identifiant du client (seulement son
+  /// nom) : on charge le détail `/sales/{id}` pour obtenir `customer.id`
+  /// ainsi que le reste dû à jour.
+  Future<void> _openPayment(SaleSummary sale) async {
+    setState(() => _payingId = sale.id);
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final res =
+          await _api.dio.get<Map<String, dynamic>>('/sales/${sale.id}');
+      final data = res.data!['data'] as Map<String, dynamic>;
+      final customer = data['customer'] as Map<String, dynamic>?;
+      if (!mounted) return;
+      setState(() => _payingId = null);
+
+      if (customer == null) {
+        messenger.showSnackBar(const SnackBar(
+          content: Text('Vente au comptoir : aucun client à encaisser.'),
+          backgroundColor: AppTheme.danger,
+        ));
+        return;
+      }
+
+      final total = (data['total'] as num?)?.toDouble() ?? sale.total;
+      final paid = (data['paid_amount'] as num?)?.toDouble() ?? sale.paidAmount;
+      final due = (total - paid) <= 0 ? null : total - paid;
+
+      final saved = await showPaymentSheet(
+        context,
+        customerId: customer['id'] as int,
+        customerName: customer['name'] as String? ?? sale.customer ?? '',
+        saleId: sale.id,
+        saleReference: sale.reference,
+        dueAmount: due,
+      );
+
+      if (!mounted) return;
+      if (saved) {
+        messenger.showSnackBar(const SnackBar(
+          content: Text('Règlement enregistré.'),
+          backgroundColor: AppTheme.success,
+        ));
+        _load(reset: true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _payingId = null);
+      messenger.showSnackBar(SnackBar(
+        content: Text(friendlyError(e)),
+        backgroundColor: AppTheme.danger,
+      ));
+    }
+  }
+
   Future<void> _openCreate() async {
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const CreateSaleScreen()),
@@ -149,7 +207,8 @@ class _SalesScreenState extends State<SalesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!context.watch<AuthProvider>().can('sale.create')) {
+    final auth = context.watch<AuthProvider>();
+    if (!auth.can('sale.create')) {
       return const NotAllowedView();
     }
 
@@ -165,6 +224,7 @@ class _SalesScreenState extends State<SalesScreen> {
   }
 
   Widget _buildBody() {
+    final canRecordPayment = context.read<AuthProvider>().can('payment.create');
     if (!_firstLoadDone) return const LoadingView();
     if (_error != null && _sales.isEmpty) {
       return ErrorView(message: _error!, onRetry: () => _load(reset: true));
@@ -195,6 +255,10 @@ class _SalesScreenState extends State<SalesScreen> {
             sale: sale,
             downloading: _downloadingId == sale.id,
             onDownload: () => _download(sale),
+            paying: _payingId == sale.id,
+            onPay: canRecordPayment && sale.isSettleable
+                ? () => _openPayment(sale)
+                : null,
           );
         },
       ),
@@ -207,11 +271,18 @@ class _SaleTile extends StatelessWidget {
     required this.sale,
     required this.downloading,
     required this.onDownload,
+    required this.paying,
+    this.onPay,
   });
 
   final SaleSummary sale;
   final bool downloading;
   final VoidCallback onDownload;
+  final bool paying;
+
+  /// `null` quand le règlement n'est pas possible (permission, vente au
+  /// comptoir, vente non confirmée ou déjà soldée).
+  final VoidCallback? onPay;
 
   (String, Color) get _statusBadge => switch (sale.status) {
         'confirmed' => ('Confirmé', AppTheme.success),
@@ -273,6 +344,43 @@ class _SaleTile extends StatelessWidget {
                         StatusBadge(label: payment.$1, color: payment.$2),
                     ],
                   ),
+                  if (onPay != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: paying ? null : onPay,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.success,
+                            side: const BorderSide(color: AppTheme.success),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          icon: paying
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.payments_outlined, size: 18),
+                          label: const Text('Régler'),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'Reste ${formatMoney(sale.dueAmount)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

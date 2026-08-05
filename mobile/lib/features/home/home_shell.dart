@@ -6,8 +6,14 @@ import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../credits/credits_screen.dart';
 import '../customers/customers_screen.dart';
+import '../expenses/expenses_screen.dart';
+import '../inventory/inventories_screen.dart';
 import '../pricing/pricing_screen.dart';
 import '../sales/sales_screen.dart';
+import '../shared/warehouse_scope.dart';
+import '../stock/customer_return_screen.dart';
+import '../stock/stock_entries_screen.dart';
+import '../stock/stock_exits_screen.dart';
 import '../stock/stock_screen.dart';
 
 /// Description d'un module de l'accueil.
@@ -27,48 +33,130 @@ class _Module {
   final WidgetBuilder builder;
 }
 
-/// Accueil : grille de modules filtrée par les permissions de l'utilisateur.
+/// Groupe de modules affiché sous un petit titre.
+class _Section {
+  const _Section({required this.title, required this.modules});
+
+  final String title;
+  final List<_Module> modules;
+}
+
+/// Accueil : modules groupés par section et filtrés par les permissions.
 /// Chaque utilisateur voit une application différente selon son profil.
-class HomeShell extends StatelessWidget {
+class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
-  static final List<_Module> _modules = [
-    _Module(
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  /// Libellé du lieu de l'utilisateur, `null` si aucun lieu ou si
+  /// `GET /warehouses` est refusé (permission `warehouse.view`).
+  String? _warehouseLabel;
+
+  static final List<_Section> _sections = [
+    _Section(
       title: 'Mon stock',
-      icon: Icons.inventory,
-      color: AppTheme.navy,
-      permission: 'stock.view',
-      builder: (_) => const StockScreen(),
+      modules: [
+        _Module(
+          title: 'Mon stock',
+          icon: Icons.inventory,
+          color: AppTheme.navy,
+          permission: 'stock.view',
+          builder: (_) => const StockScreen(),
+        ),
+        _Module(
+          title: 'Entrées',
+          icon: Icons.move_to_inbox,
+          color: AppTheme.success,
+          permission: 'stock.view',
+          builder: (_) => const StockEntriesScreen(),
+        ),
+        _Module(
+          title: 'Sorties',
+          icon: Icons.outbox,
+          color: AppTheme.danger,
+          permission: 'stock.view',
+          builder: (_) => const StockExitsScreen(),
+        ),
+        _Module(
+          title: 'Inventaire',
+          icon: Icons.fact_check,
+          color: const Color(0xFF7C3AED),
+          permission: 'inventory.create',
+          builder: (_) => const InventoriesScreen(),
+        ),
+        _Module(
+          title: 'Retour client',
+          icon: Icons.assignment_return,
+          color: const Color(0xFF0891B2),
+          permission: 'stock.entry',
+          builder: (_) => const CustomerReturnScreen(),
+        ),
+      ],
     ),
-    _Module(
-      title: 'Clients',
-      icon: Icons.people,
-      color: AppTheme.sky,
-      permission: 'customer.view',
-      builder: (_) => const CustomersScreen(),
+    _Section(
+      title: 'Commerce',
+      modules: [
+        _Module(
+          title: 'Clients',
+          icon: Icons.people,
+          color: AppTheme.sky,
+          permission: 'customer.view',
+          builder: (_) => const CustomersScreen(),
+        ),
+        _Module(
+          title: 'Ventes',
+          icon: Icons.point_of_sale,
+          color: AppTheme.success,
+          permission: 'sale.create',
+          builder: (_) => const SalesScreen(),
+        ),
+        _Module(
+          title: 'Crédits clients',
+          icon: Icons.credit_card,
+          color: const Color(0xFF9333EA),
+          permission: 'payment.view',
+          builder: (_) => const CreditsScreen(),
+        ),
+      ],
     ),
-    _Module(
-      title: 'Ventes',
-      icon: Icons.point_of_sale,
-      color: AppTheme.success,
-      permission: 'sale.create',
-      builder: (_) => const SalesScreen(),
-    ),
-    _Module(
-      title: 'Crédits clients',
-      icon: Icons.credit_card,
-      color: const Color(0xFF9333EA),
-      permission: 'payment.view',
-      builder: (_) => const CreditsScreen(),
-    ),
-    _Module(
-      title: 'Tarifs',
-      icon: Icons.sell,
-      color: const Color(0xFF0D9488),
-      permission: 'price.view',
-      builder: (_) => const PricingScreen(),
+    _Section(
+      title: 'Gestion',
+      modules: [
+        _Module(
+          title: 'Charges',
+          icon: Icons.receipt_long,
+          color: const Color(0xFFEA580C),
+          permission: 'expense.create',
+          builder: (_) => const ExpensesScreen(),
+        ),
+        _Module(
+          title: 'Tarifs',
+          icon: Icons.sell,
+          color: const Color(0xFF0D9488),
+          permission: 'price.view',
+          builder: (_) => const PricingScreen(),
+        ),
+      ],
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWarehouseLabel();
+  }
+
+  Future<void> _loadWarehouseLabel() async {
+    final userWarehouseId = context.read<AuthProvider>().user?.warehouseId;
+    if (userWarehouseId == null) return;
+    final scope = await WarehouseScope.load(userWarehouseId);
+    if (!mounted) return;
+    // 403 sur /warehouses : on n'affiche simplement rien de plus.
+    setState(() => _warehouseLabel = scope.selectedLabel);
+  }
 
   Future<void> _confirmLogout(BuildContext context) async {
     final auth = context.read<AuthProvider>();
@@ -102,8 +190,23 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
-    final allowed =
-        _modules.where((m) => auth.can(m.permission)).toList(growable: false);
+
+    final sections = _sections
+        .map(
+          (section) => _Section(
+            title: section.title,
+            modules: section.modules
+                .where((m) => auth.can(m.permission))
+                .toList(growable: false),
+          ),
+        )
+        .where((section) => section.modules.isNotEmpty)
+        .toList(growable: false);
+
+    final subtitle = [
+      user?.name ?? '',
+      ?_warehouseLabel,
+    ].where((s) => s.isNotEmpty).join(' · ');
 
     return Scaffold(
       appBar: AppBar(
@@ -115,7 +218,9 @@ class HomeShell extends StatelessWidget {
               style: TextStyle(fontSize: 16, letterSpacing: 1.5),
             ),
             Text(
-              user?.name ?? '',
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 13, color: Colors.white70),
             ),
           ],
@@ -128,25 +233,43 @@ class HomeShell extends StatelessWidget {
           ),
         ],
       ),
-      body: allowed.isEmpty
+      body: sections.isEmpty
           ? const EmptyView(
               icon: Icons.lock_outline,
-              message:
-                  'Aucun module autorisé, contactez l\'administrateur.',
+              message: 'Aucun module autorisé, contactez l\'administrateur.',
             )
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.15,
-              ),
-              itemCount: allowed.length,
-              itemBuilder: (context, index) {
-                final module = allowed[index];
-                return _ModuleCard(module: module);
-              },
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                for (final section in sections) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 10),
+                    child: Text(
+                      section.title.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                        color: AppTheme.navy.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.15,
+                    ),
+                    itemCount: section.modules.length,
+                    itemBuilder: (context, index) =>
+                        _ModuleCard(module: section.modules[index]),
+                  ),
+                ],
+              ],
             ),
     );
   }
@@ -183,6 +306,8 @@ class _ModuleCard extends StatelessWidget {
               ),
               Text(
                 module.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,

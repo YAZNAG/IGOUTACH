@@ -437,4 +437,70 @@ final class StockController extends Controller
 
         return response()->json(['message' => 'Retour enregistré.'], 201);
     }
+
+    /**
+     * Retour client multi-articles : toutes les lignes dans UNE transaction.
+     * Si une ligne échoue, aucune n'est enregistrée (pas de retour à moitié saisi).
+     * POST /stock/return-multi
+     */
+    public function returnMulti(Request $request, StockWriterInterface $writer): JsonResponse
+    {
+        /** @var array{warehouse_id: int, occurred_at?: string|null, note?: string|null, lines: list<array{product_id: int, quantity: int, condition: string}>} $data */
+        $data = $request->validate([
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'occurred_at' => ['nullable', 'date'],
+            'note' => ['nullable', 'string', 'max:191'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+            'lines.*.condition' => ['required', 'in:resellable,defective'],
+        ]);
+
+        $occurredAt = isset($data['occurred_at']) && $data['occurred_at'] !== null
+            ? (new \DateTimeImmutable($data['occurred_at']))->format('Y-m-d H:i:s')
+            : null;
+
+        try {
+            DB::transaction(function () use ($data, $writer, $request, $occurredAt): void {
+                foreach ($data['lines'] as $line) {
+                    $note = ($line['condition'] === 'resellable' ? 'Retour client revendable' : 'Retour client défectueux')
+                        .(isset($data['note']) && $data['note'] !== '' ? ' — '.$data['note'] : '');
+
+                    $writer->increase(new StockMovementData(
+                        warehouseId: $data['warehouse_id'],
+                        productId: $line['product_id'],
+                        quantity: $line['quantity'],
+                        movementTypeCode: 'return_in',
+                        referenceType: 'customer_return',
+                        referenceId: null,
+                        userId: $request->user()?->id,
+                        note: $note,
+                        occurredAt: $occurredAt,
+                    ));
+
+                    if ($line['condition'] === 'defective') {
+                        // L'article défectueux ne reste pas en stock vendable : sortie SAV.
+                        $writer->decrease(new StockMovementData(
+                            warehouseId: $data['warehouse_id'],
+                            productId: $line['product_id'],
+                            quantity: $line['quantity'],
+                            movementTypeCode: 'out',
+                            referenceType: 'customer_return_defective',
+                            referenceId: null,
+                            userId: $request->user()?->id,
+                            note: 'Sortie SAV — '.$note,
+                            occurredAt: $occurredAt,
+                        ));
+                    }
+                }
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => count($data['lines']).' ligne(s) de retour enregistrée(s).',
+            'lines_count' => count($data['lines']),
+        ], 201);
+    }
 }

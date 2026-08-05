@@ -30,6 +30,20 @@ class SaleSummary {
   final int linesCount;
   final String? createdAt;
 
+  /// Reste dû sur la vente (jamais négatif).
+  double get dueAmount {
+    final due = total - paidAmount;
+    return due < 0 ? 0 : due;
+  }
+
+  /// Une vente est encaissable si elle est confirmée, rattachée à un client
+  /// (pas une vente de passage) et pas encore entièrement payée.
+  bool get isSettleable =>
+      status == 'confirmed' &&
+      (customer ?? '').isNotEmpty &&
+      paymentStatus != 'paid' &&
+      dueAmount > 0;
+
   factory SaleSummary.fromJson(Map<String, dynamic> json) => SaleSummary(
         id: json['id'] as int,
         reference: json['reference'] as String? ?? '',

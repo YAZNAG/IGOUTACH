@@ -9,6 +9,8 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/customer.dart';
+import '../shared/warehouse_scope.dart' show InfoBanner;
+import 'create_customer_screen.dart';
 import 'customer_detail_screen.dart';
 
 /// Liste des clients (GET /customers) : recherche + pagination infinie.
@@ -113,16 +115,45 @@ class _CustomersScreenState extends State<CustomersScreen> {
     }
   }
 
+  Future<void> _openCreate() async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const CreateCustomerScreen()),
+    );
+    if (created == true) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Client créé.'),
+          backgroundColor: AppTheme.success,
+        ));
+      }
+      _load(reset: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!context.watch<AuthProvider>().can('customer.view')) {
+    final auth = context.watch<AuthProvider>();
+    if (!auth.can('customer.view')) {
       return const NotAllowedView();
     }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Clients')),
+      floatingActionButton: auth.can('customer.create')
+          ? FloatingActionButton(
+              onPressed: _openCreate,
+              tooltip: 'Nouveau client',
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Column(
         children: [
+          // Le serveur restreint déjà la liste au créateur : on l'explique.
+          if (!auth.can('customer.view_all'))
+            const InfoBanner(
+              message:
+                  'Vous voyez uniquement les clients que vous avez créés.',
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
             child: TextField(
@@ -166,7 +197,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       child: ListView.builder(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 24, top: 4),
+        padding: const EdgeInsets.only(bottom: 88, top: 4),
         itemCount: _customers.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _customers.length) {

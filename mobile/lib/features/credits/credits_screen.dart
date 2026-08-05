@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/aging_row.dart';
+import 'customer_credit_screen.dart';
 
 /// Crédits clients : balance âgée (GET /customers-aging).
 class CreditsScreen extends StatefulWidget {
@@ -59,6 +60,19 @@ class _CreditsScreenState extends State<CreditsScreen> {
   double get _totalDue =>
       (_rows ?? []).fold(0, (sum, r) => sum + r.totalDue);
 
+  Future<void> _openCustomer(AgingRow row) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => CustomerCreditScreen(
+          customerId: row.customerId!,
+          customerName: row.customer ?? 'Client',
+        ),
+      ),
+    );
+    // Un encaissement a été saisi : la balance âgée n'est plus à jour.
+    if (changed == true) _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!context.watch<AuthProvider>().can('payment.view')) {
@@ -87,7 +101,14 @@ class _CreditsScreenState extends State<CreditsScreen> {
                           ),
                         )
                       else
-                        ...(_rows ?? []).map((row) => _AgingCard(row: row)),
+                        ...(_rows ?? []).map(
+                          (row) => _AgingCard(
+                            row: row,
+                            onTap: row.customerId == null
+                                ? null
+                                : () => _openCustomer(row),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -128,57 +149,64 @@ class _CreditsScreenState extends State<CreditsScreen> {
 }
 
 class _AgingCard extends StatelessWidget {
-  const _AgingCard({required this.row});
+  const _AgingCard({required this.row, this.onTap});
 
   final AgingRow row;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    row.customer ?? 'Client inconnu',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      row.customer ?? 'Client inconnu',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    formatMoney(row.totalDue),
                     style: const TextStyle(
-                      fontWeight: FontWeight.w600,
+                      color: AppTheme.danger,
+                      fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
                   ),
-                ),
-                Text(
-                  formatMoney(row.totalDue),
-                  style: const TextStyle(
-                    color: AppTheme.danger,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _Bucket(label: '0-30 j', amount: row.bucket0to30,
-                    color: AppTheme.success),
-                _Bucket(label: '31-60 j', amount: row.bucket31to60,
-                    color: AppTheme.warning),
-                _Bucket(label: '61-90 j', amount: row.bucket61to90,
-                    color: const Color(0xFFEA580C)),
-                _Bucket(label: '+90 j', amount: row.bucketOver90,
-                    color: AppTheme.danger),
-              ],
-            ),
-          ],
+                  if (onTap != null)
+                    const Icon(Icons.chevron_right, color: Colors.grey),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  _Bucket(label: '0-30 j', amount: row.bucket0to30,
+                      color: AppTheme.success),
+                  _Bucket(label: '31-60 j', amount: row.bucket31to60,
+                      color: AppTheme.warning),
+                  _Bucket(label: '61-90 j', amount: row.bucket61to90,
+                      color: const Color(0xFFEA580C)),
+                  _Bucket(label: '+90 j', amount: row.bucketOver90,
+                      color: AppTheme.danger),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
