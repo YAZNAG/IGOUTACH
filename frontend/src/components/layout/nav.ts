@@ -84,7 +84,6 @@ export const navGroups: NavGroup[] = [
   {
     title: 'Trésorerie',
     items: [
-      { label: 'Caisse', to: '/caisse', icon: Wallet, permission: 'cash.manage' },
       { label: 'Règlements', to: '/reglements', icon: Receipt, permission: 'payment.view' },
       { label: 'Charges', to: '/charges', icon: Wallet, permission: 'expense.create' },
     ],
