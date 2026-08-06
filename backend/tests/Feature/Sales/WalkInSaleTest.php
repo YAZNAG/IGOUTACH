@@ -15,8 +15,9 @@ beforeEach(function (): void {
 });
 
 it('vend à un client de passage : sans fiche, payé comptant, aucun crédit', function (): void {
-    $user = grantUser(['sale.create']);
+    // Le lieu doit exister avant l'utilisateur : celui-ci y est rattaché.
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['sale.create'], ['warehouse_id' => $warehouse->id]);
     $product = Product::factory()->create([
         'category_id' => Category::factory()->create()->id,
         'unit_id' => Unit::factory()->create()->id,

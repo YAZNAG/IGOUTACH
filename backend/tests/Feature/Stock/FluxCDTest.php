@@ -77,11 +77,12 @@ it('crée puis réceptionne un bon de commande (stock + reliquat + statut)', fun
 });
 
 it('confirme une facture : sortie de stock, créance et blocage au plafond', function () {
-    $user = grantUser(['sale.create', 'purchase.view', 'purchase.create', 'receipt.create']);
+    // Le lieu doit exister avant l'utilisateur : celui-ci y est rattaché.
+    $warehouse = fluxWarehouse();
+    $user = grantUser(['sale.create', 'purchase.view', 'purchase.create', 'receipt.create'], ['warehouse_id' => $warehouse->id]);
     $supplier = Supplier::factory()->create();
     $customer = Customer::factory()->create(['credit_limit' => 500, 'balance' => 0]);
     $product = Product::factory()->create(['cost_price' => 100]);
-    $warehouse = fluxWarehouse();
 
     // Alimente le stock via une réception.
     fluxStockViaReception($this->actingAs($user), $supplier->id, $warehouse->id, $product->id, 10, 100);
@@ -113,11 +114,11 @@ it('confirme une facture : sortie de stock, créance et blocage au plafond', fun
 });
 
 it('encaisse un paiement : encours réduit et facture soldée', function () {
-    $user = grantUser(['sale.create', 'payment.create', 'purchase.view', 'purchase.create', 'receipt.create']);
+    $warehouse = fluxWarehouse();
+    $user = grantUser(['sale.create', 'payment.create', 'purchase.view', 'purchase.create', 'receipt.create'], ['warehouse_id' => $warehouse->id]);
     $supplier = Supplier::factory()->create();
     $customer = Customer::factory()->create(['credit_limit' => 10000, 'balance' => 0]);
     $product = Product::factory()->create(['cost_price' => 50]);
-    $warehouse = fluxWarehouse();
 
     fluxStockViaReception($this->actingAs($user), $supplier->id, $warehouse->id, $product->id, 5, 50);
 
@@ -144,9 +145,9 @@ it('encaisse un paiement : encours réduit et facture soldée', function () {
 });
 
 it('exige un motif d\'écart à l\'enregistrement du comptage', function () {
-    $user = grantUser(['inventory.create']);
-    $product = Product::factory()->create();
     $warehouse = fluxWarehouse();
+    $user = grantUser(['inventory.create'], ['warehouse_id' => $warehouse->id]);
+    $product = Product::factory()->create();
 
     $inventory = $this->actingAs($user)->postJson('/api/v1/inventories', [
         'warehouse_id' => $warehouse->id,

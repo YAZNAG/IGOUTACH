@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
+class Container_31e7af6978 extends _PHPStan_02959ca10\Nette\DI\Container
 {
 	protected $tags = [
 		'phpstan.broker.allowedSubTypesClassReflectionExtension' => ['017' => true, '018' => true],
@@ -5915,7 +5915,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -5963,7 +5963,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -6021,7 +6021,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -6088,7 +6088,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -6108,7 +6108,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -6133,7 +6133,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -6153,7 +6153,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -6173,7 +6173,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_a97965aec9 $container)
+			public function __construct(Container_31e7af6978 $container)
 			{
 				$this->container = $container;
 			}
@@ -9684,7 +9684,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 	}
 
 
-	public function createServiceContainer(): Container_a97965aec9
+	public function createServiceContainer(): Container_31e7af6978
 	{
 		return $this;
 	}
@@ -10334,30 +10334,30 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 			'usedLevel' => '8',
 			'cliAutoloadFile' => null,
 			'env' => [
-				'AI_AGENT' => 'claude-code_2-1-219_agent',
+				'AI_AGENT' => 'claude-code_2-1-221_agent',
 				'ALLUSERSPROFILE' => 'C:\ProgramData',
 				'ANTHROPIC_BASE_URL' => 'https://api.anthropic.com',
 				'API_TIMEOUT_MS' => '900000',
 				'APPDATA' => 'C:\Users\yassi\AppData\Roaming',
-				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.24012.9,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=d2b2a215290d4d398c5a14d02c45b01d,sentry-org_id=1158394',
-				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_35476_HAXDOOZPVQMCFPZP',
+				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.25927.0,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=f6553e0944464f5788fb5b041696cc7b,sentry-org_id=1158394',
+				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_22396_IVFIMLRTLLLSNNPE',
 				'CLAUDECODE' => '1',
-				'CLAUDE_AGENT_SDK_VERSION' => '0.3.219',
+				'CLAUDE_AGENT_SDK_VERSION' => '0.3.221',
 				'CLAUDE_CODE_CHILD_SESSION' => '1',
 				'CLAUDE_CODE_DISABLE_CRON' => '',
 				'CLAUDE_CODE_EAGER_FLUSH' => '1',
 				'CLAUDE_CODE_EMIT_TOOL_USE_SUMMARIES' => 'false',
 				'CLAUDE_CODE_ENABLE_ASK_USER_QUESTION_TOOL' => 'true',
 				'CLAUDE_CODE_ENTRYPOINT' => 'claude-desktop',
-				'CLAUDE_CODE_EXECPATH' => 'C:\Users\yassi\AppData\Roaming\Claude\claude-code\2.1.219\claude.exe',
+				'CLAUDE_CODE_EXECPATH' => 'C:\Users\yassi\AppData\Roaming\Claude\claude-code\2.1.221\claude.exe',
 				'CLAUDE_CODE_HOST_SESSION_ID' => 'local_0de17e6b-33d2-4bf7-a606-ce57b1ac3002',
 				'CLAUDE_CODE_OAUTH_SCOPES' => 'user:inference user:file_upload user:profile user:sessions:claude_code',
 				'CLAUDE_CODE_REPORT_FINDINGS' => '1',
 				'CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH' => '1',
 				'CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH' => '1',
-				'CLAUDE_CODE_SESSION_ID' => '510dc35a-a4cb-47ce-8e8a-76cae8db278a',
+				'CLAUDE_CODE_SESSION_ID' => '9a474a92-4792-4df4-944e-a75698787fb8',
 				'CLAUDE_EFFORT' => 'high',
-				'CLAUDE_PID' => '36160',
+				'CLAUDE_PID' => '20524',
 				'CLAUDE_PREVIEW_CLASSIFIER_FLOOR' => '1',
 				'COLUMNS' => '120',
 				'COMMONPROGRAMFILES' => 'C:\Program Files\Common Files',
@@ -10373,8 +10373,6 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 				'DriverData' => 'C:\Windows\System32\Drivers\DriverData',
 				'ERLANG_HOME' => 'C:\Program Files\Erlang OTP',
 				'EXEPATH' => 'C:\Program Files\Git\bin',
-				'FPS_BROWSER_APP_PROFILE_STRING' => 'Internet Explorer',
-				'FPS_BROWSER_USER_PROFILE_STRING' => 'Default',
 				'GIT_EDITOR' => 'true',
 				'HOME' => 'C:\Users\yassi',
 				'HOMEDRIVE' => 'C:',
@@ -10409,7 +10407,7 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 				'ProgramData' => 'C:\ProgramData',
 				'ProgramFiles(x86)' => 'C:\Program Files (x86)',
 				'ProgramW6432' => 'C:\Program Files',
-				'SENTRY-TRACE' => 'd2b2a215290d4d398c5a14d02c45b01d-a5a16ae3f1b6c66b',
+				'SENTRY-TRACE' => 'f6553e0944464f5788fb5b041696cc7b-94176e6ae4e2db0d',
 				'SHELL' => 'C:\Program Files\Git\usr\bin\bash.exe',
 				'SHELL_VERBOSITY' => '0',
 				'SHLVL' => '1',
@@ -10427,7 +10425,6 @@ class Container_a97965aec9 extends _PHPStan_02959ca10\Nette\DI\Container
 				'VBOX_HWVIRTEX_IGNORE_SVM_IN_USE' => '1',
 				'WINDIR' => 'C:\WINDOWS',
 				'_' => 'vendor/bin/phpstan',
-				'__COMPAT_LAYER' => 'DetectorsAppHealth',
 			],
 		];
 	}

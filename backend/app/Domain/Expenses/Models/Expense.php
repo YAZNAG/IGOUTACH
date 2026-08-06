@@ -6,6 +6,7 @@ namespace App\Domain\Expenses\Models;
 
 use App\Domain\Warehouses\Models\Warehouse;
 use App\Models\User;
+use App\Support\Scopes\WarehouseScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -43,6 +44,15 @@ final class Expense extends Model
         'status',
         'approved_by',
     ];
+
+    /**
+     * Cloisonnement par lieu : sans la permission « stock.view_global »,
+     * un utilisateur ne voit que la charge de son propre lieu.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new WarehouseScope);
+    }
 
     /**
      * @return array<string, string>

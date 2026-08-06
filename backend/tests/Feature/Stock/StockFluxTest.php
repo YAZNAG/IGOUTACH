@@ -81,8 +81,9 @@ it('refuse le bon de sortie sans la permission', function () {
 });
 
 it('liste le stock d\'un lieu avec statut', function () {
-    $user = grantUser(['stock.view']);
+    // Le lieu doit exister avant l'utilisateur : celui-ci y est rattaché.
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['stock.view'], ['warehouse_id' => $warehouse->id]);
     $product = makeProduct();
     seedStockRow($warehouse->id, $product->id, 5);
 
@@ -94,8 +95,8 @@ it('liste le stock d\'un lieu avec statut', function () {
 });
 
 it('expose le journal des mouvements après un bon de sortie', function () {
-    $user = grantUser(['stock.issue', 'stock.view']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['stock.issue', 'stock.view'], ['warehouse_id' => $warehouse->id]);
     $product = makeProduct();
     seedStockRow($warehouse->id, $product->id, 10);
 

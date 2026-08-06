@@ -19,11 +19,34 @@ use RuntimeException;
  */
 final class PaymentController extends Controller
 {
+    /**
+     * Vue globale = voit les clients et règlements de tous les lieux.
+     */
+    private function hasGlobalView(Request $request): bool
+    {
+        $user = $request->user();
+
+        return $user !== null && ($user->can('customer.view_all') || $user->can('stock.view_global'));
+    }
+
+    /**
+     * Clients visibles par l'utilisateur : ceux qu'il a créés.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<Customer>
+     */
+    private function visibleCustomerIds(Request $request)
+    {
+        return Customer::query()->select('id')->where('created_by', $request->user()?->id);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $payments = Payment::query()
             ->with(['customer:id,code,name', 'method:id,name'])
             ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
+            // Cloisonnement : sans vue globale, on ne voit que les règlements
+            // de ses propres clients (les paiements n'ont pas de lieu propre).
+            ->when(! $this->hasGlobalView($request), fn ($q) => $q->whereIn('customer_id', $this->visibleCustomerIds($request)))
             ->orderByDesc('id')
             ->paginate(20);
 
@@ -132,8 +155,15 @@ final class PaymentController extends Controller
     /**
      * Relevé client : écritures du grand-livre, plus récentes en premier.
      */
-    public function statement(Customer $customer): JsonResponse
+    public function statement(Request $request, Customer $customer): JsonResponse
     {
+        // Un utilisateur sans vue globale ne consulte que ses propres clients.
+        if (! $this->hasGlobalView($request)
+            && $customer->created_by !== null
+            && $customer->created_by !== $request->user()?->id) {
+            abort(403, 'Ce client a été créé par un autre utilisateur.');
+        }
+
         $entries = CustomerLedgerEntry::query()
             ->where('customer_id', $customer->id)
             ->orderByDesc('id')

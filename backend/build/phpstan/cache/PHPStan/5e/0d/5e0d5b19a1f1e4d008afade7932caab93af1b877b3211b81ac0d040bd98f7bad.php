@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Stock\Models\Stock.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Stock\Models\Stock
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-10ae386dc6269979bba62726b31da1dd49bddee119befce064d22468b7206085',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-fbd9690832af39528fc54d8598263af458b25fe21e75c39a0bbb724d5739b9ec',
    'data' => 
   array (
     'locatedSource' => 
@@ -35,8 +35,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     'attributes' => 
     array (
     ),
-    'startLine' => 22,
-    'endLine' => 50,
+    'startLine' => 25,
+    'endLine' => 64,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -45,7 +45,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'traitClassNames' => 
     array (
-      0 => 'App\\Support\\Concerns\\BelongsToWarehouse',
+      0 => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+      1 => 'App\\Support\\Concerns\\BelongsToWarehouse',
     ),
     'immediateConstants' => 
     array (
@@ -64,20 +65,20 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
           'code' => '[\'warehouse_id\', \'product_id\', \'quantity\', \'reserved_quantity\', \'average_cost\']',
           'attributes' => 
           array (
-            'startLine' => 26,
-            'endLine' => 32,
-            'startTokenPos' => 58,
-            'startFilePos' => 572,
-            'endTokenPos' => 75,
-            'endFilePos' => 697,
+            'startLine' => 32,
+            'endLine' => 38,
+            'startTokenPos' => 80,
+            'startFilePos' => 778,
+            'endTokenPos' => 97,
+            'endFilePos' => 903,
           ),
         ),
         'docComment' => NULL,
         'attributes' => 
         array (
         ),
-        'startLine' => 26,
-        'endLine' => 32,
+        'startLine' => 32,
+        'endLine' => 38,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -110,8 +111,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 34,
-        'endLine' => 41,
+        'startLine' => 40,
+        'endLine' => 47,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -147,8 +148,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Product, $this>
  */',
-        'startLine' => 46,
-        'endLine' => 49,
+        'startLine' => 52,
+        'endLine' => 55,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -156,6 +157,43 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'isGenerator' => false,
         'isVariadic' => false,
         'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Stock\\Models',
+        'declaringClassName' => 'App\\Domain\\Stock\\Models\\Stock',
+        'implementingClassName' => 'App\\Domain\\Stock\\Models\\Stock',
+        'currentClassName' => 'App\\Domain\\Stock\\Models\\Stock',
+        'aliasName' => NULL,
+      ),
+      'newFactory' => 
+      array (
+        'name' => 'newFactory',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * @return Factory<self>
+ */',
+        'startLine' => 60,
+        'endLine' => 63,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 18,
         'namespace' => 'App\\Domain\\Stock\\Models',
         'declaringClassName' => 'App\\Domain\\Stock\\Models\\Stock',
         'implementingClassName' => 'App\\Domain\\Stock\\Models\\Stock',

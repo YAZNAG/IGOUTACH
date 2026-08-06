@@ -40,9 +40,26 @@ final class StockController extends Controller
     /**
      * Stock d'un lieu : TOUS les articles avec leur quantité (0 si absent).
      */
+    /**
+     * Lieu réellement consultable : sans la permission « stock.view_global »,
+     * l'utilisateur est ramené à son propre lieu quel que soit le paramètre
+     * envoyé (ces requêtes sont brutes, le scope Eloquent ne s'y applique pas).
+     */
+    private function scopedWarehouseId(Request $request): int
+    {
+        $user = $request->user();
+        $requested = $request->integer('warehouse_id');
+
+        if ($user !== null && ! $user->can('stock.view_global')) {
+            return (int) ($user->getAttribute('warehouse_id') ?? 0);
+        }
+
+        return $requested;
+    }
+
     public function index(Request $request): JsonResponse
     {
-        $warehouseId = $request->integer('warehouse_id');
+        $warehouseId = $this->scopedWarehouseId($request);
 
         $paginator = DB::table('products')
             ->leftJoin('stocks', function ($join) use ($warehouseId): void {
@@ -98,7 +115,8 @@ final class StockController extends Controller
      */
     public function movements(Request $request): JsonResponse
     {
-        $paginator = StockMovement::withoutGlobalScopes()
+        // Le scope de lieu reste actif : seule une vue globale voit tous les lieux.
+        $paginator = StockMovement::query()
             ->with(['product:id,sku,name', 'movementType:id,name,code,sign'])
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->integer('product_id') > 0, fn ($q) => $q->where('product_id', $request->integer('product_id')))
@@ -152,7 +170,7 @@ final class StockController extends Controller
      */
     public function export(Request $request): BinaryFileResponse|HttpResponse
     {
-        $warehouseId = $request->integer('warehouse_id');
+        $warehouseId = $this->scopedWarehouseId($request);
         $warehouse = Warehouse::query()->find($warehouseId);
         $label = $warehouse !== null ? $warehouse->code.' — '.$warehouse->name : 'Lieu';
 

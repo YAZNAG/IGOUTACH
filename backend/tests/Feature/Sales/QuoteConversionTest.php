@@ -31,8 +31,9 @@ function makeQuote(): Sale
 }
 
 it('convertit un devis en vente avec les mêmes lignes', function (): void {
-    $user = grantUser(['sale.create']);
+    // Le devis (et donc son lieu) doit exister avant l'utilisateur, qui y est rattaché.
     $quote = makeQuote();
+    $user = grantUser(['sale.create'], ['warehouse_id' => $quote->warehouse_id]);
 
     $response = $this->actingAs($user)->postJson("/api/v1/sales/{$quote->id}/convert")->assertCreated();
 
@@ -49,24 +50,27 @@ it('convertit un devis en vente avec les mêmes lignes', function (): void {
 });
 
 it('refuse de convertir deux fois le même devis', function (): void {
-    $user = grantUser(['sale.create']);
+    // Le devis (et donc son lieu) doit exister avant l'utilisateur, qui y est rattaché.
     $quote = makeQuote();
+    $user = grantUser(['sale.create'], ['warehouse_id' => $quote->warehouse_id]);
 
     $this->actingAs($user)->postJson("/api/v1/sales/{$quote->id}/convert")->assertCreated();
     $this->actingAs($user)->postJson("/api/v1/sales/{$quote->id}/convert")->assertStatus(422);
 });
 
 it('refuse de convertir une facture', function (): void {
-    $user = grantUser(['sale.create']);
+    // Le devis (et donc son lieu) doit exister avant l'utilisateur, qui y est rattaché.
     $quote = makeQuote();
+    $user = grantUser(['sale.create'], ['warehouse_id' => $quote->warehouse_id]);
     $quote->update(['type' => Sale::TYPE_INVOICE]);
 
     $this->actingAs($user)->postJson("/api/v1/sales/{$quote->id}/convert")->assertStatus(422);
 });
 
 it('signale les devis convertis dans la liste', function (): void {
-    $user = grantUser(['sale.create']);
+    // Le devis (et donc son lieu) doit exister avant l'utilisateur, qui y est rattaché.
     $quote = makeQuote();
+    $user = grantUser(['sale.create'], ['warehouse_id' => $quote->warehouse_id]);
     $this->actingAs($user)->postJson("/api/v1/sales/{$quote->id}/convert")->assertCreated();
 
     $response = $this->actingAs($user)->getJson('/api/v1/sales?type=quote')->assertOk();

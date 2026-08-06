@@ -1,14 +1,14 @@
 <?php
-// source: phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar/conf/config.neon
-// source: phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar/conf/config.level8.neon
-// source: C:\OPTIZAWORKS\igoutech\phpstan.neon
+// source: phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar/conf/config.neon
+// source: phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar/conf/config.level8.neon
+// source: C:\OPTIZAWORKS\igoutech\backend\phpstan.neon
 // source: array
 
 /** @noinspection PhpParamsInspection,PhpMethodMayBeStaticInspection */
 
 declare(strict_types=1);
 
-class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
+class Container_a3a0a3690a extends _PHPStan_02959ca10\Nette\DI\Container
 {
 	protected $tags = [
 		'phpstan.broker.allowedSubTypesClassReflectionExtension' => ['017' => true, '018' => true],
@@ -2654,30 +2654,30 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			$this->getService('0459'),
 			$this->getService('0145'),
 			$this->getParameter('analysedPaths'),
-			'C:\OPTIZAWORKS\igoutech',
+			'C:\OPTIZAWORKS\igoutech\backend',
 			($this->getParameter('sysGetTempDir')) . '/phpstan-fixer',
-			['C:/OPTIZAWORKS/igoutech'],
+			['C:/OPTIZAWORKS/igoutech/backend'],
 			[
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\parametersSchema.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level8.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level7.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level6.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level5.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level4.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level3.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level2.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level1.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level0.neon',
-				'C:\OPTIZAWORKS\igoutech\phpstan.neon',
-				'C:\OPTIZAWORKS\igoutech\vendor\larastan\larastan\extension.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\parametersSchema.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level8.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level7.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level6.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level5.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level4.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level3.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level2.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level1.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level0.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\phpstan.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\vendor\larastan\larastan\extension.neon',
 			],
 			null,
 			[
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionUnionType.php',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionAttribute.php',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\Attribute85.php',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionIntersectionType.php',
-				'C:\OPTIZAWORKS\igoutech\vendor\larastan\larastan\bootstrap.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionUnionType.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionAttribute.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\Attribute85.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionIntersectionType.php',
+				'C:\OPTIZAWORKS\igoutech\backend\vendor\larastan\larastan\bootstrap.php',
 			],
 			null,
 			'8',
@@ -2741,7 +2741,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService09(): PHPStan\Php\PhpVersionFactoryFactory
 	{
-		return new PHPStan\Php\PhpVersionFactoryFactory(null, ['C:/OPTIZAWORKS/igoutech']);
+		return new PHPStan\Php\PhpVersionFactoryFactory(null, ['C:/OPTIZAWORKS/igoutech/backend']);
 	}
 
 
@@ -2759,7 +2759,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService012(): PHPStan\Php\ComposerPhpVersionFactory
 	{
-		return new PHPStan\Php\ComposerPhpVersionFactory(['C:/OPTIZAWORKS/igoutech']);
+		return new PHPStan\Php\ComposerPhpVersionFactory(['C:/OPTIZAWORKS/igoutech/backend']);
 	}
 
 
@@ -2912,7 +2912,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			[],
 			[],
 			$this->getParameter('analysedPaths'),
-			['C:/OPTIZAWORKS/igoutech'],
+			['C:/OPTIZAWORKS/igoutech/backend'],
 			$this->getParameter('analysedPathsFromConfig'),
 			false,
 			$this->getParameter('singleReflectionFile')
@@ -3011,7 +3011,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService041(): PHPStan\File\FileHelper
 	{
-		return new PHPStan\File\FileHelper('C:\OPTIZAWORKS\igoutech');
+		return new PHPStan\File\FileHelper('C:\OPTIZAWORKS\igoutech\backend');
 	}
 
 
@@ -3690,14 +3690,14 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 	public function createService0126(): PHPStan\DependencyInjection\DerivativeContainerFactory
 	{
 		return new PHPStan\DependencyInjection\DerivativeContainerFactory(
-			'C:\OPTIZAWORKS\igoutech',
-			'C:\OPTIZAWORKS\igoutech\build\phpstan',
+			'C:\OPTIZAWORKS\igoutech\backend',
+			'C:\OPTIZAWORKS\igoutech\backend\build\phpstan',
 			[
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar/conf/config.level8.neon',
-				'C:\OPTIZAWORKS\igoutech\phpstan.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar/conf/config.level8.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\phpstan.neon',
 			],
 			$this->getParameter('analysedPaths'),
-			['C:/OPTIZAWORKS/igoutech'],
+			['C:/OPTIZAWORKS/igoutech/backend'],
 			$this->getParameter('analysedPathsFromConfig'),
 			'8',
 			null,
@@ -3829,38 +3829,38 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			$this->getService('0125'),
 			$this->getService('041'),
 			[
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Memcached.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Redis.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionAttribute.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionClassConstant.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionFunctionAbstract.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionMethod.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionParameter.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionProperty.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\iterable.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ArrayObject.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\WeakReference.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ext-ds.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ImagickPixel.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\PDOStatement.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\date.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ibm_db2.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\mysqli.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\zip.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\dom.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\spl.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\SplObjectStorage.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Exception.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\arrayFunctions.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\core.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\typeCheckingFunctions.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Countable.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\file.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_client.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_server.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ctype.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Memcached.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Redis.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionAttribute.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionClassConstant.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionFunctionAbstract.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionMethod.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionParameter.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionProperty.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\iterable.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ArrayObject.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\WeakReference.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ext-ds.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ImagickPixel.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\PDOStatement.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\date.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ibm_db2.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\mysqli.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\zip.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\dom.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\spl.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\SplObjectStorage.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Exception.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\arrayFunctions.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\core.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\typeCheckingFunctions.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Countable.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\file.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_client.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_server.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ctype.stub',
 			],
-			['C:/OPTIZAWORKS/igoutech']
+			['C:/OPTIZAWORKS/igoutech/backend']
 		);
 	}
 
@@ -5262,7 +5262,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService0371(): PHPStan\Analyser\ResultCache\ResultCacheClearer
 	{
-		return new PHPStan\Analyser\ResultCache\ResultCacheClearer('C:\OPTIZAWORKS\igoutech\build\phpstan/resultCache.php');
+		return new PHPStan\Analyser\ResultCache\ResultCacheClearer('C:\OPTIZAWORKS\igoutech\backend\build\phpstan/resultCache.php');
 	}
 
 
@@ -5915,7 +5915,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -5963,7 +5963,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6021,7 +6021,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6088,7 +6088,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6108,7 +6108,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6133,7 +6133,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6153,7 +6153,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6173,7 +6173,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			private $container;
 
 
-			public function __construct(Container_81c86ddbe6 $container)
+			public function __construct(Container_a3a0a3690a $container)
 			{
 				$this->container = $container;
 			}
@@ -6188,18 +6188,18 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 					$this->container->getService('0145'),
 					$this->container->getService('041'),
 					$this->container->getService('0799'),
-					'C:\OPTIZAWORKS\igoutech\build\phpstan/resultCache.php',
+					'C:\OPTIZAWORKS\igoutech\backend\build\phpstan/resultCache.php',
 					$this->container->getParameter('analysedPaths'),
 					$this->container->getParameter('analysedPathsFromConfig'),
-					['C:/OPTIZAWORKS/igoutech'],
+					['C:/OPTIZAWORKS/igoutech/backend'],
 					'8',
 					null,
 					[
-						'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionUnionType.php',
-						'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionAttribute.php',
-						'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\Attribute85.php',
-						'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionIntersectionType.php',
-						'C:\OPTIZAWORKS\igoutech\vendor\larastan\larastan\bootstrap.php',
+						'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionUnionType.php',
+						'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionAttribute.php',
+						'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\Attribute85.php',
+						'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionIntersectionType.php',
+						'C:\OPTIZAWORKS\igoutech\backend\vendor\larastan\larastan\bootstrap.php',
 					],
 					[],
 					[],
@@ -8072,7 +8072,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService0733(): PHPStan\Rules\Keywords\RequireFileExistsRule
 	{
-		return new PHPStan\Rules\Keywords\RequireFileExistsRule('C:\OPTIZAWORKS\igoutech', $this->getService('06'), false);
+		return new PHPStan\Rules\Keywords\RequireFileExistsRule('C:\OPTIZAWORKS\igoutech\backend', $this->getService('06'), false);
 	}
 
 
@@ -8501,7 +8501,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService0799(): PHPStan\Dependency\PackageDependencyResolver
 	{
-		return new PHPStan\Dependency\PackageDependencyResolver(['C:/OPTIZAWORKS/igoutech'], $this->getService('041'));
+		return new PHPStan\Dependency\PackageDependencyResolver(['C:/OPTIZAWORKS/igoutech/backend'], $this->getService('041'));
 	}
 
 
@@ -9277,7 +9277,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 	{
 		return new Larastan\Larastan\Types\ModelProperty\ModelPropertyTypeNodeResolverExtension(
 			$this->getService('0144'),
-			true,
+			false,
 			$this->getService('0921')
 		);
 	}
@@ -9326,7 +9326,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService0920(): Larastan\Larastan\Properties\MigrationCache
 	{
-		return new Larastan\Larastan\Properties\MigrationCache('C:\OPTIZAWORKS\igoutech\build\phpstan', false);
+		return new Larastan\Larastan\Properties\MigrationCache('C:\OPTIZAWORKS\igoutech\backend\build\phpstan', false);
 	}
 
 
@@ -9350,7 +9350,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createService0923(): Larastan\Larastan\Methods\BuilderHelper
 	{
-		return new Larastan\Larastan\Methods\BuilderHelper($this->getService('reflectionProvider'), true, $this->getService('0856'));
+		return new Larastan\Larastan\Methods\BuilderHelper($this->getService('reflectionProvider'), false, $this->getService('0856'));
 	}
 
 
@@ -9680,11 +9680,11 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createServiceCacheStorage(): PHPStan\Cache\FileCacheStorage
 	{
-		return new PHPStan\Cache\FileCacheStorage('C:\OPTIZAWORKS\igoutech\build\phpstan/cache/PHPStan');
+		return new PHPStan\Cache\FileCacheStorage('C:\OPTIZAWORKS\igoutech\backend\build\phpstan/cache/PHPStan');
 	}
 
 
-	public function createServiceContainer(): Container_81c86ddbe6
+	public function createServiceContainer(): Container_a3a0a3690a
 	{
 		return $this;
 	}
@@ -9849,7 +9849,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createServiceParentDirectoryRelativePathHelper(): PHPStan\File\ParentDirectoryRelativePathHelper
 	{
-		return new PHPStan\File\ParentDirectoryRelativePathHelper('C:\OPTIZAWORKS\igoutech');
+		return new PHPStan\File\ParentDirectoryRelativePathHelper('C:\OPTIZAWORKS\igoutech\backend');
 	}
 
 
@@ -9895,20 +9895,20 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			$this->getService('011'),
 			null,
 			$this->getService('041'),
-			['C:/OPTIZAWORKS/igoutech'],
+			['C:/OPTIZAWORKS/igoutech/backend'],
 			[
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\parametersSchema.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level8.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level7.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level6.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level5.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level4.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level3.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level2.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level1.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level0.neon',
-				'C:\OPTIZAWORKS\igoutech\phpstan.neon',
-				'C:\OPTIZAWORKS\igoutech\vendor\larastan\larastan\extension.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\parametersSchema.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level8.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level7.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level6.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level5.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level4.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level3.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level2.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level1.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level0.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\phpstan.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\vendor\larastan\larastan\extension.neon',
 			],
 			$this->getService('012'),
 			$this->getService('simpleRelativePathHelper')
@@ -9938,7 +9938,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 	{
 		return new PHPStan\File\FuzzyRelativePathHelper(
 			$this->getService('parentDirectoryRelativePathHelper'),
-			'C:\OPTIZAWORKS\igoutech',
+			'C:\OPTIZAWORKS\igoutech\backend',
 			$this->getParameter('analysedPaths')
 		);
 	}
@@ -9970,7 +9970,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 
 	public function createServiceSimpleRelativePathHelper(): PHPStan\File\SimpleRelativePathHelper
 	{
-		return new PHPStan\File\SimpleRelativePathHelper('C:\OPTIZAWORKS\igoutech');
+		return new PHPStan\File\SimpleRelativePathHelper('C:\OPTIZAWORKS\igoutech\backend');
 	}
 
 
@@ -10039,15 +10039,15 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 	{
 		return [
 			'bootstrapFiles' => [
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionUnionType.php',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionAttribute.php',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\Attribute85.php',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionIntersectionType.php',
-				'C:\OPTIZAWORKS\igoutech\vendor\larastan\larastan\bootstrap.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionUnionType.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionAttribute.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\Attribute85.php',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\runtime\ReflectionIntersectionType.php',
+				'C:\OPTIZAWORKS\igoutech\backend\vendor\larastan\larastan\bootstrap.php',
 			],
 			'excludePaths' => ['analyseAndScan' => [], 'analyse' => []],
 			'level' => 8,
-			'paths' => ['C:\OPTIZAWORKS\igoutech\app', 'C:\OPTIZAWORKS\igoutech\database'],
+			'paths' => ['C:\OPTIZAWORKS\igoutech\backend\app', 'C:\OPTIZAWORKS\igoutech\backend\database'],
 			'exceptions' => [
 				'implicitThrows' => true,
 				'reportUncheckedExceptionDeadCatch' => true,
@@ -10170,40 +10170,40 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			'typeAliases' => [],
 			'universalObjectCratesClasses' => ['stdClass', 'Illuminate\Http\Request', 'Illuminate\Support\Optional'],
 			'stubFiles' => [
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Memcached.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Redis.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionAttribute.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionClassConstant.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionFunctionAbstract.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionMethod.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionParameter.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionProperty.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\iterable.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ArrayObject.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\WeakReference.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ext-ds.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ImagickPixel.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\PDOStatement.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\date.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ibm_db2.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\mysqli.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\zip.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\dom.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\spl.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\SplObjectStorage.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Exception.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\arrayFunctions.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\core.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\typeCheckingFunctions.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\Countable.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\file.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_client.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_server.stub',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\stubs\ctype.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Memcached.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Redis.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionAttribute.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionClassConstant.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionFunctionAbstract.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionMethod.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionParameter.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ReflectionProperty.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\iterable.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ArrayObject.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\WeakReference.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ext-ds.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ImagickPixel.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\PDOStatement.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\date.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ibm_db2.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\mysqli.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\zip.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\dom.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\spl.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\SplObjectStorage.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Exception.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\arrayFunctions.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\core.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\typeCheckingFunctions.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\Countable.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\file.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_client.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\stream_socket_server.stub',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\stubs\ctype.stub',
 			],
 			'earlyTerminatingMethodCalls' => [],
 			'earlyTerminatingFunctionCalls' => ['abort', 'dd'],
-			'resultCachePath' => 'C:\OPTIZAWORKS\igoutech\build\phpstan/resultCache.php',
+			'resultCachePath' => 'C:\OPTIZAWORKS\igoutech\backend\build\phpstan/resultCache.php',
 			'resultCacheSkipIfOlderThanDays' => 7,
 			'resultCacheChecksProjectExtensionFilesDependencies' => false,
 			'dynamicConstantNames' => [
@@ -10294,7 +10294,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			'configDirectories' => [],
 			'viewDirectories' => [],
 			'translationDirectories' => [],
-			'checkModelProperties' => true,
+			'checkModelProperties' => false,
 			'checkUnusedViews' => false,
 			'checkMissingTranslations' => false,
 			'checkModelAppends' => true,
@@ -10304,61 +10304,81 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 			'checkAuthCallsWhenInRequestScope' => false,
 			'parseModelCastsMethod' => false,
 			'enableMigrationCache' => false,
-			'tmpDir' => 'C:\OPTIZAWORKS\igoutech\build\phpstan',
-			'checkMissingIterableValueType' => false,
+			'tmpDir' => 'C:\OPTIZAWORKS\igoutech\backend\build\phpstan',
 			'debugMode' => true,
 			'productionMode' => false,
-			'tempDir' => 'C:\OPTIZAWORKS\igoutech\build\phpstan',
-			'rootDir' => 'C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan',
-			'currentWorkingDirectory' => 'C:\OPTIZAWORKS\igoutech',
+			'tempDir' => 'C:\OPTIZAWORKS\igoutech\backend\build\phpstan',
+			'rootDir' => 'C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan',
+			'currentWorkingDirectory' => 'C:\OPTIZAWORKS\igoutech\backend',
 			'cliArgumentsVariablesRegistered' => true,
 			'additionalConfigFiles' => [
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar/conf/config.level8.neon',
-				'C:\OPTIZAWORKS\igoutech\phpstan.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar/conf/config.level8.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\phpstan.neon',
 			],
 			'allConfigFiles' => [
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\parametersSchema.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level8.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level7.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level6.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level5.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level4.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level3.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level2.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level1.neon',
-				'phar://C:\OPTIZAWORKS\igoutech\vendor\phpstan\phpstan\phpstan.phar\conf\config.level0.neon',
-				'C:\OPTIZAWORKS\igoutech\phpstan.neon',
-				'C:\OPTIZAWORKS\igoutech\vendor\larastan\larastan\extension.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\parametersSchema.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level8.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level7.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level6.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level5.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level4.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level3.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level2.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level1.neon',
+				'phar://C:\OPTIZAWORKS\igoutech\backend\vendor\phpstan\phpstan\phpstan.phar\conf\config.level0.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\phpstan.neon',
+				'C:\OPTIZAWORKS\igoutech\backend\vendor\larastan\larastan\extension.neon',
 			],
-			'composerAutoloaderProjectPaths' => ['C:/OPTIZAWORKS/igoutech'],
+			'composerAutoloaderProjectPaths' => ['C:/OPTIZAWORKS/igoutech/backend'],
 			'generateBaselineFile' => null,
 			'usedLevel' => '8',
 			'cliAutoloadFile' => null,
 			'env' => [
-				'AI_AGENT' => 'claude-code_2-1-219_agent',
+				'ADMIN_EMAIL' => 'admin@igoutech.ma',
+				'ADMIN_PASSWORD' => 'ChangeMe!2026',
+				'AI_AGENT' => 'claude-code_2-1-221_agent',
 				'ALLUSERSPROFILE' => 'C:\ProgramData',
 				'ANTHROPIC_BASE_URL' => 'https://api.anthropic.com',
 				'API_TIMEOUT_MS' => '900000',
 				'APPDATA' => 'C:\Users\yassi\AppData\Roaming',
-				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.24012.9,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=d2b2a215290d4d398c5a14d02c45b01d,sentry-org_id=1158394',
-				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_35476_HAXDOOZPVQMCFPZP',
+				'APP_DEBUG' => 'true',
+				'APP_ENV' => 'local',
+				'APP_FAKER_LOCALE' => 'fr_FR',
+				'APP_FALLBACK_LOCALE' => 'fr',
+				'APP_KEY' => 'base64:H+DgTJ2ssmm7MW+7ER5Tz33AjMKGOq9RBi9oGArQhS4=',
+				'APP_LOCALE' => 'fr',
+				'APP_MAINTENANCE_DRIVER' => 'file',
+				'APP_NAME' => 'IGOUTECH',
+				'APP_TIMEZONE' => 'Africa/Casablanca',
+				'APP_URL' => 'http://localhost:8000',
+				'AWS_ACCESS_KEY_ID' => '',
+				'AWS_BUCKET' => '',
+				'AWS_DEFAULT_REGION' => 'us-east-1',
+				'AWS_SECRET_ACCESS_KEY' => '',
+				'AWS_USE_PATH_STYLE_ENDPOINT' => 'false',
+				'BAGGAGE' => 'sentry-environment=production,sentry-release=Claude%401.25927.0,sentry-public_key=2f98127cbffe4740b1f767a2de77d23b,sentry-trace_id=f6553e0944464f5788fb5b041696cc7b,sentry-org_id=1158394',
+				'BCRYPT_ROUNDS' => '12',
+				'BROADCAST_CONNECTION' => 'log',
+				'CACHE_PREFIX' => 'igoutech',
+				'CACHE_STORE' => 'file',
+				'CHROME_CRASHPAD_PIPE_NAME' => '\\\.\pipe\crashpad_22396_IVFIMLRTLLLSNNPE',
 				'CLAUDECODE' => '1',
-				'CLAUDE_AGENT_SDK_VERSION' => '0.3.219',
+				'CLAUDE_AGENT_SDK_VERSION' => '0.3.221',
 				'CLAUDE_CODE_CHILD_SESSION' => '1',
 				'CLAUDE_CODE_DISABLE_CRON' => '',
 				'CLAUDE_CODE_EAGER_FLUSH' => '1',
 				'CLAUDE_CODE_EMIT_TOOL_USE_SUMMARIES' => 'false',
 				'CLAUDE_CODE_ENABLE_ASK_USER_QUESTION_TOOL' => 'true',
 				'CLAUDE_CODE_ENTRYPOINT' => 'claude-desktop',
-				'CLAUDE_CODE_EXECPATH' => 'C:\Users\yassi\AppData\Roaming\Claude\claude-code\2.1.219\claude.exe',
+				'CLAUDE_CODE_EXECPATH' => 'C:\Users\yassi\AppData\Roaming\Claude\claude-code\2.1.221\claude.exe',
 				'CLAUDE_CODE_HOST_SESSION_ID' => 'local_0de17e6b-33d2-4bf7-a606-ce57b1ac3002',
 				'CLAUDE_CODE_OAUTH_SCOPES' => 'user:inference user:file_upload user:profile user:sessions:claude_code',
 				'CLAUDE_CODE_REPORT_FINDINGS' => '1',
 				'CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH' => '1',
 				'CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH' => '1',
-				'CLAUDE_CODE_SESSION_ID' => '510dc35a-a4cb-47ce-8e8a-76cae8db278a',
+				'CLAUDE_CODE_SESSION_ID' => '9a474a92-4792-4df4-944e-a75698787fb8',
 				'CLAUDE_EFFORT' => 'high',
-				'CLAUDE_PID' => '36160',
+				'CLAUDE_PID' => '20524',
 				'CLAUDE_PREVIEW_CLASSIFIER_FLOOR' => '1',
 				'COLUMNS' => '120',
 				'COMMONPROGRAMFILES' => 'C:\Program Files\Common Files',
@@ -10369,13 +10389,19 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 				'ChocolateyLastPathUpdate' => '133951945344405617',
 				'CommonProgramFiles(x86)' => 'C:\Program Files (x86)\Common Files',
 				'CommonProgramW6432' => 'C:\Program Files\Common Files',
+				'DB_CONNECTION' => 'mysql',
+				'DB_DATABASE' => 'igoutech',
+				'DB_HOST' => '127.0.0.1',
+				'DB_PASSWORD' => '',
+				'DB_PORT' => '3307',
+				'DB_USERNAME' => 'root',
 				'DISABLE_AUTOUPDATER' => '1',
 				'DISABLE_MICROCOMPACT' => '1',
 				'DriverData' => 'C:\Windows\System32\Drivers\DriverData',
 				'ERLANG_HOME' => 'C:\Program Files\Erlang OTP',
 				'EXEPATH' => 'C:\Program Files\Git\bin',
-				'FPS_BROWSER_APP_PROFILE_STRING' => 'Internet Explorer',
-				'FPS_BROWSER_USER_PROFILE_STRING' => 'Default',
+				'FILESYSTEM_DISK' => 'local',
+				'FRONTEND_URL' => 'http://localhost:5180',
 				'GIT_EDITOR' => 'true',
 				'HOME' => 'C:\Users\yassi',
 				'HOMEDRIVE' => 'C:',
@@ -10385,7 +10411,20 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 				'LINES' => '9001',
 				'LOCALAPPDATA' => 'C:\Users\yassi\AppData\Local',
 				'LOGONSERVER' => '\\\DESKTOP-CP2CHH3',
+				'LOG_CHANNEL' => 'stack',
+				'LOG_DEPRECATIONS_CHANNEL' => 'null',
+				'LOG_LEVEL' => 'debug',
+				'LOG_STACK' => 'single',
+				'MAIL_FROM_ADDRESS' => 'no-reply@igoutech.ma',
+				'MAIL_FROM_NAME' => 'IGOUTECH',
+				'MAIL_HOST' => '127.0.0.1',
+				'MAIL_MAILER' => 'log',
+				'MAIL_PASSWORD' => 'null',
+				'MAIL_PORT' => '2525',
+				'MAIL_SCHEME' => 'null',
+				'MAIL_USERNAME' => 'null',
 				'MCP_CONNECTION_NONBLOCKING' => 'true',
+				'MEMCACHED_HOST' => '127.0.0.1',
 				'MIC_LD_LIBRARY_PATH' => 'C:\Program Files (x86)\Common Files\Intel\Shared Libraries\compiler\lib\mic',
 				'MSYSTEM' => 'MINGW64',
 				'NODE_USE_SYSTEM_CA' => '1',
@@ -10397,6 +10436,7 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 				'OneDriveCommercial' => 'C:\Users\yassi\OneDrive - OFPPT',
 				'PATH' => 'C:\Users\yassi\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\yassi\bin;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;C:\Users\yassi\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\nodejs;C:\ProgramData\ComposerSetup\bin;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\php;C:\Users\yassi\AppData\Roaming\Composer\vendor\bin;C:\Users\yassi\AppData\Roaming\npm;C:\Users\yassi\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\yassi\AppData\Local\Python\bin;C:\flutter\bin;C:\flutter\bin;C:\Windows\System32;C:\Users\yassi\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\yassi\AppData\Local\Programs\Python\Python312;C:\Users\yassi\AppData\Local\Programs\Python\Python310;C:\Program Files\nodejs;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;C:\Users\yassi\AppData\Roaming\Claude\local-agent-mode-sessions\skills-plugin\f021c062-6465-4d05-8d86-8de0d5b6343b\a22a2285-828d-4fa8-a9df-77a86ff7042e\bin',
 				'PATHEXT' => '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC',
+				'PHP_CLI_SERVER_WORKERS' => '4',
 				'PLINK_PROTOCOL' => 'ssh',
 				'PROCESSOR_ARCHITECTURE' => 'AMD64',
 				'PROCESSOR_IDENTIFIER' => 'AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD',
@@ -10406,11 +10446,22 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 				'PSModulePath' => 'C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules',
 				'PT8HOME' => 'C:\Program Files\Cisco Packet Tracer 8.2.2',
 				'PUBLIC' => 'C:\Users\Public',
-				'PWD' => 'C:/OPTIZAWORKS/igoutech',
+				'PWD' => 'C:/OPTIZAWORKS/igoutech/backend',
 				'ProgramData' => 'C:\ProgramData',
 				'ProgramFiles(x86)' => 'C:\Program Files (x86)',
 				'ProgramW6432' => 'C:\Program Files',
-				'SENTRY-TRACE' => 'd2b2a215290d4d398c5a14d02c45b01d-a5a16ae3f1b6c66b',
+				'QUEUE_CONNECTION' => 'database',
+				'REDIS_CLIENT' => 'phpredis',
+				'REDIS_HOST' => '127.0.0.1',
+				'REDIS_PASSWORD' => 'null',
+				'REDIS_PORT' => '6379',
+				'SANCTUM_STATEFUL_DOMAINS' => 'localhost:5180,127.0.0.1:5180,localhost:5173,127.0.0.1:5173,localhost:8000',
+				'SENTRY-TRACE' => 'f6553e0944464f5788fb5b041696cc7b-94176e6ae4e2db0d',
+				'SESSION_DOMAIN' => 'null',
+				'SESSION_DRIVER' => 'database',
+				'SESSION_ENCRYPT' => 'false',
+				'SESSION_LIFETIME' => '120',
+				'SESSION_PATH' => '/',
 				'SHELL' => 'C:\Program Files\Git\usr\bin\bash.exe',
 				'SHELL_VERBOSITY' => '0',
 				'SHLVL' => '1',
@@ -10426,9 +10477,9 @@ class Container_81c86ddbe6 extends _PHPStan_02959ca10\Nette\DI\Container
 				'USE_LOCAL_OAUTH' => '',
 				'USE_STAGING_OAUTH' => '',
 				'VBOX_HWVIRTEX_IGNORE_SVM_IN_USE' => '1',
+				'VITE_APP_NAME' => 'IGOUTECH',
 				'WINDIR' => 'C:\WINDOWS',
 				'_' => 'vendor/bin/phpstan',
-				'__COMPAT_LAYER' => 'DetectorsAppHealth',
 			],
 		];
 	}

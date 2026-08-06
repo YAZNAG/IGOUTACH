@@ -36,7 +36,8 @@ it('refuse un code client en double', function () {
 
 it('liste les clients avec customer.view', function () {
     $user = grantUser(['customer.view']);
-    Customer::factory()->count(3)->create();
+    // Sans « customer.view_all », on ne voit que ses propres clients.
+    Customer::factory()->count(3)->create(['created_by' => $user->id]);
 
     $this->actingAs($user)
         ->getJson('/api/v1/customers')

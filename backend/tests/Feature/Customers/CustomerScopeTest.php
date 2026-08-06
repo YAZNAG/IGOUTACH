@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Domain\Customers\Models\Customer;
 
 it('crée un client avec code auto-généré et plafond de crédit', function (): void {
-    $user = grantUser(['customer.create', 'customer.view']);
+    // Le plafond saisi dès la création exige la permission dédiée
+    // « customer.set_credit_limit » (cf. CustomerTest).
+    $user = grantUser(['customer.create', 'customer.view', 'customer.set_credit_limit']);
 
     $response = $this->actingAs($user)->postJson('/api/v1/customers', [
         'name' => 'Client Test',

@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Resources\CustomerResource.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Resources\CustomerResource
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-68cfb0f97df03ae464937aded4ca155f167f081888b1c68dc5bac76ca2c84c4f',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-5eb50789a23184831c20f0851e017c98a7774ae58bd13d4a2e251fa7e5f910b4',
    'data' => 
   array (
     'locatedSource' => 
@@ -29,7 +29,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 14,
-    'endLine' => 46,
+    'endLine' => 47,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Http\\Resources\\Json\\JsonResource',
@@ -96,7 +96,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  * @return array<string, mixed>
  */',
         'startLine' => 19,
-        'endLine' => 45,
+        'endLine' => 46,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

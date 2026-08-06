@@ -20,14 +20,20 @@ final class AlertController extends Controller
 {
     public function index(): JsonResponse
     {
-        $lowStock = DB::table('products')
-            ->leftJoin('stocks', 'stocks.product_id', '=', 'products.id')
-            ->whereNotNull('products.min_stock')
-            ->where('products.min_stock', '>', 0)
-            ->whereNull('products.deleted_at')
-            ->groupBy('products.id')
-            ->havingRaw('COALESCE(SUM(stocks.quantity), 0) < products.min_stock')
-            ->count(DB::raw('DISTINCT products.id'));
+        // Articles sous leur seuil, tous lieux confondus. La colonne du HAVING
+        // doit être agrégée (MIN) pour rester valide en mode SQL strict, et le
+        // comptage passe par une sous-requête car un GROUP BY est en jeu.
+        $lowStock = DB::query()->fromSub(
+            DB::table('products')
+                ->leftJoin('stocks', 'stocks.product_id', '=', 'products.id')
+                ->whereNotNull('products.min_stock')
+                ->where('products.min_stock', '>', 0)
+                ->whereNull('products.deleted_at')
+                ->groupBy('products.id')
+                ->havingRaw('COALESCE(SUM(stocks.quantity), 0) < MIN(products.min_stock)')
+                ->select('products.id'),
+            'sous_seuil',
+        )->count();
 
         $belowFloor = DB::table('product_prices')
             ->join('products', 'products.id', '=', 'product_prices.product_id')

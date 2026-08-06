@@ -37,8 +37,9 @@ function partialStock(int $warehouseId, int $productId, int $qty): void
 }
 
 it('compte quelques articles, reprend un autre jour, et ne touche pas aux non comptés', function (): void {
-    $user = grantUser(['inventory.create', 'inventory.approve']);
+    // Le lieu doit exister avant l'utilisateur : celui-ci y est rattaché.
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create', 'inventory.approve'], ['warehouse_id' => $warehouse->id]);
 
     $a = partialProduct();
     $b = partialProduct();
@@ -81,8 +82,8 @@ it('compte quelques articles, reprend un autre jour, et ne touche pas aux non co
 });
 
 it('corrige un comptage déjà saisi sans dupliquer la ligne', function (): void {
-    $user = grantUser(['inventory.create']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create'], ['warehouse_id' => $warehouse->id]);
     $product = partialProduct();
     partialStock($warehouse->id, $product->id, 50);
 
@@ -105,8 +106,8 @@ it('corrige un comptage déjà saisi sans dupliquer la ligne', function (): void
 });
 
 it('retire un comptage saisi par erreur', function (): void {
-    $user = grantUser(['inventory.create']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create'], ['warehouse_id' => $warehouse->id]);
     $product = partialProduct();
     partialStock($warehouse->id, $product->id, 15);
 
@@ -125,8 +126,8 @@ it('retire un comptage saisi par erreur', function (): void {
 });
 
 it('refuse de modifier un inventaire déjà validé', function (): void {
-    $user = grantUser(['inventory.create', 'inventory.approve']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create', 'inventory.approve'], ['warehouse_id' => $warehouse->id]);
 
     $inventory = Inventory::query()->create([
         'reference' => 'INV-PARTIAL',

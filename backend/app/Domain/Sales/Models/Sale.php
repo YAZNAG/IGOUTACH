@@ -7,6 +7,7 @@ namespace App\Domain\Sales\Models;
 use App\Domain\Customers\Models\Customer;
 use App\Domain\Warehouses\Models\Warehouse;
 use App\Models\User;
+use App\Support\Scopes\WarehouseScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -59,6 +60,15 @@ final class Sale extends Model
         'confirmed_at',
         'note',
     ];
+
+    /**
+     * Cloisonnement par lieu : sans la permission « stock.view_global »,
+     * un utilisateur ne voit que la vente de son propre lieu.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new WarehouseScope);
+    }
 
     /**
      * @return array<string, string>

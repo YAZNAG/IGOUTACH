@@ -57,8 +57,9 @@ it('ajoute du stock à un lieu via un bon d\'entrée daté', function () {
 });
 
 it('crée un inventaire, calcule l\'écart et régularise à la validation', function () {
-    $user = grantUser(['inventory.create', 'inventory.approve']);
+    // Le lieu doit exister avant l'utilisateur : celui-ci y est rattaché.
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create', 'inventory.approve'], ['warehouse_id' => $warehouse->id]);
     $product = invProduct();
     invStock($warehouse->id, $product->id, 10);
 
@@ -83,8 +84,8 @@ it('crée un inventaire, calcule l\'écart et régularise à la validation', fun
 });
 
 it('régularise à la hausse quand le comptage dépasse le théorique', function () {
-    $user = grantUser(['inventory.create', 'inventory.approve']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create', 'inventory.approve'], ['warehouse_id' => $warehouse->id]);
     $product = invProduct();
     invStock($warehouse->id, $product->id, 5);
 
@@ -104,8 +105,8 @@ it('régularise à la hausse quand le comptage dépasse le théorique', function
 });
 
 it('refuse une nouvelle validation d\'un inventaire déjà validé', function () {
-    $user = grantUser(['inventory.create', 'inventory.approve']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create', 'inventory.approve'], ['warehouse_id' => $warehouse->id]);
     $inventory = Inventory::query()->create([
         'reference' => 'INV-TEST1',
         'warehouse_id' => $warehouse->id,

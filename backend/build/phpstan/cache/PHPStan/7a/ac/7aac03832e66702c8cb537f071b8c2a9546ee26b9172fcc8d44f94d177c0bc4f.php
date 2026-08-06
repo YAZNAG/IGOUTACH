@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Http\Controllers\Api\V1\ProductPriceController.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Http\Controllers\Api\V1\ProductPriceController
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-b2223f1fd134e019edcf73b8bf0102975bc2da9cc8686d063c8b5f7267d90075',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-88e61ed66b6386f0bed7a74b869b7e9d83730e8f2a676f01f830c63aed652424',
    'data' => 
   array (
     'locatedSource' => 
@@ -27,7 +27,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 28,
-    'endLine' => 287,
+    'endLine' => 402,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'App\\Http\\Controllers\\Controller',
@@ -772,6 +772,97 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'currentClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
         'aliasName' => NULL,
       ),
+      'bulkMargin' => 
+      array (
+        'name' => 'bulkMargin',
+        'parameters' => 
+        array (
+          'request' => 
+          array (
+            'name' => 'request',
+            'default' => NULL,
+            'type' => 
+            array (
+              'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+              'data' => 
+              array (
+                'name' => 'Illuminate\\Http\\Request',
+                'isIdentifier' => false,
+              ),
+            ),
+            'isVariadic' => false,
+            'byRef' => false,
+            'isPromoted' => false,
+            'attributes' => 
+            array (
+            ),
+            'startLine' => 273,
+            'endLine' => 273,
+            'startColumn' => 32,
+            'endColumn' => 47,
+            'parameterIndex' => 0,
+            'isOptional' => false,
+          ),
+          'action' => 
+          array (
+            'name' => 'action',
+            'default' => NULL,
+            'type' => 
+            array (
+              'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+              'data' => 
+              array (
+                'name' => 'App\\Domain\\Pricing\\Actions\\SetProductPricesAction',
+                'isIdentifier' => false,
+              ),
+            ),
+            'isVariadic' => false,
+            'byRef' => false,
+            'isPromoted' => false,
+            'attributes' => 
+            array (
+            ),
+            'startLine' => 273,
+            'endLine' => 273,
+            'startColumn' => 50,
+            'endColumn' => 79,
+            'parameterIndex' => 1,
+            'isOptional' => false,
+          ),
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Http\\JsonResponse',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Mise à jour en masse par MARGE sur le prix d\'achat : pour chaque niveau
+ * renseigné (détail / demi-gros / gros), le nouveau tarif vaut
+ * coût unitaire × (1 + marge %). `apply=false` = prévisualisation seule.
+ */',
+        'startLine' => 273,
+        'endLine' => 381,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+        'declaringClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'implementingClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'currentClassName' => 'App\\Http\\Controllers\\Api\\V1\\ProductPriceController',
+        'aliasName' => NULL,
+      ),
       'belowFloor' => 
       array (
         'name' => 'belowFloor',
@@ -792,8 +883,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 268,
-        'endLine' => 286,
+        'startLine' => 383,
+        'endLine' => 401,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

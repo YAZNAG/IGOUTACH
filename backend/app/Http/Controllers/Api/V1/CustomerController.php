@@ -53,6 +53,12 @@ final class CustomerController extends Controller
     {
         $data = $request->validated();
 
+        // Le plafond de crédit relève d'une permission dédiée : il ne peut pas
+        // être défini au détour d'une création par qui ne la possède pas.
+        if (! ($request->user()?->can('customer.set_credit_limit') ?? false)) {
+            unset($data['credit_limit']);
+        }
+
         // Code auto-généré (CL-0001) si non fourni : le formulaire reste simple.
         if (! isset($data['code']) || $data['code'] === '') {
             $last = Customer::withTrashed()->where('code', 'like', 'CL-%')->orderByDesc('id')->value('code');

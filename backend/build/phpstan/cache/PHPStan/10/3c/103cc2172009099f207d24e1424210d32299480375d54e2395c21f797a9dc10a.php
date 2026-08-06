@@ -167,6 +167,38 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'typeAliasClassName' => NULL,
          'traitData' => NULL,
       )),
+      'f090c1f627914b4a9bcfc199c702e878' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Http\\Controllers\\Api\\V1',
+         'uses' => 
+        array (
+          'customer' => 'App\\Domain\\Customers\\Models\\Customer',
+          'controller' => 'App\\Http\\Controllers\\Controller',
+          'setcreditlimitrequest' => 'App\\Http\\Requests\\SetCreditLimitRequest',
+          'storecustomerrequest' => 'App\\Http\\Requests\\StoreCustomerRequest',
+          'updatecustomerrequest' => 'App\\Http\\Requests\\UpdateCustomerRequest',
+          'customerresource' => 'App\\Http\\Resources\\CustomerResource',
+          'sortable' => 'App\\Support\\Query\\Sortable',
+          'jsonresponse' => 'Illuminate\\Http\\JsonResponse',
+          'request' => 'Illuminate\\Http\\Request',
+          'anonymousresourcecollection' => 'Illuminate\\Http\\Resources\\Json\\AnonymousResourceCollection',
+        ),
+         'className' => 'App\\Http\\Controllers\\Api\\V1\\CustomerController',
+         'functionName' => 'assertCanSee',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => NULL,
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
       '81e683a6985e9491a6e16a036dfeca4c' => 
       \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
          'namespace' => 'App\\Http\\Controllers\\Api\\V1',
@@ -298,7 +330,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php' => '323dd09bc33362e2b987a013ecfaeb2f2541647ef597b23b656bb726d7ff037a',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Http\\Controllers\\Api\\V1\\CustomerController.php' => 'ab0167c2f0a290f83df82eabc429761c3ae9b34511011d2f939c5bbd1a466554',
     ),
   ),
 ));

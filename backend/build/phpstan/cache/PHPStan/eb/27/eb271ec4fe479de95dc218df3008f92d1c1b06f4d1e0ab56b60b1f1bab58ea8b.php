@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Customers\Models\Customer.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Customers\Models\Customer
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-21ef7a6f25a369bdf869d2b6592e1d4985fbd23c125cffee1d0ed44627832eb2',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-170e7582d9fa0f4abc7c494c6f81284f131a003940e360e10495558de4fc4501',
    'data' => 
   array (
     'locatedSource' => 
@@ -46,7 +46,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     array (
     ),
     'startLine' => 37,
-    'endLine' => 118,
+    'endLine' => 129,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -72,15 +72,15 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'type' => NULL,
         'default' => 
         array (
-          'code' => '[\'code\', \'name\', \'is_company\', \'contact_name\', \'phone\', \'email\', \'address\', \'city\', \'ice\', \'price_type_id\', \'seller_id\', \'warehouse_id\', \'credit_limit\', \'balance\', \'is_blocked\', \'notes\', \'is_active\']',
+          'code' => '[\'code\', \'name\', \'is_company\', \'contact_name\', \'phone\', \'email\', \'address\', \'city\', \'ice\', \'price_type_id\', \'seller_id\', \'warehouse_id\', \'credit_limit\', \'balance\', \'is_blocked\', \'notes\', \'is_active\', \'created_by\']',
           'attributes' => 
           array (
             'startLine' => 42,
-            'endLine' => 60,
+            'endLine' => 61,
             'startTokenPos' => 88,
             'startFilePos' => 1169,
-            'endTokenPos' => 141,
-            'endFilePos' => 1510,
+            'endTokenPos' => 144,
+            'endFilePos' => 1532,
           ),
         ),
         'docComment' => NULL,
@@ -88,7 +88,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'startLine' => 42,
-        'endLine' => 60,
+        'endLine' => 61,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -121,8 +121,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         array (
         ),
         'docComment' => NULL,
-        'startLine' => 62,
-        'endLine' => 71,
+        'startLine' => 63,
+        'endLine' => 72,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -158,8 +158,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return Factory<self>
  */',
-        'startLine' => 76,
-        'endLine' => 79,
+        'startLine' => 77,
+        'endLine' => 80,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -195,8 +195,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * Crédit disponible = plafond − encours.
  */',
-        'startLine' => 84,
-        'endLine' => 87,
+        'startLine' => 85,
+        'endLine' => 88,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -234,8 +234,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  *
  * @return BelongsTo<PriceType, $this>
  */',
-        'startLine' => 94,
-        'endLine' => 97,
+        'startLine' => 95,
+        'endLine' => 98,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -273,8 +273,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  *
  * @return BelongsTo<User, $this>
  */',
-        'startLine' => 104,
-        'endLine' => 107,
+        'startLine' => 105,
+        'endLine' => 108,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -312,8 +312,47 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
  *
  * @return BelongsTo<Warehouse, $this>
  */',
-        'startLine' => 114,
-        'endLine' => 117,
+        'startLine' => 115,
+        'endLine' => 118,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Customers\\Models',
+        'declaringClassName' => 'App\\Domain\\Customers\\Models\\Customer',
+        'implementingClassName' => 'App\\Domain\\Customers\\Models\\Customer',
+        'currentClassName' => 'App\\Domain\\Customers\\Models\\Customer',
+        'aliasName' => NULL,
+      ),
+      'createdBy' => 
+      array (
+        'name' => 'createdBy',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * Utilisateur ayant créé le client (portée de visibilité).
+ *
+ * @return BelongsTo<User, $this>
+ */',
+        'startLine' => 125,
+        'endLine' => 128,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,

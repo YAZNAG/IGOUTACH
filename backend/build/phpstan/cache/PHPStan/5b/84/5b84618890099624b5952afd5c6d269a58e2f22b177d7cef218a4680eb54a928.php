@@ -954,7 +954,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoStockSeeder.php' => 
     array (
-      0 => '588ffaac8fa8700be70e7c479d10a9e79a1a3bd022fedddaff9837375530ffc6',
+      0 => '27aa7537f98545fdcbb7ab3ee3f059dfed2a9289ca1851f7fcdae9262119fa2b',
       1 => 
       array (
         0 => 'database\\seeders\\demostockseeder',
@@ -1102,21 +1102,6 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
       array (
       ),
     ),
-    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100000_create_purchase_orders_tables.php' => 
-    array (
-      0 => '61c94105135f66fe6c242bb3d09e5f19f5067757fb0f9fe6b5ed191f0db68935',
-      1 => 
-      array (
-      ),
-      2 => 
-      array (
-        0 => 'up',
-        1 => 'down',
-      ),
-      3 => 
-      array (
-      ),
-    ),
     'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100100_create_sales_tables.php' => 
     array (
       0 => 'be93965a289055799234c7379e4d907afabe1d2e3c319dd7f2ec0d9f9abab305',
@@ -1168,6 +1153,263 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
       1 => 
       array (
         0 => 'database\\seeders\\expensecategoryseeder',
+      ),
+      2 => 
+      array (
+        0 => 'database\\seeders\\run',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\PurchaseOrderFactory.php' => 
+    array (
+      0 => 'aa4c81a3281bdad676764e3f6bab27c9f4e0f81df5cb0b39076d6052eaeb1125',
+      1 => 
+      array (
+        0 => 'database\\factories\\purchaseorderfactory',
+      ),
+      2 => 
+      array (
+        0 => 'database\\factories\\definition',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\PurchaseOrderLineFactory.php' => 
+    array (
+      0 => '366add3b5fa1b79e0a6340dd5c6ca65ba64604fddd289920b089c62c51ea16de',
+      1 => 
+      array (
+        0 => 'database\\factories\\purchaseorderlinefactory',
+      ),
+      2 => 
+      array (
+        0 => 'database\\factories\\definition',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\StockFactory.php' => 
+    array (
+      0 => '6141e445d9d973da371868ec1d7a1f0065fca9181819c917847b0618f0d7cdf1',
+      1 => 
+      array (
+        0 => 'database\\factories\\stockfactory',
+      ),
+      2 => 
+      array (
+        0 => 'database\\factories\\definition',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\factories\\StockMovementFactory.php' => 
+    array (
+      0 => '7a7f244eed872d01ea3b4eea9ac88ea6af90322a820f3f973876d7e278f0e6d3',
+      1 => 
+      array (
+        0 => 'database\\factories\\stockmovementfactory',
+      ),
+      2 => 
+      array (
+        0 => 'database\\factories\\definition',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100000_create_purchase_order_statuses_table.php' => 
+    array (
+      0 => 'a571de973687cd291d06cf13dc15662a7af718f625e9fe20d26b8cbdd8899758',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_100100_create_purchase_orders_tables.php' => 
+    array (
+      0 => '7c54fa372e8374c39e3161eeb2d80e1c3ce41c6171341b193fb003bc76ebc6a6',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_110000_create_goods_receipts_tables.php' => 
+    array (
+      0 => 'fb9a618d44037673bced723902d07778f06f756ee0a1e290b4ea554f8038c73a',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_110100_seed_receipt_permissions.php' => 
+    array (
+      0 => 'db6d9e3a69b7520c1b66a8911a1221359559a118c59a6cd6835c51b6b2ade9ac',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_150000_add_payment_to_goods_receipts.php' => 
+    array (
+      0 => '65a77194c8162123f959f36e910d3560a6f30ef1984af68d9880e1d98d4e7fd2',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_160000_create_supplier_payments_table.php' => 
+    array (
+      0 => '89e484e2b64347b484939f68b43af684584bb874b39bd4a935864c92d41012f3',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_02_160100_seed_receipt_pay_permission.php' => 
+    array (
+      0 => '49a10e03123dbefd93d6c31ce1a6ec069474520569d11ad528650213ea1f679e',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_04_100000_add_created_by_to_customers.php' => 
+    array (
+      0 => '57bc3ecab675bd8dbfc036136c7946bc1a2bc4e752aa7ea6bced2ffc235d1ab8',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_04_120000_add_quote_id_to_sales.php' => 
+    array (
+      0 => '3f41e1b5f3ed2b5146cffbfe9c404f4f65d1e83bab0826d7c4eba027dff3c1c6',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\migrations\\2026_08_04_140000_make_sales_customer_nullable.php' => 
+    array (
+      0 => 'fc6df37ef81449f5de68e15d49dc2da0f488a6940a3a61d6e2543882fab5b87a',
+      1 => 
+      array (
+      ),
+      2 => 
+      array (
+        0 => 'up',
+        1 => 'down',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\DemoTransactionsSeeder.php' => 
+    array (
+      0 => 'a9a472d07a30a8ba1465062a1429c7ac06b7fcd37d834a9a7acd106336088b2b',
+      1 => 
+      array (
+        0 => 'database\\seeders\\demotransactionsseeder',
+      ),
+      2 => 
+      array (
+        0 => 'database\\seeders\\run',
+        1 => 'database\\seeders\\purchases',
+        2 => 'database\\seeders\\sales',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\PurchasePermissionSeeder.php' => 
+    array (
+      0 => '366f09894b422b9daf34c3449a9912c57680e3b77409d8bf62e3c9794707baea',
+      1 => 
+      array (
+        0 => 'database\\seeders\\purchasepermissionseeder',
+      ),
+      2 => 
+      array (
+        0 => 'database\\seeders\\run',
+      ),
+      3 => 
+      array (
+      ),
+    ),
+    'C:\\OPTIZAWORKS\\igoutech\\backend\\database\\seeders\\TestDataSeeder.php' => 
+    array (
+      0 => '13a391a7f7c39d50f8a08cf7ca1048e6c8f6d6f68393577483fefa52f3630898',
+      1 => 
+      array (
+        0 => 'database\\seeders\\testdataseeder',
       ),
       2 => 
       array (

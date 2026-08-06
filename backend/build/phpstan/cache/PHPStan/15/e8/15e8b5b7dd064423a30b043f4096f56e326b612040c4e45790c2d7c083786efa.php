@@ -13,8 +13,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'uses' => 
         array (
           'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
           'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
          'functionName' => NULL,
@@ -32,14 +36,304 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'typeAliasClassName' => NULL,
          'traitData' => NULL,
       )),
+      '6b756c2d50197758d30da6eb10a9c99f' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+         'uses' => 
+        array (
+          'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+         'functionName' => NULL,
+         'templatePhpDocNodes' => 
+        array (
+          'TFactory' => 
+          array (
+            0 => '@template',
+            1 => 
+            \PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode::__set_state(array(
+               'name' => 'TFactory',
+               'bound' => 
+              \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode::__set_state(array(
+                 'name' => '\\Illuminate\\Database\\Eloquent\\Factories\\Factory',
+                 'attributes' => 
+                array (
+                  'startLine' => 2,
+                  'endLine' => 2,
+                ),
+              )),
+               'default' => NULL,
+               'lowerBound' => NULL,
+               'description' => '',
+               'attributes' => 
+              array (
+                'startLine' => 2,
+                'endLine' => 2,
+              ),
+            )),
+          ),
+        ),
+         'parent' => NULL,
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+         'traitData' => 
+        array (
+          0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php',
+          1 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+          2 => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          3 => NULL,
+          4 => '/** @use HasFactory<PurchaseOrderLineFactory> */',
+        ),
+      )),
+      '539efaef1535c9d57ecbeaa666247801' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+         'uses' => 
+        array (
+          'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+         'functionName' => 'factory',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+           'uses' => 
+          array (
+            'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+          ),
+           'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+            'TFactory' => 
+            array (
+              0 => '@template',
+              1 => 
+              \PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode::__set_state(array(
+                 'name' => 'TFactory',
+                 'bound' => 
+                \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode::__set_state(array(
+                   'name' => '\\Illuminate\\Database\\Eloquent\\Factories\\Factory',
+                   'attributes' => 
+                  array (
+                    'startLine' => 2,
+                    'endLine' => 2,
+                  ),
+                )),
+                 'default' => NULL,
+                 'lowerBound' => NULL,
+                 'description' => '',
+                 'attributes' => 
+                array (
+                  'startLine' => 2,
+                  'endLine' => 2,
+                ),
+              )),
+            ),
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+         'traitData' => 
+        array (
+          0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php',
+          1 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+          2 => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          3 => NULL,
+          4 => '/** @use HasFactory<PurchaseOrderLineFactory> */',
+        ),
+      )),
+      'd88a5b596a65cecce5d9d8463b378679' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+         'uses' => 
+        array (
+          'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+         'functionName' => 'newFactory',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+           'uses' => 
+          array (
+            'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+          ),
+           'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+            'TFactory' => 
+            array (
+              0 => '@template',
+              1 => 
+              \PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode::__set_state(array(
+                 'name' => 'TFactory',
+                 'bound' => 
+                \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode::__set_state(array(
+                   'name' => '\\Illuminate\\Database\\Eloquent\\Factories\\Factory',
+                   'attributes' => 
+                  array (
+                    'startLine' => 2,
+                    'endLine' => 2,
+                  ),
+                )),
+                 'default' => NULL,
+                 'lowerBound' => NULL,
+                 'description' => '',
+                 'attributes' => 
+                array (
+                  'startLine' => 2,
+                  'endLine' => 2,
+                ),
+              )),
+            ),
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+         'traitData' => 
+        array (
+          0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php',
+          1 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+          2 => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          3 => NULL,
+          4 => '/** @use HasFactory<PurchaseOrderLineFactory> */',
+        ),
+      )),
+      'c73a6f6825dbeff709a9d98f2e2d00e7' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+         'uses' => 
+        array (
+          'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+         'functionName' => 'getUseFactoryAttribute',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'Illuminate\\Database\\Eloquent\\Factories',
+           'uses' => 
+          array (
+            'usefactory' => 'Illuminate\\Database\\Eloquent\\Attributes\\UseFactory',
+          ),
+           'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+            'TFactory' => 
+            array (
+              0 => '@template',
+              1 => 
+              \PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode::__set_state(array(
+                 'name' => 'TFactory',
+                 'bound' => 
+                \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode::__set_state(array(
+                   'name' => '\\Illuminate\\Database\\Eloquent\\Factories\\Factory',
+                   'attributes' => 
+                  array (
+                    'startLine' => 2,
+                    'endLine' => 2,
+                  ),
+                )),
+                 'default' => NULL,
+                 'lowerBound' => NULL,
+                 'description' => '',
+                 'attributes' => 
+                array (
+                  'startLine' => 2,
+                  'endLine' => 2,
+                ),
+              )),
+            ),
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+         'traitData' => 
+        array (
+          0 => 'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php',
+          1 => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+          2 => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          3 => NULL,
+          4 => '/** @use HasFactory<PurchaseOrderLineFactory> */',
+        ),
+      )),
       '7a14c79f0ec1881c02294b23931d92ca' => 
       \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
          'namespace' => 'App\\Domain\\Purchasing\\Models',
          'uses' => 
         array (
           'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
           'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
          'functionName' => 'casts',
@@ -52,8 +346,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'uses' => 
           array (
             'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
             'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'carbon' => 'Illuminate\\Support\\Carbon',
           ),
            'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
            'functionName' => NULL,
@@ -87,8 +385,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'uses' => 
         array (
           'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
           'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
          'functionName' => 'purchaseOrder',
@@ -101,8 +403,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'uses' => 
           array (
             'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
             'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'carbon' => 'Illuminate\\Support\\Carbon',
           ),
            'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
            'functionName' => NULL,
@@ -136,8 +442,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'uses' => 
         array (
           'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
           'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
          'functionName' => 'product',
@@ -150,8 +460,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'uses' => 
           array (
             'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
             'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'carbon' => 'Illuminate\\Support\\Carbon',
           ),
            'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
            'functionName' => NULL,
@@ -185,8 +499,12 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
          'uses' => 
         array (
           'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
           'model' => 'Illuminate\\Database\\Eloquent\\Model',
           'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
         ),
          'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
          'functionName' => 'remaining',
@@ -199,8 +517,69 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
            'uses' => 
           array (
             'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
             'model' => 'Illuminate\\Database\\Eloquent\\Model',
             'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'carbon' => 'Illuminate\\Support\\Carbon',
+          ),
+           'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+           'functionName' => NULL,
+           'templatePhpDocNodes' => 
+          array (
+          ),
+           'parent' => NULL,
+           'typeAliasesMap' => 
+          array (
+          ),
+           'bypassTypeAliases' => false,
+           'constUses' => 
+          array (
+          ),
+           'typeAliasClassName' => NULL,
+           'traitData' => NULL,
+        )),
+         'typeAliasesMap' => 
+        array (
+        ),
+         'bypassTypeAliases' => false,
+         'constUses' => 
+        array (
+        ),
+         'typeAliasClassName' => NULL,
+         'traitData' => NULL,
+      )),
+      '281de603bf05c343509e504cb1aada9c' => 
+      \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+         'namespace' => 'App\\Domain\\Purchasing\\Models',
+         'uses' => 
+        array (
+          'product' => 'App\\Domain\\Catalog\\Models\\Product',
+          'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+          'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+          'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+          'model' => 'Illuminate\\Database\\Eloquent\\Model',
+          'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+          'carbon' => 'Illuminate\\Support\\Carbon',
+        ),
+         'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+         'functionName' => 'newFactory',
+         'templatePhpDocNodes' => 
+        array (
+        ),
+         'parent' => 
+        \PHPStan\Analyser\IntermediaryNameScope::__set_state(array(
+           'namespace' => 'App\\Domain\\Purchasing\\Models',
+           'uses' => 
+          array (
+            'product' => 'App\\Domain\\Catalog\\Models\\Product',
+            'purchaseorderlinefactory' => 'Database\\Factories\\PurchaseOrderLineFactory',
+            'factory' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'hasfactory' => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
+            'model' => 'Illuminate\\Database\\Eloquent\\Model',
+            'belongsto' => 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+            'carbon' => 'Illuminate\\Support\\Carbon',
           ),
            'className' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
            'functionName' => NULL,
@@ -231,7 +610,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     1 => 
     array (
-      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => 'b9eec9bbe268c35a5eb9a342bdd99dbfefcd696f2532fd8e0ca8969d5ab99799',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\app\\Domain\\Purchasing\\Models\\PurchaseOrderLine.php' => '0e59c659538443a428bd13d700318db7d603e5b9a623312278e41c5c79d38ce9',
+      'C:\\OPTIZAWORKS\\igoutech\\backend\\vendor\\composer\\..\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Factories\\HasFactory.php' => 'f656f22af602c0c7a3b73524ece133d391640c8c78d29da5ddc48a235e583431',
     ),
   ),
 ));

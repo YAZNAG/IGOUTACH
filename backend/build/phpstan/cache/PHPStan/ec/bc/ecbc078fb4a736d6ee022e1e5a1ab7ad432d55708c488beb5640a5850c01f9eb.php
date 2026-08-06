@@ -2,7 +2,7 @@
 
 // odsl-C:\OPTIZAWORKS\igoutech\backend\app\Domain\Purchasing\Models\PurchaseOrderLine.php-PHPStan\BetterReflection\Reflection\ReflectionClass-App\Domain\Purchasing\Models\PurchaseOrderLine
 return \PHPStan\Cache\CacheItem::__set_state(array(
-   'variableKey' => 'v2-6.70.0.3-8.3.22-b9eec9bbe268c35a5eb9a342bdd99dbfefcd696f2532fd8e0ca8969d5ab99799',
+   'variableKey' => 'v2-6.70.0.3-8.3.22-0e59c659538443a428bd13d700318db7d603e5b9a623312278e41c5c79d38ce9',
    'data' => 
   array (
     'locatedSource' => 
@@ -23,20 +23,22 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     'isBackedEnum' => false,
     'modifiers' => 32,
     'docComment' => '/**
- * Ligne de bon de commande (reliquat = commandé − reçu).
+ * Ligne de bon de commande (reliquat = quantity − received_quantity).
  *
  * @property int $id
  * @property int $purchase_order_id
  * @property int $product_id
- * @property int $quantity_ordered
- * @property int $quantity_received
- * @property string $unit_price
+ * @property int $quantity
+ * @property int $received_quantity
+ * @property int $position
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */',
     'attributes' => 
     array (
     ),
-    'startLine' => 21,
-    'endLine' => 63,
+    'startLine' => 27,
+    'endLine' => 83,
     'startColumn' => 1,
     'endColumn' => 1,
     'parentClassName' => 'Illuminate\\Database\\Eloquent\\Model',
@@ -45,6 +47,7 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
     ),
     'traitClassNames' => 
     array (
+      0 => 'Illuminate\\Database\\Eloquent\\Factories\\HasFactory',
     ),
     'immediateConstants' => 
     array (
@@ -60,23 +63,23 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'type' => NULL,
         'default' => 
         array (
-          'code' => '[\'purchase_order_id\', \'product_id\', \'quantity_ordered\', \'quantity_received\', \'unit_price\']',
+          'code' => '[\'purchase_order_id\', \'product_id\', \'quantity\', \'received_quantity\', \'position\']',
           'attributes' => 
           array (
-            'startLine' => 23,
-            'endLine' => 29,
-            'startTokenPos' => 50,
-            'startFilePos' => 542,
-            'endTokenPos' => 67,
-            'endFilePos' => 678,
+            'startLine' => 32,
+            'endLine' => 38,
+            'startTokenPos' => 77,
+            'startFilePos' => 865,
+            'endTokenPos' => 94,
+            'endFilePos' => 991,
           ),
         ),
         'docComment' => NULL,
         'attributes' => 
         array (
         ),
-        'startLine' => 23,
-        'endLine' => 29,
+        'startLine' => 32,
+        'endLine' => 38,
         'startColumn' => 5,
         'endColumn' => 6,
         'isPromoted' => false,
@@ -111,8 +114,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return array<string, string>
  */',
-        'startLine' => 34,
-        'endLine' => 41,
+        'startLine' => 43,
+        'endLine' => 50,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -148,8 +151,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<PurchaseOrder, $this>
  */',
-        'startLine' => 46,
-        'endLine' => 49,
+        'startLine' => 55,
+        'endLine' => 58,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -185,8 +188,8 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'docComment' => '/**
  * @return BelongsTo<Product, $this>
  */',
-        'startLine' => 54,
-        'endLine' => 57,
+        'startLine' => 63,
+        'endLine' => 66,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -219,9 +222,11 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'attributes' => 
         array (
         ),
-        'docComment' => NULL,
-        'startLine' => 59,
-        'endLine' => 62,
+        'docComment' => '/**
+ * Quantité restante à recevoir.
+ */',
+        'startLine' => 71,
+        'endLine' => 74,
         'startColumn' => 5,
         'endColumn' => 5,
         'couldThrow' => false,
@@ -229,6 +234,43 @@ return \PHPStan\Cache\CacheItem::__set_state(array(
         'isGenerator' => false,
         'isVariadic' => false,
         'modifiers' => 1,
+        'namespace' => 'App\\Domain\\Purchasing\\Models',
+        'declaringClassName' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        'implementingClassName' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        'currentClassName' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
+        'aliasName' => NULL,
+      ),
+      'newFactory' => 
+      array (
+        'name' => 'newFactory',
+        'parameters' => 
+        array (
+        ),
+        'returnsReference' => false,
+        'returnType' => 
+        array (
+          'class' => 'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType',
+          'data' => 
+          array (
+            'name' => 'Illuminate\\Database\\Eloquent\\Factories\\Factory',
+            'isIdentifier' => false,
+          ),
+        ),
+        'attributes' => 
+        array (
+        ),
+        'docComment' => '/**
+ * @return Factory<self>
+ */',
+        'startLine' => 79,
+        'endLine' => 82,
+        'startColumn' => 5,
+        'endColumn' => 5,
+        'couldThrow' => false,
+        'isClosure' => false,
+        'isGenerator' => false,
+        'isVariadic' => false,
+        'modifiers' => 18,
         'namespace' => 'App\\Domain\\Purchasing\\Models',
         'declaringClassName' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',
         'implementingClassName' => 'App\\Domain\\Purchasing\\Models\\PurchaseOrderLine',

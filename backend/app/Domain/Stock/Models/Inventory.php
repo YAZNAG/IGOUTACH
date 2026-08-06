@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Stock\Models;
 
 use App\Domain\Warehouses\Models\Warehouse;
+use App\Support\Scopes\WarehouseScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,15 @@ class Inventory extends Model
         'approved_at',
         'note',
     ];
+
+    /**
+     * Cloisonnement par lieu : sans la permission « stock.view_global »,
+     * un utilisateur ne voit que les inventaires de son propre lieu.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new WarehouseScope);
+    }
 
     protected function casts(): array
     {
