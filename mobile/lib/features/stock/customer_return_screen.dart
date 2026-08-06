@@ -91,22 +91,26 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
   /// Note libre du retour (la date part désormais dans `occurred_at`).
   String _noteFor() => _note.text.trim();
 
+  /// Interception du retour arrière : un retour en cours de saisie ne doit
+  /// pas disparaître sur un appui malencontreux.
+  Future<void> _handlePop(bool didPop) async {
+    if (didPop) return;
+    final navigator = Navigator.of(context);
+    if (_lines.isEmpty || await confirmDiscard(context)) {
+      navigator.pop();
+    }
+  }
+
   Future<void> _submit() async {
     final messenger = ScaffoldMessenger.of(context);
     final warehouseId = _scope?.selectedId;
 
     if (warehouseId == null) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Sélectionnez un lieu.'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, 'Sélectionnez un lieu.');
       return;
     }
     if (_lines.isEmpty) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Ajoutez au moins un article.'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, 'Ajoutez au moins un article.');
       return;
     }
 
@@ -136,20 +140,24 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      messenger.showSnackBar(SnackBar(
-        content: Text('Aucune ligne enregistrée — ${friendlyError(e)}'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(
+        messenger,
+        'Aucune ligne enregistrée — ${friendlyError(e)}',
+      );
       return;
     }
 
     if (!mounted) return;
-    setState(() => _saving = false);
+    setState(() {
+      _saving = false;
+      // La saisie est enregistrée : plus rien à confirmer en quittant.
+      _lines.clear();
+    });
 
-    messenger.showSnackBar(SnackBar(
-      content: Text('Retour enregistré : $count article${count > 1 ? 's' : ''}.'),
-      backgroundColor: AppTheme.success,
-    ));
+    showSuccessSnack(
+      messenger,
+      'Retour enregistré : $count article${count > 1 ? 's' : ''}.',
+    );
     Navigator.of(context).pop(true);
   }
 
@@ -160,16 +168,17 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
     }
 
     final scope = _scope;
+    final totalQuantity = _lines.fold<int>(0, (sum, l) => sum + l.quantity);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Retour client')),
-      body: !_scopeReady
-          ? const LoadingView()
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(bottom: 16),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _handlePop(didPop),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Retour client')),
+        body: !_scopeReady
+            ? const FormSkeleton(fieldCount: 3)
+            : ListView(
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
                     children: [
                       if (scope != null &&
                           scope.canChoose &&
@@ -242,11 +251,12 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
                       ),
                       if (_lines.isEmpty)
                         const Padding(
-                          padding: EdgeInsets.all(24),
+                          padding: EdgeInsets.only(top: 24, bottom: 8),
                           child: EmptyView(
                             icon: Icons.assignment_return_outlined,
-                            message: 'Aucun article. Recherchez un article '
-                                'ci-dessus pour l\'ajouter au retour.',
+                            title: 'Aucun article',
+                            message: 'Recherchez un article ci-dessus '
+                                'pour l\'ajouter au retour.',
                           ),
                         )
                       else
@@ -265,6 +275,7 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
                           child: TextField(
                             controller: _note,
                             maxLength: 120,
+                            textCapitalization: TextCapitalization.sentences,
                             decoration: const InputDecoration(
                               labelText: 'Motif / note (facultatif)',
                               prefixIcon: Icon(Icons.notes_outlined),
@@ -275,71 +286,21 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
                       ),
                     ],
                   ),
-                ),
-                _buildBottomBar(),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildBottomBar() {
-    final totalQuantity = _lines.fold<int>(0, (sum, l) => sum + l.quantity);
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.navy.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${_lines.length} article${_lines.length > 1 ? 's' : ''}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                Text(
-                  '${formatQuantity(totalQuantity)} unité'
-                  '${totalQuantity > 1 ? 's' : ''}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.navy,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            FilledButton.icon(
-              onPressed: _saving ? null : _submit,
-              icon: _saving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check),
-              label: const Text('Enregistrer le retour'),
-            ),
-          ],
-        ),
+        bottomNavigationBar: !_scopeReady
+            ? null
+            : BottomActionBar(
+                label: 'Enregistrer le retour',
+                loading: _saving,
+                summaryLabel: '${_lines.length} article'
+                    '${_lines.length > 1 ? 's' : ''}',
+                summaryValue: '${formatQuantity(totalQuantity)} unité'
+                    '${totalQuantity > 1 ? 's' : ''}',
+                onPressed: _submit,
+              ),
       ),
     );
   }
+
 }
 
 class _LineCard extends StatelessWidget {
@@ -358,29 +319,35 @@ class _LineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        padding: const EdgeInsets.fromLTRB(16, 12, 10, 14),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         line.product.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1.25,
+                        ),
                       ),
+                      const SizedBox(height: 3),
                       Text(
                         line.product.sku,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
-                          color: AppTheme.navy,
-                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTheme.codeStyle,
                       ),
                     ],
                   ),
@@ -395,79 +362,62 @@ class _LineCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppTheme.navy.withValues(alpha: 0.2),
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove, size: 18),
-                        visualDensity: VisualDensity.compact,
-                        onPressed: line.quantity > 1
-                            ? () {
-                                line.quantity--;
-                                onChanged();
-                              }
-                            : null,
-                      ),
-                      Text(
-                        '${line.quantity}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add, size: 18),
-                        visualDensity: VisualDensity.compact,
-                        onPressed: () {
-                          line.quantity++;
-                          onChanged();
-                        },
-                      ),
-                    ],
-                  ),
+                QuantityStepper(
+                  quantity: line.quantity,
+                  onChanged: (value) {
+                    line.quantity = value;
+                    onChanged();
+                  },
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: SegmentedButton<String>(
-                    style: const ButtonStyle(
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    segments: const [
-                      ButtonSegment(
-                        value: 'resellable',
-                        label: Text('Revendable', style: TextStyle(fontSize: 11)),
-                      ),
-                      ButtonSegment(
-                        value: 'defective',
-                        label: Text('Défectueux', style: TextStyle(fontSize: 11)),
-                      ),
-                    ],
-                    selected: {line.condition},
-                    showSelectedIcon: false,
-                    onSelectionChanged: (selection) {
-                      line.condition = selection.first;
-                      onChanged();
-                    },
+                const Expanded(
+                  child: Text(
+                    'unité(s) rendue(s)',
+                    style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            // Sur sa propre ligne : deux libellés lisibles tiennent sans
+            // être rognés, même sur un écran de 360 dp.
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: 'resellable',
+                    icon: Icon(Icons.inventory_2_outlined, size: 18),
+                    label: Text('Revendable'),
+                  ),
+                  ButtonSegment(
+                    value: 'defective',
+                    icon: Icon(Icons.build_outlined, size: 18),
+                    label: Text('Défectueux'),
+                  ),
+                ],
+                selected: {line.condition},
+                showSelectedIcon: false,
+                onSelectionChanged: (selection) {
+                  line.condition = selection.first;
+                  onChanged();
+                },
+              ),
+            ),
             if (line.condition == 'defective')
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
                 child: Text(
                   'Article défectueux : tracé en retour puis sorti en SAV '
                   '(stock inchangé).',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.3,
+                    color: AppTheme.textMuted,
+                  ),
                 ),
               ),
           ],

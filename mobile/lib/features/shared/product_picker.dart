@@ -81,12 +81,7 @@ class _ProductPickerFieldState extends State<ProductPickerField> {
     } catch (e) {
       if (!mounted || requestId != _requestId) return;
       setState(() => _searching = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(friendlyError(e)),
-          backgroundColor: AppTheme.danger,
-        ),
-      );
+      showErrorSnack(ScaffoldMessenger.of(context), friendlyError(e));
     }
   }
 
@@ -103,12 +98,14 @@ class _ProductPickerFieldState extends State<ProductPickerField> {
         TextField(
           controller: _controller,
           onChanged: _onChanged,
+          style: const TextStyle(fontSize: 16),
+          textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             hintText: widget.hintText,
             prefixIcon: const Icon(Icons.search),
             suffixIcon: _searching
                 ? const Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: EdgeInsets.all(14),
                     child: SizedBox(
                       width: 20,
                       height: 20,
@@ -120,24 +117,35 @@ class _ProductPickerFieldState extends State<ProductPickerField> {
         ),
         if (_results.isNotEmpty)
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 240),
-            child: ListView.builder(
+            constraints: const BoxConstraints(maxHeight: 300),
+            child: ListView.separated(
               shrinkWrap: true,
+              padding: const EdgeInsets.only(top: 4),
               itemCount: _results.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final product = _results[index];
                 return ListTile(
-                  dense: true,
-                  title: Text(product.name),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 4,
+                  ),
+                  title: Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   subtitle: Text(
                     product.sku,
-                    style: const TextStyle(fontFamily: 'monospace'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.codeStyle,
                   ),
                   trailing: product.currentStock == null
-                      ? null
+                      ? const Icon(Icons.add_circle_outline)
                       : StatusBadge(
                           label:
-                              'Stock : ${formatQuantity(product.currentStock)}',
+                              'Stock ${formatQuantity(product.currentStock)}',
                           color: (product.currentStock ?? 0) > 0
                               ? AppTheme.success
                               : AppTheme.danger,

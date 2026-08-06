@@ -34,11 +34,9 @@ Future<void> downloadSalePdf(
     await file.writeAsBytes(res.data ?? const []);
     await OpenFilex.open(file.path);
   } catch (e) {
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Téléchargement impossible : ${friendlyError(e)}'),
-        backgroundColor: AppTheme.danger,
-      ),
+    showErrorSnack(
+      messenger,
+      'Téléchargement impossible : ${friendlyError(e)}',
     );
   }
 }
@@ -61,6 +59,7 @@ class _SalesScreenState extends State<SalesScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
   int? _downloadingId;
   int? _payingId;
 
@@ -128,6 +127,7 @@ class _SalesScreenState extends State<SalesScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -158,10 +158,10 @@ class _SalesScreenState extends State<SalesScreen> {
       setState(() => _payingId = null);
 
       if (customer == null) {
-        messenger.showSnackBar(const SnackBar(
-          content: Text('Vente au comptoir : aucun client à encaisser.'),
-          backgroundColor: AppTheme.danger,
-        ));
+        showErrorSnack(
+          messenger,
+          'Vente au comptoir : aucun client à encaisser.',
+        );
         return;
       }
 
@@ -180,19 +180,13 @@ class _SalesScreenState extends State<SalesScreen> {
 
       if (!mounted) return;
       if (saved) {
-        messenger.showSnackBar(const SnackBar(
-          content: Text('Règlement enregistré.'),
-          backgroundColor: AppTheme.success,
-        ));
+        showSuccessSnack(messenger, 'Règlement enregistré.');
         _load(reset: true);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _payingId = null);
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, friendlyError(e));
     }
   }
 
@@ -225,14 +219,21 @@ class _SalesScreenState extends State<SalesScreen> {
 
   Widget _buildBody() {
     final canRecordPayment = context.read<AuthProvider>().can('payment.create');
-    if (!_firstLoadDone) return const LoadingView();
+    if (!_firstLoadDone) return const ListSkeleton(itemCount: 6, lines: 3);
     if (_error != null && _sales.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_sales.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.point_of_sale_outlined,
-        message: 'Aucune vente pour le moment.',
+        title: 'Aucune vente',
+        message: 'Les factures que vous établirez apparaîtront ici.',
+        actionLabel: 'Nouvelle vente',
+        onAction: _openCreate,
       );
     }
 
@@ -244,12 +245,7 @@ class _SalesScreenState extends State<SalesScreen> {
         padding: const EdgeInsets.only(top: 8, bottom: 88),
         itemCount: _sales.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _sales.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+          if (index >= _sales.length) return const SkeletonCard(lines: 3);
           final sale = _sales[index];
           return _SaleTile(
             sale: sale,
@@ -304,120 +300,136 @@ class _SaleTile extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-        child: Row(
+        padding: const EdgeInsets.fromLTRB(16, 14, 10, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    sale.reference,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.navy,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    sale.customer ?? 'Passager',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                  if (sale.createdAt != null)
-                    Text(
-                      sale.createdAt!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      StatusBadge(label: statusLabel, color: statusColor),
-                      if (payment != null)
-                        StatusBadge(label: payment.$1, color: payment.$2),
-                    ],
-                  ),
-                  if (onPay != null) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: paying ? null : onPay,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.success,
-                            side: const BorderSide(color: AppTheme.success),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          icon: paying
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.payments_outlined, size: 18),
-                          label: const Text('Régler'),
+                      Text(
+                        sale.reference,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTheme.codeStyle.copyWith(fontSize: 15),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        sale.customer ?? 'Client de passage',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
                         ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Reste ${formatMoney(sale.dueAmount)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade600,
-                            ),
+                      ),
+                      if (sale.createdAt != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          sale.createdAt!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.textMuted,
                           ),
                         ),
                       ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  formatMoney(sale.total),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: AppTheme.navy,
+                    ],
                   ),
                 ),
-                Text(
-                  '${sale.linesCount} ligne${sale.linesCount > 1 ? 's' : ''}',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    AmountText(
+                      formatMoney(sale.total),
+                      fontSize: 17,
+                      label: '${sale.linesCount} ligne'
+                          '${sale.linesCount > 1 ? 's' : ''}',
+                    ),
+                    downloading
+                        ? const SizedBox(
+                            width: AppTheme.minTapTarget,
+                            height: AppTheme.minTapTarget,
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          )
+                        : IconButton(
+                            icon: const Icon(
+                              Icons.picture_as_pdf_outlined,
+                              color: AppTheme.sky,
+                            ),
+                            tooltip: 'Télécharger la facture',
+                            onPressed: onDownload,
+                          ),
+                  ],
                 ),
-                downloading
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : IconButton(
-                        icon: const Icon(
-                          Icons.picture_as_pdf_outlined,
-                          color: AppTheme.sky,
-                        ),
-                        tooltip: 'Télécharger la facture',
-                        onPressed: onDownload,
-                      ),
               ],
             ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                StatusBadge(label: statusLabel, color: statusColor),
+                if (payment != null)
+                  StatusBadge(label: payment.$1, color: payment.$2),
+              ],
+            ),
+            if (onPay != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: paying ? null : onPay,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.success,
+                        side: const BorderSide(color: AppTheme.success),
+                      ),
+                      icon: paying
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.payments_outlined, size: 20),
+                      label: const Text('Régler'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'Reste ${formatMoney(sale.dueAmount)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: AppTheme.amountStyle(
+                        fontSize: 14,
+                        color: AppTheme.danger,
+                        weight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

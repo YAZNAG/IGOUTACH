@@ -30,6 +30,7 @@ class _PricingScreenState extends State<PricingScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
   String _query = '';
 
   bool get _hasMore => _page < _lastPage;
@@ -106,6 +107,7 @@ class _PricingScreenState extends State<PricingScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -122,25 +124,10 @@ class _PricingScreenState extends State<PricingScreen> {
       appBar: AppBar(title: const Text('Tarifs')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Rechercher un article…',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      ),
-              ),
-            ),
+          AppSearchField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            hintText: 'Rechercher un article…',
           ),
           Expanded(child: _buildBody()),
         ],
@@ -149,14 +136,21 @@ class _PricingScreenState extends State<PricingScreen> {
   }
 
   Widget _buildBody() {
-    if (!_firstLoadDone) return const LoadingView();
+    if (!_firstLoadDone) return const ListSkeleton(itemCount: 6, lines: 3);
     if (_error != null && _rows.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_rows.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.sell_outlined,
-        message: 'Aucun article trouvé.',
+        title: _query.isEmpty ? 'Aucun tarif' : 'Aucun résultat',
+        message: _query.isEmpty
+            ? 'Aucun article n\'a encore de tarif enregistré.'
+            : 'Aucun article ne correspond à « $_query ».',
       );
     }
 
@@ -168,12 +162,7 @@ class _PricingScreenState extends State<PricingScreen> {
         padding: const EdgeInsets.only(bottom: 24, top: 4),
         itemCount: _rows.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _rows.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+          if (index >= _rows.length) return const SkeletonCard(lines: 3);
           return _PriceCard(row: _rows[index]);
         },
       ),
@@ -198,18 +187,22 @@ class _PriceCard extends StatelessWidget {
               row.name,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            Text(
-              row.sku,
               style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 12,
-                color: AppTheme.navy,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                height: 1.25,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 3),
+            Text(
+              row.sku,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTheme.codeStyle,
+            ),
+            const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _PricePill(
@@ -218,7 +211,7 @@ class _PriceCard extends StatelessWidget {
                     color: AppTheme.navy,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _PricePill(
                     label: 'Demi-gros',
@@ -226,7 +219,7 @@ class _PriceCard extends StatelessWidget {
                     color: AppTheme.sky,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _PricePill(
                     label: 'Gros',
@@ -260,35 +253,49 @@ class _PricePill extends StatelessWidget {
     final minQty = level?.minQuantity;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 13,
+              height: 1.2,
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            amount == null ? '—' : formatMoney(amount),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: amount == null ? Colors.grey : color,
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              amount == null ? '—' : formatMoney(amount),
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              style: AppTheme.amountStyle(
+                fontSize: 15,
+                color: amount == null ? AppTheme.textFaint : color,
+              ),
             ),
           ),
           if (minQty != null && minQty > 1)
             Text(
               'dès $minQty',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.3,
+                color: AppTheme.textMuted,
+              ),
             ),
         ],
       ),

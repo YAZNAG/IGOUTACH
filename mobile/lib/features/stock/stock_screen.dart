@@ -31,6 +31,7 @@ class _StockScreenState extends State<StockScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
   String _query = '';
 
   bool get _hasMore => _page < _lastPage;
@@ -110,6 +111,7 @@ class _StockScreenState extends State<StockScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -126,25 +128,10 @@ class _StockScreenState extends State<StockScreen> {
       appBar: AppBar(title: const Text('Mon stock')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Rechercher par nom ou référence…',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      ),
-              ),
-            ),
+          AppSearchField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            hintText: 'Rechercher par nom ou référence…',
           ),
           Expanded(child: _buildBody()),
         ],
@@ -153,14 +140,21 @@ class _StockScreenState extends State<StockScreen> {
   }
 
   Widget _buildBody() {
-    if (!_firstLoadDone) return const LoadingView();
+    if (!_firstLoadDone) return const ListSkeleton(itemCount: 7);
     if (_error != null && _items.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_items.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.inventory_2_outlined,
-        message: 'Aucun article trouvé.',
+        title: _query.isEmpty ? 'Stock vide' : 'Aucun résultat',
+        message: _query.isEmpty
+            ? 'Aucun article n\'est encore suivi dans ce lieu.'
+            : 'Aucun article ne correspond à « $_query ».',
       );
     }
 
@@ -172,12 +166,7 @@ class _StockScreenState extends State<StockScreen> {
         padding: const EdgeInsets.only(bottom: 24, top: 4),
         itemCount: _items.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _items.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+          if (index >= _items.length) return const SkeletonCard();
           return _StockTile(item: _items[index]);
         },
       ),
@@ -206,59 +195,71 @@ class _StockTile extends StatelessWidget {
         badgeLabel = 'OK';
     }
 
+    final quantityColor =
+        item.isBelowThreshold ? AppTheme.danger : AppTheme.navy;
+
     return Card(
-      child: ListTile(
-        title: Text(
-          item.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Row(
-            children: [
-              Text(
-                item.sku,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  color: AppTheme.navy,
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (item.minStock > 0)
-                Text(
-                  'Seuil : ${formatQuantity(item.minStock)}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-            ],
-          ),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: item.isBelowThreshold
-                    ? AppTheme.danger.withValues(alpha: 0.12)
-                    : AppTheme.navy.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                formatQuantity(item.quantity),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color:
-                      item.isBelowThreshold ? AppTheme.danger : AppTheme.navy,
-                ),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.minStock > 0
+                        ? '${item.sku} · seuil ${formatQuantity(item.minStock)}'
+                        : item.sku,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 4),
-            StatusBadge(label: badgeLabel, color: badgeColor),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: quantityColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    formatQuantity(item.quantity),
+                    style: AppTheme.amountStyle(
+                      fontSize: 18,
+                      color: quantityColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                StatusBadge(label: badgeLabel, color: badgeColor),
+              ],
+            ),
           ],
         ),
       ),

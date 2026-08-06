@@ -78,9 +78,14 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
 
   bool _loading = true;
   String? _error;
+  bool _offline = false;
   bool _saving = false;
   String _query = '';
   bool _onlyRemaining = false;
+
+  /// Des quantités saisies n'ont pas encore été envoyées au serveur.
+  bool get _hasUnsavedCounts =>
+      _rows.any((r) => r.isCounted && !r.savedOnServer);
 
   @override
   void initState() {
@@ -150,8 +155,29 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
       });
+    }
+  }
+
+  /// Interception du retour arrière : un comptage non enregistré serait
+  /// perdu, ce qui peut représenter une heure de travail en dépôt.
+  Future<void> _handlePop(bool didPop) async {
+    if (didPop) return;
+    final navigator = Navigator.of(context);
+    if (!_hasUnsavedCounts ||
+        await confirmAction(
+          context,
+          icon: Icons.report_problem_outlined,
+          title: 'Quitter sans enregistrer ?',
+          message: 'Des quantités comptées n\'ont pas encore été '
+              'enregistrées. Elles seront perdues.',
+          confirmLabel: 'Quitter',
+          cancelLabel: 'Rester',
+          confirmColor: AppTheme.danger,
+        )) {
+      navigator.pop();
     }
   }
 
@@ -216,10 +242,7 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
     final messenger = ScaffoldMessenger.of(context);
 
     if (entered.isEmpty) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Saisissez au moins une quantité comptée.'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, 'Saisissez au moins une quantité comptée.');
       return;
     }
 
@@ -227,13 +250,11 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
     final missing =
         entered.where((r) => r.hasGap && r.reason.trim().isEmpty).toList();
     if (missing.isNotEmpty) {
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          'Motif d\'écart obligatoire pour ${missing.length} article'
-          '${missing.length > 1 ? 's' : ''} : ${missing.first.name}.',
-        ),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(
+        messenger,
+        'Motif d\'écart obligatoire pour ${missing.length} article'
+        '${missing.length > 1 ? 's' : ''} : ${missing.first.name}.',
+      );
       return;
     }
 
@@ -263,20 +284,15 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
         }
         _saving = false;
       });
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          '${entered.length} comptage${entered.length > 1 ? 's' : ''} '
-          'enregistré${entered.length > 1 ? 's' : ''}.',
-        ),
-        backgroundColor: AppTheme.success,
-      ));
+      showSuccessSnack(
+        messenger,
+        '${entered.length} comptage${entered.length > 1 ? 's' : ''} '
+        'enregistré${entered.length > 1 ? 's' : ''}.',
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, friendlyError(e));
     }
   }
 
@@ -291,10 +307,7 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
           '/inventories/${widget.inventoryId}/lines/${row.productId}',
         );
       } catch (e) {
-        messenger.showSnackBar(SnackBar(
-          content: Text(friendlyError(e)),
-          backgroundColor: AppTheme.danger,
-        ));
+        showErrorSnack(messenger, friendlyError(e));
         return;
       }
     }
@@ -311,34 +324,19 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
 
   Future<void> _approve() async {
     final remaining = _rows.length - _countedCount;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Valider l\'inventaire'),
-        content: Text(
-          'La validation régularise le stock des articles comptés.\n\n'
+    final confirmed = await confirmAction(
+      context,
+      icon: Icons.verified_outlined,
+      title: 'Valider l\'inventaire',
+      message: 'La validation régularise le stock des articles comptés.\n\n'
           '$_countedCount article${_countedCount > 1 ? 's' : ''} compté'
           '${_countedCount > 1 ? 's' : ''} · '
           '$remaining non compté${remaining > 1 ? 's' : ''}.\n\n'
           'Les articles non comptés ne seront pas modifiés.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.success,
-              minimumSize: const Size(0, 44),
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Valider'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Valider',
+      confirmColor: AppTheme.success,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _saving = true);
@@ -348,18 +346,12 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
       );
       if (!mounted) return;
       setState(() => _saving = false);
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Inventaire validé, stock régularisé.'),
-        backgroundColor: AppTheme.success,
-      ));
+      showSuccessSnack(messenger, 'Inventaire validé, stock régularisé.');
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, friendlyError(e));
     }
   }
 
@@ -374,44 +366,46 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
 
     final canApprove = auth.can('inventory.approve');
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.reference),
-        actions: [
-          if (canApprove && _isDraft && !_loading)
-            IconButton(
-              icon: const Icon(Icons.verified_outlined),
-              tooltip: 'Valider l\'inventaire',
-              onPressed: _saving ? null : _approve,
-            ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _handlePop(didPop),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.reference),
+          actions: [
+            if (canApprove && _isDraft && !_loading)
+              IconButton(
+                icon: const Icon(Icons.verified_outlined),
+                tooltip: 'Valider l\'inventaire',
+                onPressed: _saving ? null : _approve,
+              ),
+          ],
+        ),
+        body: _loading
+            ? const ListSkeleton(itemCount: 8)
+            : _error != null
+                ? ErrorView(
+                    message: _error!,
+                    offline: _offline,
+                    onRetry: _load,
+                  )
+                : Column(
+                    children: [
+                      _buildHeader(),
+                      Expanded(child: _buildList()),
+                    ],
+                  ),
+        bottomNavigationBar: _isDraft && !_loading && _error == null
+            ? BottomActionBar(
+                label: 'Enregistrer le comptage',
+                icon: Icons.save_outlined,
+                loading: _saving,
+                summaryLabel: 'Articles comptés',
+                summaryValue: '$_countedCount / ${_rows.length}',
+                onPressed: _save,
+              )
+            : null,
       ),
-      floatingActionButton: _isDraft && !_loading && _error == null
-          ? FloatingActionButton.extended(
-              onPressed: _saving ? null : _save,
-              icon: _saving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.save_outlined),
-              label: const Text('Enregistrer'),
-            )
-          : null,
-      body: _loading
-          ? const LoadingView()
-          : _error != null
-              ? ErrorView(message: _error!, onRetry: _load)
-              : Column(
-                  children: [
-                    _buildHeader(),
-                    Expanded(child: _buildList()),
-                  ],
-                ),
     );
   }
 
@@ -433,44 +427,32 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                 child: Text(
                   '$_countedCount compté${_countedCount > 1 ? 's' : ''} '
                   '/ $total',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.navy,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTheme.amountStyle(fontSize: 16),
                 ),
               ),
+              const SizedBox(width: 8),
               StatusBadge(label: statusLabel, color: statusColor),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 6,
+              minHeight: 8,
               backgroundColor: AppTheme.navy.withValues(alpha: 0.08),
             ),
           ),
-          const SizedBox(height: 10),
-          TextField(
+          const SizedBox(height: 4),
+          AppSearchField(
             controller: _searchController,
             onChanged: _onSearchChanged,
-            decoration: InputDecoration(
-              hintText: 'Rechercher un article…',
-              prefixIcon: const Icon(Icons.search),
-              isDense: true,
-              suffixIcon: _searchController.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                      },
-                    ),
-            ),
+            hintText: 'Rechercher un article…',
+            padding: const EdgeInsets.only(top: 10),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Row(
             children: [
               FilterChip(
@@ -481,9 +463,9 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
               ),
               const Spacer(),
               if (!_isDraft)
-                Text(
+                const Text(
                   'Comptage clôturé',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
                 ),
             ],
           ),
@@ -497,16 +479,21 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
     if (rows.isEmpty) {
       return EmptyView(
         icon: Icons.inventory_2_outlined,
+        title: _onlyRemaining ? 'Comptage terminé' : 'Aucun résultat',
         message: _onlyRemaining
             ? 'Tous les articles affichés sont comptés.'
             : 'Aucun article ne correspond à la recherche.',
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 4, bottom: 96),
-      itemCount: rows.length,
-      itemBuilder: (context, index) => _buildRow(rows[index]),
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(top: 4, bottom: 24),
+        itemCount: rows.length,
+        itemBuilder: (context, index) => _buildRow(rows[index]),
+      ),
     );
   }
 
@@ -529,50 +516,47 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                         row.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        row.sku,
                         style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
-                          color: AppTheme.navy,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1.25,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
+                      const SizedBox(height: 3),
+                      Text(
+                        row.sku,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTheme.codeStyle,
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
+                          // Le théorique reste masqué tant que rien n'est
+                          // saisi, pour éviter que le compteur le recopie.
                           Text(
-                            'Théorique : ',
+                            'Théorique : '
+                            '${row.isCounted ? formatQuantity(row.systemQuantity) : '•••'}',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          // Masqué tant que rien n'est saisi, pour éviter que
-                          // le compteur recopie le stock théorique.
-                          Text(
-                            row.isCounted
-                                ? formatQuantity(row.systemQuantity)
-                                : '•••',
-                            style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: row.isCounted
                                   ? AppTheme.navy
-                                  : Colors.grey.shade500,
+                                  : AppTheme.textFaint,
                             ),
                           ),
-                          if (row.hasGap) ...[
-                            const SizedBox(width: 8),
+                          if (row.hasGap)
                             StatusBadge(
-                              label:
-                                  'Écart ${row.difference > 0 ? '+' : ''}${row.difference}',
+                              label: 'Écart '
+                                  '${row.difference > 0 ? '+' : ''}'
+                                  '${row.difference}',
                               color: row.difference > 0
                                   ? AppTheme.warning
                                   : AppTheme.danger,
                             ),
-                          ],
                         ],
                       ),
                     ],
@@ -580,12 +564,17 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                 ),
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: 84,
+                  width: 92,
                   child: TextField(
                     controller: _countController(row),
                     enabled: _isDraft,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: AppTheme.tabularFigures,
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                     ],
@@ -593,7 +582,7 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                       labelText: 'Compté',
                       isDense: true,
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 14),
                     ),
                     onChanged: (value) => _onCountChanged(row, value),
                   ),
@@ -611,16 +600,21 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
               ],
             ),
             if (row.hasGap) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               TextField(
                 controller: _reasonController(row),
                 enabled: _isDraft,
                 maxLength: 191,
-                decoration: const InputDecoration(
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
                   labelText: 'Motif de l\'écart *',
-                  prefixIcon: Icon(Icons.report_problem_outlined),
+                  hintText: 'Ex. : casse, erreur de saisie',
+                  prefixIcon: const Icon(Icons.report_problem_outlined),
                   isDense: true,
                   counterText: '',
+                  errorText: row.reason.trim().isEmpty
+                      ? 'Obligatoire pour enregistrer cet écart.'
+                      : null,
                 ),
                 onChanged: (value) => setState(() => row.reason = value),
               ),

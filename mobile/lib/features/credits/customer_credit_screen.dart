@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/api_client.dart';
 import '../../core/auth_provider.dart';
-import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/customer.dart';
+import '../shared/customer_account.dart';
 import '../shared/payment_sheet.dart';
 
 /// Détail du crédit d'un client : relevé de compte
@@ -36,6 +36,7 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
 
   bool _loading = true;
   String? _error;
+  bool _offline = false;
 
   /// `true` si un encaissement a été enregistré : l'écran appelant
   /// (balance âgée) doit alors se recharger.
@@ -75,12 +76,14 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
       });
     }
   }
 
   Future<void> _collect() async {
+    final messenger = ScaffoldMessenger.of(context);
     final saved = await showPaymentSheet(
       context,
       customerId: widget.customerId,
@@ -89,10 +92,7 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
     );
     if (!mounted || !saved) return;
     _changed = true;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Encaissement enregistré.'),
-      backgroundColor: AppTheme.success,
-    ));
+    showSuccessSnack(messenger, 'Encaissement enregistré.');
     _load();
   }
 
@@ -115,37 +115,36 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
               )
             : null,
         body: _loading
-            ? const LoadingView()
+            ? const ListSkeleton(itemCount: 5, hasLeading: true)
             : _error != null
-                ? ErrorView(message: _error!, onRetry: _load)
+                ? ErrorView(
+                    message: _error!,
+                    offline: _offline,
+                    onRetry: _load,
+                  )
                 : RefreshIndicator(
                     onRefresh: _load,
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 96),
+                      padding: const EdgeInsets.only(top: 8, bottom: 96),
                       children: [
                         _buildSummary(),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-                          child: Text(
-                            'Relevé de compte',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.navy,
-                            ),
-                          ),
+                        const SectionTitle(
+                          'Relevé de compte',
+                          padding: EdgeInsets.fromLTRB(16, 20, 16, 4),
                         ),
                         if (_entries.isEmpty)
                           const Padding(
                             padding: EdgeInsets.only(top: 32),
                             child: EmptyView(
                               icon: Icons.receipt_long_outlined,
-                              message: 'Aucune écriture pour ce client.',
+                              title: 'Aucune écriture',
+                              message: 'Ce client n\'a encore ni facture '
+                                  'ni règlement.',
                             ),
                           )
                         else
-                          ..._entries.map((e) => _StatementTile(entry: e)),
+                          ..._entries.map((e) => StatementTile(entry: e)),
                       ],
                     ),
                   ),
@@ -161,136 +160,39 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
                     _name,
                     style: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 19,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.navy,
+                      height: 1.25,
                     ),
                   ),
                 ),
-                if (_isBlocked)
-                  const StatusBadge(label: 'Bloqué', color: AppTheme.danger),
+                if (_isBlocked) ...[
+                  const SizedBox(width: 8),
+                  const StatusBadge(
+                    label: 'Bloqué',
+                    color: AppTheme.danger,
+                    icon: Icons.block,
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _Cell(
-                    label: 'Plafond',
-                    value: formatMoney(_creditLimit),
-                    color: AppTheme.navy,
-                  ),
-                ),
-                Expanded(
-                  child: _Cell(
-                    label: 'Encours',
-                    value: formatMoney(_balance),
-                    color: overLimit ? AppTheme.danger : AppTheme.warning,
-                  ),
-                ),
-                Expanded(
-                  child: _Cell(
-                    label: 'Disponible',
-                    value: formatMoney(available < 0 ? 0 : available),
-                    color: AppTheme.success,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Cell extends StatelessWidget {
-  const _Cell({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatementTile extends StatelessWidget {
-  const _StatementTile({required this.entry});
-
-  final StatementEntry entry;
-
-  @override
-  Widget build(BuildContext context) {
-    // `invoice` augmente l'encours ; `payment` le diminue.
-    final isDebit = entry.type == 'invoice';
-    final color = isDebit ? AppTheme.danger : AppTheme.success;
-    final label = switch (entry.type) {
-      'invoice' => 'Facture',
-      'payment' => 'Règlement',
-      'adjustment' => 'Ajustement',
-      _ => entry.type,
-    };
-
-    return Card(
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          isDebit ? Icons.call_made : Icons.call_received,
-          color: color,
-        ),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          [
-            if (entry.date != null) entry.date!,
-            if ((entry.note ?? '').isNotEmpty) entry.note!,
-          ].join(' · '),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              formatMoney(entry.amount),
-              style: TextStyle(fontWeight: FontWeight.bold, color: color),
-            ),
-            Text(
-              'Solde : ${formatMoney(entry.balanceAfter)}',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            const SizedBox(height: 14),
+            CreditCells(
+              creditLimit: _creditLimit,
+              balance: _balance,
+              available: available,
+              overLimit: overLimit,
             ),
           ],
         ),

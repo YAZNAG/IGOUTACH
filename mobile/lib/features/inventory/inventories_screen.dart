@@ -35,6 +35,7 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
 
   WarehouseScope? _scope;
   bool _scopeReady = false;
@@ -113,6 +114,7 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -122,10 +124,10 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
   Future<void> _create() async {
     final warehouseId = _scope?.selectedId;
     if (warehouseId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Aucun lieu sélectionné pour l\'inventaire.'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(
+        ScaffoldMessenger.of(context),
+        'Aucun lieu sélectionné pour l\'inventaire.',
+      );
       return;
     }
 
@@ -150,10 +152,7 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
       if (!mounted) return;
       await _open(inventory);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, friendlyError(e));
     }
   }
 
@@ -181,24 +180,9 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inventaire'),
-        bottom: scope?.selectedLabel == null
+        bottom: scope?.selected == null
             ? null
-            : PreferredSize(
-                preferredSize: const Size.fromHeight(22),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      scope!.selectedLabel!,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            : WarehouseAppBarLabel(warehouse: scope!.selected!),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
@@ -206,7 +190,7 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
         label: const Text('Nouveau comptage'),
       ),
       body: !_scopeReady
-          ? const LoadingView()
+          ? const ListSkeleton(itemCount: 5)
           : Column(
               children: [
                 if (scope != null)
@@ -224,14 +208,22 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
   }
 
   Widget _buildBody() {
-    if (!_firstLoadDone) return const LoadingView();
+    if (!_firstLoadDone) return const ListSkeleton(itemCount: 5);
     if (_error != null && _inventories.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_inventories.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.fact_check_outlined,
-        message: 'Aucun inventaire. Créez un comptage pour commencer.',
+        title: 'Aucun inventaire',
+        message: 'Créez un comptage pour vérifier le stock réel '
+            'et le régulariser.',
+        actionLabel: 'Nouveau comptage',
+        onAction: _create,
       );
     }
 
@@ -243,38 +235,57 @@ class _InventoriesScreenState extends State<InventoriesScreen> {
         padding: const EdgeInsets.only(top: 8, bottom: 96),
         itemCount: _inventories.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _inventories.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+          if (index >= _inventories.length) return const SkeletonCard();
           final inventory = _inventories[index];
           final (label, color) = inventoryStatusBadge(inventory.status);
+          final counted = inventory.linesCount ?? 0;
 
           return Card(
-            child: ListTile(
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
               onTap: () => _open(inventory),
-              title: Text(
-                inventory.reference,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.navy,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            inventory.reference,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTheme.codeStyle.copyWith(fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            [
+                              if (inventory.countedAt != null)
+                                inventory.countedAt!,
+                              if (inventory.warehouseLabel != null)
+                                inventory.warehouseLabel!,
+                              '$counted article${counted > 1 ? 's' : ''} '
+                                  'compté${counted > 1 ? 's' : ''}',
+                            ].join(' · '),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textMuted,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    StatusBadge(label: label, color: color),
+                  ],
                 ),
               ),
-              subtitle: Text(
-                [
-                  if (inventory.countedAt != null) inventory.countedAt!,
-                  if (inventory.warehouseLabel != null)
-                    inventory.warehouseLabel!,
-                  '${inventory.linesCount ?? 0} article'
-                      '${(inventory.linesCount ?? 0) > 1 ? 's' : ''} compté'
-                      '${(inventory.linesCount ?? 0) > 1 ? 's' : ''}',
-                ].join(' · '),
-                style: const TextStyle(fontSize: 12),
-              ),
-              trailing: StatusBadge(label: label, color: color),
             ),
           );
         },
@@ -348,7 +359,9 @@ class _NewInventoryDialogState extends State<_NewInventoryDialog> {
           child: const Text('Annuler'),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(120, AppTheme.minTapTarget),
+          ),
           onPressed: () => Navigator.of(context).pop(
             (date: _date, note: _note.text.trim()),
           ),

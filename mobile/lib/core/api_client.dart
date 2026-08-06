@@ -58,6 +58,14 @@ class ApiClient {
   Future<void> clearToken() => _storage.delete(key: _tokenKey);
 }
 
+/// L'erreur vient-elle d'une absence de réseau plutôt que du serveur ?
+///
+/// Permet aux écrans d'afficher « Vérifiez votre connexion » (wifi barré)
+/// au lieu d'une erreur serveur, deux problèmes que l'utilisateur ne règle
+/// pas de la même façon.
+bool isNetworkError(Object error) =>
+    error is DioException && error.response == null;
+
 /// Message d'erreur lisible (en français) pour une exception réseau.
 String friendlyError(Object error) {
   if (error is DioException) {
@@ -70,7 +78,7 @@ String friendlyError(Object error) {
     if (status == 403) return 'Accès non autorisé.';
     if (status == 404) return 'Ressource introuvable.';
     if (status != null) return 'Erreur serveur ($status).';
-    return 'Impossible de contacter le serveur. Vérifiez le réseau.';
+    return 'Le serveur n\'a pas répondu.';
   }
   return 'Une erreur inattendue est survenue.';
 }

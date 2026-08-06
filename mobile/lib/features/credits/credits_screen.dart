@@ -23,6 +23,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
   List<AgingRow>? _rows;
   bool _loading = true;
   String? _error;
+  bool _offline = false;
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
       });
     }
@@ -82,9 +84,9 @@ class _CreditsScreenState extends State<CreditsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Crédits clients')),
       body: _loading
-          ? const LoadingView()
+          ? const ListSkeleton(itemCount: 5, lines: 2)
           : _error != null
-              ? ErrorView(message: _error!, onRetry: _load)
+              ? ErrorView(message: _error!, offline: _offline, onRetry: _load)
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView(
@@ -97,7 +99,9 @@ class _CreditsScreenState extends State<CreditsScreen> {
                           padding: EdgeInsets.only(top: 48),
                           child: EmptyView(
                             icon: Icons.credit_score,
-                            message: 'Aucun crédit client en cours.',
+                            title: 'Aucun crédit en cours',
+                            message: 'Tous les clients sont à jour : '
+                                'rien n\'est dû aujourd\'hui.',
                           ),
                         )
                       else
@@ -116,33 +120,43 @@ class _CreditsScreenState extends State<CreditsScreen> {
   }
 
   Widget _buildHeader() {
-    return Card(
-      color: AppTheme.navy,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Total dû par les clients',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              formatMoney(_totalDue),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${(_rows ?? []).length} client${(_rows ?? []).length > 1 ? 's' : ''} avec encours',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
+    final count = (_rows ?? []).length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppTheme.navy, AppTheme.navyDeep],
         ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Total dû par les clients',
+            style: TextStyle(color: Colors.white70, fontSize: 15),
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              formatMoney(_totalDue),
+              maxLines: 1,
+              style: AppTheme.amountStyle(fontSize: 30, color: Colors.white),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '$count client${count > 1 ? 's' : ''} avec encours',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ],
       ),
     );
   }
@@ -166,34 +180,37 @@ class _AgingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Text(
                       row.customer ?? 'Client inconnu',
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        fontSize: 16,
+                        height: 1.25,
                       ),
                     ),
                   ),
-                  Text(
+                  const SizedBox(width: 10),
+                  AmountText(
                     formatMoney(row.totalDue),
-                    style: const TextStyle(
-                      color: AppTheme.danger,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                    fontSize: 17,
+                    color: AppTheme.danger,
                   ),
                   if (onTap != null)
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                    const Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textMuted,
+                    ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _Bucket(label: '0-30 j', amount: row.bucket0to30,
                       color: AppTheme.success),
@@ -227,27 +244,33 @@ class _Bucket extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = amount > 0;
-    final displayColor = active ? color : Colors.grey.shade400;
+    final displayColor = active ? color : AppTheme.textFaint;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: displayColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: displayColor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: displayColor.withValues(alpha: 0.22)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 10, color: displayColor),
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.2,
+              color: displayColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
+          const SizedBox(height: 2),
           Text(
             formatMoney(amount),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: displayColor,
-            ),
+            maxLines: 1,
+            style: AppTheme.amountStyle(fontSize: 14, color: displayColor),
           ),
         ],
       ),

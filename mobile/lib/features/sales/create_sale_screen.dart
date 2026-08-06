@@ -28,14 +28,25 @@ class _LineDraft {
   /// Jeton anti-course : seule la dernière requête de prix est retenue.
   int priceRequestId = 0;
 
+  /// Amortisseur de saisie : la quantité peut être tapée au clavier, on
+  /// n'interroge le serveur qu'une fois la frappe terminée.
+  Timer? priceDebounce;
+
   double? get lineTotal =>
       unitPrice == null ? null : unitPrice! * quantity;
 }
 
-/// Création d'une vente (facture) : client (ou passage), lieu, articles,
-/// prix résolus par le serveur (paliers), confirmation et PDF.
+/// Création d'une vente : client (ou passage), lieu, articles, prix résolus
+/// par le serveur (paliers), confirmation et PDF.
+///
+/// [type] vaut `invoice` (facture, valeur par défaut) ou `quote` (devis).
+/// Un devis n'étant qu'une proposition, l'étape de confirmation — qui déduit
+/// le stock — est ignorée dans ce cas.
 class CreateSaleScreen extends StatefulWidget {
-  const CreateSaleScreen({super.key});
+  const CreateSaleScreen({super.key, this.type = 'invoice'});
+
+  /// `invoice` ou `quote`.
+  final String type;
 
   @override
   State<CreateSaleScreen> createState() => _CreateSaleScreenState();
@@ -43,6 +54,8 @@ class CreateSaleScreen extends StatefulWidget {
 
 class _CreateSaleScreenState extends State<CreateSaleScreen> {
   final _api = ApiClient.instance;
+
+  bool get _isQuote => widget.type == 'quote';
 
   bool _walkIn = false;
   Customer? _customer;
@@ -59,6 +72,14 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
   void initState() {
     super.initState();
     _loadWarehouses();
+  }
+
+  @override
+  void dispose() {
+    for (final line in _lines) {
+      line.priceDebounce?.cancel();
+    }
+    super.dispose();
   }
 
   Future<void> _loadWarehouses() async {
@@ -153,17 +174,33 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
 
   void _refreshAllPrices() {
     for (final line in _lines) {
+      line.priceDebounce?.cancel();
       _fetchPrice(line);
     }
   }
 
+  /// Change la quantité d'une ligne et replanifie la résolution du prix.
+  ///
+  /// Le prix dépend des paliers (détail / demi-gros / gros) : il doit être
+  /// redemandé au serveur, mais une seule fois quand la quantité est saisie
+  /// au clavier — d'où l'amortissement de 300 ms.
   void _changeQuantity(_LineDraft line, int quantity) {
-    if (quantity < 1) return;
-    setState(() => line.quantity = quantity);
-    _fetchPrice(line);
+    if (quantity < 1 || quantity == line.quantity) return;
+    setState(() {
+      line.quantity = quantity;
+      line.loadingPrice = true;
+    });
+    line.priceDebounce?.cancel();
+    line.priceDebounce = Timer(
+      const Duration(milliseconds: 300),
+      () {
+        if (mounted) _fetchPrice(line);
+      },
+    );
   }
 
   void _removeLine(_LineDraft line) {
+    line.priceDebounce?.cancel();
     setState(() => _lines.remove(line));
   }
 
@@ -185,30 +222,32 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
 
   // ── Création ────────────────────────────────────────────────────────────
 
+  /// Interception du retour arrière : une vente en cours de saisie ne doit
+  /// pas disparaître sur un appui malencontreux.
+  Future<void> _handlePop(bool didPop) async {
+    if (didPop) return;
+    final navigator = Navigator.of(context);
+    if (_lines.isEmpty || await confirmDiscard(context)) {
+      navigator.pop();
+    }
+  }
+
   Future<void> _submit() async {
     final messenger = ScaffoldMessenger.of(context);
 
     if (_warehouseId == null) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Sélectionnez un lieu.'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, 'Sélectionnez un lieu.');
       return;
     }
     if (!_walkIn && _customer == null) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text(
-          'Sélectionnez un client ou activez « Client de passage ».',
-        ),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(
+        messenger,
+        'Sélectionnez un client ou activez « Client de passage ».',
+      );
       return;
     }
     if (_lines.isEmpty) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Ajoutez au moins un article.'),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, 'Ajoutez au moins un article.');
       return;
     }
 
@@ -218,7 +257,7 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
       final res = await _api.dio.post<Map<String, dynamic>>(
         '/sales',
         data: {
-          'type': 'invoice',
+          'type': widget.type,
           'customer_id': _walkIn ? null : _customer!.id,
           'warehouse_id': _warehouseId,
           'lines': _lines
@@ -237,53 +276,59 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _creating = false);
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, friendlyError(e));
     }
   }
 
   Future<void> _afterCreated(int saleId, String reference) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Vente créée'),
-        content: Text(
-          'La vente $reference a été créée en brouillon.\n'
-          'Confirmer maintenant ? (le stock sera déduit)',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Plus tard'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Confirmer'),
-          ),
-        ],
-      ),
-    );
+    // Un devis n'est pas confirmé : il sera converti en vente plus tard.
+    final confirm = _isQuote
+        ? false
+        : await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              icon: const Icon(
+                Icons.check_circle_outline,
+                size: 32,
+                color: AppTheme.success,
+              ),
+              title: const Text('Vente créée'),
+              content: Text(
+                'La vente $reference a été créée en brouillon.\n'
+                'Confirmer maintenant ? (le stock sera déduit)',
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Plus tard'),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(120, AppTheme.minTapTarget),
+                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Confirmer'),
+                ),
+              ],
+            ),
+          );
 
     if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
 
     if (confirm == true) {
       try {
         await _api.dio.post('/sales/$saleId/confirm');
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Vente $reference confirmée.'),
-          backgroundColor: AppTheme.success,
-        ));
+        showSuccessSnack(messenger, 'Vente $reference confirmée.');
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Confirmation impossible : ${friendlyError(e)}'),
-          backgroundColor: AppTheme.danger,
-        ));
+        showErrorSnack(
+          messenger,
+          'Confirmation impossible : ${friendlyError(e)}',
+        );
       }
     }
 
@@ -292,15 +337,27 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Facture PDF'),
-        content: const Text('Télécharger la facture PDF maintenant ?'),
+        icon: const Icon(
+          Icons.picture_as_pdf_outlined,
+          size: 32,
+          color: AppTheme.sky,
+        ),
+        title: Text(_isQuote ? 'Devis PDF' : 'Facture PDF'),
+        content: Text(
+          _isQuote
+              ? 'Télécharger le devis PDF maintenant ?'
+              : 'Télécharger la facture PDF maintenant ?',
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text('Non'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(120, AppTheme.minTapTarget),
+            ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Télécharger'),
           ),
@@ -325,45 +382,52 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
       return const NotAllowedView();
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle vente')),
-      body: _loadingWarehouses
-          ? const LoadingView()
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    children: [
-                      _buildCustomerCard(),
-                      _buildWarehouseCard(),
-                      _buildProductSearchCard(),
-                      if (_lines.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: EmptyView(
-                            icon: Icons.shopping_cart_outlined,
-                            message:
-                                'Aucun article. Recherchez un article '
-                                'ci-dessus pour l\'ajouter.',
-                          ),
-                        )
-                      else
-                        ..._lines.map(
-                          (line) => _LineCard(
-                            key: ValueKey(line.product.id),
-                            line: line,
-                            onQuantityChanged: (q) =>
-                                _changeQuantity(line, q),
-                            onRemove: () => _removeLine(line),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                _buildBottomBar(),
-              ],
-            ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _handlePop(didPop),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_isQuote ? 'Nouveau devis' : 'Nouvelle vente'),
+        ),
+        body: _loadingWarehouses
+            ? const FormSkeleton(fieldCount: 3)
+            : ListView(
+                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                children: [
+                  _buildCustomerCard(),
+                  _buildWarehouseCard(),
+                  _buildProductSearchCard(),
+                  if (_lines.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: EmptyView(
+                        icon: Icons.shopping_cart_outlined,
+                        title: 'Panier vide',
+                        message: 'Recherchez un article ci-dessus '
+                            'pour l\'ajouter à la vente.',
+                      ),
+                    )
+                  else
+                    ..._lines.map(
+                      (line) => _LineCard(
+                        key: ValueKey(line.product.id),
+                        line: line,
+                        onQuantityChanged: (q) => _changeQuantity(line, q),
+                        onRemove: () => _removeLine(line),
+                      ),
+                    ),
+                ],
+              ),
+        bottomNavigationBar: _loadingWarehouses
+            ? null
+            : BottomActionBar(
+                label: _isQuote ? 'Créer le devis' : 'Créer la vente',
+                loading: _creating,
+                summaryLabel: 'Total',
+                summaryValue: formatMoney(_total),
+                onPressed: _submit,
+              ),
+      ),
     );
   }
 
@@ -376,10 +440,7 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Client de passage'),
-              subtitle: const Text(
-                'Vente comptoir sans fiche client',
-                style: TextStyle(fontSize: 12),
-              ),
+              subtitle: const Text('Vente comptoir sans fiche client'),
               value: _walkIn,
               activeThumbColor: AppTheme.sky,
               onChanged: (value) {
@@ -397,10 +458,12 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
                     color: AppTheme.navy),
                 title: Text(
                   _customer?.name ?? 'Sélectionner un client…',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: _customer == null
-                        ? Colors.grey.shade600
+                        ? AppTheme.textMuted
                         : AppTheme.navy,
                   ),
                 ),
@@ -408,8 +471,9 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
                     ? null
                     : Text(
                         '${_customer!.code} · '
-                        'Encours : ${formatMoney(_customer!.balance)}',
-                        style: const TextStyle(fontSize: 12),
+                        'encours ${formatMoney(_customer!.balance)}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _pickCustomer,
@@ -462,58 +526,6 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
     );
   }
 
-  Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.navy.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Total', style: TextStyle(fontSize: 16)),
-                Text(
-                  formatMoney(_total),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.navy,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            FilledButton.icon(
-              onPressed: _creating ? null : _submit,
-              icon: _creating
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check),
-              label: const Text('Créer la vente'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 /// Carte d'une ligne : quantité (stepper), prix serveur, total, suppression.
@@ -554,30 +566,35 @@ class _LineCard extends StatelessWidget {
       ),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: const EdgeInsets.fromLTRB(16, 12, 10, 14),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           line.product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              const TextStyle(fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            height: 1.25,
+                          ),
                         ),
+                        const SizedBox(height: 3),
                         Text(
                           line.product.sku,
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            color: AppTheme.navy,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.codeStyle,
                         ),
                       ],
                     ),
@@ -592,92 +609,65 @@ class _LineCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Stepper de quantité
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppTheme.navy.withValues(alpha: 0.2),
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove, size: 18),
-                          visualDensity: VisualDensity.compact,
-                          onPressed: line.quantity > 1
-                              ? () => onQuantityChanged(line.quantity - 1)
-                              : null,
-                        ),
-                        Text(
-                          '${line.quantity}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.add, size: 18),
-                          visualDensity: VisualDensity.compact,
-                          onPressed: () =>
-                              onQuantityChanged(line.quantity + 1),
-                        ),
-                      ],
-                    ),
+                  QuantityStepper(
+                    quantity: line.quantity,
+                    onChanged: onQuantityChanged,
                   ),
-                  const Spacer(),
-                  if (line.loadingPrice)
-                    const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  else if (line.priceError != null)
-                    Flexible(
-                      child: Text(
-                        line.priceError!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppTheme.danger,
-                          fontSize: 12,
-                        ),
-                      ),
-                    )
-                  else
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${formatMoney(line.unitPrice)} × ${line.quantity}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        Text(
-                          formatMoney(line.lineTotal),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.navy,
-                          ),
-                        ),
-                        if (_priceTypeLabel.isNotEmpty)
-                          StatusBadge(
-                            label: _priceTypeLabel,
-                            color: AppTheme.sky,
-                          ),
-                      ],
-                    ),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildPrice()),
                 ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  /// Prix résolu par le serveur : chargement, erreur, ou montant + palier.
+  Widget _buildPrice() {
+    if (line.loadingPrice) {
+      return const Align(
+        alignment: Alignment.centerRight,
+        child: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      );
+    }
+
+    if (line.priceError != null) {
+      return Text(
+        line.priceError!,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.right,
+        style: const TextStyle(color: AppTheme.danger, fontSize: 13),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${formatMoney(line.unitPrice)} × ${line.quantity}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+        ),
+        const SizedBox(height: 2),
+        AmountText(formatMoney(line.lineTotal), fontSize: 18),
+        if (_priceTypeLabel.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          StatusBadge(label: _priceTypeLabel, color: AppTheme.sky),
+        ],
+      ],
     );
   }
 }
@@ -698,6 +688,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
   List<Customer> _results = [];
   bool _loading = true;
   String? _error;
+  bool _offline = false;
 
   @override
   void initState() {
@@ -744,6 +735,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
       });
     }
@@ -756,72 +748,93 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.75,
+        height: MediaQuery.of(context).size.height * 0.78,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: TextField(
-                controller: _searchController,
-                autofocus: true,
-                onChanged: _onChanged,
-                decoration: const InputDecoration(
-                  hintText: 'Rechercher un client…',
-                  prefixIcon: Icon(Icons.search),
+            const SizedBox(height: 10),
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Choisir un client',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.navy,
+                  ),
                 ),
               ),
             ),
+            AppSearchField(
+              controller: _searchController,
+              autofocus: true,
+              onChanged: _onChanged,
+              hintText: 'Rechercher un client…',
+            ),
             Expanded(
               child: _loading
-                  ? const LoadingView()
+                  ? const ListSkeleton(itemCount: 6)
                   : _error != null
                       ? ErrorView(
                           message: _error!,
+                          offline: _offline,
                           onRetry: () =>
                               _search(_searchController.text.trim()),
                         )
                       : _results.isEmpty
                           ? const EmptyView(
                               icon: Icons.people_outline,
-                              message: 'Aucun client trouvé.',
+                              title: 'Aucun client trouvé',
+                              message: 'Vérifiez l\'orthographe, ou créez '
+                                  'la fiche depuis le module Clients.',
                             )
                           : ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 16),
                               itemCount: _results.length,
-                              itemBuilder: (context, index) {
-                                final customer = _results[index];
-                                return ListTile(
-                                  enabled: !customer.isBlocked,
-                                  title: Text(customer.name),
-                                  subtitle: Text(
-                                    '${customer.code}'
-                                    '${(customer.city ?? '').isNotEmpty ? ' · ${customer.city}' : ''}',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                  trailing: customer.isBlocked
-                                      ? const StatusBadge(
-                                          label: 'Bloqué',
-                                          color: AppTheme.danger,
-                                        )
-                                      : Text(
-                                          formatMoney(customer.balance),
-                                          style: TextStyle(
-                                            color: customer.isOverLimit
-                                                ? AppTheme.danger
-                                                : AppTheme.navy,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                  onTap: customer.isBlocked
-                                      ? null
-                                      : () => Navigator.of(context)
-                                          .pop(customer),
-                                );
-                              },
+                              itemBuilder: (context, index) =>
+                                  _buildCustomerRow(_results[index]),
                             ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCustomerRow(Customer customer) {
+    return ListTile(
+      enabled: !customer.isBlocked,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      title: Text(
+        customer.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        '${customer.code}'
+        '${(customer.city ?? '').isNotEmpty ? ' · ${customer.city}' : ''}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: customer.isBlocked
+          ? const StatusBadge(label: 'Bloqué', color: AppTheme.danger)
+          : AmountText(
+              formatMoney(customer.balance),
+              fontSize: 15,
+              color: customer.isOverLimit ? AppTheme.danger : AppTheme.navy,
+            ),
+      onTap: customer.isBlocked
+          ? null
+          : () => Navigator.of(context).pop(customer),
     );
   }
 }

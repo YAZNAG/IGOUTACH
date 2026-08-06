@@ -35,6 +35,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
 
   /// `null` = tous les statuts.
   String? _status;
@@ -103,6 +104,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -116,47 +118,31 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   }
 
   Future<void> _openCreate() async {
+    final messenger = ScaffoldMessenger.of(context);
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const CreateExpenseScreen()),
     );
     if (created == true) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Charge enregistrée, en attente de validation.'),
-          backgroundColor: AppTheme.success,
-        ));
-      }
+      showSuccessSnack(
+        messenger,
+        'Charge enregistrée, en attente de validation.',
+      );
       _load(reset: true);
     }
   }
 
   Future<void> _decide(Expense expense, String decision) async {
     final approving = decision == 'approved';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(approving ? 'Approuver la charge' : 'Refuser la charge'),
-        content: Text(
-          '${expense.label}\n${formatMoney(expense.amount)}\n\n'
+    final confirmed = await confirmAction(
+      context,
+      icon: approving ? Icons.check_circle_outline : Icons.cancel_outlined,
+      title: approving ? 'Approuver la charge' : 'Refuser la charge',
+      message: '${expense.label}\n${formatMoney(expense.amount)}\n\n'
           'Confirmer ${approving ? 'l\'approbation' : 'le refus'} ?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: approving ? AppTheme.success : AppTheme.danger,
-              minimumSize: const Size(0, 44),
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(approving ? 'Approuver' : 'Refuser'),
-          ),
-        ],
-      ),
+      confirmLabel: approving ? 'Approuver' : 'Refuser',
+      confirmColor: approving ? AppTheme.success : AppTheme.danger,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _decidingId = expense.id);
@@ -167,18 +153,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       );
       if (!mounted) return;
       setState(() => _decidingId = null);
-      messenger.showSnackBar(SnackBar(
-        content: Text(approving ? 'Charge approuvée.' : 'Charge refusée.'),
-        backgroundColor: approving ? AppTheme.success : AppTheme.danger,
-      ));
+      if (approving) {
+        showSuccessSnack(messenger, 'Charge approuvée.');
+      } else {
+        showErrorSnack(messenger, 'Charge refusée.');
+      }
       _load(reset: true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _decidingId = null);
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
+      showErrorSnack(messenger, friendlyError(e));
     }
   }
 
@@ -234,14 +218,24 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   }
 
   Widget _buildBody(bool canApprove) {
-    if (!_firstLoadDone) return const LoadingView();
+    if (!_firstLoadDone) return const ListSkeleton(itemCount: 5, lines: 3);
     if (_error != null && _expenses.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_expenses.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.receipt_long_outlined,
-        message: 'Aucune charge pour ce filtre.',
+        title: 'Aucune charge',
+        message: _status == null
+            ? 'Enregistrez ici les dépenses du lieu (carburant, '
+                'électricité, réparations…).'
+            : 'Aucune charge ne correspond à ce filtre.',
+        actionLabel: _status == null ? 'Nouvelle charge' : null,
+        onAction: _status == null ? _openCreate : null,
       );
     }
 
@@ -253,12 +247,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         padding: const EdgeInsets.only(top: 4, bottom: 96),
         itemCount: _expenses.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _expenses.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+          if (index >= _expenses.length) return const SkeletonCard(lines: 3);
           final expense = _expenses[index];
           return _ExpenseCard(
             expense: expense,
@@ -309,19 +298,13 @@ class _ExpenseCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 15,
+                      fontSize: 16,
+                      height: 1.25,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  formatMoney(expense.amount),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: AppTheme.navy,
-                  ),
-                ),
+                const SizedBox(width: 10),
+                AmountText(formatMoney(expense.amount), fontSize: 17),
               ],
             ),
             const SizedBox(height: 6),
@@ -332,9 +315,13 @@ class _ExpenseCard extends StatelessWidget {
                 if ((expense.warehouse ?? '').isNotEmpty) expense.warehouse!,
                 if ((expense.user ?? '').isNotEmpty) expense.user!,
               ].join(' · '),
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.textMuted,
+                height: 1.3,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 6,
               runSpacing: 4,
@@ -377,7 +364,7 @@ class _ExpenseCard extends StatelessWidget {
                         onPressed: onApprove,
                         style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.success,
-                          minimumSize: const Size(0, 42),
+                          minimumSize: const Size(0, AppTheme.minTapTarget),
                         ),
                         icon: const Icon(Icons.check, size: 18),
                         label: const Text('Approuver'),

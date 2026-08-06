@@ -52,6 +52,7 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
   String _query = '';
 
   DateTime? _dateFrom;
@@ -152,6 +153,7 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -197,27 +199,12 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        bottom: scope?.selectedLabel == null
+        bottom: scope?.selected == null
             ? null
-            : PreferredSize(
-                preferredSize: const Size.fromHeight(22),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      scope!.selectedLabel!,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            : WarehouseAppBarLabel(warehouse: scope!.selected!),
       ),
       body: !_scopeReady
-          ? const LoadingView()
+          ? const ListSkeleton(itemCount: 6, lines: 3)
           : Column(
               children: [
                 if (scope != null)
@@ -243,38 +230,25 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: Column(
         children: [
-          TextField(
+          AppSearchField(
             controller: _searchController,
             onChanged: _onSearchChanged,
-            decoration: InputDecoration(
-              hintText: 'Rechercher un article (nom, référence)…',
-              prefixIcon: const Icon(Icons.search),
-              isDense: true,
-              suffixIcon: _searchController.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                      },
-                    ),
-            ),
+            hintText: 'Rechercher un article (nom, référence)…',
+            padding: EdgeInsets.zero,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _pickPeriod,
-                  icon: const Icon(Icons.date_range, size: 18),
+                  icon: const Icon(Icons.date_range, size: 20),
                   label: Text(
                     hasPeriod
                         ? '${formatDate(_dateFrom)} → ${formatDate(_dateTo)}'
                         : 'Toute la période',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ),
@@ -292,10 +266,18 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
   }
 
   Widget _buildTotals() {
-    return Card(
-      color: AppTheme.navy,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppTheme.navy, AppTheme.navyDeep],
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
             Expanded(
@@ -323,18 +305,22 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
   }
 
   Widget _buildBody() {
-    if (!_firstLoadDone) return const LoadingView();
+    if (!_firstLoadDone) return const ListSkeleton(itemCount: 6, lines: 3);
     if (_error != null && _rows.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_rows.isEmpty) {
       return EmptyView(
         icon: widget.isExit
             ? Icons.outbox_outlined
             : Icons.move_to_inbox_outlined,
-        message: widget.isExit
-            ? 'Aucune sortie sur cette période.'
-            : 'Aucune entrée sur cette période.',
+        title: widget.isExit ? 'Aucune sortie' : 'Aucune entrée',
+        message: 'Aucun mouvement sur la période et le lieu sélectionnés. '
+            'Élargissez la période pour en voir davantage.',
       );
     }
 
@@ -346,12 +332,7 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
         padding: const EdgeInsets.only(top: 4, bottom: 24),
         itemCount: _rows.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index >= _rows.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+          if (index >= _rows.length) return const SkeletonCard(lines: 3);
           final row = _rows[index];
           return _MovementCard(
             row: row,
@@ -381,19 +362,22 @@ class _Total extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 11),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
         ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+        const SizedBox(height: 3),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            style: AppTheme.amountStyle(fontSize: 16, color: Colors.white),
           ),
         ),
       ],
@@ -418,66 +402,93 @@ class _MovementCard extends StatelessWidget {
     final sign = isExit ? '−' : '+';
 
     return Card(
-      child: ListTile(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: onTap,
-        title: Text(
-          row.productName ?? '—',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 2),
-            Text(
-              [
-                row.shortDate,
-                if ((row.sku ?? '').isNotEmpty) row.sku!,
-                if ((row.sourceLabel ?? '').isNotEmpty) row.sourceLabel!,
-              ].join(' · '),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11),
-            ),
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: [
-                if ((row.typeName ?? '').isNotEmpty)
-                  StatusBadge(label: row.typeName!, color: AppTheme.sky),
-                StatusBadge(
-                  label: '${isExit ? 'CMUP' : 'PU'} '
-                      '${formatMoney(row.unitCost)}',
-                  color: AppTheme.navy,
-                ),
-              ],
-            ),
-          ],
-        ),
-        isThreeLine: true,
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '$sign${formatQuantity(row.quantity)}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: color,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          row.productName ?? '—',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            height: 1.25,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          [
+                            row.shortDate,
+                            if ((row.sku ?? '').isNotEmpty) row.sku!,
+                            if ((row.sourceLabel ?? '').isNotEmpty)
+                              row.sourceLabel!,
+                          ].join(' · '),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppTheme.textMuted,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      AmountText(
+                        '$sign${formatQuantity(row.quantity)}',
+                        fontSize: 20,
+                        color: color,
+                        label: formatMoney(row.lineValue),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Solde ${formatQuantity(row.balanceAfter)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            Text(
-              formatMoney(row.lineValue),
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
-            ),
-            Text(
-              'Solde ${formatQuantity(row.balanceAfter)}',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  if ((row.typeName ?? '').isNotEmpty)
+                    StatusBadge(label: row.typeName!, color: AppTheme.sky),
+                  StatusBadge(
+                    label: '${isExit ? 'CMUP' : 'PU'} '
+                        '${formatMoney(row.unitCost)}',
+                    color: AppTheme.navy,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

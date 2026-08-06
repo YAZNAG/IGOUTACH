@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icône « carton de stock » blanche, utilisée pour le splash natif et
+     comme premier plan de l'icône adaptative. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:translateX="27" android:translateY="27">
+        <path
+            android:fillColor="@color/igoutech_white"
+            android:pathData="M45,9L9,9C6.79,9 5,10.79 5,13L5,41C5,43.21 6.79,45 9,45L45,45C47.21,45 49,43.21 49,41L49,13C49,10.79 47.21,9 45,9zM45,41L9,41L9,13L20,13L20,25L34,25L34,13L45,13L45,41z" />
+        <path
+            android:fillColor="@color/igoutech_white"
+            android:pathData="M24,13h6v8h-6z" />
+    </group>
+</vector>

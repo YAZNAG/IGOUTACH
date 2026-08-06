@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/api_client.dart';
 import '../../core/format.dart';
 import '../../core/theme.dart';
+import '../../core/widgets.dart';
 import '../../models/payment_method.dart';
 
 /// Ouvre la feuille de règlement (encaissement client).
@@ -71,6 +72,9 @@ class _PaymentSheetState extends State<_PaymentSheet> {
   bool _saving = false;
   String? _error;
 
+  /// Validation à la volée déclenchée après la première tentative.
+  bool _submitted = false;
+
   @override
   void initState() {
     super.initState();
@@ -135,6 +139,7 @@ class _PaymentSheetState extends State<_PaymentSheet> {
   }
 
   Future<void> _submit() async {
+    setState(() => _submitted = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() {
@@ -178,6 +183,9 @@ class _PaymentSheetState extends State<_PaymentSheet> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Form(
             key: _formKey,
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -210,26 +218,34 @@ class _PaymentSheetState extends State<_PaymentSheet> {
                     if ((widget.saleReference ?? '').isNotEmpty)
                       widget.saleReference!,
                   ].join(' · '),
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: AppTheme.textMuted,
+                  ),
                 ),
                 if (widget.dueAmount != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     widget.saleId == null
                         ? 'Encours : ${formatMoney(widget.dueAmount)}'
                         : 'Reste dû : ${formatMoney(widget.dueAmount)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
+                    style: AppTheme.amountStyle(
+                      fontSize: 16,
                       color: AppTheme.danger,
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _amountController,
                   autofocus: true,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: AppTheme.tabularFigures,
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                   ],
@@ -264,14 +280,14 @@ class _PaymentSheetState extends State<_PaymentSheet> {
                     ),
                   )
                 else if (!_methodsAvailable || _methods.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
                     child: Text(
                       'Modes de paiement indisponibles : '
                       'l\'encaissement sera enregistré sans mode.',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                        color: AppTheme.textMuted,
                       ),
                     ),
                   )
@@ -296,19 +312,24 @@ class _PaymentSheetState extends State<_PaymentSheet> {
                 const SizedBox(height: 12),
                 InkWell(
                   onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusField),
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       labelText: 'Date',
                       prefixIcon: Icon(Icons.event_outlined),
+                      suffixIcon: Icon(Icons.edit_calendar_outlined),
                     ),
-                    child: Text(formatDate(_receivedAt)),
+                    child: Text(
+                      formatDate(_receivedAt),
+                      style: const TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _noteController,
                   maxLength: 255,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(
                     labelText: 'Note (facultatif)',
                     prefixIcon: Icon(Icons.notes_outlined),
@@ -316,16 +337,10 @@ class _PaymentSheetState extends State<_PaymentSheet> {
                   ),
                 ),
                 if (_error != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    _error!,
-                    style: const TextStyle(
-                      color: AppTheme.danger,
-                      fontSize: 13,
-                    ),
-                  ),
+                  const SizedBox(height: 12),
+                  ErrorBox(message: _error!),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 FilledButton.icon(
                   onPressed: _saving ? null : _submit,
                   icon: _saving
@@ -333,12 +348,16 @@ class _PaymentSheetState extends State<_PaymentSheet> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 2.5,
                             color: Colors.white,
                           ),
                         )
                       : const Icon(Icons.check),
-                  label: const Text('Enregistrer l\'encaissement'),
+                  label: Text(
+                    _saving
+                        ? 'Enregistrement…'
+                        : 'Enregistrer l\'encaissement',
+                  ),
                 ),
               ],
             ),

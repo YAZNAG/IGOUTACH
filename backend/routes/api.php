@@ -216,6 +216,7 @@ Route::prefix('v1')->group(function () {
         Route::post('stock/adjust', [StockController::class, 'adjust'])->middleware('can:stock.adjust');
         Route::post('stock/return', [StockController::class, 'returnIn'])->middleware('can:stock.entry');
         Route::post('stock/return-multi', [StockController::class, 'returnMulti'])->middleware('can:stock.entry');
+        Route::post('stock/supplier-return', [StockController::class, 'supplierReturn'])->middleware('can:stock.issue');
 
         // Transferts inter-lieux (alerte transit > 3 jours incluse)
         Route::get('transfers', [TransferController::class, 'index'])->middleware('can:stock.view');

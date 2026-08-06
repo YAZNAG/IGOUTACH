@@ -36,8 +36,19 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   DateTime _date = DateTime.now();
   bool _loading = true;
   String? _loadError;
+  bool _loadOffline = false;
   bool _saving = false;
   String? _error;
+
+  /// La validation ne se déclenche à la volée qu'après une première tentative.
+  bool _submitted = false;
+
+  bool get _isDirty =>
+      _label.text.trim().isNotEmpty || _amount.text.trim().isNotEmpty;
+
+  /// Montant saisi, `null` si la saisie n'est pas un nombre valide.
+  double? get _parsedAmount =>
+      double.tryParse(_amount.text.trim().replaceAll(',', '.'));
 
   @override
   void initState() {
@@ -77,8 +88,18 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       if (!mounted) return;
       setState(() {
         _loadError = friendlyError(e);
+        _loadOffline = isNetworkError(e);
         _loading = false;
       });
+    }
+  }
+
+  /// Interception du retour arrière : confirmation si la saisie est entamée.
+  Future<void> _handlePop(bool didPop) async {
+    if (didPop) return;
+    final navigator = Navigator.of(context);
+    if (!_isDirty || await confirmDiscard(context)) {
+      navigator.pop();
     }
   }
 
@@ -94,6 +115,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   }
 
   Future<void> _submit() async {
+    setState(() => _submitted = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_categoryId == null) {
       setState(() => _error = 'Sélectionnez une catégorie.');
@@ -133,13 +155,30 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       return const NotAllowedView();
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle charge')),
-      body: _loading
-          ? const LoadingView()
-          : _loadError != null
-              ? ErrorView(message: _loadError!, onRetry: _load)
-              : _buildForm(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _handlePop(didPop),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Nouvelle charge')),
+        body: _loading
+            ? const FormSkeleton()
+            : _loadError != null
+                ? ErrorView(
+                    message: _loadError!,
+                    offline: _loadOffline,
+                    onRetry: _load,
+                  )
+                : _buildForm(),
+        bottomNavigationBar: _loading || _loadError != null
+            ? null
+            : BottomActionBar(
+                label: 'Enregistrer la charge',
+                loading: _saving,
+                summaryLabel: 'Montant',
+                summaryValue: formatMoney(_parsedAmount ?? 0),
+                onPressed: _categories.isEmpty ? null : _submit,
+              ),
+      ),
     );
   }
 
@@ -148,16 +187,18 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
 
     return Form(
       key: _formKey,
+      autovalidateMode: _submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
         children: [
           if (_categories.isEmpty)
             const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Aucune catégorie de charge n\'est définie. '
-                'Demandez à un responsable d\'en créer une.',
-                style: TextStyle(color: AppTheme.danger, fontSize: 13),
+              padding: EdgeInsets.only(bottom: 16),
+              child: ErrorBox(
+                message: 'Aucune catégorie de charge n\'est définie. '
+                    'Demandez à un responsable d\'en créer une.',
               ),
             )
           else
@@ -178,17 +219,26 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                   .toList(),
               onChanged: (value) => setState(() => _categoryId = value),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           TextFormField(
             controller: _amount,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textInputAction: TextInputAction.next,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              fontFeatures: AppTheme.tabularFigures,
+            ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
             ],
             decoration: const InputDecoration(
               labelText: 'Montant (DH) *',
+              hintText: '0,00',
               prefixIcon: Icon(Icons.payments_outlined),
             ),
+            // Met à jour le total de la barre du bas à chaque frappe.
+            onChanged: (_) => setState(() {}),
             validator: (value) {
               final raw = (value ?? '').trim().replaceAll(',', '.');
               final parsed = double.tryParse(raw);
@@ -198,25 +248,31 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
               return null;
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           InkWell(
             onTap: _pickDate,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusField),
             child: InputDecorator(
               decoration: const InputDecoration(
                 labelText: 'Date *',
                 prefixIcon: Icon(Icons.event_outlined),
+                suffixIcon: Icon(Icons.edit_calendar_outlined),
               ),
-              child: Text(formatDate(_date)),
+              child: Text(
+                formatDate(_date),
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           TextFormField(
             controller: _label,
             maxLength: 191,
             maxLines: 2,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Description *',
+              hintText: 'Ex. : carburant camionnette',
               prefixIcon: Icon(Icons.notes_outlined),
               counterText: '',
             ),
@@ -224,7 +280,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 ? 'La description est obligatoire.'
                 : null,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           if (scope != null && scope.canChoose && scope.warehouses.isNotEmpty)
             DropdownButtonFormField<int>(
               initialValue: scope.selectedId,
@@ -251,27 +307,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
               message: 'Lieu : ${scope!.selectedLabel}',
             ),
           if (_error != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: const TextStyle(color: AppTheme.danger, fontSize: 13),
-            ),
+            const SizedBox(height: 20),
+            ErrorBox(message: _error!),
           ],
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _saving || _categories.isEmpty ? null : _submit,
-            icon: _saving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.check),
-            label: const Text('Enregistrer la charge'),
-          ),
         ],
       ),
     );

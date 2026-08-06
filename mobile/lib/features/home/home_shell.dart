@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/auth_provider.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../../models/warehouse.dart';
 import '../credits/credits_screen.dart';
 import '../customers/customers_screen.dart';
 import '../expenses/expenses_screen.dart';
@@ -20,24 +21,31 @@ import '../stock/stock_screen.dart';
 class _Module {
   const _Module({
     required this.title,
+    required this.subtitle,
     required this.icon,
-    required this.color,
     required this.permission,
     required this.builder,
   });
 
   final String title;
+
+  /// Une ligne qui dit à quoi sert le module, dans les mots du métier.
+  final String subtitle;
   final IconData icon;
-  final Color color;
   final String permission;
   final WidgetBuilder builder;
 }
 
-/// Groupe de modules affiché sous un petit titre.
+/// Groupe de modules affiché sous un petit titre, avec sa couleur d'accent.
 class _Section {
-  const _Section({required this.title, required this.modules});
+  const _Section({
+    required this.title,
+    required this.color,
+    required this.modules,
+  });
 
   final String title;
+  final Color color;
   final List<_Module> modules;
 }
 
@@ -51,46 +59,47 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  /// Libellé du lieu de l'utilisateur, `null` si aucun lieu ou si
+  /// Lieu de rattachement de l'utilisateur, `null` si aucun lieu ou si
   /// `GET /warehouses` est refusé (permission `warehouse.view`).
-  String? _warehouseLabel;
+  Warehouse? _warehouse;
 
   static final List<_Section> _sections = [
     _Section(
-      title: 'Mon stock',
+      title: 'Stock',
+      color: AppTheme.accentStock,
       modules: [
         _Module(
           title: 'Mon stock',
-          icon: Icons.inventory,
-          color: AppTheme.navy,
+          subtitle: 'Voir les quantités disponibles',
+          icon: Icons.inventory_2_rounded,
           permission: 'stock.view',
           builder: (_) => const StockScreen(),
         ),
         _Module(
           title: 'Entrées',
-          icon: Icons.move_to_inbox,
-          color: AppTheme.success,
+          subtitle: 'Réceptions et retours reçus',
+          icon: Icons.move_to_inbox_rounded,
           permission: 'stock.view',
           builder: (_) => const StockEntriesScreen(),
         ),
         _Module(
           title: 'Sorties',
-          icon: Icons.outbox,
-          color: AppTheme.danger,
+          subtitle: 'Ventes et transferts expédiés',
+          icon: Icons.outbox_rounded,
           permission: 'stock.view',
           builder: (_) => const StockExitsScreen(),
         ),
         _Module(
           title: 'Inventaire',
-          icon: Icons.fact_check,
-          color: const Color(0xFF7C3AED),
+          subtitle: 'Compter et régulariser le stock',
+          icon: Icons.fact_check_rounded,
           permission: 'inventory.create',
           builder: (_) => const InventoriesScreen(),
         ),
         _Module(
           title: 'Retour client',
-          icon: Icons.assignment_return,
-          color: const Color(0xFF0891B2),
+          subtitle: 'Reprendre un article rendu',
+          icon: Icons.assignment_return_rounded,
           permission: 'stock.entry',
           builder: (_) => const CustomerReturnScreen(),
         ),
@@ -98,25 +107,26 @@ class _HomeShellState extends State<HomeShell> {
     ),
     _Section(
       title: 'Commerce',
+      color: AppTheme.accentCommerce,
       modules: [
         _Module(
           title: 'Clients',
-          icon: Icons.people,
-          color: AppTheme.sky,
+          subtitle: 'Fiches, encours et relevés',
+          icon: Icons.people_alt_rounded,
           permission: 'customer.view',
           builder: (_) => const CustomersScreen(),
         ),
         _Module(
           title: 'Ventes',
-          icon: Icons.point_of_sale,
-          color: AppTheme.success,
+          subtitle: 'Facturer et encaisser',
+          icon: Icons.point_of_sale_rounded,
           permission: 'sale.create',
           builder: (_) => const SalesScreen(),
         ),
         _Module(
           title: 'Crédits clients',
-          icon: Icons.credit_card,
-          color: const Color(0xFF9333EA),
+          subtitle: 'Suivre ce qui reste dû',
+          icon: Icons.credit_card_rounded,
           permission: 'payment.view',
           builder: (_) => const CreditsScreen(),
         ),
@@ -124,18 +134,19 @@ class _HomeShellState extends State<HomeShell> {
     ),
     _Section(
       title: 'Gestion',
+      color: AppTheme.accentAdmin,
       modules: [
         _Module(
           title: 'Charges',
-          icon: Icons.receipt_long,
-          color: const Color(0xFFEA580C),
+          subtitle: 'Saisir les dépenses du lieu',
+          icon: Icons.receipt_long_rounded,
           permission: 'expense.create',
           builder: (_) => const ExpensesScreen(),
         ),
         _Module(
           title: 'Tarifs',
-          icon: Icons.sell,
-          color: const Color(0xFF0D9488),
+          subtitle: 'Prix détail, demi-gros et gros',
+          icon: Icons.sell_rounded,
           permission: 'price.view',
           builder: (_) => const PricingScreen(),
         ),
@@ -146,44 +157,30 @@ class _HomeShellState extends State<HomeShell> {
   @override
   void initState() {
     super.initState();
-    _loadWarehouseLabel();
+    _loadWarehouse();
   }
 
-  Future<void> _loadWarehouseLabel() async {
+  Future<void> _loadWarehouse() async {
     final userWarehouseId = context.read<AuthProvider>().user?.warehouseId;
     if (userWarehouseId == null) return;
     final scope = await WarehouseScope.load(userWarehouseId);
     if (!mounted) return;
     // 403 sur /warehouses : on n'affiche simplement rien de plus.
-    setState(() => _warehouseLabel = scope.selectedLabel);
+    setState(() => _warehouse = scope.selected);
   }
 
-  Future<void> _confirmLogout(BuildContext context) async {
+  Future<void> _confirmLogout() async {
     final auth = context.read<AuthProvider>();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.danger,
-              minimumSize: const Size(0, 44),
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Se déconnecter'),
-          ),
-        ],
-      ),
+    final confirmed = await confirmAction(
+      context,
+      icon: Icons.logout_rounded,
+      title: 'Se déconnecter',
+      message: 'Vous devrez saisir à nouveau votre mot de passe '
+          'à la prochaine ouverture.',
+      confirmLabel: 'Se déconnecter',
+      confirmColor: AppTheme.danger,
     );
-    if (confirmed == true) {
-      await auth.logout();
-    }
+    if (confirmed) await auth.logout();
   }
 
   @override
@@ -195,6 +192,7 @@ class _HomeShellState extends State<HomeShell> {
         .map(
           (section) => _Section(
             title: section.title,
+            color: section.color,
             modules: section.modules
                 .where((m) => auth.can(m.permission))
                 .toList(growable: false),
@@ -203,118 +201,339 @@ class _HomeShellState extends State<HomeShell> {
         .where((section) => section.modules.isNotEmpty)
         .toList(growable: false);
 
-    final subtitle = [
-      user?.name ?? '',
-      ?_warehouseLabel,
-    ].where((s) => s.isNotEmpty).join(' · ');
-
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'IGOUTECH',
-              style: TextStyle(fontSize: 16, letterSpacing: 1.5),
-            ),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13, color: Colors.white70),
-            ),
-          ],
-        ),
+        titleSpacing: 16,
+        title: const Text('IGOUTECH', style: TextStyle(letterSpacing: 1.5)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-            onPressed: () => _confirmLogout(context),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Menu',
+            position: PopupMenuPosition.under,
+            onSelected: (value) {
+              if (value == 'logout') _confirmLogout();
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    const Icon(Icons.logout_rounded, color: AppTheme.danger),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Se déconnecter',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      body: sections.isEmpty
-          ? const EmptyView(
-              icon: Icons.lock_outline,
-              message: 'Aucun module autorisé, contactez l\'administrateur.',
-            )
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-              children: [
-                for (final section in sections) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 10),
-                    child: Text(
-                      section.title.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                        color: AppTheme.navy.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.15,
-                    ),
-                    itemCount: section.modules.length,
-                    itemBuilder: (context, index) =>
-                        _ModuleCard(module: section.modules[index]),
-                  ),
-                ],
-              ],
+      body: RefreshIndicator(
+        onRefresh: _loadWarehouse,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          children: [
+            _HomeHeader(
+              name: user?.name ?? '',
+              role: _roleLabel(user?.roles ?? const []),
+              warehouse: _warehouse,
             ),
+            if (sections.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 48),
+                child: EmptyView(
+                  icon: Icons.lock_outline,
+                  title: 'Aucun module autorisé',
+                  message: 'Votre compte n\'a encore aucun droit d\'accès. '
+                      'Contactez l\'administrateur pour les activer.',
+                ),
+              )
+            else
+              for (final section in sections) ...[
+                SectionTitle(section.title),
+                for (final module in section.modules)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _ModuleCard(module: module, color: section.color),
+                  ),
+              ],
+          ],
+        ),
+      ),
     );
   }
 }
 
+/// Libellé du rôle principal (les rôles serveur sont déjà en français).
+String _roleLabel(List<String> roles) {
+  if (roles.isEmpty) return '';
+  final role = roles.first.trim();
+  if (role.isEmpty) return '';
+  return role[0].toUpperCase() + role.substring(1);
+}
+
+/// Salutation selon l'heure : « Bonjour » le jour, « Bonsoir » le soir.
+String _greeting(DateTime now) => now.hour >= 18 || now.hour < 5
+    ? 'Bonsoir'
+    : 'Bonjour';
+
+/// En-tête de l'accueil : salutation, identité, rôle et lieu de travail.
+class _HomeHeader extends StatelessWidget {
+  const _HomeHeader({
+    required this.name,
+    required this.role,
+    required this.warehouse,
+  });
+
+  final String name;
+  final String role;
+  final Warehouse? warehouse;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
+    final place = warehouse;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppTheme.navy, AppTheme.navyDeep],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.navy.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_greeting(DateTime.now())},',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      name.isEmpty ? 'Bienvenue' : name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (role.isNotEmpty || place != null) ...[
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (role.isNotEmpty)
+                  _HeaderChip(icon: Icons.badge_outlined, label: role),
+                if (place != null)
+                  _HeaderChip(
+                    icon: place.icon,
+                    label: place.typeLabel == null
+                        ? place.name
+                        : '${place.typeLabel} · ${place.name}',
+                    highlighted: true,
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Pastille d'information de l'en-tête (rôle, lieu).
+class _HeaderChip extends StatelessWidget {
+  const _HeaderChip({
+    required this.icon,
+    required this.label,
+    this.highlighted = false,
+  });
+
+  final IconData icon;
+  final String label;
+
+  /// Le lieu est mis en avant : c'est l'information qui change tout.
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 320),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: highlighted
+            ? AppTheme.sky.withValues(alpha: 0.28)
+            : Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: highlighted
+              ? AppTheme.sky.withValues(alpha: 0.65)
+              : Colors.white.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 17, color: Colors.white),
+          const SizedBox(width: 7),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                height: 1.2,
+                fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Carte d'un module : grande icône teintée, titre, sous-titre explicatif.
 class _ModuleCard extends StatelessWidget {
-  const _ModuleCard({required this.module});
+  const _ModuleCard({required this.module, required this.color});
 
   final _Module module;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: module.color,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: module.builder),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+      elevation: 0,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+          border: Border.all(color: AppTheme.border),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.navy.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+          splashColor: color.withValues(alpha: 0.12),
+          highlightColor: color.withValues(alpha: 0.06),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: module.builder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(module.icon, color: color, size: 30),
                 ),
-                child: Icon(module.icon, color: Colors.white, size: 28),
-              ),
-              Text(
-                module.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        module.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.navy,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        module.subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textMuted,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: color.withValues(alpha: 0.8),
+                  size: 26,
+                ),
+              ],
+            ),
           ),
         ),
       ),

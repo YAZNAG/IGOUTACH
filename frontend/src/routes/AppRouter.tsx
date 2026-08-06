@@ -10,7 +10,7 @@ import { CategoriesPage } from '@/features/categories'
 import { CustomerDetailPage, CustomersPage } from '@/features/customers'
 import { ExpensesPage } from '@/features/expenses'
 import { InventoryPage } from '@/features/inventory'
-import { PaymentsPage } from '@/features/payments'
+import { CustomerCreditsPage, PaymentsPage } from '@/features/payments'
 import { AlertsPage, ReportsPage } from '@/features/pilotage'
 import {
   CreatePurchaseOrderPage,
@@ -35,7 +35,15 @@ import {
   PaymentMethodsPage,
   TaxRatesSettingsPage,
 } from '@/features/settings'
-import { StockEntriesPage, StockEntryDetailPage, StockExitDetailPage, StockExitsPage, StockPage } from '@/features/stock'
+import {
+  CustomerReturnsPage,
+  StockEntriesPage,
+  StockEntryDetailPage,
+  StockExitDetailPage,
+  StockExitsPage,
+  StockPage,
+  SupplierReturnsPage,
+} from '@/features/stock'
 import { SupplierDetailPage, SuppliersPage } from '@/features/suppliers'
 import { UnitsPage } from '@/features/units'
 import { WarehouseDetailPage, WarehousesPage } from '@/features/warehouses'
@@ -62,6 +70,8 @@ export const router = createBrowserRouter([
           { path: '/stock-entries/:id', element: <StockEntryDetailPage /> },
           { path: '/stock-exits', element: <StockExitsPage /> },
           { path: '/stock-exits/:id', element: <StockExitDetailPage /> },
+          { path: '/retours-clients', element: <CustomerReturnsPage /> },
+          { path: '/retours-fournisseurs', element: <SupplierReturnsPage /> },
           { path: '/inventaire', element: <InventoryPage /> },
           { path: '/transferts', element: <TransfersPage /> },
           { path: '/achats', element: <PurchasesPage /> },
@@ -76,12 +86,15 @@ export const router = createBrowserRouter([
           { path: '/ventes', element: <SalesPage /> },
           { path: '/devis', element: <QuotesPage /> },
           { path: '/reglements', element: <PaymentsPage /> },
+          { path: '/credits-clients', element: <CustomerCreditsPage /> },
           { path: '/caisse', element: <CashPage /> },
           { path: '/categories', element: <CategoriesPage /> },
           { path: '/articles', element: <ArticlesPage /> },
           { path: '/articles/:id', element: <ProductDetailPage /> },
           { path: '/tarifs', element: <PricingPage /> },
           { path: '/couts', element: <ProductCostsPage /> },
+          { path: '/unites', element: <UnitsPage /> },
+          { path: '/marques', element: <BrandsPage /> },
           { path: '/fournisseurs', element: <SuppliersPage /> },
           { path: '/fournisseurs/:id', element: <SupplierDetailPage /> },
           { path: '/clients', element: <CustomersPage /> },

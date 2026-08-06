@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/api_client.dart';
-import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/customer.dart';
+import '../shared/customer_account.dart';
 
 /// Fiche client : coordonnées, crédit (plafond / encours / disponible)
 /// et relevé (GET /customers/{id}/statement).
@@ -23,6 +23,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   List<StatementEntry>? _entries;
   bool _loading = true;
   String? _error;
+  bool _offline = false;
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
       });
     }
@@ -63,106 +65,90 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(customer.name)),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          customer.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.navy,
+      body: RefreshIndicator(
+        onRefresh: _loadStatement,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            customer.name,
+                            style: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.navy,
+                              height: 1.25,
+                            ),
                           ),
                         ),
-                      ),
-                      if (customer.isBlocked)
-                        const StatusBadge(
-                          label: 'Bloqué',
-                          color: AppTheme.danger,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _InfoRow(label: 'Code', value: customer.code),
-                  if ((customer.phone ?? '').isNotEmpty)
-                    _InfoRow(label: 'Téléphone', value: customer.phone!),
-                  if ((customer.city ?? '').isNotEmpty)
-                    _InfoRow(label: 'Ville', value: customer.city!),
-                  if ((customer.email ?? '').isNotEmpty)
-                    _InfoRow(label: 'E-mail', value: customer.email!),
-                  if ((customer.address ?? '').isNotEmpty)
-                    _InfoRow(label: 'Adresse', value: customer.address!),
-                ],
+                        if (customer.isBlocked) ...[
+                          const SizedBox(width: 8),
+                          const StatusBadge(
+                            label: 'Bloqué',
+                            color: AppTheme.danger,
+                            icon: Icons.block,
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    _InfoRow(label: 'Code', value: customer.code),
+                    if ((customer.phone ?? '').isNotEmpty)
+                      _InfoRow(label: 'Téléphone', value: customer.phone!),
+                    if ((customer.city ?? '').isNotEmpty)
+                      _InfoRow(label: 'Ville', value: customer.city!),
+                    if ((customer.email ?? '').isNotEmpty)
+                      _InfoRow(label: 'E-mail', value: customer.email!),
+                    if ((customer.address ?? '').isNotEmpty)
+                      _InfoRow(label: 'Adresse', value: customer.address!),
+                  ],
+                ),
               ),
             ),
-          ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _CreditCell(
-                      label: 'Plafond',
-                      value: formatMoney(customer.creditLimit),
-                      color: AppTheme.navy,
-                    ),
-                  ),
-                  Expanded(
-                    child: _CreditCell(
-                      label: 'Encours',
-                      value: formatMoney(customer.balance),
-                      color: customer.isOverLimit
-                          ? AppTheme.danger
-                          : AppTheme.warning,
-                    ),
-                  ),
-                  Expanded(
-                    child: _CreditCell(
-                      label: 'Disponible',
-                      value: formatMoney(customer.availableCredit),
-                      color: AppTheme.success,
-                    ),
-                  ),
-                ],
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CreditCells(
+                  creditLimit: customer.creditLimit,
+                  balance: customer.balance,
+                  available: customer.availableCredit,
+                  overLimit: customer.isOverLimit,
+                ),
               ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text(
+            const SectionTitle(
               'Relevé de compte',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.navy,
-              ),
+              padding: EdgeInsets.fromLTRB(16, 20, 16, 4),
             ),
-          ),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_error != null)
-            ErrorView(message: _error!, onRetry: _loadStatement)
-          else if ((_entries ?? []).isEmpty)
-            const EmptyView(
-              icon: Icons.receipt_long_outlined,
-              message: 'Aucune écriture pour ce client.',
-            )
-          else
-            ...(_entries ?? []).map((entry) => _StatementTile(entry: entry)),
-        ],
+            if (_loading)
+              const ListSkeleton(itemCount: 4, hasLeading: true)
+            else if (_error != null)
+              ErrorView(
+                message: _error!,
+                offline: _offline,
+                onRetry: _loadStatement,
+              )
+            else if ((_entries ?? []).isEmpty)
+              const EmptyView(
+                icon: Icons.receipt_long_outlined,
+                title: 'Aucune écriture',
+                message: 'Ce client n\'a encore ni facture ni règlement.',
+              )
+            else
+              ...(_entries ?? []).map((entry) => StatementTile(entry: entry)),
+          ],
+        ),
       ),
     );
   }
@@ -177,114 +163,27 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 90,
+            width: 104,
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 15),
             ),
           ),
           Expanded(
             child: Text(
               value,
               style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CreditCell extends StatelessWidget {
-  const _CreditCell({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatementTile extends StatelessWidget {
-  const _StatementTile({required this.entry});
-
-  final StatementEntry entry;
-
-  @override
-  Widget build(BuildContext context) {
-    // `invoice` augmente l'encours ; `payment` le diminue.
-    final isDebit = entry.type == 'invoice';
-    final color = isDebit ? AppTheme.danger : AppTheme.success;
-    final label = switch (entry.type) {
-      'invoice' => 'Facture',
-      'payment' => 'Règlement',
-      'adjustment' => 'Ajustement',
-      _ => entry.type,
-    };
-
-    return Card(
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          isDebit ? Icons.call_made : Icons.call_received,
-          color: color,
-        ),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          [
-            if (entry.date != null) entry.date!,
-            if ((entry.note ?? '').isNotEmpty) entry.note!,
-          ].join(' · '),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              formatMoney(entry.amount),
-              style: TextStyle(fontWeight: FontWeight.bold, color: color),
-            ),
-            Text(
-              'Solde : ${formatMoney(entry.balanceAfter)}',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
       ),
     );
   }

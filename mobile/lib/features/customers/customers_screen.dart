@@ -33,6 +33,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
   bool _loading = false;
   bool _firstLoadDone = false;
   String? _error;
+  bool _offline = false;
   String _query = '';
 
   bool get _hasMore => _page < _lastPage;
@@ -109,6 +110,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
         _firstLoadDone = true;
       });
@@ -116,16 +118,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   Future<void> _openCreate() async {
+    final messenger = ScaffoldMessenger.of(context);
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const CreateCustomerScreen()),
     );
     if (created == true) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Client créé.'),
-          backgroundColor: AppTheme.success,
-        ));
-      }
+      showSuccessSnack(messenger, 'Client créé.');
       _load(reset: true);
     }
   }
@@ -140,10 +138,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Clients')),
       floatingActionButton: auth.can('customer.create')
-          ? FloatingActionButton(
+          ? FloatingActionButton.extended(
               onPressed: _openCreate,
               tooltip: 'Nouveau client',
-              child: const Icon(Icons.add),
+              icon: const Icon(Icons.person_add_alt_1),
+              label: const Text('Nouveau client'),
             )
           : null,
       body: Column(
@@ -154,41 +153,38 @@ class _CustomersScreenState extends State<CustomersScreen> {
               message:
                   'Vous voyez uniquement les clients que vous avez créés.',
             ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Rechercher (nom, code, téléphone)…',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      ),
-              ),
-            ),
+          AppSearchField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            hintText: 'Rechercher (nom, code, téléphone)…',
           ),
-          Expanded(child: _buildBody()),
+          Expanded(child: _buildBody(canCreate: auth.can('customer.create'))),
         ],
       ),
     );
   }
 
-  Widget _buildBody() {
-    if (!_firstLoadDone) return const LoadingView();
+  Widget _buildBody({required bool canCreate}) {
+    if (!_firstLoadDone) {
+      return const ListSkeleton(itemCount: 7, hasLeading: true);
+    }
     if (_error != null && _customers.isEmpty) {
-      return ErrorView(message: _error!, onRetry: () => _load(reset: true));
+      return ErrorView(
+        message: _error!,
+        offline: _offline,
+        onRetry: () => _load(reset: true),
+      );
     }
     if (_customers.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.people_outline,
-        message: 'Aucun client trouvé.',
+        title: _query.isEmpty ? 'Aucun client' : 'Aucun résultat',
+        message: _query.isEmpty
+            ? 'Créez une fiche client pour suivre ses achats et son encours.'
+            : 'Aucun client ne correspond à « $_query ».',
+        actionLabel: _query.isEmpty && canCreate ? 'Ajouter un client' : null,
+        actionIcon: Icons.person_add_alt_1,
+        onAction: _query.isEmpty && canCreate ? _openCreate : null,
       );
     }
 
@@ -201,10 +197,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         itemCount: _customers.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _customers.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
+            return const SkeletonCard(hasLeading: true);
           }
           final customer = _customers[index];
           return _CustomerTile(
@@ -230,57 +223,77 @@ class _CustomerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: AppTheme.navy.withValues(alpha: 0.1),
-          child: Text(
-            customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
-            style: const TextStyle(
-              color: AppTheme.navy,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                customer.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppTheme.navy.withValues(alpha: 0.1),
+                child: Text(
+                  customer.name.isNotEmpty
+                      ? customer.name[0].toUpperCase()
+                      : '?',
+                  style: const TextStyle(
+                    color: AppTheme.navy,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-            if (customer.isBlocked) ...[
-              const SizedBox(width: 6),
-              const StatusBadge(label: 'Bloqué', color: AppTheme.danger),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      customer.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      [
+                        customer.code,
+                        if ((customer.city ?? '').isNotEmpty) customer.city!,
+                      ].join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                    if (customer.isBlocked) ...[
+                      const SizedBox(height: 6),
+                      const StatusBadge(
+                        label: 'Bloqué',
+                        color: AppTheme.danger,
+                        icon: Icons.block,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              AmountText(
+                formatMoney(customer.balance),
+                label: 'Encours',
+                color:
+                    customer.isOverLimit ? AppTheme.danger : AppTheme.navy,
+              ),
             ],
-          ],
-        ),
-        subtitle: Text(
-          [
-            customer.code,
-            if ((customer.city ?? '').isNotEmpty) customer.city!,
-          ].join(' · '),
-          style: const TextStyle(fontSize: 12),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              formatMoney(customer.balance),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: customer.isOverLimit ? AppTheme.danger : AppTheme.navy,
-              ),
-            ),
-            Text(
-              'Encours',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-            ),
-          ],
+          ),
         ),
       ),
     );

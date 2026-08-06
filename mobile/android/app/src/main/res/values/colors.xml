@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bleu marine IGOUTECH : identique au splash Flutter et au login. -->
+    <color name="igoutech_navy">#0B2A5B</color>
+    <color name="igoutech_white">#FFFFFF</color>
+</resources>

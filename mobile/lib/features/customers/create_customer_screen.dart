@@ -34,6 +34,21 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   bool _saving = false;
   String? _error;
 
+  /// La validation ne se déclenche à la volée qu'après une première
+  /// tentative : on ne souligne pas en rouge un champ jamais touché.
+  bool _submitted = false;
+
+  /// Un champ au moins a été rempli : on confirme avant d'abandonner.
+  bool get _isDirty => [
+        _name,
+        _phone,
+        _email,
+        _city,
+        _address,
+        _ice,
+        _creditLimit,
+      ].any((c) => c.text.trim().isNotEmpty);
+
   @override
   void dispose() {
     _name.dispose();
@@ -51,7 +66,17 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     return value.isEmpty ? null : value;
   }
 
+  /// Interception du retour arrière : confirmation si la fiche est entamée.
+  Future<void> _handlePop(bool didPop) async {
+    if (didPop) return;
+    final navigator = Navigator.of(context);
+    if (!_isDirty || await confirmDiscard(context)) {
+      navigator.pop();
+    }
+  }
+
   Future<void> _submit() async {
+    setState(() => _submitted = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() {
@@ -91,121 +116,132 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
       return const NotAllowedView();
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nouveau client')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            TextFormField(
-              controller: _name,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Nom *',
-                prefixIcon: Icon(Icons.person_outline),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _handlePop(didPop),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Nouveau client')),
+        body: Form(
+          key: _formKey,
+          autovalidateMode: _submitted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+            children: [
+              TextFormField(
+                controller: _name,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Nom *',
+                  hintText: 'Nom du client ou de la société',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                validator: (value) => (value ?? '').trim().isEmpty
+                    ? 'Le nom est obligatoire.'
+                    : null,
               ),
-              validator: (value) => (value ?? '').trim().isEmpty
-                  ? 'Le nom est obligatoire.'
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Téléphone',
-                prefixIcon: Icon(Icons.phone_outlined),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Téléphone',
+                  hintText: '06 12 34 56 78',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _email,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'E-mail',
-                prefixIcon: Icon(Icons.mail_outline),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'E-mail',
+                  prefixIcon: Icon(Icons.mail_outline),
+                ),
+                validator: (value) {
+                  final email = (value ?? '').trim();
+                  if (email.isEmpty) return null;
+                  return email.contains('@') && email.contains('.')
+                      ? null
+                      : 'Adresse e-mail invalide.';
+                },
               ),
-              validator: (value) {
-                final email = (value ?? '').trim();
-                if (email.isEmpty) return null;
-                return email.contains('@') && email.contains('.')
-                    ? null
-                    : 'Adresse e-mail invalide.';
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _city,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Ville',
-                prefixIcon: Icon(Icons.location_city_outlined),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _city,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Ville',
+                  prefixIcon: Icon(Icons.location_city_outlined),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _address,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Adresse',
-                prefixIcon: Icon(Icons.home_outlined),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _address,
+                maxLines: 2,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Adresse',
+                  prefixIcon: Icon(Icons.home_outlined),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _ice,
-              decoration: const InputDecoration(
-                labelText: 'ICE',
-                prefixIcon: Icon(Icons.badge_outlined),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _ice,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'ICE',
+                  helperText: 'Identifiant commun de l\'entreprise.',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _creditLimit,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _creditLimit,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.done,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFeatures: AppTheme.tabularFigures,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Plafond de crédit (DH)',
+                  prefixIcon: Icon(Icons.credit_card_outlined),
+                  helperText: 'Laisser vide pour aucun crédit autorisé.',
+                ),
+                onFieldSubmitted: (_) => _saving ? null : _submit(),
+                validator: (value) {
+                  final raw = (value ?? '').trim().replaceAll(',', '.');
+                  if (raw.isEmpty) return null;
+                  final parsed = double.tryParse(raw);
+                  if (parsed == null || parsed < 0) {
+                    return 'Montant invalide.';
+                  }
+                  return null;
+                },
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 20),
+                ErrorBox(message: _error!),
               ],
-              decoration: const InputDecoration(
-                labelText: 'Plafond de crédit (DH)',
-                prefixIcon: Icon(Icons.credit_card_outlined),
-                helperText: 'Laisser vide pour aucun crédit autorisé.',
-              ),
-              validator: (value) {
-                final raw = (value ?? '').trim().replaceAll(',', '.');
-                if (raw.isEmpty) return null;
-                final parsed = double.tryParse(raw);
-                if (parsed == null || parsed < 0) {
-                  return 'Montant invalide.';
-                }
-                return null;
-              },
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                _error!,
-                style: const TextStyle(color: AppTheme.danger, fontSize: 13),
-              ),
             ],
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _saving ? null : _submit,
-              icon: _saving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check),
-              label: const Text('Créer le client'),
-            ),
-          ],
+          ),
+        ),
+        bottomNavigationBar: BottomActionBar(
+          label: 'Créer le client',
+          loading: _saving,
+          onPressed: _submit,
         ),
       ),
     );

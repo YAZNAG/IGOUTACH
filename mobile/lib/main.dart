@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'core/auth_provider.dart';
 import 'core/theme.dart';
+import 'core/widgets.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
 
@@ -24,7 +25,12 @@ class IgoutechApp extends StatelessWidget {
         title: 'IGOUTECH',
         debugShowCheckedModeBanner: false,
         navigatorKey: appNavigatorKey,
+        // L'application est conçue pour un usage en extérieur, souvent en
+        // plein soleil : le thème clair est imposé, y compris quand le
+        // téléphone est en mode sombre, pour garantir des contrastes connus.
         theme: AppTheme.light(),
+        darkTheme: AppTheme.light(),
+        themeMode: ThemeMode.light,
         home: const _Root(),
       ),
     );
@@ -40,30 +46,58 @@ class _Root extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    if (auth.initializing) {
-      return const Scaffold(
-        backgroundColor: AppTheme.navy,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'IGOUTECH',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-              SizedBox(height: 24),
-              CircularProgressIndicator(color: Colors.white),
-            ],
-          ),
-        ),
-      );
-    }
+    if (auth.initializing) return const SplashScreen();
 
     return auth.isAuthenticated ? const HomeShell() : const LoginScreen();
+  }
+}
+
+/// Écran de démarrage : logo sur fond marine, cohérent avec l'écran de
+/// connexion et avec l'arrière-plan natif Android.
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppTheme.navy,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppLogo(size: 96, onDark: true),
+                SizedBox(height: 24),
+                Text(
+                  'IGOUTECH',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 3,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Gestion de stock',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+                SizedBox(height: 36),
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

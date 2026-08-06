@@ -32,6 +32,7 @@ class _MovementDetailScreenState extends State<MovementDetailScreen> {
   StockMovementRow? _row;
   bool _loading = true;
   String? _error;
+  bool _offline = false;
 
   @override
   void initState() {
@@ -60,6 +61,7 @@ class _MovementDetailScreenState extends State<MovementDetailScreen> {
       if (!mounted) return;
       setState(() {
         _error = friendlyError(e);
+        _offline = isNetworkError(e);
         _loading = false;
       });
     }
@@ -72,10 +74,17 @@ class _MovementDetailScreenState extends State<MovementDetailScreen> {
         title: Text(widget.isExit ? 'Détail sortie' : 'Détail entrée'),
       ),
       body: _loading
-          ? const LoadingView()
+          ? const ListSkeleton(itemCount: 2, lines: 3)
           : _error != null
-              ? ErrorView(message: _error!, onRetry: _load)
-              : _buildDetail(_row!),
+              ? ErrorView(
+                  message: _error!,
+                  offline: _offline,
+                  onRetry: _load,
+                )
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: _buildDetail(_row!),
+                ),
     );
   }
 
@@ -84,45 +93,60 @@ class _MovementDetailScreenState extends State<MovementDetailScreen> {
     final color = widget.isExit ? AppTheme.danger : AppTheme.success;
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
       children: [
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   row.productName ?? '—',
                   style: const TextStyle(
-                    fontSize: 17,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.navy,
+                    height: 1.25,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   row.sku ?? '',
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    color: AppTheme.navy,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTheme.codeStyle,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      '$sign${formatQuantity(row.quantity)}'
-                      '${(row.unit ?? '').isNotEmpty ? ' ${row.unit}' : ''}',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: color,
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '$sign${formatQuantity(row.quantity)}'
+                          '${(row.unit ?? '').isNotEmpty ? ' ${row.unit}' : ''}',
+                          maxLines: 1,
+                          style: AppTheme.amountStyle(
+                            fontSize: 26,
+                            color: color,
+                          ),
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    if ((row.typeName ?? '').isNotEmpty)
-                      StatusBadge(label: row.typeName!, color: AppTheme.sky),
+                    if ((row.typeName ?? '').isNotEmpty) ...[
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: StatusBadge(
+                          label: row.typeName!,
+                          color: AppTheme.sky,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -183,16 +207,16 @@ class _Row extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 132,
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 15),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             ),
           ),
         ],

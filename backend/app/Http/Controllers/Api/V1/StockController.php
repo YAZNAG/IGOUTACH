@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Stock\Actions\EntryStockAction;
 use App\Domain\Stock\Actions\IssueStockAction;
 use App\Domain\Stock\Contracts\StockWriterInterface;
@@ -518,6 +519,64 @@ final class StockController extends Controller
 
         return response()->json([
             'message' => count($data['lines']).' ligne(s) de retour enregistrée(s).',
+            'lines_count' => count($data['lines']),
+        ], 201);
+    }
+
+    /**
+     * Retour fournisseur : marchandise renvoyée (défectueuse, non conforme,
+     * excédent). Le stock sort du lieu ; toutes les lignes en UNE transaction.
+     * POST /stock/supplier-return
+     */
+    public function supplierReturn(Request $request, StockWriterInterface $writer): JsonResponse
+    {
+        /** @var array{warehouse_id: int, supplier_id?: int|null, occurred_at?: string|null, reason: string, note?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
+        $data = $request->validate([
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
+            'occurred_at' => ['nullable', 'date'],
+            'reason' => ['required', 'string', 'max:120'],
+            'note' => ['nullable', 'string', 'max:191'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $occurredAt = isset($data['occurred_at']) && $data['occurred_at'] !== null
+            ? (new \DateTimeImmutable($data['occurred_at']))->format('Y-m-d H:i:s')
+            : null;
+
+        $supplierName = isset($data['supplier_id'])
+            ? (string) Supplier::query()->whereKey($data['supplier_id'])->value('name')
+            : null;
+
+        try {
+            DB::transaction(function () use ($data, $writer, $request, $occurredAt, $supplierName): void {
+                $note = 'Retour fournisseur'
+                    .($supplierName !== null ? ' — '.$supplierName : '')
+                    .' — '.$data['reason']
+                    .(isset($data['note']) && $data['note'] !== '' ? ' — '.$data['note'] : '');
+
+                foreach ($data['lines'] as $line) {
+                    $writer->decrease(new StockMovementData(
+                        warehouseId: $data['warehouse_id'],
+                        productId: $line['product_id'],
+                        quantity: $line['quantity'],
+                        movementTypeCode: 'return_out',
+                        referenceType: 'supplier_return',
+                        referenceId: $data['supplier_id'] ?? null,
+                        userId: $request->user()?->id,
+                        note: $note,
+                        occurredAt: $occurredAt,
+                    ));
+                }
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => count($data['lines']).' ligne(s) renvoyée(s) au fournisseur.',
             'lines_count' => count($data['lines']),
         ], 201);
     }
