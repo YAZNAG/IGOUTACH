@@ -242,6 +242,11 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
   ).length
   // Lignes déjà enregistrées côté serveur (comptage des jours précédents).
   const savedCount = inventory?.lines?.length ?? inventory?.lines_count ?? 0
+  // Un seul article compté — enregistré ou encore à l'écran — suffit à valider.
+  const aDesComptages = savedCount > 0 || countedRows.length > 0
+  // Les saisies en cours sont enregistrées à la validation : elles couvrent
+  // déjà les lignes du serveur, d'où le maximum plutôt qu'une somme.
+  const aRegulariser = Math.max(savedCount, countedRows.length)
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -251,15 +256,29 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
       return r.sku.toLowerCase().includes(term) || r.name.toLowerCase().includes(term)
     })
   }, [allRows, search, onlyRemaining, counts])
+  function lignesSaisies() {
+    return countedRows.map((r) => ({
+      product_id: r.product_id,
+      counted_quantity: counts[r.product_id] ?? 0,
+      reason: (reasons[r.product_id] ?? '').trim() || null,
+    }))
+  }
+
   function save() {
-    saveMutation.mutate({
-      id,
-      lines: countedRows.map((r) => ({
-        product_id: r.product_id,
-        counted_quantity: counts[r.product_id] ?? 0,
-        reason: (reasons[r.product_id] ?? '').trim() || null,
-      })),
-    })
+    saveMutation.mutate({ id, lines: lignesSaisies() })
+  }
+
+  // Valider n'exige pas d'avoir tout compté : un seul article suffit, et les
+  // saisies encore à l'écran sont enregistrées avant la validation. Sans cela
+  // le bouton restait grisé tant qu'on n'avait pas cliqué « Enregistrer »,
+  // ce qui se lisait comme l'obligation de compter tout le lieu.
+  async function approve() {
+    if (countedRows.length > 0) {
+      await saveMutation.mutateAsync({ id, lines: lignesSaisies() })
+    }
+
+    await approveMutation.mutateAsync(id)
+    setConfirmApprove(false)
   }
 
   return (
@@ -298,8 +317,8 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
             {canApprove ? (
               <Button
                 onClick={() => setConfirmApprove(true)}
-                disabled={approveMutation.isPending || (inventory?.lines_count ?? 0) === 0}
-                title={(inventory?.lines_count ?? 0) === 0 ? 'Enregistrez le comptage d\'abord' : undefined}
+                disabled={approveMutation.isPending || saveMutation.isPending || !aDesComptages}
+                title={!aDesComptages ? 'Comptez au moins un article' : undefined}
               >
                 <CheckCircle2 className="h-4 w-4" />
                 Valider et régulariser
@@ -555,11 +574,11 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
             Valider l'inventaire <strong>{inventory?.reference}</strong> ?
             <br />
             <br />
-            <strong>{savedCount}</strong> article{savedCount > 1 ? 's' : ''} compté{savedCount > 1 ? 's' : ''}
-            {' '}ser{savedCount > 1 ? 'ont' : 'a'} régularisé{savedCount > 1 ? 's' : ''} selon les écarts.
-            {allRows.length > savedCount ? (
+            <strong>{aRegulariser}</strong> article{aRegulariser > 1 ? 's' : ''} compté{aRegulariser > 1 ? 's' : ''}
+            {' '}ser{aRegulariser > 1 ? 'ont' : 'a'} régularisé{aRegulariser > 1 ? 's' : ''} selon les écarts.
+            {allRows.length > aRegulariser ? (
               <>
-                {' '}Les <strong>{allRows.length - savedCount}</strong> autres articles du lieu, non comptés,
+                {' '}Les <strong>{allRows.length - aRegulariser}</strong> autres articles du lieu, non comptés,
                 <strong> ne seront pas modifiés</strong> et garderont leur stock actuel.
               </>
             ) : null}
@@ -570,8 +589,8 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
         }
         confirmLabel="Valider et régulariser"
         danger={false}
-        isPending={approveMutation.isPending}
-        onConfirm={() => approveMutation.mutate(id, { onSuccess: () => setConfirmApprove(false) })}
+        isPending={approveMutation.isPending || saveMutation.isPending}
+        onConfirm={approve}
         onCancel={() => setConfirmApprove(false)}
       />
 
