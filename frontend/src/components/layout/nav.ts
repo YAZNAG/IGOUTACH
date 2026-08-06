@@ -47,7 +47,7 @@ export const navGroups: NavGroup[] = [
     title: 'Pilotage',
     items: [
       { label: 'Vue globale', to: '/', icon: LayoutDashboard, permission: 'stock.view_global' },
-      { label: 'Alertes', to: '/alertes', icon: AlertTriangle, permission: 'report.consolidated' },
+      { label: 'Alertes', to: '/alertes', icon: AlertTriangle, permission: 'stock.view' },
       { label: 'Rapports', to: '/rapports', icon: FileBarChart, permission: 'report.consolidated' },
     ],
   },
@@ -64,9 +64,9 @@ export const navGroups: NavGroup[] = [
   {
     title: 'Achats',
     items: [
-      { label: "Commandes d'achat", to: '/purchase-orders', icon: ShoppingCart, permission: 'purchase.view' },
+      { label: 'Bons de commande', to: '/purchase-orders', icon: ShoppingCart, permission: 'purchase.view' },
       { label: 'Réceptions', to: '/goods-receipts', icon: PackageCheck, permission: 'receipt.view' },
-      { label: 'Retours fournisseurs', to: '/retours-fournisseurs', icon: Undo2, permission: 'stock.issue' },
+      { label: 'Retours fournisseurs', to: '/retours-fournisseurs', icon: Undo2, permission: 'purchase.return' },
       { label: 'Crédits fournisseurs', to: '/supplier-credits', icon: HandCoins, permission: 'receipt.view' },
       { label: 'Fournisseurs', to: '/fournisseurs', icon: Truck, permission: 'supplier.view' },
     ],
@@ -74,10 +74,10 @@ export const navGroups: NavGroup[] = [
   {
     title: 'Ventes',
     items: [
-      { label: 'Devis', to: '/devis', icon: FileText, permission: 'sale.create' },
+      { label: 'Devis', to: '/devis', icon: FileText, permission: 'quote.create' },
       { label: 'Ventes', to: '/ventes', icon: Store, permission: 'sale.create' },
-      { label: 'Retours clients', to: '/retours-clients', icon: Undo2, permission: 'stock.entry' },
-      { label: 'Crédits clients', to: '/credits-clients', icon: HandCoins, permission: 'payment.view' },
+      { label: 'Retours clients', to: '/retours-clients', icon: Undo2, permission: 'sale.return' },
+      { label: 'Crédits clients', to: '/credits-clients', icon: HandCoins, permission: 'credit.view' },
       { label: 'Clients', to: '/clients', icon: Users, permission: 'customer.view' },
     ],
   },
@@ -103,12 +103,12 @@ export const navGroups: NavGroup[] = [
   {
     title: 'Administration',
     items: [
-      { label: 'Lieux', to: '/lieux', icon: Building2, permission: 'warehouse.view' },
+      { label: 'Lieux', to: '/lieux', icon: Building2, permission: 'warehouse.manage' },
       { label: 'Utilisateurs', to: '/utilisateurs', icon: Users, permission: 'user.view' },
-      { label: 'Rôles et permissions', to: '/roles', icon: ShieldCheck, permission: 'role.view' },
-      { label: 'Sessions actives', to: '/sessions', icon: MonitorSmartphone, permission: 'user.manage_sessions' },
+      { label: 'Rôles et permissions', to: '/roles', icon: ShieldCheck, permission: 'role.manage' },
+      { label: 'Sessions actives', to: '/sessions', icon: MonitorSmartphone, permission: 'user.view' },
       { label: "Journal d'audit", to: '/audit', icon: Receipt, permission: 'audit.view' },
-      { label: 'Paramètres', to: '/parametres', icon: Settings, permission: 'settings.view' },
+      { label: 'Paramètres', to: '/parametres', icon: Settings, permission: 'settings.manage' },
     ],
   },
 ]

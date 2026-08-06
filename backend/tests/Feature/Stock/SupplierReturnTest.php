@@ -25,7 +25,7 @@ function supRetProduct(): Product
 
 it('renvoie plusieurs articles au fournisseur en une transaction', function (): void {
     $warehouse = Warehouse::factory()->create();
-    $user = grantUser(['stock.issue'], ['warehouse_id' => $warehouse->id]);
+    $user = grantUser(['purchase.return'], ['warehouse_id' => $warehouse->id]);
     $supplier = Supplier::factory()->create();
 
     $a = supRetProduct();
@@ -57,7 +57,7 @@ it('renvoie plusieurs articles au fournisseur en une transaction', function (): 
 
 it('exige un motif de renvoi', function (): void {
     $warehouse = Warehouse::factory()->create();
-    $user = grantUser(['stock.issue'], ['warehouse_id' => $warehouse->id]);
+    $user = grantUser(['purchase.return'], ['warehouse_id' => $warehouse->id]);
     $product = supRetProduct();
 
     $this->actingAs($user)->postJson('/api/v1/stock/supplier-return', [
@@ -68,7 +68,7 @@ it('exige un motif de renvoi', function (): void {
 
 it('refuse un renvoi supérieur au stock disponible, sans rien appliquer', function (): void {
     $warehouse = Warehouse::factory()->create();
-    $user = grantUser(['stock.issue'], ['warehouse_id' => $warehouse->id]);
+    $user = grantUser(['purchase.return'], ['warehouse_id' => $warehouse->id]);
 
     $a = supRetProduct();
     $b = supRetProduct();

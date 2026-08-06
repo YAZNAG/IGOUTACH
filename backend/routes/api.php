@@ -214,9 +214,9 @@ Route::prefix('v1')->group(function () {
         Route::post('stock/entry', [StockController::class, 'entry'])->middleware('can:stock.entry');
         Route::post('stock/issue', [StockController::class, 'issue'])->middleware('can:stock.issue');
         Route::post('stock/adjust', [StockController::class, 'adjust'])->middleware('can:stock.adjust');
-        Route::post('stock/return', [StockController::class, 'returnIn'])->middleware('can:stock.entry');
-        Route::post('stock/return-multi', [StockController::class, 'returnMulti'])->middleware('can:stock.entry');
-        Route::post('stock/supplier-return', [StockController::class, 'supplierReturn'])->middleware('can:stock.issue');
+        Route::post('stock/return', [StockController::class, 'returnIn'])->middleware('can:sale.return');
+        Route::post('stock/return-multi', [StockController::class, 'returnMulti'])->middleware('can:sale.return');
+        Route::post('stock/supplier-return', [StockController::class, 'supplierReturn'])->middleware('can:purchase.return');
 
         // Transferts inter-lieux (alerte transit > 3 jours incluse)
         Route::get('transfers', [TransferController::class, 'index'])->middleware('can:stock.view');
@@ -270,7 +270,7 @@ Route::prefix('v1')->group(function () {
         Route::get('payments', [PaymentController::class, 'index'])->middleware('can:payment.view');
         Route::post('payments', [PaymentController::class, 'store'])->middleware('can:payment.create');
         Route::patch('payments/{payment}/cheque', [PaymentController::class, 'chequeStatus'])->middleware('can:payment.create');
-        Route::get('customers-aging', [PaymentController::class, 'aging'])->middleware('can:payment.view');
+        Route::get('customers-aging', [PaymentController::class, 'aging'])->middleware('can:credit.view');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
 
         // Caisse — sessions
@@ -307,7 +307,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('customers/{customer}/block', [CustomerController::class, 'toggleBlock'])->middleware('can:customer.set_credit_limit');
 
         // Pilotage — alertes consolidées & rapports
-        Route::get('alerts', [AlertController::class, 'index'])->middleware('can:report.consolidated');
+        Route::get('alerts', [AlertController::class, 'index'])->middleware('can:stock.view');
         Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:report.consolidated');
         Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:report.consolidated');
         Route::get('reports/dormant-products', [ReportController::class, 'dormantProducts'])->middleware('can:report.consolidated');

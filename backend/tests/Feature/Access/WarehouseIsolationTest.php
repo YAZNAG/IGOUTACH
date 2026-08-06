@@ -28,7 +28,7 @@ beforeEach(function (): void {
     // Responsable de lieu : pas de stock.view_global, pas de customer.view_all.
     $this->manager = grantUser([
         'stock.view', 'sale.create', 'customer.view', 'customer.create',
-        'payment.view', 'payment.create', 'inventory.create', 'expense.create',
+        'payment.view', 'payment.create', 'credit.view', 'inventory.create', 'expense.create',
     ]);
     $this->manager->update(['warehouse_id' => $this->mine->id]);
 });

@@ -35,7 +35,7 @@ function returnStock(int $warehouseId, int $productId, int $qty): void
 }
 
 it('enregistre un retour client de plusieurs articles en une fois', function (): void {
-    $user = grantUser(['stock.entry']);
+    $user = grantUser(['sale.return']);
     $warehouse = Warehouse::factory()->create();
     $a = returnProduct();
     $b = returnProduct();
@@ -58,7 +58,7 @@ it('enregistre un retour client de plusieurs articles en une fois', function ():
 });
 
 it('n\'enregistre aucune ligne si une seule est invalide', function (): void {
-    $user = grantUser(['stock.entry']);
+    $user = grantUser(['sale.return']);
     $warehouse = Warehouse::factory()->create();
     $a = returnProduct();
     returnStock($warehouse->id, $a->id, 5);
@@ -77,7 +77,7 @@ it('n\'enregistre aucune ligne si une seule est invalide', function (): void {
 });
 
 it('refuse un retour sans ligne', function (): void {
-    $user = grantUser(['stock.entry']);
+    $user = grantUser(['sale.return']);
     $warehouse = Warehouse::factory()->create();
 
     $this->actingAs($user)->postJson('/api/v1/stock/return-multi', [
