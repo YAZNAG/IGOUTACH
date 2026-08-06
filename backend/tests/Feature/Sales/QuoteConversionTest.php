@@ -71,6 +71,8 @@ it('signale les devis convertis dans la liste', function (): void {
     // Le devis (et donc son lieu) doit exister avant l'utilisateur, qui y est rattaché.
     $quote = makeQuote();
     $user = grantUser(['sale.create'], ['warehouse_id' => $quote->warehouse_id]);
+    // La liste ne montre que les documents du vendeur : le devis lui appartient.
+    $quote->update(['user_id' => $user->id]);
     $this->actingAs($user)->postJson("/api/v1/sales/{$quote->id}/convert")->assertCreated();
 
     $response = $this->actingAs($user)->getJson('/api/v1/sales?type=quote')->assertOk();

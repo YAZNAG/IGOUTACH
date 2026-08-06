@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Customers\Models\Customer;
 use App\Domain\Pricing\Contracts\MarginCalculatorInterface;
 use App\Domain\Pricing\Contracts\PriceResolverInterface;
 use App\Domain\Pricing\Exceptions\NoPriceDefinedException;
@@ -27,11 +28,60 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
  */
 final class SaleController extends Controller
 {
+    /**
+     * Vue globale : voit les ventes de tous les vendeurs et de tous les lieux.
+     */
+    private function hasGlobalView(Request $request): bool
+    {
+        $user = $request->user();
+
+        return $user !== null && ($user->can('stock.view_global') || $user->can('customer.view_all'));
+    }
+
+    /**
+     * Restreint aux ventes du vendeur : celles qu'il a créées, plus celles
+     * rattachées à ses propres clients (reprise d'un dossier client).
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<Sale>  $query
+     */
+    private function scopeToSeller(Request $request, $query): void
+    {
+        $userId = $request->user()?->id;
+
+        $query->where(function ($q) use ($userId): void {
+            $q->where('user_id', $userId)
+                ->orWhereIn(
+                    'customer_id',
+                    Customer::query()->select('id')->where('created_by', $userId),
+                );
+        });
+    }
+
+    /**
+     * Refuse l'accès à une vente d'un autre vendeur (sauf vue globale).
+     */
+    private function assertCanSeeSale(Request $request, Sale $sale): void
+    {
+        if ($this->hasGlobalView($request)) {
+            return;
+        }
+
+        $userId = $request->user()?->id;
+        $ownsCustomer = $sale->customer_id !== null
+            && Customer::query()->whereKey($sale->customer_id)->where('created_by', $userId)->exists();
+
+        if ($sale->user_id !== $userId && ! $ownsCustomer) {
+            abort(403, 'Cette vente a été enregistrée par un autre vendeur.');
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $sales = Sale::query()
             ->with(['customer:id,code,name', 'warehouse:id,code'])
             ->withCount('lines')
+            // Cloisonnement vendeur : ses ventes + celles de ses clients.
+            ->when(! $this->hasGlobalView($request), fn ($q) => $this->scopeToSeller($request, $q))
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->where('type', $request->string('type')->value()))
             ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
@@ -215,6 +265,8 @@ final class SaleController extends Controller
 
     public function show(Sale $sale): JsonResponse
     {
+        $this->assertCanSeeSale(request(), $sale);
+
         $sale->load(['customer:id,code,name,balance,credit_limit,is_blocked', 'warehouse:id,code', 'lines.product:id,sku,name']);
 
         return response()->json(['data' => [

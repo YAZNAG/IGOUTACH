@@ -117,13 +117,20 @@ final class PaymentController extends Controller
     /**
      * Balance âgée : encours par tranches d'ancienneté des factures impayées.
      */
-    public function aging(): JsonResponse
+    public function aging(Request $request): JsonResponse
     {
+        $userId = $request->user()?->id;
+
         $rows = Sale::query()
             ->with('customer:id,code,name')
             ->where('type', Sale::TYPE_INVOICE)
             ->where('status', Sale::STATUS_CONFIRMED)
             ->where('payment_status', '!=', 'paid')
+            // Même cloisonnement que les ventes : ses ventes et ses clients.
+            ->when(! $this->hasGlobalView($request), fn ($q) => $q->where(function ($sub) use ($userId): void {
+                $sub->where('user_id', $userId)
+                    ->orWhereIn('customer_id', Customer::query()->select('id')->where('created_by', $userId));
+            }))
             ->get()
             ->groupBy('customer_id')
             ->map(function ($sales) {

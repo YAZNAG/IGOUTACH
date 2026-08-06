@@ -41,7 +41,7 @@ function isoProduct(): Product
     ]);
 }
 
-function isoSale(int $warehouseId, ?int $customerId, string $ref): Sale
+function isoSale(int $warehouseId, ?int $customerId, string $ref, ?int $userId = null): Sale
 {
     return Sale::withoutGlobalScopes()->create([
         'reference' => $ref,
@@ -49,6 +49,7 @@ function isoSale(int $warehouseId, ?int $customerId, string $ref): Sale
         'status' => Sale::STATUS_CONFIRMED,
         'customer_id' => $customerId,
         'warehouse_id' => $warehouseId,
+        'user_id' => $userId,
         'subtotal' => 100,
         'discount_percent' => 0,
         'total' => 100,
@@ -73,8 +74,8 @@ it('ne voit que le stock de son lieu', function (): void {
 });
 
 it('ne voit que les ventes de son lieu', function (): void {
-    isoSale($this->mine->id, null, 'VT-MINE');
-    isoSale($this->other->id, null, 'VT-OTHER');
+    isoSale($this->mine->id, null, 'VT-MINE', $this->manager->id);
+    isoSale($this->other->id, null, 'VT-OTHER', $this->manager->id);
 
     $response = $this->actingAs($this->manager)->getJson('/api/v1/sales')->assertOk();
     $refs = collect($response->json('data'))->pluck('reference');
@@ -82,13 +83,36 @@ it('ne voit que les ventes de son lieu', function (): void {
     expect($refs)->toContain('VT-MINE')->and($refs)->not->toContain('VT-OTHER');
 });
 
+it('ne voit pas la vente d\'un autre vendeur, même dans son propre lieu', function (): void {
+    $colleague = grantUser(['sale.create'], ['warehouse_id' => $this->mine->id]);
+
+    isoSale($this->mine->id, null, 'VT-A-MOI', $this->manager->id);
+    isoSale($this->mine->id, null, 'VT-AU-COLLEGUE', $colleague->id);
+
+    $response = $this->actingAs($this->manager)->getJson('/api/v1/sales')->assertOk();
+    $refs = collect($response->json('data'))->pluck('reference');
+
+    expect($refs)->toContain('VT-A-MOI')->and($refs)->not->toContain('VT-AU-COLLEGUE');
+});
+
+it('voit la vente rattachée à son client même saisie par un autre', function (): void {
+    $colleague = grantUser(['sale.create'], ['warehouse_id' => $this->mine->id]);
+    $myCustomer = Customer::factory()->create(['created_by' => $this->manager->id]);
+
+    isoSale($this->mine->id, $myCustomer->id, 'VT-MON-CLIENT', $colleague->id);
+
+    $response = $this->actingAs($this->manager)->getJson('/api/v1/sales')->assertOk();
+
+    expect(collect($response->json('data'))->pluck('reference'))->toContain('VT-MON-CLIENT');
+});
+
 it('ne voit que les crédits de ses propres clients', function (): void {
     $mineCustomer = Customer::factory()->create(['name' => 'Client à moi', 'created_by' => $this->manager->id]);
     $otherUser = grantUser(['customer.create']);
     $otherCustomer = Customer::factory()->create(['name' => 'Client des autres', 'created_by' => $otherUser->id]);
 
-    isoSale($this->mine->id, $mineCustomer->id, 'VT-CREDIT-MINE');
-    isoSale($this->other->id, $otherCustomer->id, 'VT-CREDIT-OTHER');
+    isoSale($this->mine->id, $mineCustomer->id, 'VT-CREDIT-MINE', $this->manager->id);
+    isoSale($this->other->id, $otherCustomer->id, 'VT-CREDIT-OTHER', $otherUser->id);
 
     $response = $this->actingAs($this->manager)->getJson('/api/v1/customers-aging')->assertOk();
     $names = collect($response->json('data'))->pluck('customer');
@@ -130,8 +154,8 @@ it('ne voit que les charges de son lieu', function (): void {
 it('un administrateur avec vue globale voit tous les lieux', function (): void {
     $admin = grantUser(['sale.create', 'stock.view_global', 'customer.view', 'customer.view_all']);
 
-    isoSale($this->mine->id, null, 'VT-A');
-    isoSale($this->other->id, null, 'VT-B');
+    isoSale($this->mine->id, null, 'VT-A', $admin->id);
+    isoSale($this->other->id, null, 'VT-B', $admin->id);
 
     $response = $this->actingAs($admin)->getJson('/api/v1/sales')->assertOk();
     $refs = collect($response->json('data'))->pluck('reference');
