@@ -99,15 +99,8 @@ final class InventoryController extends Controller
         /** @var array{lines: list<array{product_id: int, counted_quantity: int, reason?: string|null}>} $data */
         $data = $request->validated();
 
-        // Motif obligatoire pour toute ligne en écart avec le théorique.
-        foreach ($data['lines'] as $line) {
-            $system = $reader->quantityFor($inventory->warehouse_id, $line['product_id']);
-            if ($line['counted_quantity'] !== $system && trim((string) ($line['reason'] ?? '')) === '') {
-                return response()->json([
-                    'message' => "Motif d'écart obligatoire pour l'article #{$line['product_id']} (compté {$line['counted_quantity']}, théorique {$system}).",
-                ], 422);
-            }
-        }
+        // Le motif d'écart est facultatif : il sert à expliquer un écart, pas à
+        // empêcher de l'enregistrer. Le comptage terrain prime.
 
         // Enregistrement incrémental : on met à jour les articles envoyés et on
         // conserve les comptages déjà saisis (comptage étalé sur plusieurs jours).

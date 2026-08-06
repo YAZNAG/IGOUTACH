@@ -236,6 +236,10 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
 
   const allRows = useMemo(() => stock ?? [], [stock])
   const countedRows = allRows.filter((r) => counts[r.product_id] !== undefined)
+  // Le motif d'écart est facultatif : il explique un écart sans bloquer la saisie.
+  const gapsWithoutReason = countedRows.filter(
+    (r) => (counts[r.product_id] ?? 0) !== r.quantity && (reasons[r.product_id] ?? '').trim() === '',
+  ).length
   // Lignes déjà enregistrées côté serveur (comptage des jours précédents).
   const savedCount = inventory?.lines?.length ?? inventory?.lines_count ?? 0
 
@@ -247,10 +251,6 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
       return r.sku.toLowerCase().includes(term) || r.name.toLowerCase().includes(term)
     })
   }, [allRows, search, onlyRemaining, counts])
-  const missingReasons = countedRows.filter(
-    (r) => (counts[r.product_id] ?? 0) !== r.quantity && (reasons[r.product_id] ?? '').trim() === '',
-  ).length
-
   function save() {
     saveMutation.mutate({
       id,
@@ -289,8 +289,8 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
             <Button
               variant="outline"
               onClick={save}
-              disabled={saveMutation.isPending || countedRows.length === 0 || missingReasons > 0}
-              title={missingReasons > 0 ? `${missingReasons} écart(s) sans motif` : countedRows.length === 0 ? 'Saisissez au moins un comptage' : undefined}
+              disabled={saveMutation.isPending || countedRows.length === 0}
+              title={countedRows.length === 0 ? 'Saisissez au moins un comptage' : undefined}
             >
               <Save className="h-4 w-4" />
               {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer le comptage'}
@@ -333,6 +333,12 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                   Vous n'êtes pas obligé de tout compter : les articles laissés vides ne seront pas régularisés
                   et garderont leur stock actuel.
                 </p>
+                {gapsWithoutReason > 0 ? (
+                  <p className="text-xs text-warn">
+                    {gapsWithoutReason} écart{gapsWithoutReason > 1 ? 's' : ''} sans motif — le motif est facultatif,
+                    il sert seulement à expliquer l'écart plus tard.
+                  </p>
+                ) : null}
               </div>
               <div className="h-2 w-40 overflow-hidden rounded-full bg-bg">
                 <div
@@ -423,7 +429,7 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                 <th className="px-5 py-3 text-right font-medium">Théorique</th>
                 <th className="px-5 py-3 text-right font-medium">Compté</th>
                 <th className="px-5 py-3 text-right font-medium">Écart</th>
-                <th className="px-5 py-3 font-medium">{isDraft ? 'Motif (si écart)' : 'Motif'}</th>
+                <th className="px-5 py-3 font-medium">{isDraft ? 'Motif (facultatif)' : 'Motif'}</th>
                 {!isDraft ? <th className="px-5 py-3 text-right font-medium">Valorisation</th> : null}
                 {isDraft ? <th className="px-5 py-3 text-right font-medium">État</th> : null}
               </tr>
@@ -494,9 +500,9 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                         {entered && diff !== 0 ? (
                           <Input
                             value={reasons[r.product_id] ?? ''}
-                            placeholder="Motif obligatoire…"
+                            placeholder="Motif (facultatif)…"
                             onChange={(e) => setReasons((prev) => ({ ...prev, [r.product_id]: e.target.value }))}
-                            className={cn('w-44', (reasons[r.product_id] ?? '').trim() === '' ? 'border-bad' : '')}
+                            className="w-44"
                           />
                         ) : (
                           <span className="text-muted">—</span>

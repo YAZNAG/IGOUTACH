@@ -144,7 +144,7 @@ it('encaisse un paiement : encours réduit et facture soldée', function () {
         ->assertJsonPath('data.payment_status', 'paid');
 });
 
-it('exige un motif d\'écart à l\'enregistrement du comptage', function () {
+it('accepte un écart sans motif, le motif restant facultatif', function () {
     $warehouse = fluxWarehouse();
     $user = grantUser(['inventory.create'], ['warehouse_id' => $warehouse->id]);
     $product = Product::factory()->create();
@@ -154,15 +154,18 @@ it('exige un motif d\'écart à l\'enregistrement du comptage', function () {
         'counted_at' => now()->format('Y-m-d'),
     ])->json('data.id');
 
-    // Écart (compté 5, théorique 0) sans motif → 422.
+    // Écart (compté 5, théorique 0) sans motif : le comptage terrain prime.
     $this->actingAs($user)->putJson("/api/v1/inventories/{$inventory}/lines", [
         'lines' => [['product_id' => $product->id, 'counted_quantity' => 5]],
-    ])->assertStatus(422);
+    ])->assertOk()
+        ->assertJsonPath('data.lines.0.difference', 5)
+        ->assertJsonPath('data.lines.0.reason', null);
 
-    // Avec motif → OK.
+    // Le motif reste enregistré quand il est renseigné.
     $this->actingAs($user)->putJson("/api/v1/inventories/{$inventory}/lines", [
         'lines' => [['product_id' => $product->id, 'counted_quantity' => 5, 'reason' => 'Reprise initiale']],
-    ])->assertOk();
+    ])->assertOk()
+        ->assertJsonPath('data.lines.0.reason', 'Reprise initiale');
 });
 
 it('transfère entre deux lieux avec le stock retiré à l\'envoi', function () {
