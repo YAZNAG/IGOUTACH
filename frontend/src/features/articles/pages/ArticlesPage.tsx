@@ -22,7 +22,6 @@ import {
   type ImportResult,
 } from '../api/articlesApi'
 import { ArticleForm } from '../components/ArticleForm'
-import { ArticleSheet } from '../components/ArticleSheet'
 import { LabelsPanel } from '../components/LabelsPanel'
 import {
   useArticles,
@@ -88,7 +87,6 @@ export function ArticlesPage() {
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkDeleteResult | null>(null)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
-  const [sheet, setSheet] = useState<Product | null>(null)
   const [labelsOpen, setLabelsOpen] = useState(false)
 
   const articles = data?.data ?? []
@@ -312,16 +310,6 @@ export function ArticlesPage() {
         />
       ) : null}
 
-      {sheet !== null ? (
-        <ArticleSheet
-          productId={sheet.id}
-          sku={sheet.sku}
-          name={sheet.name}
-          isSerialized={sheet.is_serialized}
-          onClose={() => setSheet(null)}
-        />
-      ) : null}
-
       <Card>
         <CardHeader
           title="Liste des articles"
@@ -438,7 +426,11 @@ export function ArticlesPage() {
                       {canUpdate || canDelete ? (
                         <td className="px-5 py-3">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => setSheet(a)}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/articles/${a.id}`)}
+                            >
                               Fiche
                             </Button>
                             {canUpdate ? (
