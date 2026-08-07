@@ -108,6 +108,7 @@ Route::prefix('v1')->group(function () {
         Route::get('products/{product}/movements', [ProductController::class, 'movements'])->middleware('can:product.view');
         Route::get('products/{product}/statistics', [ProductController::class, 'statistics'])->middleware('can:product.view');
         Route::get('products/{product}/suppliers', [ProductController::class, 'suppliers'])->middleware('can:product.view');
+        Route::get('products/{product}/history', [ProductController::class, 'history'])->middleware('can:product.view');
 
         // Catalogue — fiche technique (attributs + modèle par catégorie)
         Route::get('products/{product}/attributes', [ProductAttributeController::class, 'index'])->middleware('can:product.view');

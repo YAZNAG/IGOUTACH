@@ -41,10 +41,13 @@ it('retourne le stock du produit', function () {
 
     $response = $this->actingAs($user)->getJson("/api/v1/products/{$product->id}/stock");
 
+    // La fiche article consomme un agregat (totaux + detail par lieu), pas
+    // une liste plate : les totaux alimentent l'en-tete et les statistiques.
     $response->assertOk()
-        ->assertJsonPath('data.0.product_id', $product->id)
-        ->assertJsonPath('data.0.warehouse_id', $warehouse->id)
-        ->assertJsonPath('data.0.quantity', 100);
+        ->assertJsonPath('data.product_id', $product->id)
+        ->assertJsonPath('data.total_quantity', 100)
+        ->assertJsonPath('data.locations.0.warehouse_id', $warehouse->id)
+        ->assertJsonPath('data.locations.0.quantity', 100);
 });
 
 it('filtre le stock par warehouse_id', function () {
@@ -62,9 +65,12 @@ it('filtre le stock par warehouse_id', function () {
     $response->assertOk();
     $data = $response->json('data');
 
-    expect($data)->toHaveLength(1);
-    expect($data[0]['warehouse_id'])->toBe($warehouse1->id);
-    expect($data[0]['quantity'])->toBe(100);
+    expect($data['locations'])->toHaveLength(1);
+    expect($data['locations'][0]['warehouse_id'])->toBe($warehouse1->id);
+    expect($data['locations'][0]['quantity'])->toBe(100);
+    // Le filtre porte aussi sur les totaux : sinon l'en-tete afficherait le
+    // stock de tous les lieux tout en n'en detaillant qu'un.
+    expect($data['total_quantity'])->toBe(100);
 });
 
 it('retourne les mouvements paginés du produit', function () {

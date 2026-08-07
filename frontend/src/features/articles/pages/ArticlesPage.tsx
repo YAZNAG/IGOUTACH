@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Download, FileText, Plus, Tag, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,6 +16,7 @@ import { usePermission } from '@/hooks/usePermission'
 import type { Product } from '@/types'
 import {
   exportArticles,
+  uploadProductImage,
   type ArticleInput,
   type BulkDeleteResult,
   type ImportResult,
@@ -70,6 +72,9 @@ export function ArticlesPage() {
     direction: sort.direction,
   })
 
+  const queryClient = useQueryClient()
+  const [uploading, setUploading] = useState(false)
+  const [imageError, setImageError] = useState<string | null>(null)
   const createMutation = useCreateArticle()
   const updateMutation = useUpdateArticle()
   const deleteMutation = useDeleteArticle()
@@ -88,7 +93,7 @@ export function ArticlesPage() {
 
   const articles = data?.data ?? []
   const meta = data?.meta
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending || uploading
   const currentFilters = { search: search || undefined, category_id: categoryId || undefined }
 
   const visibleIds = articles.map((a) => a.id)
@@ -119,14 +124,39 @@ export function ArticlesPage() {
     setEditing(null)
     createMutation.reset()
     updateMutation.reset()
+    setImageError(null)
   }
 
-  function handleSubmit(input: ArticleInput) {
-    if (editing) {
-      updateMutation.mutate({ id: editing.id, input }, { onSuccess: closePanel })
-    } else {
-      createMutation.mutate(input, { onSuccess: closePanel })
+  /**
+   * Les images partent après l'enregistrement : en création l'article n'a pas
+   * d'identifiant avant. Un échec d'envoi ne remet pas l'article en cause —
+   * il est déjà enregistré, les images se rattrapent depuis l'onglet Médias.
+   */
+  async function handleSubmit(input: ArticleInput, images: File[]) {
+    setImageError(null)
+
+    const product = editing
+      ? await updateMutation.mutateAsync({ id: editing.id, input })
+      : await createMutation.mutateAsync(input)
+
+    if (images.length > 0) {
+      setUploading(true)
+      try {
+        for (const file of images) {
+          await uploadProductImage(product.id, file)
+        }
+        queryClient.invalidateQueries({ queryKey: ['articles'] })
+      } catch {
+        setImageError(
+          'L’article est enregistré, mais l’envoi des images a échoué. Reprenez depuis l’onglet « Médias ».',
+        )
+        setUploading(false)
+        return
+      }
+      setUploading(false)
     }
+
+    closePanel()
   }
 
   function confirmBulk() {
@@ -229,6 +259,13 @@ export function ArticlesPage() {
                 Enregistrement impossible (la référence doit être unique).
               </p>
             )}
+            {/* L'article a bien été enregistré : l'avertissement porte sur les
+                seules images, il ne doit pas se lire comme un échec global. */}
+            {imageError ? (
+              <p className="mb-4 rounded border border-line bg-warn-bg px-3 py-2 text-sm text-warn">
+                {imageError}
+              </p>
+            ) : null}
             <ArticleForm
               categories={categories}
               brands={brands}

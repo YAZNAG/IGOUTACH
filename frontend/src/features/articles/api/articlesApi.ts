@@ -91,6 +91,8 @@ export interface ProductDetail extends Product {
   cost_price: string
   created_at: string
   updated_at: string
+  /** Principale en tete. Absent tant qu'aucune image n'a ete deposee. */
+  images?: Array<{ id: number; url: string; is_main: boolean; position: number }>
 }
 
 export interface StockLocation {
@@ -157,4 +159,77 @@ export async function fetchProductMovements(
 ): Promise<Paginated<Movement>> {
   const { data } = await api.get<Paginated<Movement>>(`/products/${id}/movements`, { params: filters })
   return data
+}
+
+// ─── Médias ────────────────────────────────────────────────────────────────
+
+export interface ProductImage {
+  id: number
+  url: string
+  is_main: boolean
+}
+
+export async function fetchProductImages(id: number): Promise<ProductImage[]> {
+  const { data } = await api.get<{ data: ProductImage[] }>(`/products/${id}/images`)
+  return data.data
+}
+
+export async function uploadProductImage(id: number, file: File): Promise<ProductImage[]> {
+  const form = new FormData()
+  form.append('image', file)
+  const { data } = await api.post<{ data: ProductImage[] }>(`/products/${id}/images`, form)
+  return data.data
+}
+
+export async function setMainProductImage(id: number, imageId: number): Promise<ProductImage[]> {
+  const { data } = await api.patch<{ data: ProductImage[] }>(`/products/${id}/images/${imageId}/main`)
+  return data.data
+}
+
+export async function deleteProductImage(id: number, imageId: number): Promise<ProductImage[]> {
+  const { data } = await api.delete<{ data: ProductImage[] }>(`/products/${id}/images/${imageId}`)
+  return data.data
+}
+
+// ─── Statistiques & historique ─────────────────────────────────────────────
+
+export interface ProductStatistics {
+  product_id: number
+  period: string
+  sales_volume: number
+  revenue: number
+  average_sale_price: number
+  cost_of_goods: number
+  gross_margin: number
+  margin_percent: number
+  purchased_quantity: number
+  monthly: Array<{ month: string; label: string; quantity: number; revenue: number }>
+  by_warehouse: Array<{ warehouse: string; name: string; quantity: number; revenue: number }>
+  top_customers: Array<{ customer: string; quantity: number; revenue: number }>
+}
+
+export type HistoryModule = 'sale' | 'quote' | 'receipt' | 'transfer' | 'inventory'
+
+export interface ProductHistoryEntry {
+  module: HistoryModule
+  label: string
+  date: string
+  reference: string
+  quantity: number
+  amount: number | null
+  party: string
+  warehouse: string | null
+  link: string
+}
+
+export async function fetchProductStatistics(id: number, period = '12m'): Promise<ProductStatistics> {
+  const { data } = await api.get<{ data: ProductStatistics }>(`/products/${id}/statistics`, {
+    params: { period },
+  })
+  return data.data
+}
+
+export async function fetchProductHistory(id: number): Promise<ProductHistoryEntry[]> {
+  const { data } = await api.get<{ data: ProductHistoryEntry[] }>(`/products/${id}/history`)
+  return data.data
 }

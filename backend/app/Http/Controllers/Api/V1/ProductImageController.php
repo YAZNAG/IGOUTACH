@@ -75,10 +75,16 @@ final class ProductImageController extends Controller
      */
     private function list(Product $product): array
     {
-        return $product->images()->get()->map(fn (ProductImage $i): array => [
-            'id' => $i->id,
-            'url' => Storage::disk('public')->url($i->path),
-            'is_main' => $i->is_main,
-        ])->values()->all();
+        // Principale d'abord, puis l'ordre de dépôt : la galerie doit ouvrir
+        // sur l'image de référence, pas sur la dernière téléversée.
+        return $product->images()
+            ->orderByDesc('is_main')
+            ->orderBy('position')
+            ->get()
+            ->map(fn (ProductImage $i): array => [
+                'id' => $i->id,
+                'url' => Storage::disk('public')->url($i->path),
+                'is_main' => $i->is_main,
+            ])->values()->all();
     }
 }

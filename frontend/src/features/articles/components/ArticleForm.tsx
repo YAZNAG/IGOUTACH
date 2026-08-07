@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ImagePlus, X } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
@@ -9,7 +11,7 @@ import type { Brand } from '@/features/brands/api/brandsApi'
 import type { TaxRate } from '@/features/taxrates/api/taxRatesApi'
 import type { Unit } from '@/features/units/api/unitsApi'
 import type { Category, Product } from '@/types'
-import type { ArticleInput } from '../api/articlesApi'
+import type { ArticleInput, ProductDetail } from '../api/articlesApi'
 
 const schema = z.object({
   sku: z.string().min(1, 'Référence requise').max(100),
@@ -32,9 +34,11 @@ interface ArticleFormProps {
   brands: Brand[]
   units: Unit[]
   taxRates: TaxRate[]
-  initial?: Product
+  initial?: Product | ProductDetail
   isPending: boolean
-  onSubmit: (input: ArticleInput) => void
+  /** Les images choisies sont transmises a part : en creation l'article
+   *  n'a pas encore d'identifiant auquel les rattacher. */
+  onSubmit: (input: ArticleInput, images: File[]) => void
   onCancel: () => void
 }
 
@@ -63,20 +67,48 @@ export function ArticleForm({ categories, brands, units, taxRates, initial, isPe
     },
   })
 
+  // Images facultatives. En création elles partent après l'enregistrement,
+  // en modification elles s'ajoutent à celles déjà en place.
+  const imagesExistantes = (initial as ProductDetail | undefined)?.images ?? []
+  const [imagesEnAttente, setImagesEnAttente] = useState<File[]>([])
+  const [erreurImage, setErreurImage] = useState<string | null>(null)
+  const inputImages = useRef<HTMLInputElement>(null)
+
+  function ajouterImages(files: FileList | null) {
+    if (!files) return
+    setErreurImage(null)
+
+    const retenues: File[] = []
+
+    for (const file of Array.from(files)) {
+      if (file.size > 4 * 1024 * 1024) {
+        setErreurImage(`« ${file.name} » dépasse 4 Mo et a été ignorée.`)
+        continue
+      }
+      retenues.push(file)
+    }
+
+    setImagesEnAttente((prev) => [...prev, ...retenues])
+    if (inputImages.current) inputImages.current.value = ''
+  }
+
   const submit = handleSubmit((values) =>
-    onSubmit({
-      sku: values.sku,
-      name: values.name,
-      category_id: Number(values.category_id),
-      brand_id: values.brand_id ? Number(values.brand_id) : null,
-      unit_id: values.unit_id ? Number(values.unit_id) : null,
-      tax_rate: values.tax_rate !== undefined ? Number(values.tax_rate) : null,
-      description: values.description?.trim() ? values.description : null,
-      barcode: values.barcode?.trim() ? values.barcode : null,
-      min_stock: values.min_stock !== undefined ? Number(values.min_stock) : null,
-      is_serialized: values.is_serialized,
-      is_active: values.is_active,
-    }),
+    onSubmit(
+      {
+        sku: values.sku,
+        name: values.name,
+        category_id: Number(values.category_id),
+        brand_id: values.brand_id ? Number(values.brand_id) : null,
+        unit_id: values.unit_id ? Number(values.unit_id) : null,
+        tax_rate: values.tax_rate !== undefined ? Number(values.tax_rate) : null,
+        description: values.description?.trim() ? values.description : null,
+        barcode: values.barcode?.trim() ? values.barcode : null,
+        min_stock: values.min_stock !== undefined ? Number(values.min_stock) : null,
+        is_serialized: values.is_serialized,
+        is_active: values.is_active,
+      },
+      imagesEnAttente,
+    ),
   )
 
   return (
@@ -153,6 +185,62 @@ export function ArticleForm({ categories, brands, units, taxRates, initial, isPe
           <input type="checkbox" {...register('is_active')} className="h-4 w-4 accent-sky" />
           Article actif
         </label>
+      </div>
+
+      <div className="space-y-2 border-t border-line pt-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink">Images</p>
+            <p className="text-xs text-faint">
+              Facultatif — la première déposée devient l'image principale. JPG, PNG ou WebP, 4 Mo max.
+            </p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => inputImages.current?.click()}>
+            <ImagePlus className="h-4 w-4" />
+            Choisir
+          </Button>
+        </div>
+
+        <input
+          ref={inputImages}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="hidden"
+          onChange={(e) => ajouterImages(e.target.files)}
+        />
+
+        {erreurImage ? <p className="text-xs text-bad">{erreurImage}</p> : null}
+
+        {imagesExistantes.length > 0 ? (
+          <p className="text-xs text-muted">
+            {imagesExistantes.length} image{imagesExistantes.length > 1 ? 's' : ''} déjà associée
+            {imagesExistantes.length > 1 ? 's' : ''} — gérez-les depuis l'onglet « Médias » de la fiche.
+          </p>
+        ) : null}
+
+        {imagesEnAttente.length > 0 ? (
+          <ul className="flex flex-wrap gap-2 pt-1">
+            {imagesEnAttente.map((file, index) => (
+              <li key={`${file.name}-${index}`} className="relative">
+                {/* Aperçu local : l'image n'est envoyée qu'à l'enregistrement. */}
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt=""
+                  className="h-16 w-16 rounded-lg border border-line bg-bg object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImagesEnAttente((prev) => prev.filter((_, i) => i !== index))}
+                  aria-label={`Retirer ${file.name}`}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-card text-muted hover:text-bad"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
 
       <p className="text-xs text-faint">

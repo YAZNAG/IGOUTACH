@@ -3,6 +3,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Card, CardBody } from '@/components/ui/Card'
 import { usePermission } from '@/hooks/usePermission'
 import { useProductDetail, useProductMovements, useProductStock } from '../hooks'
+import { HistoryTab } from '../components/HistoryTab'
+import { MediaTab } from '../components/MediaTab'
 import { MovementsTab } from '../components/MovementsTab'
 import { OtherTabs } from '../components/OtherTabs'
 import { OverviewTab } from '../components/OverviewTab'
@@ -62,6 +64,7 @@ export function ProductDetailPage() {
     { id: 'overview', label: 'Vue d\'ensemble' },
     { id: 'stock', label: 'Stock' },
     { id: 'movements', label: 'Mouvements' },
+    { id: 'history', label: 'Historique' },
     { id: 'pricing', label: 'Tarification' },
     { id: 'statistics', label: 'Statistiques' },
     { id: 'specs', label: 'Caractéristiques' },
@@ -111,9 +114,11 @@ export function ProductDetailPage() {
             isLoading={movementsLoading}
           />
         )}
+        {activeTab === 'history' && <HistoryTab productId={productId} />}
+        {activeTab === 'media' && <MediaTab productId={productId} />}
         {activeTab === 'pricing' && <PricingTab product={product} stock={stock} />}
         {activeTab === 'statistics' && <StatisticsTab product={product} stock={stock} />}
-        {['specs', 'media', 'serials', 'suppliers'].includes(activeTab) && (
+        {['specs', 'serials', 'suppliers'].includes(activeTab) && (
           <OtherTabs product={product} activeTab={activeTab} />
         )}
 

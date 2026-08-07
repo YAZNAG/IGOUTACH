@@ -12,6 +12,7 @@ use App\Domain\Catalog\DTOs\PricingData;
 use App\Domain\Catalog\DTOs\ProductData;
 use App\Domain\Catalog\Exceptions\ProductInUseException;
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Catalog\Services\ProductInsightsService;
 use App\Domain\Stock\Models\Stock;
 use App\Domain\Stock\Models\StockMovement;
 use App\Exports\ArrayExport;
@@ -22,7 +23,6 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductSupplierResource;
 use App\Http\Resources\StockMovementResource;
-use App\Http\Resources\StockResource;
 use App\Imports\ArticlesImport;
 use App\Support\Export\HtmlTable;
 use App\Support\Query\Sortable;
@@ -31,6 +31,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -224,7 +225,7 @@ final class ProductController extends Controller
      * Stock du produit dans tous les lieux (ou un lieu spécifique).
      * GET /products/{id}/stock?warehouse_id=1
      */
-    public function stock(Request $request, Product $product): AnonymousResourceCollection
+    public function stock(Request $request, Product $product): JsonResponse
     {
         $query = Stock::query()
             ->with('warehouse:id,code,name')
@@ -234,9 +235,45 @@ final class ProductController extends Controller
             $query->where('warehouse_id', $request->integer('warehouse_id'));
         }
 
+        // Le scope de lieu s'applique : un responsable ne totalise que le sien.
         $stocks = $query->get();
 
-        return StockResource::collection($stocks);
+        $lieux = $stocks->map(fn (Stock $s): array => [
+            'id' => $s->id,
+            'warehouse_id' => $s->warehouse_id,
+            'warehouse_name' => $s->warehouse?->code.' · '.$s->warehouse?->name,
+            'quantity' => (int) $s->quantity,
+            'reserved' => (int) $s->reserved_quantity,
+            'available' => (int) $s->quantity - (int) $s->reserved_quantity,
+            'valuation' => number_format((float) $s->quantity * (float) $s->average_cost, 2, '.', ''),
+        ])->values()->all();
+
+        $total = (int) $stocks->sum('quantity');
+        $reserve = (int) $stocks->sum('reserved_quantity');
+        $valeur = $stocks->sum(fn (Stock $s): float => (float) $s->quantity * (float) $s->average_cost);
+
+        return response()->json(['data' => [
+            'product_id' => $product->id,
+            'total_quantity' => $total,
+            'total_reserved' => $reserve,
+            'total_available' => $total - $reserve,
+            'total_valuation' => number_format((float) $valeur, 2, '.', ''),
+            'in_transit' => $this->quantiteEnTransit($product),
+            'locations' => $lieux,
+        ]]);
+    }
+
+    /**
+     * Quantité expédiée mais pas encore réceptionnée, tous transferts confondus.
+     */
+    private function quantiteEnTransit(Product $product): int
+    {
+        return (int) DB::table('transfer_lines')
+            ->join('transfers', 'transfers.id', '=', 'transfer_lines.transfer_id')
+            ->join('transfer_statuses', 'transfer_statuses.id', '=', 'transfers.transfer_status_id')
+            ->where('transfer_lines.product_id', $product->id)
+            ->where('transfer_statuses.code', 'in_transit')
+            ->sum(DB::raw('transfer_lines.quantity_sent - transfer_lines.quantity_received'));
     }
 
     /**
@@ -283,23 +320,18 @@ final class ProductController extends Controller
      * Statistiques du produit (pour une période donnée).
      * GET /products/{id}/statistics?period=12m
      */
-    public function statistics(Request $request, Product $product): JsonResponse
+    public function statistics(Request $request, Product $product, ProductInsightsService $insights): JsonResponse
     {
         $period = $request->string('period')->value() !== '' ? $request->string('period')->value() : '12m';
 
-        // Pour l'instant, retourner une structure de base
-        // À enrichir avec logique métier réelle
-        $stats = [
-            'product_id' => $product->id,
-            'period' => $period,
-            'sales_volume' => 0,
-            'revenue' => 0.0,
-            'average_sale_price' => (float) $product->sale_price,
-            'cost_of_goods' => 0.0,
-            'gross_margin' => 0.0,
-            'margin_percent' => 0.0,
-        ];
+        return response()->json(['data' => $insights->statistics($product, $period)]);
+    }
 
-        return response()->json(['data' => $stats]);
+    /**
+     * Historique transverse : ce que l'article a vécu dans les autres modules.
+     */
+    public function history(Product $product, ProductInsightsService $insights): JsonResponse
+    {
+        return response()->json(['data' => $insights->history($product)]);
     }
 }

@@ -43,6 +43,9 @@ export function ProductDetailHeader({
   const canLabel = can('product.labels_print')
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  // Le serveur trie déjà la principale en tête ; le repli couvre les fiches
+  // dont la principale n'a pas encore été désignée.
+  const imagePrincipale = product.images?.find((i) => i.is_main) ?? product.images?.[0]
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -62,8 +65,19 @@ export function ProductDetailHeader({
           <Button variant="ghost" size="sm" onClick={onPrev} disabled={!hasPrev}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
+          {/* Vignette de l'image principale : identifier l'article d'un coup
+              d'œil vaut mieux que de lire sa référence. */}
+          {imagePrincipale ? (
+            <img
+              src={imagePrincipale.url}
+              alt=""
+              className="h-11 w-11 shrink-0 rounded-lg border border-line bg-bg object-contain"
+            />
+          ) : null}
           <div className="flex flex-col">
-            <p className="text-xs text-muted">Référence · {product.category?.name}</p>
+            <p className="text-xs text-muted">
+              <span className="mono">{product.sku}</span> · {product.category?.name}
+            </p>
             <h1 className="text-lg font-semibold text-ink">{product.name}</h1>
           </div>
           <Button variant="ghost" size="sm" onClick={onNext} disabled={!hasNext}>

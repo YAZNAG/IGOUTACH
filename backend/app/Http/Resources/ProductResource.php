@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Domain\Catalog\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin Product
@@ -65,12 +66,17 @@ class ProductResource extends JsonResource
                 ];
             }),
             'images' => $this->whenLoaded('images', function () {
-                return $this->images->map(fn ($image) => [
-                    'id' => $image->id,
-                    'path' => $image->path,
-                    'is_main' => $image->is_main,
-                    'position' => $image->position,
-                ])->all();
+                // Principale d'abord : le client affiche la première comme
+                // visuel de référence sans avoir à trier lui-même.
+                return $this->images
+                    ->sortBy([['is_main', 'desc'], ['position', 'asc']])
+                    ->map(fn ($image) => [
+                        'id' => $image->id,
+                        'path' => $image->path,
+                        'url' => Storage::disk('public')->url($image->path),
+                        'is_main' => $image->is_main,
+                        'position' => $image->position,
+                    ])->values()->all();
             }),
             'attributes' => $this->whenLoaded('attributes', function () {
                 return $this->attributes->map(fn ($attr) => [
