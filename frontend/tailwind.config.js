@@ -4,6 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Nom de reference pour le nouveau code.
+        brand: {
+          DEFAULT: 'var(--brand)',
+          strong: 'var(--brand-strong)',
+          light: 'var(--brand-light)',
+          soft: 'var(--brand-soft)',
+        },
+        // Alias herites : ces palettes pointent desormais sur la marque.
         navy: { DEFAULT: 'var(--navy)', 2: 'var(--navy-2)', 3: 'var(--navy-3)' },
         sky: { DEFAULT: 'var(--sky)', 2: 'var(--sky-2)', soft: 'var(--sky-soft)' },
         ink: 'var(--ink)',

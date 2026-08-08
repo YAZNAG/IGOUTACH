@@ -2,7 +2,7 @@
 
 @section('title', 'BS-'.$sale->reference)
 
-@section('document_title', 'Bon de sortie')
+@section('document_title')<span class="a">BON DE </span><span class="b">SORTIE</span>@endsection
 
 @section('document_meta')
     <strong>N° :</strong> BS-{{ $sale->reference }}<br>

@@ -2,7 +2,7 @@
 
 @section('title', $order->number)
 
-@section('document_title', 'Bon de commande')
+@section('document_title')<span class="a">BON DE </span><span class="b">COMMANDE</span>@endsection
 
 @section('document_meta')
     <strong>N° :</strong> {{ $order->number }}<br>

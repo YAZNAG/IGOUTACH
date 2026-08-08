@@ -2,7 +2,13 @@
 
 @section('title', $sale->reference)
 
-@section('document_title', $sale->type === 'quote' ? 'Devis' : 'Facture')
+@section('document_title')
+    @if ($sale->type === 'quote')
+        <span class="a">DE</span><span class="b">VIS</span>
+    @else
+        <span class="a">FAC</span><span class="b">TURE</span>
+    @endif
+@endsection
 
 @section('document_meta')
     <strong>N° :</strong> {{ $sale->reference }}<br>

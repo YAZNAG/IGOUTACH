@@ -19,7 +19,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       {/* Voile cliquable : refermer le menu doit rester à portée de pouce. */}
       {open ? (
         <div
-          className="fixed inset-0 z-30 bg-[rgba(15,27,45,0.5)] lg:hidden"
+          className="fixed inset-0 z-30 bg-[rgba(20,20,20,0.5)] lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />

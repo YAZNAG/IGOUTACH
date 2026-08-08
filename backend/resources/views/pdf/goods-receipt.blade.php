@@ -2,7 +2,7 @@
 
 @section('title', $receipt->number)
 
-@section('document_title', 'Bon de réception')
+@section('document_title')<span class="a">BON DE </span><span class="b">RÉCEPTION</span>@endsection
 
 @section('document_meta')
     <strong>N° :</strong> {{ $receipt->number }}<br>

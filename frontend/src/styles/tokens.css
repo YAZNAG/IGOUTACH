@@ -1,57 +1,80 @@
-/* Charte IGOUTECH — dérivée du logo. Aucune couleur en dur ailleurs.
-   Deux thèmes : clair (défaut) et sombre (:root[data-theme="dark"]). */
+/* Charte iGouTech — dérivée du logo et du modèle de facture.
+   Aucune couleur en dur ailleurs.
+   Deux thèmes : clair (défaut) et sombre (:root[data-theme="dark"]).
+
+   Les noms de référence sont --brand* et --ink/--muted/--faint.
+   --navy et --sky restent définis comme ALIAS de la marque : ils sont encore
+   employés par une centaine de classes Tailwind existantes. Le nouveau code
+   utilise --brand ; ces alias disparaîtront quand ces classes auront migré. */
 :root {
-  --navy: #0b2a5b;
-  --navy-2: #123a73;
-  --navy-3: #1b4a8f;
+  /* Rouge de la marque, relevé sur le logo et la facture. */
+  --brand: #ee1b0f;
+  --brand-strong: #c21409;
+  --brand-light: #ff4438;
+  --brand-soft: #fdecea;
 
-  --sky: #0ea5e9;
-  --sky-2: #38bdf8;
-  --sky-soft: #e8f4fe;
+  /* Alias hérités — même valeur que la marque. */
+  --navy: var(--brand);
+  --navy-2: var(--brand-strong);
+  --navy-3: var(--brand-light);
 
-  --ink: #0f1b2d;
-  --muted: #647a99;
-  --faint: #8fa3bc;
+  --sky: var(--brand);
+  --sky-2: var(--brand-light);
+  --sky-soft: var(--brand-soft);
 
-  --bg: #f2f5f9;
+  --ink: #141414;
+  --muted: #5c6169;
+  --faint: #8a9099;
+
+  /* Fond bleu ciel demandé : le rouge de la marque y ressort mieux que sur
+     un gris neutre, et les cartes blanches se détachent nettement. */
+  --bg: #e8f2fb;
   --card: #ffffff;
-  --line: #e3eaf2;
-  --line-2: #cbd8e8;
+  --line: #d8e6f3;
+  --line-2: #bcd3e8;
 
   --ok: #0e9f6e;
   --ok-bg: #e6f6f0;
   --warn: #b7791f;
   --warn-bg: #fdf3e2;
-  --bad: #c53b3b;
+  /* Le rouge d'alerte se distingue du rouge de marque : sans cela une erreur
+     se confondrait avec un simple accent d'interface. */
+  --bad: #a51d1d;
   --bad-bg: #fbebeb;
 
   --radius: 8px;
   --radius-lg: 12px;
 
-  --shadow-card: 0 1px 2px rgba(15, 27, 45, 0.04);
-  --shadow-pop: 0 8px 24px rgba(15, 27, 45, 0.12);
+  --shadow-card: 0 1px 2px rgba(20, 20, 20, 0.05);
+  --shadow-pop: 0 8px 24px rgba(20, 20, 20, 0.14);
 
   /* Dégradé réservé au panneau gauche de la connexion — nulle part ailleurs. */
-  --login-gradient: linear-gradient(160deg, var(--navy) 0%, var(--navy-3) 55%, var(--sky) 140%);
+  --login-gradient: linear-gradient(160deg, #8f0d06 0%, var(--brand-strong) 45%, var(--brand) 120%);
 }
 
 :root[data-theme='dark'] {
-  --navy: #2f6fbf; /* devient l'accent primaire lisible sur fond sombre */
-  --navy-2: #3f81d4;
-  --navy-3: #4f97e8;
+  /* Rouge éclairci : le #ee1b0f manque de contraste sur fond très sombre. */
+  --brand: #ff5347;
+  --brand-strong: #ff6f65;
+  --brand-light: #ff8079;
+  --brand-soft: #3a1512;
 
-  --sky: #38bdf8;
-  --sky-2: #7dd3fc;
-  --sky-soft: #16304f; /* tuile active discrète */
+  --navy: var(--brand);
+  --navy-2: var(--brand-strong);
+  --navy-3: var(--brand-light);
 
-  --ink: #e7eef8;
-  --muted: #9fb3cf;
-  --faint: #6c809e;
+  --sky: var(--brand);
+  --sky-2: var(--brand-light);
+  --sky-soft: var(--brand-soft);
 
-  --bg: #0a1120;
-  --card: #101d33;
-  --line: #1e3050;
-  --line-2: #2a4066;
+  --ink: #f0f1f2;
+  --muted: #a4a9b0;
+  --faint: #767c85;
+
+  --bg: #101012;
+  --card: #191a1d;
+  --line: #2a2c31;
+  --line-2: #3a3d44;
 
   --ok: #34d399;
   --ok-bg: #102b24;
@@ -60,8 +83,8 @@
   --bad: #f0736f;
   --bad-bg: #351a1c;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.55);
 
-  --login-gradient: linear-gradient(160deg, #0b1f3d 0%, #123a73 55%, #0ea5e9 150%);
+  --login-gradient: linear-gradient(160deg, #2a0704 0%, #7d0f08 55%, #ee1b0f 150%);
 }

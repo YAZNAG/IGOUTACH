@@ -112,7 +112,7 @@ export function MediaTab({ productId }: MediaTabProps) {
                 ) : null}
 
                 {canManage ? (
-                  <div className="absolute inset-x-0 bottom-0 flex justify-end gap-1 bg-[rgba(15,27,45,0.72)] p-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                  <div className="absolute inset-x-0 bottom-0 flex justify-end gap-1 bg-[rgba(20,20,20,0.72)] p-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                     {!image.is_main ? (
                       <button
                         type="button"
