@@ -162,3 +162,45 @@ it('un administrateur avec vue globale voit tous les lieux', function (): void {
 
     expect($refs)->toContain('VT-A')->and($refs)->toContain('VT-B');
 });
+
+it('totalise tous les lieux quand aucun lieu n\'est choisi', function (): void {
+    $admin = grantUser(['stock.view', 'stock.view_global']);
+    $product = isoProduct();
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->mine->id, 'product_id' => $product->id,
+        'quantity' => 10, 'reserved_quantity' => 0, 'average_cost' => '20.00',
+    ]);
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->other->id, 'product_id' => $product->id,
+        'quantity' => 5, 'reserved_quantity' => 0, 'average_cost' => '10.00',
+    ]);
+
+    $ligne = collect($this->actingAs($admin)->getJson('/api/v1/stock')->assertOk()->json('data'))
+        ->firstWhere('product_id', $product->id);
+
+    // Sans ce cumul, la jointure filtrait sur « warehouse_id = 0 » et tout
+    // le catalogue s'affichait à zéro pour un utilisateur en vue globale.
+    expect($ligne['quantity'])->toBe(15)
+        // Coût moyen pondéré : (10×20 + 5×10) / 15 = 16,67.
+        ->and(round((float) $ligne['average_cost'], 2))->toBe(16.67);
+});
+
+it('n\'affiche que le lieu demandé quand il est précisé', function (): void {
+    $admin = grantUser(['stock.view', 'stock.view_global']);
+    $product = isoProduct();
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->mine->id, 'product_id' => $product->id,
+        'quantity' => 10, 'reserved_quantity' => 0, 'average_cost' => '20.00',
+    ]);
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->other->id, 'product_id' => $product->id,
+        'quantity' => 5, 'reserved_quantity' => 0, 'average_cost' => '10.00',
+    ]);
+
+    $ligne = collect($this->actingAs($admin)->getJson('/api/v1/stock?warehouse_id='.$this->other->id)->json('data'))
+        ->firstWhere('product_id', $product->id);
+
+    expect($ligne['quantity'])->toBe(5);
+});

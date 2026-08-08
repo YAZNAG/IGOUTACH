@@ -62,24 +62,38 @@ final class StockController extends Controller
     {
         $warehouseId = $this->scopedWarehouseId($request);
 
+        // Sans lieu choisi, on totalise tous les lieux au lieu de filtrer sur
+        // « warehouse_id = 0 » : cette jointure ne trouvait rien et affichait
+        // l'ensemble du catalogue à zéro, soit l'inverse de la réalité.
+        $consolide = $warehouseId <= 0;
+
         $paginator = DB::table('products')
-            ->leftJoin('stocks', function ($join) use ($warehouseId): void {
-                $join->on('stocks.product_id', '=', 'products.id')->where('stocks.warehouse_id', '=', $warehouseId);
+            ->leftJoin('stocks', function ($join) use ($warehouseId, $consolide): void {
+                $join->on('stocks.product_id', '=', 'products.id');
+
+                if (! $consolide) {
+                    $join->where('stocks.warehouse_id', '=', $warehouseId);
+                }
             })
             ->whereNull('products.deleted_at')
             ->when($request->string('q')->isNotEmpty(), function ($query) use ($request) {
                 $term = $request->string('q')->value();
                 $query->where(fn ($w) => $w->where('products.name', 'like', "%{$term}%")->orWhere('products.sku', 'like', "%{$term}%"));
             })
-            ->orderByDesc(DB::raw('COALESCE(stocks.quantity, 0)'))
+            ->groupBy('products.id', 'products.sku', 'products.name', 'products.min_stock')
+            ->orderByDesc(DB::raw('COALESCE(SUM(stocks.quantity), 0)'))
             ->orderBy('products.name')
             ->select(
                 'products.id as product_id',
                 'products.sku',
                 'products.name',
                 'products.min_stock',
-                DB::raw('COALESCE(stocks.quantity, 0) as quantity'),
-                DB::raw('COALESCE(stocks.average_cost, 0) as average_cost'),
+                DB::raw('COALESCE(SUM(stocks.quantity), 0) as quantity'),
+                // Coût moyen pondéré : la moyenne simple des lieux fausserait
+                // la valorisation dès que les quantités diffèrent.
+                DB::raw('CASE WHEN COALESCE(SUM(stocks.quantity), 0) > 0
+                              THEN SUM(stocks.quantity * stocks.average_cost) / SUM(stocks.quantity)
+                              ELSE 0 END as average_cost'),
             )
             ->paginate($this->perPage($request));
 
@@ -173,23 +187,34 @@ final class StockController extends Controller
     {
         $warehouseId = $this->scopedWarehouseId($request);
         $warehouse = Warehouse::query()->find($warehouseId);
-        $label = $warehouse !== null ? $warehouse->code.' — '.$warehouse->name : 'Lieu';
+        $label = $warehouse !== null ? $warehouse->code.' — '.$warehouse->name : 'Tous les lieux';
 
         $headings = ['Référence', 'Article', 'Quantité', 'Seuil', 'Valeur (DH)', 'Statut'];
 
+        // Même règle que la liste : sans lieu choisi, on totalise les lieux
+        // plutôt que d'exporter un catalogue entier à zéro.
+        $consolide = $warehouseId <= 0;
+
         $rows = DB::table('products')
-            ->leftJoin('stocks', function ($join) use ($warehouseId): void {
-                $join->on('stocks.product_id', '=', 'products.id')->where('stocks.warehouse_id', '=', $warehouseId);
+            ->leftJoin('stocks', function ($join) use ($warehouseId, $consolide): void {
+                $join->on('stocks.product_id', '=', 'products.id');
+
+                if (! $consolide) {
+                    $join->where('stocks.warehouse_id', '=', $warehouseId);
+                }
             })
             ->whereNull('products.deleted_at')
-            ->orderByDesc(DB::raw('COALESCE(stocks.quantity, 0)'))
+            ->groupBy('products.id', 'products.sku', 'products.name', 'products.min_stock')
+            ->orderByDesc(DB::raw('COALESCE(SUM(stocks.quantity), 0)'))
             ->orderBy('products.name')
             ->get([
                 'products.sku',
                 'products.name',
                 'products.min_stock',
-                DB::raw('COALESCE(stocks.quantity, 0) as quantity'),
-                DB::raw('COALESCE(stocks.average_cost, 0) as average_cost'),
+                DB::raw('COALESCE(SUM(stocks.quantity), 0) as quantity'),
+                DB::raw('CASE WHEN COALESCE(SUM(stocks.quantity), 0) > 0
+                              THEN SUM(stocks.quantity * stocks.average_cost) / SUM(stocks.quantity)
+                              ELSE 0 END as average_cost'),
             ])
             ->map(function (\stdClass $row): array {
                 $qty = (int) $row->quantity;
