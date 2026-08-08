@@ -102,7 +102,7 @@ export interface StockLocation {
   quantity: number
   reserved: number
   available: number
-  valuation: string
+  valuation: string | null
 }
 
 export interface StockDetail {
@@ -110,7 +110,8 @@ export interface StockDetail {
   total_quantity: number
   total_reserved: number
   total_available: number
-  total_valuation: string
+  /** null sans « product.view_cost_price ». */
+  total_valuation: string | null
   in_transit: number
   locations: StockLocation[]
 }

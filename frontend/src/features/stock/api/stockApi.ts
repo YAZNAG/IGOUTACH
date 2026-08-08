@@ -6,8 +6,9 @@ export interface StockRow {
   sku: string
   name: string
   quantity: number
-  average_cost: number
-  value: number
+  /** null quand l'utilisateur n'a pas « product.view_cost_price ». */
+  average_cost: number | null
+  value: number | null
   min_stock: number
   status: 'ok' | 'low' | 'rupture'
 }

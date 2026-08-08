@@ -238,6 +238,9 @@ final class ProductController extends Controller
         // Le scope de lieu s'applique : un responsable ne totalise que le sien.
         $stocks = $query->get();
 
+        // Le CMUP est le prix d'achat : meme regle que partout ailleurs.
+        $voitLesCouts = $request->user()?->can('product.view_cost_price') ?? false;
+
         $lieux = $stocks->map(fn (Stock $s): array => [
             'id' => $s->id,
             'warehouse_id' => $s->warehouse_id,
@@ -245,7 +248,9 @@ final class ProductController extends Controller
             'quantity' => (int) $s->quantity,
             'reserved' => (int) $s->reserved_quantity,
             'available' => (int) $s->quantity - (int) $s->reserved_quantity,
-            'valuation' => number_format((float) $s->quantity * (float) $s->average_cost, 2, '.', ''),
+            'valuation' => $voitLesCouts
+                ? number_format((float) $s->quantity * (float) $s->average_cost, 2, '.', '')
+                : null,
         ])->values()->all();
 
         $total = (int) $stocks->sum('quantity');
@@ -257,7 +262,7 @@ final class ProductController extends Controller
             'total_quantity' => $total,
             'total_reserved' => $reserve,
             'total_available' => $total - $reserve,
-            'total_valuation' => number_format((float) $valeur, 2, '.', ''),
+            'total_valuation' => $voitLesCouts ? number_format((float) $valeur, 2, '.', '') : null,
             'in_transit' => $this->quantiteEnTransit($product),
             'locations' => $lieux,
         ]]);
@@ -324,7 +329,16 @@ final class ProductController extends Controller
     {
         $period = $request->string('period')->value() !== '' ? $request->string('period')->value() : '12m';
 
-        return response()->json(['data' => $insights->statistics($product, $period)]);
+        $stats = $insights->statistics($product, $period);
+
+        // cost_of_goods et la marge derivent du prix d'achat : les laisser
+        // visibles contournerait « product.view_cost_price », puisqu'il
+        // suffirait de diviser le cout par la quantite vendue.
+        if (! ($request->user()?->can('product.view_cost_price') ?? false)) {
+            unset($stats['cost_of_goods'], $stats['gross_margin'], $stats['margin_percent']);
+        }
+
+        return response()->json(['data' => $stats]);
     }
 
     /**

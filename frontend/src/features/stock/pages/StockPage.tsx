@@ -96,6 +96,9 @@ export function StockPage() {
 }
 
 function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
+  // Le coût moyen est le prix d'achat : la colonne « Valeur » n'existe que
+  // pour qui a le droit de le consulter.
+  const voitLesCouts = usePermission()('product.view_cost_price')
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
   const { data, isLoading } = useStock(warehouseId, q, page)
@@ -144,14 +147,16 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
                 <th className="px-5 py-3 font-medium">Article</th>
                 <th className="px-5 py-3 text-right font-medium">Quantité</th>
                 <th className="px-5 py-3 text-right font-medium">Seuil</th>
-                <th className="px-5 py-3 text-right font-medium">Valeur (DH)</th>
+                {voitLesCouts ? (
+                  <th className="px-5 py-3 text-right font-medium">Valeur (DH)</th>
+                ) : null}
                 <th className="px-5 py-3 font-medium">Statut</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-muted">
+                  <td colSpan={voitLesCouts ? 6 : 5} className="px-5 py-8 text-center text-muted">
                     Aucun article en stock dans ce lieu.
                   </td>
                 </tr>
@@ -164,7 +169,11 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
                       <td className="px-5 py-3 text-ink">{r.name}</td>
                       <td className="tabular px-5 py-3 text-right font-medium text-ink">{r.quantity}</td>
                       <td className="tabular px-5 py-3 text-right text-muted">{r.min_stock || '—'}</td>
-                      <td className="tabular px-5 py-3 text-right text-muted">{formatNumber(r.value)}</td>
+                      {voitLesCouts ? (
+                        <td className="tabular px-5 py-3 text-right text-muted">
+                          {r.value !== null ? formatNumber(r.value) : '—'}
+                        </td>
+                      ) : null}
                       <td className="px-5 py-3">
                         <Badge tone={badge.tone}>{badge.label}</Badge>
                       </td>

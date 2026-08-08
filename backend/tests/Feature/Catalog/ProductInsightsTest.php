@@ -150,7 +150,7 @@ it('refuse les statistiques sans product.view', function (): void {
 });
 
 it('renvoie le stock de l\'article sous forme agrégée, pas en liste brute', function (): void {
-    $admin = grantUser(['product.view', 'stock.view_global']);
+    $admin = grantUser(['product.view', 'stock.view_global', 'product.view_cost_price']);
     $product = insightProduct();
     $a = Warehouse::factory()->create();
     $b = Warehouse::factory()->create();

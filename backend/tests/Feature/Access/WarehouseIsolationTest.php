@@ -164,7 +164,8 @@ it('un administrateur avec vue globale voit tous les lieux', function (): void {
 });
 
 it('totalise tous les lieux quand aucun lieu n\'est choisi', function (): void {
-    $admin = grantUser(['stock.view', 'stock.view_global']);
+    // Le cout moyen n'est lisible qu'avec la permission dediee.
+    $admin = grantUser(['stock.view', 'stock.view_global', 'product.view_cost_price']);
     $product = isoProduct();
 
     Stock::withoutGlobalScopes()->create([

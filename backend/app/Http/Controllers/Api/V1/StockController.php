@@ -97,7 +97,11 @@ final class StockController extends Controller
             )
             ->paginate($this->perPage($request));
 
-        $paginator->through(function (\stdClass $row): array {
+        // Le coût moyen EST le prix d'achat : l'exposer à qui n'a pas le droit
+        // de voir les prix d'achat contournerait cette permission.
+        $voitLesCouts = $request->user()?->can('product.view_cost_price') ?? false;
+
+        $paginator->through(function (\stdClass $row) use ($voitLesCouts): array {
             $qty = (int) $row->quantity;
             $min = (int) ($row->min_stock ?? 0);
             $avg = (float) $row->average_cost;
@@ -107,8 +111,8 @@ final class StockController extends Controller
                 'sku' => $row->sku,
                 'name' => $row->name,
                 'quantity' => $qty,
-                'average_cost' => round($avg, 2),
-                'value' => round($qty * $avg, 2),
+                'average_cost' => $voitLesCouts ? round($avg, 2) : null,
+                'value' => $voitLesCouts ? round($qty * $avg, 2) : null,
                 'min_stock' => $min,
                 'status' => $qty <= 0 ? 'rupture' : ($min > 0 && $qty < $min ? 'low' : 'ok'),
             ];
@@ -189,7 +193,14 @@ final class StockController extends Controller
         $warehouse = Warehouse::query()->find($warehouseId);
         $label = $warehouse !== null ? $warehouse->code.' — '.$warehouse->name : 'Tous les lieux';
 
-        $headings = ['Référence', 'Article', 'Quantité', 'Seuil', 'Valeur (DH)', 'Statut'];
+        $voitLesCouts = $request->user()?->can('product.view_cost_price') ?? false;
+
+        // La colonne « Valeur » decoule du cout d'achat : elle disparait
+        // pour qui n'a pas le droit de le consulter, sinon l'export
+        // contournerait la permission appliquee a l'ecran.
+        $headings = $voitLesCouts
+            ? ['Référence', 'Article', 'Quantité', 'Seuil', 'Valeur (DH)', 'Statut']
+            : ['Référence', 'Article', 'Quantité', 'Seuil', 'Statut'];
 
         // Même règle que la liste : sans lieu choisi, on totalise les lieux
         // plutôt que d'exporter un catalogue entier à zéro.
@@ -216,20 +227,21 @@ final class StockController extends Controller
                               THEN SUM(stocks.quantity * stocks.average_cost) / SUM(stocks.quantity)
                               ELSE 0 END as average_cost'),
             ])
-            ->map(function (\stdClass $row): array {
+            ->map(function (\stdClass $row) use ($voitLesCouts): array {
                 $qty = (int) $row->quantity;
                 $min = (int) ($row->min_stock ?? 0);
                 $avg = (float) $row->average_cost;
                 $status = $qty <= 0 ? 'Rupture' : ($min > 0 && $qty < $min ? 'Sous seuil' : 'OK');
 
-                return [
-                    (string) $row->sku,
-                    (string) $row->name,
-                    $qty,
-                    $min,
-                    round($qty * $avg, 2),
-                    $status,
-                ];
+                $ligne = [(string) $row->sku, (string) $row->name, $qty, $min];
+
+                if ($voitLesCouts) {
+                    $ligne[] = round($qty * $avg, 2);
+                }
+
+                $ligne[] = $status;
+
+                return $ligne;
             })
             ->values()
             ->all();
