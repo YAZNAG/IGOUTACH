@@ -5,12 +5,14 @@
 @section('document_title')<span class="a">BON DE </span><span class="b">RÉCEPTION</span>@endsection
 
 @section('document_meta')
-    <strong>N° :</strong> {{ $receipt->number }}<br>
-    <strong>Date de réception :</strong> {{ $receipt->received_at?->format('d/m/Y') ?? '—' }}<br>
-    @if ($receipt->purchaseOrder)
-        <strong>BC d'origine :</strong> {{ $receipt->purchaseOrder->number }}<br>
-    @endif
-    <strong>Facture fournisseur :</strong> {{ $receipt->invoice_number ?? '—' }}
+    <table class="meta">
+        <tr><td class="k">N°</td><td class="v">{{ $receipt->number }}</td></tr>
+        <tr><td class="k">Réception</td><td class="v">{{ $receipt->received_at?->format('d/m/Y') ?? '—' }}</td></tr>
+        @if ($receipt->purchaseOrder)
+            <tr><td class="k">BC d'origine</td><td class="v">{{ $receipt->purchaseOrder->number }}</td></tr>
+        @endif
+        <tr><td class="k">Facture fourn.</td><td class="v">{{ $receipt->invoice_number ?? '—' }}</td></tr>
+    </table>
 @endsection
 
 @section('content')
@@ -74,12 +76,19 @@
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="5" style="text-align: right;">Total HT</td>
-                <td class="num">{{ number_format($totalAmount, 2, ',', ' ') }} DH</td>
-            </tr>
-        </tfoot>
+    </table>
+
+    <table class="totals-wrap">
+        <tr>
+            <td>
+                <table class="totals">
+                    <tr class="grand">
+                        <td class="k">TOTAL</td>
+                        <td class="v">{{ number_format($totalAmount, 2, ',', ' ') }} DH</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
     </table>
 
     {{-- Notes --}}

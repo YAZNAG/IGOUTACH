@@ -11,9 +11,11 @@
 @endsection
 
 @section('document_meta')
-    <strong>N° :</strong> {{ $sale->reference }}<br>
-    <strong>Date :</strong> {{ ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y') ?? '—' }}<br>
-    <strong>Statut :</strong> {{ $sale->status === 'confirmed' ? 'Confirmée' : ($sale->status === 'cancelled' ? 'Annulée' : 'Brouillon') }}
+    <table class="meta">
+        <tr><td class="k">N°</td><td class="v">{{ $sale->reference }}</td></tr>
+        <tr><td class="k">Date</td><td class="v">{{ ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y') ?? '—' }}</td></tr>
+        <tr><td class="k">Statut</td><td class="v">{{ $sale->status === 'confirmed' ? 'Confirmée' : ($sale->status === 'cancelled' ? 'Annulée' : 'Brouillon') }}</td></tr>
+    </table>
 @endsection
 
 @section('content')
@@ -75,32 +77,40 @@
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="4" style="text-align: right;">Sous-total</td>
-                <td class="num">{{ number_format((float) $sale->subtotal, 2, ',', ' ') }} DH</td>
-            </tr>
-            @if ((float) $sale->discount_percent > 0)
-                <tr>
-                    <td colspan="4" style="text-align: right;">Remise ({{ number_format((float) $sale->discount_percent, 1, ',', ' ') }} %)</td>
-                    <td class="num">-{{ number_format((float) $sale->subtotal - (float) $sale->total, 2, ',', ' ') }} DH</td>
-                </tr>
-            @endif
-            <tr>
-                <td colspan="4" style="text-align: right;"><strong>Total</strong></td>
-                <td class="num"><strong>{{ number_format((float) $sale->total, 2, ',', ' ') }} DH</strong></td>
-            </tr>
-            @if ((float) $sale->paid_amount > 0)
-                <tr>
-                    <td colspan="4" style="text-align: right;">Payé</td>
-                    <td class="num">{{ number_format((float) $sale->paid_amount, 2, ',', ' ') }} DH</td>
-                </tr>
-                <tr>
-                    <td colspan="4" style="text-align: right;">Reste à payer</td>
-                    <td class="num">{{ number_format(max(0, (float) $sale->total - (float) $sale->paid_amount), 2, ',', ' ') }} DH</td>
-                </tr>
-            @endif
-        </tfoot>
+    </table>
+
+    {{-- Totaux : bloc compact aligné à droite, comme sur le modèle. --}}
+    <table class="totals-wrap">
+        <tr>
+            <td>
+                <table class="totals">
+                    <tr>
+                        <td class="k">Sous-total</td>
+                        <td class="v">{{ number_format((float) $sale->subtotal, 2, ',', ' ') }} DH</td>
+                    </tr>
+                    @if ((float) $sale->discount_percent > 0)
+                        <tr>
+                            <td class="k">Remise ({{ number_format((float) $sale->discount_percent, 1, ',', ' ') }} %)</td>
+                            <td class="v">-{{ number_format((float) $sale->subtotal - (float) $sale->total, 2, ',', ' ') }} DH</td>
+                        </tr>
+                    @endif
+                    <tr class="grand">
+                        <td class="k">TOTAL</td>
+                        <td class="v">{{ number_format((float) $sale->total, 2, ',', ' ') }} DH</td>
+                    </tr>
+                    @if ((float) $sale->paid_amount > 0)
+                        <tr>
+                            <td class="k">Payé</td>
+                            <td class="v">{{ number_format((float) $sale->paid_amount, 2, ',', ' ') }} DH</td>
+                        </tr>
+                        <tr>
+                            <td class="k">Reste à payer</td>
+                            <td class="v">{{ number_format(max(0, (float) $sale->total - (float) $sale->paid_amount), 2, ',', ' ') }} DH</td>
+                        </tr>
+                    @endif
+                </table>
+            </td>
+        </tr>
     </table>
 
     {{-- Notes --}}

@@ -5,9 +5,11 @@
 @section('document_title')<span class="a">BON DE </span><span class="b">COMMANDE</span>@endsection
 
 @section('document_meta')
-    <strong>N° :</strong> {{ $order->number }}<br>
-    <strong>Date :</strong> {{ $order->ordered_at?->format('d/m/Y') ?? '—' }}<br>
-    <strong>Livraison prévue :</strong> {{ $order->expected_at?->format('d/m/Y') ?? '—' }}
+    <table class="meta">
+        <tr><td class="k">N°</td><td class="v">{{ $order->number }}</td></tr>
+        <tr><td class="k">Date</td><td class="v">{{ $order->ordered_at?->format('d/m/Y') ?? '—' }}</td></tr>
+        <tr><td class="k">Livraison prévue</td><td class="v">{{ $order->expected_at?->format('d/m/Y') ?? '—' }}</td></tr>
+    </table>
 @endsection
 
 @section('content')
@@ -67,13 +69,23 @@
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="5" style="text-align: right;">
-                    Total : {{ $lines->count() }} référence{{ $lines->count() > 1 ? 's' : '' }} · {{ $lines->sum('quantity') }} unité{{ $lines->sum('quantity') > 1 ? 's' : '' }}
-                </td>
-            </tr>
-        </tfoot>
+    </table>
+
+    <table class="totals-wrap">
+        <tr>
+            <td>
+                <table class="totals">
+                    <tr class="grand">
+                        <td class="k">TOTAL COMMANDÉ</td>
+                        <td class="v">{{ $lines->sum('quantity') }} unité{{ $lines->sum('quantity') > 1 ? 's' : '' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">Références</td>
+                        <td class="v">{{ $lines->count() }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
     </table>
 
     {{-- Notes --}}

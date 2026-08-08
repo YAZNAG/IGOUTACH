@@ -5,9 +5,11 @@
 @section('document_title')<span class="a">BON DE </span><span class="b">SORTIE</span>@endsection
 
 @section('document_meta')
-    <strong>N° :</strong> BS-{{ $sale->reference }}<br>
-    <strong>Vente :</strong> {{ $sale->reference }}<br>
-    <strong>Date :</strong> {{ ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y') ?? '—' }}
+    <table class="meta">
+        <tr><td class="k">N°</td><td class="v">BS-{{ $sale->reference }}</td></tr>
+        <tr><td class="k">Vente</td><td class="v">{{ $sale->reference }}</td></tr>
+        <tr><td class="k">Date</td><td class="v">{{ ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y') ?? '—' }}</td></tr>
+    </table>
 @endsection
 
 @section('content')
@@ -64,12 +66,23 @@
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3" style="text-align: right;">Total</td>
-                <td class="num">{{ $lines->count() }} réf · {{ $lines->sum('quantity') }} unités</td>
-            </tr>
-        </tfoot>
+    </table>
+
+    <table class="totals-wrap">
+        <tr>
+            <td>
+                <table class="totals">
+                    <tr class="grand">
+                        <td class="k">TOTAL SORTI</td>
+                        <td class="v">{{ $lines->sum('quantity') }} unité{{ $lines->sum('quantity') > 1 ? 's' : '' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="k">Références</td>
+                        <td class="v">{{ $lines->count() }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
     </table>
 
     {{-- Notes --}}
