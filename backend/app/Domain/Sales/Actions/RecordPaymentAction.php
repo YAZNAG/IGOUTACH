@@ -25,7 +25,7 @@ final class RecordPaymentAction
     ) {}
 
     /**
-     * @param  array{customer_id: int, amount: float, payment_method_id?: int|null, sale_id?: int|null, cash_session_id?: int|null, cheque_reference?: string|null, received_at: string, note?: string|null}  $data
+     * @param  array{customer_id: int, amount: float, payment_method_id?: int|null, sale_id?: int|null, cash_session_id?: int|null, cheque_reference?: string|null, cheque_id?: int|null, received_at: string, note?: string|null}  $data
      */
     public function execute(array $data, ?int $userId = null): Payment
     {
@@ -49,6 +49,7 @@ final class RecordPaymentAction
                 'amount' => $data['amount'],
                 'cheque_status' => $isCheque ? Payment::CHEQUE_RECEIVED : null,
                 'cheque_reference' => $data['cheque_reference'] ?? null,
+                'cheque_id' => $data['cheque_id'] ?? null,
                 'received_at' => $data['received_at'],
                 'user_id' => $userId,
                 'note' => $data['note'] ?? null,

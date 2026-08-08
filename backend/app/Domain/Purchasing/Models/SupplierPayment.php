@@ -28,6 +28,7 @@ final class SupplierPayment extends Model
         'goods_receipt_id',
         'supplier_id',
         'payment_method_id',
+        'cheque_id',
         'amount',
         'paid_at',
         'notes',

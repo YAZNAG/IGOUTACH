@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashSessionController;
+use App\Http\Controllers\Api\V1\ChequeController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -272,6 +273,14 @@ Route::prefix('v1')->group(function () {
         Route::post('payments', [PaymentController::class, 'store'])->middleware('can:payment.create');
         Route::patch('payments/{payment}/cheque', [PaymentController::class, 'chequeStatus'])->middleware('can:payment.create');
         Route::get('customers-aging', [PaymentController::class, 'aging'])->middleware('can:credit.view');
+
+        // Portefeuille de chèques : reçus des clients, endossés ou émis.
+        Route::get('cheques', [ChequeController::class, 'index'])->middleware('can:cheque.view');
+        Route::get('cheques/{cheque}', [ChequeController::class, 'show'])->middleware('can:cheque.view');
+        Route::post('cheques', [ChequeController::class, 'store'])->middleware('can:cheque.manage');
+        Route::post('cheques/{cheque}/endorse', [ChequeController::class, 'endorse'])->middleware('can:cheque.manage');
+        Route::patch('cheques/{cheque}/status', [ChequeController::class, 'updateStatus'])->middleware('can:cheque.manage');
+        Route::delete('cheques/{cheque}', [ChequeController::class, 'destroy'])->middleware('can:cheque.manage');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
 
         // Caisse — sessions

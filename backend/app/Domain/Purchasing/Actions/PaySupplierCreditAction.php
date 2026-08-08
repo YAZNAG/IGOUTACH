@@ -22,9 +22,10 @@ final class PaySupplierCreditAction
         ?int $paymentMethodId,
         string $paidAt,
         ?string $notes,
-        ?int $createdBy
+        ?int $createdBy,
+        ?int $chequeId = null
     ): SupplierPayment {
-        return DB::transaction(function () use ($receipt, $amount, $paymentMethodId, $paidAt, $notes, $createdBy): SupplierPayment {
+        return DB::transaction(function () use ($receipt, $amount, $paymentMethodId, $paidAt, $notes, $createdBy, $chequeId): SupplierPayment {
             /** @var GoodsReceipt $locked */
             $locked = GoodsReceipt::query()->whereKey($receipt->id)->lockForUpdate()->firstOrFail();
             $locked->load('lines');
@@ -49,6 +50,7 @@ final class PaySupplierCreditAction
                 'goods_receipt_id' => $locked->id,
                 'supplier_id' => $locked->supplier_id,
                 'payment_method_id' => $paymentMethodId,
+                'cheque_id' => $chequeId,
                 'amount' => number_format($amount, 2, '.', ''),
                 'paid_at' => $paidAt,
                 'notes' => $notes,

@@ -82,6 +82,7 @@ final class PaymentController extends Controller
             'sale_id' => ['nullable', 'integer', 'exists:sales,id'],
             'cash_session_id' => ['nullable', 'integer', 'exists:cash_sessions,id'],
             'cheque_reference' => ['nullable', 'string', 'max:60'],
+            'cheque_id' => ['nullable', 'integer', 'exists:cheques,id'],
             'received_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);

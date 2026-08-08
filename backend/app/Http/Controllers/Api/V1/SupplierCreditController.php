@@ -153,6 +153,7 @@ final class SupplierCreditController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'gt:0'],
             'payment_method_id' => ['nullable', 'integer', 'exists:payment_methods,id'],
+            'cheque_id' => ['nullable', 'integer', 'exists:cheques,id'],
             'paid_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
@@ -165,6 +166,7 @@ final class SupplierCreditController extends Controller
                 paidAt: $data['paid_at'] ?? now()->format('Y-m-d'),
                 notes: $data['notes'] ?? null,
                 createdBy: $request->user()?->id,
+                chequeId: isset($data['cheque_id']) ? (int) $data['cheque_id'] : null,
             );
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);

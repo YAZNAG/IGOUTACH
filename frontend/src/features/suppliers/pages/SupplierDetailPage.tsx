@@ -22,6 +22,13 @@ import {
 import type { SupplierCreditRow } from '@/features/purchases/api/supplierCreditsApi'
 import { fetchSupplier, fetchSupplierPayments, type Supplier, type SupplierPaymentHistory } from '../api/suppliersApi'
 import { SupplierDetail } from '../components/SupplierDetail'
+import { chequeDraftComplet } from '@/features/cheques/components/ChequeDraftFields'
+import {
+  SupplierChequePanel,
+  supplierChequeVide,
+  type SupplierChequeValue,
+} from '@/features/cheques/components/SupplierChequePanel'
+import { useCreateCheque, useEndorseCheque } from '@/features/cheques/hooks'
 
 const PO_BADGES: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad' | 'sky' | 'neutral' }> = {
   draft: { label: 'Brouillon', tone: 'neutral' },
@@ -94,7 +101,19 @@ export function SupplierDetailPage() {
   const [paidAt, setPaidAt] = useState(() => new Date().toISOString().slice(0, 10))
   const [notes, setNotes] = useState('')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [cheque, setCheque] = useState<SupplierChequeValue>(supplierChequeVide())
   const payMutation = usePaySupplierCredit()
+  const creerCheque = useCreateCheque()
+  const endosser = useEndorseCheque()
+
+  const method = methods.find((m) => m.id === methodId)
+  const isCheque = (method?.code ?? '').toUpperCase() === 'CHEQUE'
+  // Un chèque repris au portefeuille est déjà décrit ; sinon il faut le saisir.
+  const chequePret =
+    !isCheque ||
+    cheque.chequeId !== null ||
+    (chequeDraftComplet(cheque.draft) &&
+      (cheque.source === 'own' || cheque.draft.drawer_name.trim() !== ''))
 
   function openPay(row: SupplierCreditRow) {
     setPaying(row)
@@ -103,6 +122,7 @@ export function SupplierDetailPage() {
     setPaidAt(new Date().toISOString().slice(0, 10))
     setNotes('')
     setSuccessMessage(null)
+    setCheque(supplierChequeVide())
     payMutation.reset()
   }
 
@@ -113,13 +133,42 @@ export function SupplierDetailPage() {
     (!Number.isFinite(amountValue) || amountValue <= 0 || amountValue > paying.remaining_amount + 0.005)
 
   async function submitPay() {
-    if (!paying || invalidAmount) return
+    if (!paying || invalidAmount || !chequePret) return
     try {
+      // Le chèque est réglé avant le paiement : soit on endosse un chèque du
+      // portefeuille — le serveur refuse alors un chèque déjà remis — soit on
+      // en crée un. Dans les deux cas il existe avant d'être référencé.
+      let chequeId: number | null = null
+
+      if (isCheque) {
+        if (cheque.chequeId !== null) {
+          const endosse = await endosser.mutateAsync({
+            id: cheque.chequeId,
+            supplierId,
+          })
+          chequeId = endosse.id
+        } else {
+          const cree = await creerCheque.mutateAsync({
+            number: cheque.draft.number.trim(),
+            cheque_date: cheque.draft.cheque_date,
+            amount: amountValue,
+            bank: cheque.draft.bank.trim() || null,
+            direction: 'out',
+            origin: cheque.source,
+            drawer_name: cheque.source === 'third_party' ? cheque.draft.drawer_name.trim() : null,
+            supplier_id: supplierId,
+            image: cheque.draft.image,
+          })
+          chequeId = cree.id
+        }
+      }
+
       const result = await payMutation.mutateAsync({
         receiptId: paying.id,
         input: {
           amount: amountValue,
           payment_method_id: methodId || null,
+          cheque_id: chequeId,
           paid_at: paidAt,
           notes: notes.trim() || null,
         },
@@ -328,11 +377,15 @@ export function SupplierDetailPage() {
                     </p>
                   </div>
                 </div>
+                {isCheque ? (
+                  <SupplierChequePanel value={cheque} onChange={setCheque} />
+                ) : null}
+
                 <Field label="Notes" htmlFor="sp-notes">
                   <Textarea id="sp-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="N° de chèque, référence virement…" />
                 </Field>
                 <div className="flex gap-2">
-                  <Button onClick={submitPay} disabled={payMutation.isPending || invalidAmount}>
+                  <Button onClick={submitPay} disabled={payMutation.isPending || invalidAmount || !chequePret}>
                     <HandCoins className="h-4 w-4" />
                     {payMutation.isPending ? 'Enregistrement…' : isFullPayment ? 'Régler la totalité' : 'Paiement partiel'}
                   </Button>

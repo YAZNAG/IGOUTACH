@@ -7,6 +7,12 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { chequeDraftComplet, chequeDraftVide } from '@/features/cheques/components/ChequeDraftFields'
+import {
+  CustomerChequePanel,
+  type CustomerChequeValue,
+} from '@/features/cheques/components/CustomerChequePanel'
+import { useCreateCheque } from '@/features/cheques/hooks'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { cn, formatNumber } from '@/lib/utils'
@@ -43,6 +49,7 @@ interface CustomerOption {
 interface MethodOption {
   id: number
   name: string
+  code: string
 }
 
 const KEY = ['payments'] as const
@@ -216,8 +223,12 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   const [customerId, setCustomerId] = useState(0)
   const [amount, setAmount] = useState('')
   const [methodId, setMethodId] = useState(0)
-  const [chequeRef, setChequeRef] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [cheque, setCheque] = useState<CustomerChequeValue>({
+    draft: chequeDraftVide(),
+    autreSignataire: false,
+  })
+  const creerCheque = useCreateCheque()
 
   const { data: customers = [] } = useQuery<CustomerOption[]>({
     queryKey: ['payment-customer-search', search],
@@ -237,17 +248,39 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   })
 
   const selected = customers.find((c) => c.id === customerId)
-  const methodName = methods.find((m) => m.id === methodId)?.name ?? ''
-  const isCheque = methodName.toLowerCase().includes('ch')
+  const method = methods.find((m) => m.id === methodId)
+  // Le code fait foi : « inclut ch » dans le libellé attrapait d'autres modes.
+  const isCheque = (method?.code ?? '').toUpperCase() === 'CHEQUE'
 
   const create = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
+
+      // Le chèque est créé avant le règlement : il doit exister pour être
+      // référencé, et il reste au portefeuille même si l'encaissement échoue.
+      let chequeId: number | null = null
+
+      if (isCheque && chequeDraftComplet(cheque.draft)) {
+        const cree = await creerCheque.mutateAsync({
+          number: cheque.draft.number.trim(),
+          cheque_date: cheque.draft.cheque_date,
+          amount: Number(amount),
+          bank: cheque.draft.bank.trim() || null,
+          direction: 'in',
+          origin: cheque.autreSignataire ? 'third_party' : 'customer',
+          drawer_name: cheque.autreSignataire ? cheque.draft.drawer_name.trim() : null,
+          customer_id: customerId,
+          image: cheque.draft.image,
+        })
+        chequeId = cree.id
+      }
+
       await api.post('/payments', {
         customer_id: customerId,
         amount: Number(amount),
         payment_method_id: methodId || null,
-        cheque_reference: isCheque && chequeRef ? chequeRef : null,
+        cheque_reference: isCheque ? cheque.draft.number.trim() || null : null,
+        cheque_id: chequeId,
         received_at: date,
       })
     },
@@ -304,9 +337,11 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
         </div>
 
         {isCheque ? (
-          <Field label="N° du chèque" htmlFor="pay-cheque">
-            <Input id="pay-cheque" value={chequeRef} onChange={(e) => setChequeRef(e.target.value)} className="max-w-xs" />
-          </Field>
+          <CustomerChequePanel
+            value={cheque}
+            onChange={setCheque}
+            customerName={selected?.name}
+          />
         ) : null}
 
         {create.isError ? (
@@ -316,7 +351,16 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
         ) : null}
 
         <div className="flex gap-2">
-          <Button onClick={() => create.mutate()} disabled={create.isPending || !customerId || Number(amount) <= 0}>
+          <Button
+            onClick={() => create.mutate()}
+            disabled={
+              create.isPending ||
+              !customerId ||
+              Number(amount) <= 0 ||
+              (isCheque && !chequeDraftComplet(cheque.draft)) ||
+              (isCheque && cheque.autreSignataire && cheque.draft.drawer_name.trim() === '')
+            }
+          >
             {create.isPending ? 'Enregistrement…' : "Enregistrer l'encaissement"}
           </Button>
           <Button variant="ghost" onClick={onClose}>Annuler</Button>

@@ -45,6 +45,7 @@ final class Payment extends Model
         'amount',
         'cheque_status',
         'cheque_reference',
+        'cheque_id',
         'received_at',
         'user_id',
         'note',

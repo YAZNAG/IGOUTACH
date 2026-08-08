@@ -36,11 +36,14 @@ export interface SupplierCreditFilters {
 export interface PaymentMethodOption {
   id: number
   name: string
+  code: string
 }
 
 export interface PaySupplierCreditInput {
   amount: number
   payment_method_id?: number | null
+  /** Chèque remis, créé ou endossé juste avant l'appel. */
+  cheque_id?: number | null
   paid_at?: string
   notes?: string | null
 }
