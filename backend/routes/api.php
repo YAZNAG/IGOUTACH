@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\ChequeController;
+use App\Http\Controllers\Api\V1\RecurringExpenseController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -275,6 +276,15 @@ Route::prefix('v1')->group(function () {
         Route::get('customers-aging', [PaymentController::class, 'aging'])->middleware('can:credit.view');
 
         // Portefeuille de chèques : reçus des clients, endossés ou émis.
+        // Charges fixes : saisies une fois, dues chaque mois.
+        Route::get('recurring-expenses', [RecurringExpenseController::class, 'index'])->middleware('can:expense.create');
+        Route::get('recurring-expenses/pending', [RecurringExpenseController::class, 'pending'])->middleware('can:expense.create');
+        Route::get('recurring-expenses/{recurringExpense}/occurrences', [RecurringExpenseController::class, 'occurrences'])->middleware('can:expense.create');
+        Route::post('recurring-expenses', [RecurringExpenseController::class, 'store'])->middleware('can:expense.recurring_manage');
+        Route::put('recurring-expenses/{recurringExpense}', [RecurringExpenseController::class, 'update'])->middleware('can:expense.recurring_manage');
+        Route::delete('recurring-expenses/{recurringExpense}', [RecurringExpenseController::class, 'destroy'])->middleware('can:expense.recurring_manage');
+        Route::post('recurring-expense-occurrences/{occurrence}/pay', [RecurringExpenseController::class, 'pay'])->middleware('can:expense.approve');
+
         Route::get('cheques', [ChequeController::class, 'index'])->middleware('can:cheque.view');
         Route::get('cheques/{cheque}', [ChequeController::class, 'show'])->middleware('can:cheque.view');
         Route::post('cheques', [ChequeController::class, 'store'])->middleware('can:cheque.manage');

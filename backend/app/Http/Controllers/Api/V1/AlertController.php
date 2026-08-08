@@ -111,6 +111,30 @@ final class AlertController extends Controller
             'severity' => $pendingExpenses > 0 ? 'sky' : 'ok',
         ];
 
+        // Charges fixes échues et non réglées. Elles restent signalées tant
+        // qu'elles ne sont pas payées : c'est tout l'objet du suivi.
+        $echeances = DB::table('recurring_expense_occurrences as o')
+            ->join('recurring_expenses as c', 'c.id', '=', 'o.recurring_expense_id')
+            ->where('o.status', 'pending')
+            ->whereDate('o.due_date', '<=', now()->toDateString())
+            // Les charges de société (sans lieu) concernent tout le monde.
+            ->when($warehouseId !== null, fn ($q) => $q->where(function ($sub) use ($warehouseId): void {
+                $sub->where('c.warehouse_id', $warehouseId)->orWhereNull('c.warehouse_id');
+            }))
+            ->selectRaw('COUNT(*) as nb, COALESCE(SUM(o.amount), 0) as montant')
+            ->first();
+
+        $nbEcheances = (int) ($echeances?->nb ?? 0);
+
+        $alerts[] = [
+            'key' => 'recurring_expenses_due',
+            'label' => 'Charges fixes à régler',
+            'count' => $nbEcheances,
+            'amount' => round((float) ($echeances?->montant ?? 0), 2),
+            'severity' => $nbEcheances > 0 ? 'bad' : 'ok',
+            'link' => '/charges-fixes',
+        ];
+
         // ── Indicateurs transverses (direction uniquement) ─────────────
         if ($global) {
             $belowFloor = DB::table('product_prices')

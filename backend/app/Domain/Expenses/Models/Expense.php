@@ -39,6 +39,7 @@ final class Expense extends Model
         'user_id',
         'label',
         'amount',
+        'payment_method_id',
         'expense_date',
         'receipt_path',
         'status',
@@ -68,6 +69,11 @@ final class Expense extends Model
     /**
      * @return BelongsTo<ExpenseCategory, $this>
      */
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(\App\Domain\Settings\Models\PaymentMethod::class);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');

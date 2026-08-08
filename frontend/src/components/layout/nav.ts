@@ -4,6 +4,7 @@ import {
   Boxes,
   Building2,
   Calculator,
+  CalendarClock,
   ClipboardList,
   FileBarChart,
   FileText,
@@ -86,6 +87,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { label: 'Règlements', to: '/reglements', icon: Receipt, permission: 'payment.view' },
       { label: 'Charges', to: '/charges', icon: Wallet, permission: 'expense.create' },
+      { label: 'Charges fixes', to: '/charges-fixes', icon: CalendarClock, permission: 'expense.create' },
     ],
   },
   {

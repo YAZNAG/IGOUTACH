@@ -38,7 +38,7 @@ final class ExpenseController extends Controller
     public function index(Request $request): JsonResponse
     {
         $expenses = Expense::query()
-            ->with(['category:id,name', 'warehouse:id,code', 'user:id,name'])
+            ->with(['category:id,name', 'warehouse:id,code', 'user:id,name', 'paymentMethod:id,name'])
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
             ->orderByDesc('id')
@@ -51,6 +51,9 @@ final class ExpenseController extends Controller
             'warehouse' => $e->warehouse?->code,
             'user' => $e->user?->name,
             'amount' => (float) $e->amount,
+            // Le moyen de reglement est saisi : il doit se lire dans la liste,
+            // sinon l'information est enregistree sans jamais etre montree.
+            'payment_method' => $e->paymentMethod?->name,
             'expense_date' => $e->expense_date->format('Y-m-d'),
             'has_receipt' => $e->receipt_path !== null,
             'status' => $e->status,
