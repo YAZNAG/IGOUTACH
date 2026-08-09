@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use App\Rules\WarehouseAccessible;
+use App\Domain\Stock\Contracts\StockReaderInterface;
 
 /**
  * Ventes : devis et factures. Prix résolus côté serveur (type de prix du
@@ -149,7 +150,7 @@ final class SaleController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        /** @var Product $product */
+    /** @var Product $product */
         $product = Product::query()->findOrFail((int) $data['product_id']);
         $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
 
@@ -159,6 +160,45 @@ final class SaleController extends Controller
             'reason' => $resolved->reason,
             'floor_price' => round($floor, 2),
         ]]);
+    }
+
+    /**
+     * Lignes dont la quantite depasse le stock du lieu.
+     *
+     * Les quantites d'un meme article sont additionnees : deux lignes de 6
+     * sur un stock de 10 doivent etre refusees, alors que chacune passe
+     * isolement.
+     *
+     * @param  list<array{product_id: int, quantity: int}>  $lines
+     * @return list<array{product_id: int, requested: int, available: int, message: string}>
+     */
+    private function lignesSansStock(int $warehouseId, array $lines, StockReaderInterface $stock): array
+    {
+        $demande = [];
+
+        foreach ($lines as $line) {
+            $id = (int) $line['product_id'];
+            $demande[$id] = ($demande[$id] ?? 0) + (int) $line['quantity'];
+        }
+
+        $manquants = [];
+
+        foreach ($demande as $productId => $quantite) {
+            $disponible = $stock->quantityFor($warehouseId, $productId);
+
+            if ($quantite > $disponible) {
+                $nom = Product::query()->find($productId)?->name ?? ('article #'.$productId);
+
+                $manquants[] = [
+                    'product_id' => $productId,
+                    'requested' => $quantite,
+                    'available' => $disponible,
+                    'message' => sprintf('%s — demande %d, disponible %d', $nom, $quantite, $disponible),
+                ];
+            }
+        }
+
+        return $manquants;
     }
 
     public function store(
@@ -188,6 +228,26 @@ final class SaleController extends Controller
         }
 
         $canBelowFloor = $request->user()?->can('sale.sell_below_floor') ?? false;
+
+        // Une facture sort du stock : refuser tout de suite ce qui ne pourra
+        // pas etre livre. La confirmation le bloquerait de toute facon, mais
+        // apres que le vendeur a saisi toute sa vente.
+        // Un devis reste libre : il peut porter sur ce qu'on va commander.
+        if ($data['type'] === Sale::TYPE_INVOICE) {
+            $manquants = $this->lignesSansStock(
+                (int) $data['warehouse_id'],
+                $data['lines'],
+                app(StockReaderInterface::class),
+            );
+
+            if ($manquants !== []) {
+                return response()->json([
+                    'message' => 'Stock insuffisant : '.implode(' ; ', array_column($manquants, 'message')),
+                    'errors' => ['lines' => array_column($manquants, 'message')],
+                    'insufficient' => $manquants,
+                ], 422);
+            }
+        }
 
         try {
             $sale = DB::transaction(function () use ($data, $discount, $canBelowFloor, $resolver, $margins, $cost, $numbers, $request): Sale {

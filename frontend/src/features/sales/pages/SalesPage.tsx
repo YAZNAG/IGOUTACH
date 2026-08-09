@@ -472,6 +472,12 @@ export function CreateSalePanel({
     }, 300)
   }
 
+  // Une facture sort du stock : ce qui depasse ne pourra pas etre livre.
+  // Un devis reste libre, il peut porter sur ce qu'on commandera ensuite.
+  const lignesEnRupture = type === 'invoice'
+    ? lines.filter((l) => l.quantity > l.current_stock)
+    : []
+
   const create = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
@@ -584,7 +590,16 @@ export function CreateSalePanel({
                     className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-bg"
                   >
                     <span className="mono text-muted">{o.sku}</span>
-                    <span className="text-ink">{o.name}</span>
+                    <span className="flex-1 truncate text-ink">{o.name}</span>
+                    {/* Le stock du lieu se lit avant de choisir : inutile
+                        d'ajouter une ligne pour decouvrir qu'il est vide. */}
+                    <span
+                      className={`tabular shrink-0 text-xs ${
+                        (o.current_stock ?? 0) <= 0 ? 'font-medium text-bad' : 'text-muted'
+                      }`}
+                    >
+                      {(o.current_stock ?? 0) <= 0 ? 'rupture' : `${formatNumber(o.current_stock ?? 0)} en stock`}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -685,10 +700,30 @@ export function CreateSalePanel({
           </p>
         ) : null}
 
+        {lignesEnRupture.length > 0 ? (
+          <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
+            Stock insuffisant dans ce lieu :{' '}
+            {lignesEnRupture
+              .map((l) => `${l.name} (demandé ${formatNumber(l.quantity)}, disponible ${formatNumber(l.current_stock)})`)
+              .join(' · ')}
+          </p>
+        ) : null}
+
         <div className="flex gap-2">
           <Button
             onClick={() => create.mutate()}
-            disabled={create.isPending || (!customerId && !walkIn) || !warehouseId || lines.length === 0}
+            disabled={
+              create.isPending ||
+              (!customerId && !walkIn) ||
+              !warehouseId ||
+              lines.length === 0 ||
+              lignesEnRupture.length > 0
+            }
+            title={
+              lignesEnRupture.length > 0
+                ? `Stock insuffisant : ${lignesEnRupture.map((l) => l.name).join(', ')}`
+                : undefined
+            }
           >
             {create.isPending ? 'Création…' : 'Créer le document'}
           </Button>
