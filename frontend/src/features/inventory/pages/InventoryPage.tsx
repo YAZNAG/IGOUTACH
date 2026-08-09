@@ -446,6 +446,7 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                 <th className="px-5 py-3 font-medium">Référence</th>
                 <th className="px-5 py-3 font-medium">Article</th>
                 <th className="px-5 py-3 text-right font-medium">Théorique</th>
+                {isDraft ? <th className="px-5 py-3 text-center font-medium">Modifier</th> : null}
                 <th className="px-5 py-3 text-right font-medium">Compté</th>
                 <th className="px-5 py-3 text-right font-medium">Écart</th>
                 <th className="px-5 py-3 font-medium">{isDraft ? 'Motif (facultatif)' : 'Motif'}</th>
@@ -472,7 +473,7 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                 ))
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-muted">
+                  <td colSpan={isDraft ? 8 : 7} className="px-5 py-8 text-center text-muted">
                     {allRows.length === 0
                       ? 'Aucun article en stock dans ce lieu.'
                       : onlyRemaining
@@ -482,34 +483,67 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                 </tr>
               ) : (
                 rows.map((r) => {
+                  // Une ligne n'est prise en compte que si elle a été
+                  // déverrouillée : sans cela, cocher tout le catalogue
+                  // reviendrait à valider un comptage qu'on n'a pas fait.
                   const entered = counts[r.product_id] !== undefined
-                  const counted = counts[r.product_id] ?? 0
+                  const counted = counts[r.product_id] ?? r.quantity
                   const diff = entered ? counted - r.quantity : 0
                   return (
                     <tr key={r.product_id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{r.sku}</td>
                       <td className="px-5 py-3 text-ink">{r.name}</td>
-                      {/* Théorique masqué tant que le compteur n'a pas saisi son chiffre. */}
-                      <td className="tabular px-5 py-3 text-right text-muted">{entered ? r.quantity : '•••'}</td>
+                      {/* Quantité théorique toujours visible : le compteur
+                          compare son comptage au stock connu de l'application. */}
+                      <td className="tabular px-5 py-3 text-right text-muted">{r.quantity}</td>
+                      <td className="px-5 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={entered}
+                          aria-label={`Modifier la quantité de ${r.name}`}
+                          title="Cocher pour saisir une quantité différente"
+                          className="h-4 w-4 accent-sky"
+                          onChange={(e) => {
+                            const coche = e.target.checked
+                            setCounts((prev) => {
+                              const next = { ...prev }
+                              // À l'ouverture, on part du théorique : le
+                              // compteur ne corrige que ce qui diffère.
+                              if (coche) next[r.product_id] = r.quantity
+                              else delete next[r.product_id]
+                              return next
+                            })
+                            if (!coche) {
+                              setReasons((prev) => {
+                                const next = { ...prev }
+                                delete next[r.product_id]
+                                return next
+                              })
+
+                              if (inventory?.lines?.some((l) => l.product_id === r.product_id)) {
+                                removeLineMutation.mutate({ id, productId: r.product_id })
+                              }
+                            }
+                          }}
+                        />
+                      </td>
                       <td className="px-5 py-3 text-right">
                         <Input
                           type="number"
                           min={0}
-                          value={entered ? counted : ''}
-                          placeholder="—"
+                          value={counted}
+                          disabled={!entered}
+                          title={entered ? undefined : 'Cochez « Modifier » pour saisir une quantité'}
                           onChange={(e) => {
                             const v = e.target.value
-                            setCounts((prev) => {
-                              const next = { ...prev }
-                              if (v === '') {
-                                delete next[r.product_id]
-                              } else {
-                                next[r.product_id] = Number(v)
-                              }
-                              return next
-                            })
+                            setCounts((prev) => ({
+                              ...prev,
+                              // Champ vidé : on revient au théorique plutôt
+                              // que d'enregistrer un zéro non voulu.
+                              [r.product_id]: v === '' ? r.quantity : Number(v),
+                            }))
                           }}
-                          className="ml-auto w-24"
+                          className={cn('ml-auto w-24', !entered && 'opacity-60')}
                         />
                       </td>
                       <td className={cn('tabular px-5 py-3 text-right font-medium', !entered || diff === 0 ? 'text-muted' : diff > 0 ? 'text-ok' : 'text-bad')}>
@@ -529,30 +563,9 @@ function InventoryDetail({ id, canApprove, onBack }: { id: number; canApprove: b
                       </td>
                       <td className="px-5 py-3 text-right">
                         {entered ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted"
-                            title="Retirer ce comptage (l'article ne sera pas régularisé)"
-                            onClick={() => {
-                              setCounts((prev) => {
-                                const next = { ...prev }
-                                delete next[r.product_id]
-                                return next
-                              })
-                              setReasons((prev) => {
-                                const next = { ...prev }
-                                delete next[r.product_id]
-                                return next
-                              })
-                              // Supprime aussi côté serveur si déjà enregistré.
-                              if (inventory?.lines?.some((l) => l.product_id === r.product_id)) {
-                                removeLineMutation.mutate({ id, productId: r.product_id })
-                              }
-                            }}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
+                          <Badge tone={diff === 0 ? 'ok' : 'warn'}>
+                            {diff === 0 ? 'Confirmé' : 'Corrigé'}
+                          </Badge>
                         ) : (
                           <span className="text-xs text-faint">à compter</span>
                         )}
