@@ -28,10 +28,15 @@ class Transfer extends Model
         'to_warehouse_id',
         'transfer_status_id',
         'created_by',
+        'requested_by',
+        'approved_by',
         'received_by',
         'sent_at',
+        'requested_at',
+        'approved_at',
         'received_at',
         'note',
+        'refusal_reason',
     ];
 
     protected function casts(): array

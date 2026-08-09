@@ -17,6 +17,8 @@ use App\Domain\Stock\Models\TransferStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Rules\WarehouseAccessible;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Transferts inter-lieux : liste (avec alerte transit > 3 jours),
@@ -104,6 +106,119 @@ final class TransferController extends Controller
         }
 
         return response()->json(['data' => ['id' => $transfer->id, 'reference' => $transfer->reference]], 201);
+    }
+
+    /**
+     * Demande de transfert vers son propre lieu.
+     *
+     * Aucune marchandise ne bouge : la demande attend un accord. Sans cela,
+     * le stock du lieu source diminuerait sur simple demande.
+     */
+    public function request(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'from_warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'to_warehouse_id' => ['required', 'integer', 'exists:warehouses,id', 'different:from_warehouse_id', new WarehouseAccessible],
+            'note' => ['nullable', 'string', 'max:255'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $statut = TransferStatus::query()->where('code', TransferStatus::REQUESTED)->firstOrFail();
+
+        $transfer = DB::transaction(function () use ($data, $request, $statut): Transfer {
+            $transfer = Transfer::withoutGlobalScopes()->create([
+                'reference' => 'DT-'.now()->format('ymdHis'),
+                'from_warehouse_id' => $data['from_warehouse_id'],
+                'to_warehouse_id' => $data['to_warehouse_id'],
+                'transfer_status_id' => $statut->id,
+                'created_by' => $request->user()?->id,
+                'requested_by' => $request->user()?->id,
+                'requested_at' => now(),
+                'note' => $data['note'] ?? null,
+            ]);
+
+            foreach ($data['lines'] as $ligne) {
+                $transfer->lines()->create([
+                    'product_id' => $ligne['product_id'],
+                    'quantity_sent' => $ligne['quantity'],
+                    'quantity_received' => 0,
+                    'unit_cost' => 0,
+                ]);
+            }
+
+            return $transfer;
+        });
+
+        return response()->json([
+            'data' => ['id' => $transfer->id, 'reference' => $transfer->reference, 'status' => TransferStatus::REQUESTED],
+        ], 201);
+    }
+
+    /**
+     * Accord de la direction : la demande devient un transfert réel et le
+     * stock quitte enfin le lieu source.
+     */
+    public function approve(Request $request, Transfer $transfer, CreateTransferAction $action, ProductCostResolver $cost): JsonResponse
+    {
+        $verrou = Transfer::withoutGlobalScopes()->lockForUpdate()->find($transfer->id);
+
+        if ($verrou === null || $verrou->status?->code !== TransferStatus::REQUESTED) {
+            return response()->json(['message' => 'Seule une demande en attente peut être approuvée.'], 422);
+        }
+
+        $lignes = $verrou->lines()->with('product')->get()->map(fn ($l): TransferLineData => new TransferLineData(
+            productId: (int) $l->product_id,
+            quantity: (int) $l->quantity_sent,
+            unitCost: $cost->unitCost($l->product),
+        ))->all();
+
+        try {
+            $reel = $action->execute(new TransferData(
+                fromWarehouseId: (int) $verrou->from_warehouse_id,
+                toWarehouseId: (int) $verrou->to_warehouse_id,
+                lines: $lignes,
+                userId: $request->user()?->id,
+                note: $verrou->note,
+            ));
+        } catch (InvalidTransferException|InsufficientStockException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        // La demande porte la trace de l'accord et cède la place au transfert
+        // réellement exécuté, seul porteur des mouvements de stock.
+        $reel->update([
+            'requested_by' => $verrou->requested_by,
+            'requested_at' => $verrou->requested_at,
+            'approved_by' => $request->user()?->id,
+            'approved_at' => now(),
+        ]);
+
+        $verrou->lines()->delete();
+        $verrou->delete();
+
+        return response()->json(['data' => ['id' => $reel->id, 'reference' => $reel->reference, 'status' => TransferStatus::IN_TRANSIT]]);
+    }
+
+    public function refuse(Request $request, Transfer $transfer): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['nullable', 'string', 'max:255']]);
+
+        if ($transfer->status?->code !== TransferStatus::REQUESTED) {
+            return response()->json(['message' => 'Seule une demande en attente peut être refusée.'], 422);
+        }
+
+        $statut = TransferStatus::query()->where('code', TransferStatus::REFUSED)->firstOrFail();
+
+        $transfer->update([
+            'transfer_status_id' => $statut->id,
+            'approved_by' => $request->user()?->id,
+            'approved_at' => now(),
+            'refusal_reason' => $data['reason'] ?? null,
+        ]);
+
+        return response()->json(['data' => ['id' => $transfer->id, 'status' => TransferStatus::REFUSED]]);
     }
 
     public function show(Transfer $transfer): JsonResponse

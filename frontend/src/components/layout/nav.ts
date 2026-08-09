@@ -58,7 +58,7 @@ export const navGroups: NavGroup[] = [
       { label: 'État du stock', to: '/stock', icon: Boxes, permission: 'stock.view' },
       { label: 'Entrées de stock', to: '/stock-entries', icon: PackagePlus, permission: 'stock.view' },
       { label: 'Sorties de stock', to: '/stock-exits', icon: PackageMinus, permission: 'stock.view' },
-      { label: 'Transferts', to: '/transferts', icon: ArrowLeftRight, permission: 'transfer.create' },
+      { label: 'Transferts', to: '/transferts', icon: ArrowLeftRight, permission: 'stock.view' },
       { label: 'Inventaire', to: '/inventaire', icon: ClipboardList, permission: 'inventory.create' },
     ],
   },

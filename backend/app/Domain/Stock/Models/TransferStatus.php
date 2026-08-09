@@ -13,6 +13,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TransferStatus extends Model
 {
+    /** Demandé par un lieu, en attente d'accord — aucune marchandise déplacée. */
+    public const REQUESTED = 'requested';
+
+    /** Demande refusée par la direction. */
+    public const REFUSED = 'refused';
+
     public const IN_TRANSIT = 'in_transit';
 
     public const RECEIVED = 'received';

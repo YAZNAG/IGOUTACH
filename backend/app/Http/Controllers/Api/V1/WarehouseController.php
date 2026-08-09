@@ -20,13 +20,24 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 final class WarehouseController extends Controller
 {
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
+        $user = $request->user();
+
+        // Un utilisateur mono-lieu ne voit que le sien. C'est la source de
+        // tous les sélecteurs de lieu de l'application : le filtrer ici évite
+        // que les autres lieux apparaissent dans les listes déroulantes, les
+        // filtres et les formulaires, écran par écran.
         $warehouses = Warehouse::query()
             ->with('type:id,code,name')
+            ->when(
+                $user !== null && ! $user->can('stock.view_global'),
+                fn ($q) => $q->where('id', $user->getAttribute('warehouse_id')),
+            )
             ->orderBy('code')
             ->paginate(20);
 

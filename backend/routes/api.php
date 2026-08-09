@@ -226,6 +226,10 @@ Route::prefix('v1')->group(function () {
         Route::post('transfers', [TransferController::class, 'store'])->middleware('can:transfer.create');
         Route::get('transfers/{transfer}', [TransferController::class, 'show'])->middleware('can:stock.view');
         Route::post('transfers/{transfer}/receive', [TransferController::class, 'receive'])->middleware('can:transfer.receive');
+        // Un lieu demande, la direction accorde : la demande ne deplace rien.
+        Route::post('transfer-requests', [TransferController::class, 'request'])->middleware('can:transfer.request');
+        Route::post('transfers/{transfer}/approve', [TransferController::class, 'approve'])->middleware('can:transfer.approve');
+        Route::post('transfers/{transfer}/refuse', [TransferController::class, 'refuse'])->middleware('can:transfer.approve');
 
         // Achats — bons de commande
         Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->middleware('can:purchase.view');
