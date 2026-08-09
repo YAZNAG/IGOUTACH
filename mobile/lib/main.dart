@@ -6,6 +6,7 @@ import 'core/theme.dart';
 import 'core/widgets.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
+import 'features/home/responsable_shell.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +49,15 @@ class _Root extends StatelessWidget {
 
     if (auth.initializing) return const SplashScreen();
 
-    return auth.isAuthenticated ? const HomeShell() : const LoginScreen();
+    if (!auth.isAuthenticated) return const LoginScreen();
+
+    // Un compte rattaché à un lieu unique travaille debout, d'une main :
+    // il reçoit la navigation à onglets. Les comptes multi-lieux gardent
+    // la grille de modules, plus dense mais plus complète.
+    final monoLieu = auth.user?.warehouseId != null &&
+        !auth.can('stock.view_global');
+
+    return monoLieu ? const ResponsableShell() : const HomeShell();
   }
 }
 

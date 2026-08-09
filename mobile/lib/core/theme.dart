@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Thème inspiré du web IGOUTECH : bleu marine, accent ciel, fond clair.
+/// Thème iGouTech : rouge de marque, encre presque noire, fond clair.
+///
+/// Les valeurs sont celles de la maquette UX validée (#E8112D et sa famille).
+/// Les noms `navy` et `sky` sont conservés comme ALIAS : une centaine de
+/// références les utilisent déjà, les renommer d'un bloc n'apporterait rien
+/// et risquerait d'en manquer.
 ///
 /// Le public visé (magasinier, vendeur, responsable de dépôt) utilise
 /// l'application debout, souvent d'une seule main et en plein soleil. Les
@@ -17,14 +22,28 @@ class AppTheme {
 
   // ── Couleurs de marque ───────────────────────────────────────────────────
 
-  static const Color navy = Color(0xFF0B2A5B);
-  static const Color navyDeep = Color(0xFF071D42);
-  static const Color sky = Color(0xFF0EA5E9);
-  static const Color background = Color(0xFFF5F8FC);
+  /// Rouge de marque, relevé sur la maquette.
+  static const Color brand = Color(0xFFE8112D);
+  static const Color brandDeep = Color(0xFFC50E26);
+  static const Color brandLight = Color(0xFFFF3B4E);
+  static const Color brandSoft = Color(0xFFFEECEE);
 
-  static const Color success = Color(0xFF16A34A);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color danger = Color(0xFFDC2626);
+  /// Encre : presque noire, pas bleutée.
+  static const Color ink = Color(0xFF141416);
+  static const Color inkSoft = Color(0xFF3A3A40);
+
+  // Alias hérités — pointent désormais sur la marque.
+  static const Color navy = brand;
+  static const Color navyDeep = brandDeep;
+  static const Color sky = brand;
+  static const Color background = Color(0xFFF4F4F6);
+
+  static const Color success = Color(0xFF0E9F6E);
+  static const Color successSoft = Color(0xFFE6F6F0);
+  static const Color warning = Color(0xFFB7791F);
+  static const Color warningSoft = Color(0xFFFDF3E2);
+  static const Color danger = Color(0xFFC53B3B);
+  static const Color dangerSoft = Color(0xFFFBEBEB);
 
   // ── Accents de section (accueil) ─────────────────────────────────────────
 
@@ -35,20 +54,21 @@ class AppTheme {
   static const Color accentCommerce = success;
 
   /// Gestion (charges, tarifs).
-  static const Color accentAdmin = Color(0xFFD97706);
+  static const Color accentAdmin = warning;
 
   // ── Texte ────────────────────────────────────────────────────────────────
 
-  /// Texte secondaire (contraste ≈ 7:1 sur blanc).
-  static const Color textMuted = Color(0xFF4B5C72);
+  /// Texte secondaire (contraste ≈ 6:1 sur blanc).
+  static const Color textMuted = Color(0xFF5E5E68);
 
-  /// Texte tertiaire, le plus clair encore lisible (contraste ≈ 5:1).
-  static const Color textFaint = Color(0xFF5E708A);
+  /// Texte tertiaire, le plus clair encore lisible sur fond clair.
+  static const Color textFaint = Color(0xFF7A7A85);
 
-  static const Color border = Color(0xFFE1E8F0);
+  static const Color border = Color(0xFFE6E6EA);
+  static const Color borderStrong = Color(0xFFD4D4D9);
 
   /// Fond des blocs « squelette » pendant le chargement.
-  static const Color skeleton = Color(0xFFE6EBF2);
+  static const Color skeleton = Color(0xFFEDEDF0);
 
   // ── Mesures ──────────────────────────────────────────────────────────────
 
@@ -106,7 +126,7 @@ class AppTheme {
       bodySmall: TextStyle(fontSize: 13.5, height: 1.3, color: textMuted),
       labelLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       labelMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    ).apply(bodyColor: const Color(0xFF16233A), displayColor: navy);
+    ).apply(bodyColor: ink, displayColor: ink);
 
     return ThemeData(
       useMaterial3: true,
@@ -159,7 +179,7 @@ class AppTheme {
         titleTextStyle: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF16233A),
+          color: ink,
         ),
         subtitleTextStyle: TextStyle(fontSize: 14, color: textMuted),
       ),
@@ -278,7 +298,7 @@ class AppTheme {
         contentTextStyle: const TextStyle(
           fontSize: 15,
           height: 1.4,
-          color: Color(0xFF16233A),
+          color: ink,
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
@@ -299,7 +319,7 @@ class AppTheme {
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: sky,
-        linearTrackColor: Color(0xFFDCE6F1),
+        linearTrackColor: skeleton,
       ),
       datePickerTheme: DatePickerThemeData(
         backgroundColor: Colors.white,
