@@ -34,6 +34,8 @@ export function StockPage() {
   const can = usePermission()
   const canIssue = can('stock.issue')
   const canEntry = can('stock.entry')
+  // « Tous les lieux » (vue consolidee) : reserve a qui a la vue globale (admin).
+  const canViewGlobal = can('stock.view_global')
 
   const { data: warehouses = [] } = useWarehouseOptions()
   const [warehouseId, setWarehouseId] = useState<number | null>(null)
@@ -43,9 +45,8 @@ export function StockPage() {
 
   const tabs: { key: Tab; label: string; show: boolean }[] = [
     { key: 'stock', label: 'Stock par lieu', show: true },
-    { key: 'matrix', label: 'Tous les lieux', show: true },
+    { key: 'matrix', label: 'Tous les lieux', show: canViewGlobal },
     { key: 'movements', label: 'Journal des mouvements', show: true },
-    { key: 'entry', label: 'Bon d\'entrée', show: canEntry },
     { key: 'issue', label: 'Bon de sortie', show: canIssue },
   ]
 

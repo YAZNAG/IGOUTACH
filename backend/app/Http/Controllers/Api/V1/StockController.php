@@ -135,10 +135,13 @@ final class StockController extends Controller
      */
     public function movements(Request $request): JsonResponse
     {
-        // Le scope de lieu reste actif : seule une vue globale voit tous les lieux.
+        // Le scope de lieu reste actif : sans « stock.view_global », l'utilisateur
+        // ne voit QUE les mouvements de son lieu, quel que soit le warehouse_id demande.
+        $warehouseId = $this->scopedWarehouseId($request);
+
         $paginator = StockMovement::query()
             ->with(['product:id,sku,name', 'movementType:id,name,code,sign'])
-            ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
+            ->when($warehouseId > 0, fn ($q) => $q->where('warehouse_id', $warehouseId))
             ->when($request->integer('product_id') > 0, fn ($q) => $q->where('product_id', $request->integer('product_id')))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->whereHas('movementType', fn ($t) => $t->where('code', $request->string('type')->value())))
             ->orderByDesc('created_at')
