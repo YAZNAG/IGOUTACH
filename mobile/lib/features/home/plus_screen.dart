@@ -9,6 +9,8 @@ import '../pricing/pricing_screen.dart';
 import '../stock/customer_return_screen.dart';
 import '../stock/movements_list_screen.dart';
 import '../transfers/transfer_requests_screen.dart';
+import '../credits/credits_screen.dart';
+import '../payments/payments_screen.dart';
 
 /// Menu « Plus » : tout ce qui ne tient pas dans les cinq onglets.
 ///
@@ -66,6 +68,20 @@ class PlusScreen extends StatelessWidget {
         sousTitre: 'Reprendre une marchandise vendue',
         permission: 'sale.return',
         page: () => const CustomerReturnScreen(),
+      ),
+      _Entree(
+        icone: Icons.account_balance_wallet_outlined,
+        titre: 'Crédits clients',
+        sousTitre: 'Encours par client, et encaissement',
+        permission: 'credit.view',
+        page: () => const CreditsScreen(),
+      ),
+      _Entree(
+        icone: Icons.payments_outlined,
+        titre: 'Règlements',
+        sousTitre: 'Encaissements enregistrés',
+        permission: 'payment.view',
+        page: () => const PaymentsScreen(),
       ),
       _Entree(
         icone: Icons.receipt_long_outlined,

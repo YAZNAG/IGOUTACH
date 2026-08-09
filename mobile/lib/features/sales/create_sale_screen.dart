@@ -13,6 +13,7 @@ import '../../models/product.dart';
 import '../../models/warehouse.dart';
 import '../shared/product_picker.dart';
 import 'sales_screen.dart' show downloadSalePdf;
+import '../shared/payment_sheet.dart';
 
 /// Ligne de vente en cours de saisie.
 class _LineDraft {
@@ -280,6 +281,81 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
     }
   }
 
+  /// Propose de régler la vente : intégralement, en partie, ou à crédit.
+  ///
+  /// Un paiement partiel laisse le reste en créance sur le client — c'est
+  /// exactement ce que fait « à crédit » pour la totalité. Les trois chemins
+  /// aboutissent donc au même endroit, seul le montant encaissé change.
+  Future<void> _reglerVente(int saleId, String reference) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    final choix = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.payments_outlined, size: 30, color: AppTheme.brand),
+        title: const Text('Règlement'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$reference — ${formatMoney(_total)}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _customer!.name,
+              style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            ),
+          ],
+        ),
+        actionsOverflowDirection: VerticalDirection.down,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop('credit'),
+            child: const Text('À crédit'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop('partiel'),
+            child: const Text('Paiement partiel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop('total'),
+            child: const Text('Payé'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || choix == null || choix == 'credit') {
+      if (choix == 'credit' && mounted) {
+        showSuccessSnack(messenger, 'Vente portée au crédit de ${_customer!.name}.');
+      }
+      return;
+    }
+
+    // « Payé » pré-remplit le total, « partiel » laisse saisir le montant
+    // reçu ; dans les deux cas le reste éventuel devient une créance.
+    final encaisse = await showPaymentSheet(
+      context,
+      customerId: _customer!.id,
+      customerName: _customer!.name,
+      saleId: saleId,
+      saleReference: reference,
+      // Le montant est pré-rempli avec le total : « Payé » se confirme d'un
+      // tap, « partiel » se corrige. Le reste devient une créance dans les
+      // deux cas — c'est le serveur qui l'inscrit au grand-livre.
+      dueAmount: _total,
+    );
+
+    if (!mounted) return;
+
+    if (encaisse) {
+      showSuccessSnack(messenger, 'Règlement enregistré.');
+    }
+  }
+
   Future<void> _afterCreated(int saleId, String reference) async {
     // Un devis n'est pas confirmé : il sera converti en vente plus tard.
     final confirm = _isQuote
@@ -323,6 +399,13 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
         await _api.dio.post('/sales/$saleId/confirm');
         if (!mounted) return;
         showSuccessSnack(messenger, 'Vente $reference confirmée.');
+
+        // Règlement : seul un client identifié peut rester devoir. Une vente
+        // au comptoir est encaissée d'office, il n'y a personne à qui
+        // réclamer le reste.
+        if (!_walkIn && _customer != null) {
+          await _reglerVente(saleId, reference);
+        }
       } catch (e) {
         if (!mounted) return;
         showErrorSnack(
@@ -709,6 +792,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
       _search(value.trim());
     });
   }
+
 
   Future<void> _search(String query) async {
     setState(() {
