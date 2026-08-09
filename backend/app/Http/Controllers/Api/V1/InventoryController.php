@@ -167,6 +167,26 @@ final class InventoryController extends Controller
         return InventoryResource::make($inventory->load(['warehouse', 'lines.product:id,sku,name']));
     }
 
+    /**
+     * Supprime un inventaire non validé.
+     */
+    public function destroy(Inventory $inventory): JsonResponse
+    {
+        // Un inventaire validé a régularisé du stock : ses mouvements sont au
+        // journal. Le supprimer laisserait des écritures sans origine, donc un
+        // stock que plus rien n'explique.
+        if ($inventory->status === Inventory::STATUS_APPROVED) {
+            return response()->json([
+                'message' => 'Un inventaire validé ne peut pas être supprimé : il a régularisé le stock. Ses mouvements resteraient sans origine.',
+            ], 422);
+        }
+
+        $inventory->lines()->delete();
+        $inventory->delete();
+
+        return response()->json(['message' => 'Inventaire supprimé.']);
+    }
+
     public function approve(Inventory $inventory, ApproveInventoryAction $action, Request $request): JsonResponse|InventoryResource
     {
         try {

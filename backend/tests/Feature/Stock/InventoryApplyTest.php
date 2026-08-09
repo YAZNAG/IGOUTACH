@@ -114,3 +114,46 @@ it('expose la quantité théorique de chaque article du lieu', function (): void
     expect($lignes->firstWhere('product_id', $a->id)['quantity'])->toBe(42)
         ->and($lignes->firstWhere('product_id', $b->id)['quantity'])->toBe(0);
 });
+
+it('supprime un inventaire non validé', function (): void {
+    $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create'], ['warehouse_id' => $warehouse->id]);
+    $product = applyProduit();
+    applyStock($warehouse->id, $product->id, 20);
+
+    $id = $this->actingAs($user)->postJson('/api/v1/inventories', [
+        'warehouse_id' => $warehouse->id, 'counted_at' => '2026-08-09',
+    ])->json('data.id');
+
+    $this->actingAs($user)->putJson("/api/v1/inventories/{$id}/lines", [
+        'lines' => [['product_id' => $product->id, 'counted_quantity' => 18]],
+    ])->assertOk();
+
+    $this->actingAs($user)->deleteJson("/api/v1/inventories/{$id}")->assertOk();
+
+    // Les lignes partent avec lui, et le stock reste celui d'avant.
+    expect(\App\Domain\Stock\Models\Inventory::withoutGlobalScopes()->find($id))->toBeNull()
+        ->and(\Illuminate\Support\Facades\DB::table('inventory_lines')->where('inventory_id', $id)->count())->toBe(0)
+        ->and(app(StockReaderInterface::class)->quantityFor($warehouse->id, $product->id))->toBe(20);
+});
+
+it('refuse de supprimer un inventaire déjà validé', function (): void {
+    $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['inventory.create', 'inventory.approve'], ['warehouse_id' => $warehouse->id]);
+    $product = applyProduit();
+    applyStock($warehouse->id, $product->id, 20);
+
+    $id = $this->actingAs($user)->postJson('/api/v1/inventories', [
+        'warehouse_id' => $warehouse->id, 'counted_at' => '2026-08-09',
+    ])->json('data.id');
+    $this->actingAs($user)->putJson("/api/v1/inventories/{$id}/lines", [
+        'lines' => [['product_id' => $product->id, 'counted_quantity' => 15]],
+    ])->assertOk();
+    $this->actingAs($user)->postJson("/api/v1/inventories/{$id}/approve")->assertOk();
+
+    // Il a régularisé du stock : ses mouvements resteraient sans origine.
+    $this->actingAs($user)->deleteJson("/api/v1/inventories/{$id}")->assertStatus(422);
+
+    expect(\App\Domain\Stock\Models\Inventory::withoutGlobalScopes()->find($id))->not->toBeNull()
+        ->and(app(StockReaderInterface::class)->quantityFor($warehouse->id, $product->id))->toBe(15);
+});

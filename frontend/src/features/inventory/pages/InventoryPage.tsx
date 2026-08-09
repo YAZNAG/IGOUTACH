@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, CheckCircle2, Plus, Save, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Plus, Save, Trash2, XCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -17,6 +17,7 @@ import {
   useApproveInventory,
   useCancelInventory,
   useCreateInventory,
+  useDeleteInventory,
   useInventories,
   useInventory,
   useRemoveInventoryLine,
@@ -57,6 +58,8 @@ function InventoryList({
   const [page, setPage] = useState(1)
   const { data, isLoading } = useInventories(warehouseId, page)
   const createMutation = useCreateInventory()
+  const deleteMutation = useDeleteInventory()
+  const [aSupprimer, setASupprimer] = useState<{ id: number; reference: string } | null>(null)
 
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState({ warehouse_id: 0, counted_at: new Date().toISOString().slice(0, 10), note: '' })
@@ -163,6 +166,17 @@ function InventoryList({
                         <Button variant="ghost" size="sm" onClick={() => onOpen(inv.id)}>
                           {inv.status === 'draft' ? 'Compter' : 'Consulter'}
                         </Button>
+                        {inv.status !== 'approved' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted hover:text-bad"
+                            title="Supprimer cet inventaire"
+                            onClick={() => setASupprimer({ id: inv.id, reference: inv.reference })}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        ) : null}
                       </td>
                     </tr>
                   ))
@@ -172,6 +186,27 @@ function InventoryList({
           )}
         </CardBody>
       </Card>
+
+      <ConfirmDialog
+        open={aSupprimer !== null}
+        title="Supprimer l'inventaire"
+        message={
+          <>
+            Supprimer définitivement l'inventaire <strong>{aSupprimer?.reference}</strong> ?
+            <br />
+            <br />
+            Le stock du lieu n'est pas modifié : cet inventaire n'a rien régularisé.
+          </>
+        }
+        confirmLabel="Supprimer"
+        danger
+        isPending={deleteMutation.isPending}
+        onConfirm={() =>
+          aSupprimer &&
+          deleteMutation.mutate(aSupprimer.id, { onSuccess: () => setASupprimer(null) })
+        }
+        onCancel={() => setASupprimer(null)}
+      />
     </div>
   )
 }

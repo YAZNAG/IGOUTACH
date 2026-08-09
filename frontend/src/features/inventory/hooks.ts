@@ -3,6 +3,7 @@ import type { Paginated } from '@/types'
 import {
   approveInventory,
   cancelInventory,
+  deleteInventory,
   createInventory,
   fetchInventories,
   fetchInventory,
@@ -67,6 +68,14 @@ export function useCancelInventory() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: number) => cancelInventory(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useDeleteInventory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deleteInventory(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

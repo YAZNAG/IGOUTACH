@@ -79,3 +79,8 @@ export async function cancelInventory(id: number): Promise<Inventory> {
   const { data } = await api.post<{ data: Inventory }>(`/inventories/${id}/cancel`)
   return data.data
 }
+
+/** Supprime un inventaire non validé. */
+export async function deleteInventory(id: number): Promise<void> {
+  await api.delete(`/inventories/${id}`)
+}
