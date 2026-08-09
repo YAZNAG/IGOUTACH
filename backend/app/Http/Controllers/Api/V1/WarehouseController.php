@@ -53,8 +53,26 @@ final class WarehouseController extends Controller
             ->setStatusCode(201);
     }
 
+    /**
+     * Un utilisateur mono-lieu ne consulte que le sien : sans ce contrôle,
+     * il suffirait de changer l'identifiant dans l'URL pour lire le detail,
+     * les comptes rattachés et la valeur du stock d'un autre lieu.
+     */
+    private function assertLieuAccessible(Warehouse $warehouse): void
+    {
+        $user = auth()->user();
+
+        if ($user === null || $user->can('stock.view_global')) {
+            return;
+        }
+
+        abort_if((int) $warehouse->id !== (int) $user->getAttribute('warehouse_id'), 403);
+    }
+
     public function show(Warehouse $warehouse): WarehouseResource
     {
+        $this->assertLieuAccessible($warehouse);
+
         return WarehouseResource::make($warehouse->load('type'));
     }
 
@@ -80,6 +98,18 @@ final class WarehouseController extends Controller
      * Utilisateurs rattachés au lieu.
      */
     public function users(Warehouse $warehouse): JsonResponse
+    {
+        $this->assertLieuAccessible($warehouse);
+
+        return $this->reponseUtilisateurs($warehouse);
+    }
+
+    /**
+     * Contenu seul, sans contrôle d'accès : le rattachement le réutilise après
+     * sa propre autorisation. Le garde reste au point d'entrée HTTP, sinon il
+     * se déclencherait sur un appel interne déjà légitime.
+     */
+    private function reponseUtilisateurs(Warehouse $warehouse): JsonResponse
     {
         $users = $warehouse->users()->get(['id', 'name', 'email', 'is_active'])->map(fn ($u): array => [
             'id' => $u->id,
@@ -124,7 +154,7 @@ final class WarehouseController extends Controller
             module: 'warehouses',
         );
 
-        return $this->users($warehouse);
+        return $this->reponseUtilisateurs($warehouse);
     }
 
     /**
@@ -132,6 +162,8 @@ final class WarehouseController extends Controller
      */
     public function summary(Warehouse $warehouse): JsonResponse
     {
+        $this->assertLieuAccessible($warehouse);
+
         $inStock = DB::table('stocks')->where('warehouse_id', $warehouse->id)->where('quantity', '>', 0);
 
         $value = (float) (clone $inStock)->sum(DB::raw('quantity * average_cost'));
