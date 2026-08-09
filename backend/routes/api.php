@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\AppReleaseController;
+use App\Http\Controllers\Api\V1\PeriodReportController;
 use App\Http\Controllers\Api\V1\ChequeController;
 use App\Http\Controllers\Api\V1\RecurringExpenseController;
 use App\Http\Controllers\Api\V1\CategoryController;
@@ -336,6 +337,12 @@ Route::prefix('v1')->group(function () {
         Route::patch('customers/{customer}/block', [CustomerController::class, 'toggleBlock'])->middleware('can:customer.set_credit_limit');
 
         // Pilotage — alertes consolidées & rapports
+        // Journaux PDF sur une periode. Cloisonnes par lieu comme le reste.
+        Route::get('reports/journal/sales', [PeriodReportController::class, 'sales'])->middleware('can:sale.create');
+        Route::get('reports/journal/stock-entries', [PeriodReportController::class, 'stockEntries'])->middleware('can:stock.view');
+        Route::get('reports/journal/stock-exits', [PeriodReportController::class, 'stockExits'])->middleware('can:stock.view');
+        Route::get('reports/journal/expenses', [PeriodReportController::class, 'expenses'])->middleware('can:expense.create');
+
         Route::get('alerts', [AlertController::class, 'index'])->middleware('can:stock.view');
         Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:report.consolidated');
         Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:report.consolidated');
