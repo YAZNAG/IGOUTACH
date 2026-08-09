@@ -35,8 +35,8 @@ function returnStock(int $warehouseId, int $productId, int $qty): void
 }
 
 it('enregistre un retour client de plusieurs articles en une fois', function (): void {
-    $user = grantUser(['sale.return']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['sale.return'], ['warehouse_id' => $warehouse->id]);
     $a = returnProduct();
     $b = returnProduct();
     returnStock($warehouse->id, $a->id, 5);

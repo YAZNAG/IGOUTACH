@@ -33,8 +33,8 @@ beforeEach(function () {
 });
 
 it('crée un bon de sortie qui décrémente le stock et journalise', function () {
-    $user = grantUser(['stock.issue', 'stock.view']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['stock.issue', 'stock.view'], ['warehouse_id' => $warehouse->id]);
     $product = makeProduct();
     seedStockRow($warehouse->id, $product->id, 10);
 

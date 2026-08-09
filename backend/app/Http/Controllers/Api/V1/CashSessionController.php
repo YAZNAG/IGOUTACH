@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Rules\WarehouseAccessible;
 
 /**
  * Sessions de caisse : ouverture avec fonds, clôture avec calcul d'écart.
@@ -55,7 +56,7 @@ final class CashSessionController extends Controller
     {
         /** @var array{warehouse_id: int, opening_amount: float} $data */
         $data = $request->validate([
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'opening_amount' => ['required', 'numeric', 'min:0'],
         ]);
 

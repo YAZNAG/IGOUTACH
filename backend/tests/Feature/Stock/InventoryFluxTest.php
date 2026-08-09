@@ -37,8 +37,8 @@ beforeEach(function () {
 });
 
 it('ajoute du stock à un lieu via un bon d\'entrée daté', function () {
-    $user = grantUser(['stock.entry']);
     $warehouse = Warehouse::factory()->create();
+    $user = grantUser(['stock.entry'], ['warehouse_id' => $warehouse->id]);
     $product = invProduct();
 
     $this->actingAs($user)->postJson('/api/v1/stock/entry', [

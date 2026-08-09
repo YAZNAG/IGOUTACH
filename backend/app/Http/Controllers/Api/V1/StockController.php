@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use App\Rules\WarehouseAccessible;
 
 final class StockController extends Controller
 {
@@ -420,7 +421,7 @@ final class StockController extends Controller
     {
         /** @var array{warehouse_id: int, product_id: int, quantity: int, reason: string} $data */
         $data = $request->validate([
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'product_id' => ['required', 'integer', 'exists:products,id'],
             'quantity' => ['required', 'integer', 'not_in:0', 'between:-100000,100000'],
             'reason' => ['required', 'string', 'min:3', 'max:191'],
@@ -454,7 +455,7 @@ final class StockController extends Controller
     {
         /** @var array{warehouse_id: int, product_id: int, quantity: int, condition: string, note?: string|null} $data */
         $data = $request->validate([
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'product_id' => ['required', 'integer', 'exists:products,id'],
             'quantity' => ['required', 'integer', 'min:1'],
             'condition' => ['required', 'in:resellable,defective'],
@@ -503,7 +504,7 @@ final class StockController extends Controller
     {
         /** @var array{warehouse_id: int, occurred_at?: string|null, note?: string|null, lines: list<array{product_id: int, quantity: int, condition: string}>} $data */
         $data = $request->validate([
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'occurred_at' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:191'],
             'lines' => ['required', 'array', 'min:1'],
@@ -569,7 +570,7 @@ final class StockController extends Controller
     {
         /** @var array{warehouse_id: int, supplier_id?: int|null, occurred_at?: string|null, reason: string, note?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
         $data = $request->validate([
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
             'occurred_at' => ['nullable', 'date'],
             'reason' => ['required', 'string', 'max:120'],

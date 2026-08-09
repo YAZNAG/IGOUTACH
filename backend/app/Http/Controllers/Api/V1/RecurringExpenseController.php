@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use App\Rules\WarehouseAccessible;
 
 /**
  * Charges fixes et leurs échéances mensuelles.
@@ -143,7 +144,7 @@ final class RecurringExpenseController extends Controller
             // Obligatoire : au reglement, l'echeance cree une charge, et la
             // table des charges exige une categorie.
             'expense_category_id' => ['required', 'integer', 'exists:expense_categories,id'],
-            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'day_of_month' => ['required', 'integer', 'min:1', 'max:31'],
             'start_period' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],

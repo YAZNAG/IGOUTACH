@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Rules\WarehouseAccessible;
 
 /**
  * Numéros de série d'un article : liste, ajout en lot, suppression (non vendus).
@@ -41,7 +42,7 @@ final class ProductSerialController extends Controller
         /** @var array{serials: string, warehouse_id?: int|null} $data */
         $data = $request->validate([
             'serials' => ['required', 'string', 'max:20000'],
-            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
         ]);
 
         $lines = array_values(array_filter(array_map(

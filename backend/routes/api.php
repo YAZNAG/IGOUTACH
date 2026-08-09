@@ -296,7 +296,7 @@ Route::prefix('v1')->group(function () {
         // Caisse — sessions
         Route::get('cash-sessions', [CashSessionController::class, 'index'])->middleware('can:cash.manage');
         Route::get('cash-sessions/current', [CashSessionController::class, 'current'])->middleware('can:payment.create');
-        Route::post('cash-sessions/open', [CashSessionController::class, 'open'])->middleware('can:cash.manage');
+        Route::post('cash-sessions/open', [CashSessionController::class, 'open'])->middleware('can:cash.open');
         Route::post('cash-sessions/{cashSession}/close', [CashSessionController::class, 'close'])->middleware('can:cash.manage');
 
         // Charges

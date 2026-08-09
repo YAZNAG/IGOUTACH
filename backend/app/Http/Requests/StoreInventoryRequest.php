@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\WarehouseAccessible;
 
 final class StoreInventoryRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ final class StoreInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'counted_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
         ];

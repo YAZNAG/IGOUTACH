@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use App\Rules\WarehouseAccessible;
 
 /**
  * Charges : catégories, saisie avec justificatif photo (facultatif),
@@ -75,7 +76,7 @@ final class ExpenseController extends Controller
         /** @var array{expense_category_id: int, warehouse_id?: int|null, label: string, amount: float, expense_date: string} $data */
         $data = $request->validate([
             'expense_category_id' => ['required', 'integer', 'exists:expense_categories,id'],
-            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'label' => ['required', 'string', 'max:191'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'expense_date' => ['required', 'date'],

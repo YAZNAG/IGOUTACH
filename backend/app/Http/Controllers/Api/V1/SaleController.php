@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use App\Rules\WarehouseAccessible;
 
 /**
  * Ventes : devis et factures. Prix résolus côté serveur (type de prix du
@@ -172,7 +173,7 @@ final class SaleController extends Controller
             'type' => ['required', 'in:quote,invoice'],
             // Nullable : client de passage (vente comptoir sans fiche ni crédit).
             'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'discount_percent' => ['sometimes', 'numeric', 'between:0,100'],
             'note' => ['nullable', 'string', 'max:255'],
             'lines' => ['required', 'array', 'min:1'],
