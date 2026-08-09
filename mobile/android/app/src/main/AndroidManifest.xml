@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Accès réseau vers l'API Laravel. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Mise a jour depuis l'application : Android exige cette permission
+         pour ouvrir l'installateur. L'utilisateur confirme malgre tout chaque
+         installation — aucune installation silencieuse n'est possible. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
         android:label="IGOUTECH"
         android:name="${applicationName}"

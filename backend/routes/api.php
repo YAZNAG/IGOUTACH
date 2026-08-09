@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashSessionController;
+use App\Http\Controllers\Api\V1\AppReleaseController;
 use App\Http\Controllers\Api\V1\ChequeController;
 use App\Http\Controllers\Api\V1\RecurringExpenseController;
 use App\Http\Controllers\Api\V1\CategoryController;
@@ -55,6 +56,9 @@ Route::prefix('v1')->group(function () {
 
     // Authentification mobile (jeton Sanctum, app Flutter)
     Route::post('mobile/login', [MobileAuthController::class, 'login'])->middleware('throttle:10,1');
+
+    // Version publiee de l'application Android — consultee au demarrage.
+    Route::get('app/version', [AppReleaseController::class, 'show'])->middleware('throttle:60,1');
     Route::post('mobile/logout', [MobileAuthController::class, 'logout'])->middleware('auth:sanctum');
 
     Route::middleware('auth:sanctum')->group(function () {

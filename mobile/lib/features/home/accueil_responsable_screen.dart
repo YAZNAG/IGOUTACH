@@ -6,6 +6,7 @@ import '../../core/auth_provider.dart';
 import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/ui/states.dart';
+import '../shared/update_prompt.dart';
 
 /// Accueil du responsable : son lieu, rien d'autre.
 ///
@@ -26,6 +27,9 @@ class _AccueilResponsableScreenState extends State<AccueilResponsableScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) UpdatePrompt.checkAndShow(context);
+    });
     _futur = _charger();
   }
 
