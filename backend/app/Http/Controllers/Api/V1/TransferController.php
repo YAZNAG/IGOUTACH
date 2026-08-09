@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Rules\WarehouseAccessible;
 use Illuminate\Support\Facades\DB;
+use App\Support\Scopes\WarehouseScope;
 
 /**
  * Transferts inter-lieux : liste (avec alerte transit > 3 jours),
@@ -35,6 +36,18 @@ final class TransferController extends Controller
                 $id = $request->integer('warehouse_id');
                 $q->where(fn ($sub) => $sub->where('from_warehouse_id', $id)->orWhere('to_warehouse_id', $id));
             })
+            // Cloisonnement : sans vue multi-lieux, on ne voit que les
+            // transferts qui partent de son lieu ou qui lui sont destines.
+            // Le modele ne porte pas de scope global : un transfert a deux
+            // lieux, un filtre sur une seule colonne serait faux.
+            ->when(
+                ! ($request->user()?->can(WarehouseScope::DEFAULT_GLOBAL_PERMISSION) ?? false),
+                function ($q) use ($request) {
+                    $sien = $request->user()?->getAttribute('warehouse_id');
+                    $q->where(fn ($sub) => $sub->where('from_warehouse_id', $sien)
+                        ->orWhere('to_warehouse_id', $sien));
+                },
+            )
             ->orderByDesc('id')
             ->paginate(20);
 
@@ -157,22 +170,88 @@ final class TransferController extends Controller
     }
 
     /**
+     * Qui peut accorder ou refuser une demande.
+     *
+     * La direction (vue multi-lieux) arbitre partout. A defaut, c'est le
+     * responsable du lieu SOURCE : c'est son stock qui part, la decision lui
+     * revient. Le demandeur ne peut pas s'auto-servir.
+     */
+    private function peutArbitrer(Request $request, Transfer $transfer): bool
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        if ($user->can(WarehouseScope::DEFAULT_GLOBAL_PERMISSION)) {
+            return true;
+        }
+
+        return (int) $user->getAttribute('warehouse_id') === (int) $transfer->from_warehouse_id;
+    }
+
+    /**
      * Accord de la direction : la demande devient un transfert réel et le
      * stock quitte enfin le lieu source.
      */
     public function approve(Request $request, Transfer $transfer, CreateTransferAction $action, ProductCostResolver $cost): JsonResponse
     {
+        // Quantites ajustables a l'acceptation : celui qui donne sait ce qu'il
+        // peut reellement ceder, et n'a pas a refuser la demande entiere pour
+        // en corriger une ligne.
+        $data = $request->validate([
+            'lines' => ['sometimes', 'array'],
+            'lines.*.product_id' => ['required_with:lines', 'integer', 'exists:products,id'],
+            'lines.*.quantity' => ['required_with:lines', 'integer', 'min:0'],
+        ]);
+
         $verrou = Transfer::withoutGlobalScopes()->lockForUpdate()->find($transfer->id);
 
         if ($verrou === null || $verrou->status?->code !== TransferStatus::REQUESTED) {
             return response()->json(['message' => 'Seule une demande en attente peut être approuvée.'], 422);
         }
 
-        $lignes = $verrou->lines()->with('product')->get()->map(fn ($l): TransferLineData => new TransferLineData(
-            productId: (int) $l->product_id,
-            quantity: (int) $l->quantity_sent,
-            unitCost: $cost->unitCost($l->product),
-        ))->all();
+        if (! $this->peutArbitrer($request, $verrou)) {
+            return response()->json([
+                'message' => 'Seul le responsable du lieu qui fournit, ou la direction, peut traiter cette demande.',
+            ], 403);
+        }
+
+        $ajustees = [];
+
+        foreach ($data['lines'] ?? [] as $ligne) {
+            $ajustees[(int) $ligne['product_id']] = (int) $ligne['quantity'];
+        }
+
+        $lignes = [];
+
+        foreach ($verrou->lines()->with('product')->get() as $l) {
+            $quantite = $ajustees[(int) $l->product_id] ?? (int) $l->quantity_sent;
+
+            // Une ligne ramenee a zero est retiree : envoyer zero unite
+            // creerait un mouvement vide dans l'historique.
+            if ($quantite <= 0) {
+                continue;
+            }
+
+            // La demande garde trace de ce qui a ete reellement accorde.
+            if ($quantite !== (int) $l->quantity_sent) {
+                $l->update(['quantity_sent' => $quantite]);
+            }
+
+            $lignes[] = new TransferLineData(
+                productId: (int) $l->product_id,
+                quantity: $quantite,
+                unitCost: $cost->unitCost($l->product),
+            );
+        }
+
+        if ($lignes === []) {
+            return response()->json([
+                'message' => 'Toutes les lignes sont à zéro : refusez la demande plutôt que de l’approuver à vide.',
+            ], 422);
+        }
 
         try {
             $reel = $action->execute(new TransferData(
@@ -207,6 +286,12 @@ final class TransferController extends Controller
 
         if ($transfer->status?->code !== TransferStatus::REQUESTED) {
             return response()->json(['message' => 'Seule une demande en attente peut être refusée.'], 422);
+        }
+
+        if (! $this->peutArbitrer($request, $transfer)) {
+            return response()->json([
+                'message' => 'Seul le responsable du lieu qui fournit, ou la direction, peut traiter cette demande.',
+            ], 403);
         }
 
         $statut = TransferStatus::query()->where('code', TransferStatus::REFUSED)->firstOrFail();

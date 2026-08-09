@@ -267,17 +267,9 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
       return;
     }
 
-    // Le serveur refuse (422) toute ligne en écart sans motif : on l'anticipe.
-    final missing =
-        entered.where((r) => r.hasGap && r.reason.trim().isEmpty).toList();
-    if (missing.isNotEmpty) {
-      showErrorSnack(
-        messenger,
-        'Motif d\'écart obligatoire pour ${missing.length} article'
-        '${missing.length > 1 ? 's' : ''} : ${missing.first.name}.',
-      );
-      return;
-    }
+    // Le motif d'écart est facultatif : il explique un écart, il n'empêche
+    // pas de l'enregistrer. Le comptage terrain prime, et le serveur
+    // l'accepte sans motif depuis qu'il a été rendu optionnel.
 
     setState(() => _saving = true);
     try {

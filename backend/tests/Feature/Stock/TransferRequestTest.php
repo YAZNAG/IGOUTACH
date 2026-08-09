@@ -170,3 +170,119 @@ it('ne laisse plus un responsable créer un transfert direct', function (): void
         'lines' => [['product_id' => $product->id, 'quantity' => 5]],
     ])->assertForbidden();
 });
+
+it('laisse le responsable du lieu SOURCE accorder la demande', function (): void {
+    $demandeur = grantUser(['transfer.request'], ['warehouse_id' => $this->mien->id]);
+    // Celui qui fournit : c'est son stock qui part, la decision lui revient.
+    $fournisseur = grantUser(['transfer.approve'], ['warehouse_id' => $this->source->id]);
+    $product = demandeProduit();
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->source->id, 'product_id' => $product->id,
+        'quantity' => 100, 'reserved_quantity' => 0, 'average_cost' => '10.00',
+    ]);
+
+    $id = $this->actingAs($demandeur)->postJson('/api/v1/transfer-requests', [
+        'from_warehouse_id' => $this->source->id,
+        'to_warehouse_id' => $this->mien->id,
+        'lines' => [['product_id' => $product->id, 'quantity' => 30]],
+    ])->json('data.id');
+
+    $this->actingAs($fournisseur)->postJson("/api/v1/transfers/{$id}/approve")->assertOk();
+
+    expect(app(StockReaderInterface::class)->quantityFor($this->source->id, $product->id))->toBe(70);
+});
+
+it('refuse a un tiers d\'arbitrer une demande qui ne le concerne pas', function (): void {
+    $ailleurs = Warehouse::factory()->create(['code' => 'AILLEURS']);
+    $demandeur = grantUser(['transfer.request'], ['warehouse_id' => $this->mien->id]);
+    $etranger = grantUser(['transfer.approve'], ['warehouse_id' => $ailleurs->id]);
+    $product = demandeProduit();
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->source->id, 'product_id' => $product->id,
+        'quantity' => 100, 'reserved_quantity' => 0, 'average_cost' => '10.00',
+    ]);
+
+    $id = $this->actingAs($demandeur)->postJson('/api/v1/transfer-requests', [
+        'from_warehouse_id' => $this->source->id,
+        'to_warehouse_id' => $this->mien->id,
+        'lines' => [['product_id' => $product->id, 'quantity' => 30]],
+    ])->json('data.id');
+
+    // Ni demandeur ni fournisseur : rien a arbitrer ici.
+    $this->actingAs($etranger)->postJson("/api/v1/transfers/{$id}/approve")->assertForbidden();
+
+    expect(app(StockReaderInterface::class)->quantityFor($this->source->id, $product->id))->toBe(100);
+});
+
+it('accorde une quantite reduite a celle que la source peut ceder', function (): void {
+    $demandeur = grantUser(['transfer.request'], ['warehouse_id' => $this->mien->id]);
+    $fournisseur = grantUser(['transfer.approve'], ['warehouse_id' => $this->source->id]);
+    $product = demandeProduit();
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->source->id, 'product_id' => $product->id,
+        'quantity' => 100, 'reserved_quantity' => 0, 'average_cost' => '10.00',
+    ]);
+
+    $id = $this->actingAs($demandeur)->postJson('/api/v1/transfer-requests', [
+        'from_warehouse_id' => $this->source->id,
+        'to_warehouse_id' => $this->mien->id,
+        'lines' => [['product_id' => $product->id, 'quantity' => 80]],
+    ])->json('data.id');
+
+    // On demandait 80, la source n'en cede que 25.
+    $this->actingAs($fournisseur)->postJson("/api/v1/transfers/{$id}/approve", [
+        'lines' => [['product_id' => $product->id, 'quantity' => 25]],
+    ])->assertOk();
+
+    expect(app(StockReaderInterface::class)->quantityFor($this->source->id, $product->id))->toBe(75);
+});
+
+it('retire une ligne ramenee a zero et refuse une demande videe', function (): void {
+    $demandeur = grantUser(['transfer.request'], ['warehouse_id' => $this->mien->id]);
+    $fournisseur = grantUser(['transfer.approve'], ['warehouse_id' => $this->source->id]);
+    $product = demandeProduit();
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $this->source->id, 'product_id' => $product->id,
+        'quantity' => 50, 'reserved_quantity' => 0, 'average_cost' => '10.00',
+    ]);
+
+    $id = $this->actingAs($demandeur)->postJson('/api/v1/transfer-requests', [
+        'from_warehouse_id' => $this->source->id,
+        'to_warehouse_id' => $this->mien->id,
+        'lines' => [['product_id' => $product->id, 'quantity' => 10]],
+    ])->json('data.id');
+
+    // Tout a zero : c'est un refus deguise, mieux vaut le dire.
+    $this->actingAs($fournisseur)->postJson("/api/v1/transfers/{$id}/approve", [
+        'lines' => [['product_id' => $product->id, 'quantity' => 0]],
+    ])->assertStatus(422);
+
+    expect(app(StockReaderInterface::class)->quantityFor($this->source->id, $product->id))->toBe(50);
+});
+
+it('ne montre pas les transferts des autres lieux', function (): void {
+    $ailleurs = Warehouse::factory()->create(['code' => 'AILLEURS']);
+    $moi = grantUser(['stock.view'], ['warehouse_id' => $this->mien->id]);
+    $product = demandeProduit();
+
+    $statut = TransferStatus::where('code', 'requested')->first();
+
+    // Un transfert entre deux lieux tiers ne me regarde pas.
+    Transfer::withoutGlobalScopes()->create([
+        'reference' => 'TR-AILLEURS', 'from_warehouse_id' => $this->source->id,
+        'to_warehouse_id' => $ailleurs->id, 'transfer_status_id' => $statut->id,
+    ]);
+    Transfer::withoutGlobalScopes()->create([
+        'reference' => 'TR-POUR-MOI', 'from_warehouse_id' => $this->source->id,
+        'to_warehouse_id' => $this->mien->id, 'transfer_status_id' => $statut->id,
+    ]);
+
+    $refs = collect($this->actingAs($moi)->getJson('/api/v1/transfers')->json('data'))
+        ->pluck('reference');
+
+    expect($refs)->toContain('TR-POUR-MOI')->and($refs)->not->toContain('TR-AILLEURS');
+});
