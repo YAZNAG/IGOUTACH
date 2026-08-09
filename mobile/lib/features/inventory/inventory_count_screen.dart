@@ -26,7 +26,7 @@ class _CountRow {
   final String sku;
   final String name;
 
-  /// Stock théorique du lieu, masqué tant que rien n'est compté.
+  /// Stock théorique du lieu, tel que l'application le connaît.
   final int systemQuantity;
 
   /// Quantité comptée, `null` tant que l'article n'a pas été compté.
@@ -200,7 +200,7 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
       _countControllers.putIfAbsent(
         row.productId,
         () => TextEditingController(
-          text: row.counted == null ? '' : '${row.counted}',
+          text: '${row.counted ?? row.systemQuantity}',
         ),
       );
 
@@ -213,8 +213,29 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
   void _onCountChanged(_CountRow row, String value) {
     final trimmed = value.trim();
     setState(() {
-      row.counted = trimmed.isEmpty ? null : int.tryParse(trimmed);
+      // Champ vidé : retour au théorique. Un « 0 » saisi reste un zéro et
+      // sera bien appliqué à la validation.
+      row.counted = trimmed.isEmpty
+          ? row.systemQuantity
+          : (int.tryParse(trimmed) ?? row.systemQuantity);
     });
+  }
+
+  /// Coche/décoche la ligne : c'est ce qui décide si elle sera comptée.
+  ///
+  /// À l'ouverture on part du théorique — le compteur ne corrige que ce qui
+  /// diffère. Décocher retire la ligne du comptage, y compris côté serveur
+  /// si elle y était déjà : l'article garde alors son stock.
+  Future<void> _toggleCount(_CountRow row, bool coche) async {
+    if (coche) {
+      setState(() {
+        row.counted = row.systemQuantity;
+        _countControllers[row.productId]?.text = '${row.systemQuantity}';
+      });
+      return;
+    }
+
+    await _removeCount(row);
   }
 
   void _onSearchChanged(String value) {
@@ -317,7 +338,8 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
       row.counted = null;
       row.reason = '';
       row.savedOnServer = false;
-      _countControllers[row.productId]?.clear();
+      // Le champ retrouve le théorique : il reste lisible, simplement verrouillé.
+      _countControllers[row.productId]?.text = '${row.systemQuantity}';
       _reasonControllers[row.productId]?.clear();
     });
   }
@@ -535,17 +557,14 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                         runSpacing: 6,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          // Le théorique reste masqué tant que rien n'est
-                          // saisi, pour éviter que le compteur le recopie.
+                          // Le théorique est toujours lisible : le compteur
+                          // compare son comptage au stock connu, comme au web.
                           Text(
-                            'Théorique : '
-                            '${row.isCounted ? formatQuantity(row.systemQuantity) : '•••'}',
-                            style: TextStyle(
+                            'Théorique : ${formatQuantity(row.systemQuantity)}',
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: row.isCounted
-                                  ? AppTheme.navy
-                                  : AppTheme.textFaint,
+                              color: AppTheme.navy,
                             ),
                           ),
                           if (row.hasGap)
@@ -563,17 +582,37 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                // Cocher déverrouille la saisie. Décocher retire la ligne du
+                // comptage : l'article garde son stock, il n'est pas mis à zéro.
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Checkbox(
+                      value: row.isCounted,
+                      onChanged: _isDraft ? (v) => _toggleCount(row, v ?? false) : null,
+                    ),
+                    const Text(
+                      'Modifier',
+                      style: TextStyle(fontSize: 10, color: AppTheme.textMuted),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 4),
                 SizedBox(
-                  width: 92,
+                  width: 88,
                   child: TextField(
                     controller: _countController(row),
-                    enabled: _isDraft,
+                    // Verrouillé tant que la case n'est pas cochée : le champ
+                    // affiche le théorique sans qu'on puisse le modifier par
+                    // inadvertance.
+                    enabled: _isDraft && row.isCounted,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       fontFeatures: AppTheme.tabularFigures,
+                      color: row.isCounted ? AppTheme.ink : AppTheme.textFaint,
                     ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
@@ -587,16 +626,6 @@ class _InventoryCountScreenState extends State<InventoryCountScreen> {
                     onChanged: (value) => _onCountChanged(row, value),
                   ),
                 ),
-                if (row.isCounted && _isDraft)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.backspace_outlined,
-                      size: 18,
-                      color: AppTheme.danger,
-                    ),
-                    tooltip: 'Retirer ce comptage',
-                    onPressed: () => _removeCount(row),
-                  ),
               ],
             ),
             if (row.hasGap) ...[
