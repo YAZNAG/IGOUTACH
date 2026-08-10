@@ -204,7 +204,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
             customer: customer,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => CustomerDetailScreen(customer: customer),
+                builder: (_) => CustomerDetailScreen(
+                  customerId: customer.id,
+                  customerName: customer.name,
+                ),
               ),
             ),
           );
