@@ -267,6 +267,9 @@ Route::prefix('v1')->group(function () {
         Route::post('sales', [SaleController::class, 'store'])->middleware('can:sale.create');
         Route::get('sales/price', [SaleController::class, 'price'])->middleware('can:sale.create');
         Route::get('sales/{sale}', [SaleController::class, 'show'])->middleware('can:sale.create');
+        // Modification réservée au brouillon : le contrôleur refuse un document
+        // confirmé ou annulé.
+        Route::put('sales/{sale}', [SaleController::class, 'update'])->middleware('can:sale.create');
         Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])->middleware('can:sale.create');
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])->middleware('can:sale.cancel');
         Route::post('sales/{sale}/convert', [SaleController::class, 'convert'])->middleware('can:sale.create');

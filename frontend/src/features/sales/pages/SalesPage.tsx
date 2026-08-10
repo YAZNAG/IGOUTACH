@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Download, FileText, Lock, LockOpen, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, FileText, Lock, LockOpen, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -45,7 +45,24 @@ interface SaleDetail {
   payment_status: string
   confirmed_at: string | null
   note: string | null
-  lines: { sku: string | null; name: string | null; quantity: number; unit_price: number; price_type_code: string | null; line_total: number }[]
+  lines: {
+    product_id: number
+    sku: string | null
+    name: string | null
+    quantity: number
+    unit_price: number
+    price_type_code: string | null
+    line_total: number
+  }[]
+}
+
+/** Ligne en cours de modification sur un document encore en brouillon. */
+interface EditLine {
+  product_id: number
+  sku: string | null
+  name: string | null
+  quantity: number
+  unit_price: number
 }
 
 interface CustomerOption {
@@ -740,6 +757,14 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
 
+  // Modification d'un brouillon : lignes tenues en local jusqu'à
+  // l'enregistrement, pour pouvoir abandonner sans rien avoir touché.
+  const [editing, setEditing] = useState(false)
+  const [editLines, setEditLines] = useState<EditLine[]>([])
+  const [editDiscount, setEditDiscount] = useState(0)
+  const [editSearch, setEditSearch] = useState('')
+  const debouncedEditSearch = useDebouncedValue(editSearch, 250)
+
   // Règlement saisi au moment de la confirmation d'une facture.
   const [payMode, setPayMode] = useState<'unpaid' | 'paid'>('paid')
   const [payAmount, setPayAmount] = useState('')
@@ -810,6 +835,84 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
     },
   })
 
+  const { data: editProducts = [] } = useQuery<ProductOption[]>({
+    queryKey: ['sale-edit-product-search', debouncedEditSearch],
+    queryFn: async () => {
+      const { data: r } = await api.get<{ data: ProductOption[] }>('/products', {
+        params: { search: debouncedEditSearch, per_page: 20 },
+      })
+      return r.data
+    },
+    enabled: editing && debouncedEditSearch.trim().length >= 2,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  })
+
+  function ouvrirModification() {
+    if (!sale) return
+    setEditLines(sale.lines.map((l) => ({
+      product_id: l.product_id,
+      sku: l.sku,
+      name: l.name,
+      quantity: l.quantity,
+      unit_price: l.unit_price,
+    })))
+    setEditDiscount(sale.discount_percent)
+    setEditSearch('')
+    setEditing(true)
+  }
+
+  async function ajouterLigne(p: ProductOption) {
+    setEditSearch('')
+    // Un article déjà présent voit sa quantité augmenter : créer une seconde
+    // ligne pour le même article donnerait deux fois le même libellé.
+    if (editLines.some((l) => l.product_id === p.id)) {
+      setEditLines((prev) => prev.map((l) => (l.product_id === p.id ? { ...l, quantity: l.quantity + 1 } : l)))
+      return
+    }
+
+    // Prix résolu par le serveur, comme à la création : tarif du client puis
+    // paliers de quantité.
+    let unitPrice = 0
+    try {
+      const { data: r } = await api.get<{ data: { unit_price: number } }>('/sales/price', {
+        params: { product_id: p.id, quantity: 1, customer_id: sale?.customer?.id ?? undefined },
+      })
+      unitPrice = r.data.unit_price
+    } catch {
+      // Article sans tarif : le vendeur saisira le prix à la main.
+    }
+
+    setEditLines((prev) => [...prev, {
+      product_id: p.id,
+      sku: p.sku,
+      name: p.name,
+      quantity: 1,
+      unit_price: unitPrice,
+    }])
+  }
+
+  const editSubtotal = editLines.reduce((somme, l) => somme + l.quantity * l.unit_price, 0)
+  const editTotal = editSubtotal * (1 - editDiscount / 100)
+
+  const save = useMutation({
+    mutationFn: async () => {
+      await ensureCsrfCookie()
+      await api.put(`/sales/${id}`, {
+        discount_percent: editDiscount,
+        lines: editLines.map((l) => ({
+          product_id: l.product_id,
+          quantity: l.quantity,
+          unit_price: l.unit_price,
+        })),
+      })
+    },
+    onSuccess: () => {
+      setEditing(false)
+      qc.invalidateQueries({ queryKey: KEY })
+    },
+  })
+
   const cancel = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
@@ -865,7 +968,13 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
               ) : null}
             </>
           ) : null}
-          {sale?.status === 'draft' ? (
+          {sale?.status === 'draft' && can('sale.create') && !editing ? (
+            <Button variant="outline" onClick={ouvrirModification}>
+              <Pencil className="h-4 w-4" />
+              Modifier
+            </Button>
+          ) : null}
+          {sale?.status === 'draft' && !editing ? (
             <Button onClick={openConfirm} disabled={confirm.isPending}>
               Confirmer {sale.type === 'invoice' ? '(sortie de stock)' : ''}
             </Button>
@@ -897,38 +1006,167 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
         </div>
       ) : null}
 
-      <Card>
-        <CardHeader
-          title="Lignes"
-          hint={`Sous-total ${formatNumber(sale?.subtotal ?? 0)} DH · remise ${sale?.discount_percent ?? 0}% · total ${formatNumber(sale?.total ?? 0)} DH`}
-        />
-        <CardBody className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-muted">
-                <th className="px-5 py-3 font-medium">Référence</th>
-                <th className="px-5 py-3 font-medium">Article</th>
-                <th className="px-5 py-3 font-medium">Niveau</th>
-                <th className="px-5 py-3 text-right font-medium">Qté</th>
-                <th className="px-5 py-3 text-right font-medium">PU (DH)</th>
-                <th className="px-5 py-3 text-right font-medium">Total (DH)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(sale?.lines ?? []).map((l, i) => (
-                <tr key={i} className="border-b border-line last:border-0">
-                  <td className="mono px-5 py-3 text-muted">{l.sku}</td>
-                  <td className="px-5 py-3 text-ink">{l.name}</td>
-                  <td className="px-5 py-3">{l.price_type_code ? <Badge tone="sky">{l.price_type_code}</Badge> : '—'}</td>
-                  <td className="tabular px-5 py-3 text-right text-muted">{l.quantity}</td>
-                  <td className="tabular px-5 py-3 text-right text-muted">{formatNumber(l.unit_price)}</td>
-                  <td className="tabular px-5 py-3 text-right font-medium text-ink">{formatNumber(l.line_total)}</td>
+      {editing ? (
+        <Card>
+          <CardHeader
+            title={`Modifier ${sale?.reference ?? ''}`}
+            hint={`Sous-total ${formatNumber(editSubtotal)} DH · total ${formatNumber(editTotal)} DH`}
+            action={
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-muted" htmlFor="edit-discount">Remise %</label>
+                <Input
+                  id="edit-discount"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={editDiscount}
+                  onChange={(e) => setEditDiscount(Number(e.target.value))}
+                  className="w-20"
+                />
+                <Button variant="ghost" onClick={() => setEditing(false)} disabled={save.isPending}>
+                  Abandonner
+                </Button>
+                <Button
+                  onClick={() => save.mutate()}
+                  disabled={save.isPending || editLines.length === 0}
+                >
+                  {save.isPending ? 'Enregistrement…' : 'Enregistrer'}
+                </Button>
+              </div>
+            }
+          />
+          <CardBody className="space-y-4">
+            {save.isError ? (
+              <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
+                {errorMessage(save.error, 'Enregistrement impossible.')}
+              </p>
+            ) : null}
+
+            <Input
+              placeholder="Ajouter un article — réf ou nom…"
+              value={editSearch}
+              onChange={(e) => setEditSearch(e.target.value)}
+            />
+
+            {debouncedEditSearch.trim().length >= 2 && editProducts.length > 0 ? (
+              <div className="max-h-52 overflow-y-auto rounded border border-line">
+                {editProducts.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => void ajouterLigne(p)}
+                    className="flex w-full items-center justify-between border-b border-line px-3 py-2 text-left text-sm last:border-0 hover:bg-bg"
+                  >
+                    <span>{p.name}</span>
+                    <span className="mono text-xs text-faint">{p.sku}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {editLines.length === 0 ? (
+              <p className="text-sm text-muted">
+                Aucune ligne. Un document doit garder au moins un article — ajoutez-en un ou abandonnez.
+              </p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line text-left text-muted">
+                    <th className="px-3 py-2 font-medium">Article</th>
+                    <th className="px-3 py-2 text-right font-medium">Qté</th>
+                    <th className="px-3 py-2 text-right font-medium">PU (DH)</th>
+                    <th className="px-3 py-2 text-right font-medium">Total (DH)</th>
+                    <th className="px-3 py-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {editLines.map((l, i) => (
+                    <tr key={l.product_id} className="border-b border-line last:border-0">
+                      <td className="px-3 py-2 text-ink">
+                        <span className="mono text-xs text-faint">{l.sku}</span> {l.name}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Input
+                          type="number"
+                          min={1}
+                          value={l.quantity}
+                          onChange={(e) =>
+                            setEditLines((prev) =>
+                              prev.map((x, j) => (j === i ? { ...x, quantity: Math.max(1, Number(e.target.value)) } : x)),
+                            )
+                          }
+                          className="w-24"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={l.unit_price}
+                          onChange={(e) =>
+                            setEditLines((prev) =>
+                              prev.map((x, j) => (j === i ? { ...x, unit_price: Number(e.target.value) } : x)),
+                            )
+                          }
+                          className="w-28"
+                        />
+                      </td>
+                      <td className="tabular px-3 py-2 text-right font-medium text-ink">
+                        {formatNumber(l.quantity * l.unit_price)}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-bad hover:bg-bad-bg"
+                          aria-label={`Retirer ${l.name ?? ''}`}
+                          onClick={() => setEditLines((prev) => prev.filter((_, j) => j !== i))}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardBody>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader
+            title="Lignes"
+            hint={`Sous-total ${formatNumber(sale?.subtotal ?? 0)} DH · remise ${sale?.discount_percent ?? 0}% · total ${formatNumber(sale?.total ?? 0)} DH`}
+          />
+          <CardBody className="p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line text-left text-muted">
+                  <th className="px-5 py-3 font-medium">Référence</th>
+                  <th className="px-5 py-3 font-medium">Article</th>
+                  <th className="px-5 py-3 font-medium">Niveau</th>
+                  <th className="px-5 py-3 text-right font-medium">Qté</th>
+                  <th className="px-5 py-3 text-right font-medium">PU (DH)</th>
+                  <th className="px-5 py-3 text-right font-medium">Total (DH)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardBody>
-      </Card>
+              </thead>
+              <tbody>
+                {(sale?.lines ?? []).map((l, i) => (
+                  <tr key={i} className="border-b border-line last:border-0">
+                    <td className="mono px-5 py-3 text-muted">{l.sku}</td>
+                    <td className="px-5 py-3 text-ink">{l.name}</td>
+                    <td className="px-5 py-3">{l.price_type_code ? <Badge tone="sky">{l.price_type_code}</Badge> : '—'}</td>
+                    <td className="tabular px-5 py-3 text-right text-muted">{l.quantity}</td>
+                    <td className="tabular px-5 py-3 text-right text-muted">{formatNumber(l.unit_price)}</td>
+                    <td className="tabular px-5 py-3 text-right font-medium text-ink">{formatNumber(l.line_total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Confirmation d'une facture : sortie de stock + règlement (total, partiel ou crédit). */}
       {confirmOpen && sale?.type === 'invoice' ? (

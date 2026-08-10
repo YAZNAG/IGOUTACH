@@ -201,6 +201,73 @@ final class SaleController extends Controller
         return $manquants;
     }
 
+    /**
+     * Valorise les lignes soumises et rend le sous-total.
+     *
+     * Partagé par la création et la modification : les contrôles de prix
+     * (tarif applicable, prix plancher) doivent s'appliquer exactement de la
+     * même façon, sinon on pourrait contourner le plancher en créant une
+     * ligne conforme puis en la modifiant.
+     *
+     * @param  list<array{product_id: int, quantity: int, unit_price?: float|null}>  $lignes
+     * @return array{0: list<array<string, mixed>>, 1: float}
+     */
+    private function preparerLignes(
+        array $lignes,
+        ?int $clientId,
+        bool $peutVendreSousPlancher,
+        PriceResolverInterface $resolver,
+        MarginCalculatorInterface $margins,
+        ProductCostResolver $cost,
+    ): array {
+        $subtotal = 0.0;
+        $prepared = [];
+
+        foreach ($lignes as $line) {
+            $priceTypeCode = null;
+
+            if (isset($line['unit_price'])) {
+                // Prix saisi par le vendeur : prioritaire, le niveau reste informatif.
+                $unitPrice = (float) $line['unit_price'];
+                try {
+                    $priceTypeCode = $resolver->resolve($line['product_id'], $line['quantity'], $clientId)->priceTypeCode;
+                } catch (NoPriceDefinedException) {
+                    // Article sans tarif défini : le prix saisi fait foi.
+                }
+            } else {
+                $resolved = $resolver->resolve($line['product_id'], $line['quantity'], $clientId);
+                $unitPrice = $resolved->amount;
+                $priceTypeCode = $resolved->priceTypeCode;
+            }
+
+            /** @var Product $product */
+            $product = Product::query()->findOrFail($line['product_id']);
+            $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
+
+            if ($unitPrice < $floor && ! $peutVendreSousPlancher) {
+                throw new RuntimeException(sprintf(
+                    'Prix sous le plancher pour %s (%.2f < %.2f DH) : autorisation requise.',
+                    $product->sku,
+                    $unitPrice,
+                    $floor,
+                ));
+            }
+
+            $lineTotal = round($unitPrice * $line['quantity'], 2);
+            $subtotal += $lineTotal;
+
+            $prepared[] = [
+                'product_id' => $line['product_id'],
+                'quantity' => $line['quantity'],
+                'unit_price' => $unitPrice,
+                'price_type_code' => $priceTypeCode,
+                'line_total' => $lineTotal,
+            ];
+        }
+
+        return [$prepared, $subtotal];
+    }
+
     public function store(
         Request $request,
         PriceResolverInterface $resolver,
@@ -251,50 +318,14 @@ final class SaleController extends Controller
 
         try {
             $sale = DB::transaction(function () use ($data, $discount, $canBelowFloor, $resolver, $margins, $cost, $numbers, $request): Sale {
-                $subtotal = 0.0;
-                $prepared = [];
-
-                foreach ($data['lines'] as $line) {
-                    $priceTypeCode = null;
-
-                    if (isset($line['unit_price'])) {
-                        // Prix saisi par le vendeur : prioritaire, le niveau reste informatif.
-                        $unitPrice = (float) $line['unit_price'];
-                        try {
-                            $priceTypeCode = $resolver->resolve($line['product_id'], $line['quantity'], $data['customer_id'] ?? null)->priceTypeCode;
-                        } catch (NoPriceDefinedException) {
-                            // Article sans tarif défini : le prix saisi fait foi.
-                        }
-                    } else {
-                        $resolved = $resolver->resolve($line['product_id'], $line['quantity'], $data['customer_id'] ?? null);
-                        $unitPrice = $resolved->amount;
-                        $priceTypeCode = $resolved->priceTypeCode;
-                    }
-
-                    /** @var Product $product */
-                    $product = Product::query()->findOrFail($line['product_id']);
-                    $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
-
-                    if ($unitPrice < $floor && ! $canBelowFloor) {
-                        throw new RuntimeException(sprintf(
-                            'Prix sous le plancher pour %s (%.2f < %.2f DH) : autorisation requise.',
-                            $product->sku,
-                            $unitPrice,
-                            $floor,
-                        ));
-                    }
-
-                    $lineTotal = round($unitPrice * $line['quantity'], 2);
-                    $subtotal += $lineTotal;
-
-                    $prepared[] = [
-                        'product_id' => $line['product_id'],
-                        'quantity' => $line['quantity'],
-                        'unit_price' => $unitPrice,
-                        'price_type_code' => $priceTypeCode,
-                        'line_total' => $lineTotal,
-                    ];
-                }
+                [$prepared, $subtotal] = $this->preparerLignes(
+                    $data['lines'],
+                    $data['customer_id'] ?? null,
+                    $canBelowFloor,
+                    $resolver,
+                    $margins,
+                    $cost,
+                );
 
                 $total = round($subtotal * (1 - $discount / 100), 2);
 
@@ -324,6 +355,108 @@ final class SaleController extends Controller
         return response()->json(['data' => ['id' => $sale->id, 'reference' => $sale->reference, 'total' => (float) $sale->total]], 201);
     }
 
+    /**
+     * Modifie un document encore en brouillon : lignes ajoutées, retirées,
+     * quantités et prix revus, remise et note.
+     *
+     * Le brouillon est la seule fenêtre où la modification est sans risque :
+     * rien n'est encore sorti du stock, rien n'est comptabilisé, aucun
+     * règlement n'est rattaché. Une fois confirmé, le document a été remis au
+     * client et fait foi — il se corrige par un avoir, pas par une réécriture
+     * silencieuse.
+     *
+     * Les lignes sont remplacées en bloc plutôt que rapprochées une à une :
+     * l'interface envoie l'état voulu du document, et un rapprochement ligne
+     * à ligne réintroduirait la question de savoir quoi faire des lignes
+     * absentes — pour un résultat identique.
+     */
+    public function update(
+        Request $request,
+        Sale $sale,
+        PriceResolverInterface $resolver,
+        MarginCalculatorInterface $margins,
+        ProductCostResolver $cost,
+    ): JsonResponse {
+        $this->assertCanSeeSale($request, $sale);
+
+        if ($sale->status !== Sale::STATUS_DRAFT) {
+            return response()->json([
+                'message' => $sale->status === Sale::STATUS_CANCELLED
+                    ? 'Ce document est annulé : il ne peut plus être modifié.'
+                    : 'Ce document est confirmé : il ne peut plus être modifié.',
+            ], 422);
+        }
+
+        /** @var array{customer_id?: int|null, discount_percent?: float, note?: string|null, lines: list<array{product_id: int, quantity: int, unit_price?: float|null}>} $data */
+        $data = $request->validate([
+            'customer_id' => ['sometimes', 'nullable', 'integer', 'exists:customers,id'],
+            'discount_percent' => ['sometimes', 'numeric', 'between:0,100'],
+            'note' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+            'lines.*.unit_price' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        // Le lieu n'est pas modifiable : en changer reviendrait à déplacer le
+        // document d'un dépôt à l'autre, avec un numéro déjà attribué.
+        $clientId = array_key_exists('customer_id', $data) ? $data['customer_id'] : $sale->customer_id;
+        $discount = (float) ($data['discount_percent'] ?? $sale->discount_percent);
+
+        if ($discount > 10 && ! ($request->user()?->can('sale.discount_over_limit') ?? false)) {
+            return response()->json(['message' => 'Remise supérieure à 10 % : autorisation requise.'], 422);
+        }
+
+        // Une facture sortira du stock à la confirmation : autant refuser tout
+        // de suite ce qui ne pourra pas être livré. Un devis reste libre, il
+        // peut porter sur ce qu'on va commander.
+        if ($sale->type === Sale::TYPE_INVOICE) {
+            $manquants = $this->lignesSansStock(
+                (int) $sale->warehouse_id,
+                $data['lines'],
+                app(StockReaderInterface::class),
+            );
+
+            if ($manquants !== []) {
+                return response()->json([
+                    'message' => 'Stock insuffisant : '.implode(' ; ', array_column($manquants, 'message')),
+                    'errors' => ['lines' => array_column($manquants, 'message')],
+                    'insufficient' => $manquants,
+                ], 422);
+            }
+        }
+
+        try {
+            DB::transaction(function () use ($sale, $data, $clientId, $discount, $request, $resolver, $margins, $cost): void {
+                [$prepared, $subtotal] = $this->preparerLignes(
+                    $data['lines'],
+                    $clientId,
+                    $request->user()?->can('sale.sell_below_floor') ?? false,
+                    $resolver,
+                    $margins,
+                    $cost,
+                );
+
+                $sale->lines()->delete();
+                foreach ($prepared as $line) {
+                    $sale->lines()->create($line);
+                }
+
+                $sale->update([
+                    'customer_id' => $clientId,
+                    'subtotal' => round($subtotal, 2),
+                    'discount_percent' => $discount,
+                    'total' => round($subtotal * (1 - $discount / 100), 2),
+                    'note' => array_key_exists('note', $data) ? $data['note'] : $sale->note,
+                ]);
+            });
+        } catch (RuntimeException|NoPriceDefinedException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return $this->show($sale->refresh());
+    }
+
     public function show(Sale $sale): JsonResponse
     {
         $this->assertCanSeeSale(request(), $sale);
@@ -351,6 +484,9 @@ final class SaleController extends Controller
             'confirmed_at' => $sale->confirmed_at?->format('Y-m-d H:i'),
             'note' => $sale->note,
             'lines' => $sale->lines->map(fn ($l): array => [
+                // Nécessaire à la modification d'un brouillon : sans lui,
+                // l'interface ne peut pas renvoyer la ligne au serveur.
+                'product_id' => (int) $l->product_id,
                 'sku' => $l->product?->sku,
                 'name' => $l->product?->name,
                 'quantity' => $l->quantity,
