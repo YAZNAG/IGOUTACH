@@ -13,8 +13,8 @@
 @endsection
 
 @section('content')
-    {{-- Fournisseur / Livraison --}}
-    <table class="address-table">
+    {{-- Fournisseur --}}
+    <table class="address-table address-solo">
         <tr>
             <td class="address-box">
                 <div class="label">Fournisseur</div>
@@ -29,18 +29,6 @@
                     @endif
                     @if ($order->supplier?->email)
                         Email : {{ $order->supplier->email }}
-                    @endif
-                </div>
-            </td>
-            <td class="address-box">
-                <div class="label">Livrer à</div>
-                <div class="name">{{ $order->warehouse?->code }} — {{ $order->warehouse?->name }}</div>
-                <div class="detail">
-                    @if ($order->warehouse?->address)
-                        {{ $order->warehouse->address }}<br>
-                    @endif
-                    @if ($order->warehouse?->city)
-                        {{ $order->warehouse->city }}
                     @endif
                 </div>
             </td>
@@ -93,16 +81,4 @@
         <div class="label">Notes</div>
         <div>{{ $order->notes ?? '' }}</div>
     </div>
-
-    {{-- Signatures --}}
-    <table class="signature-table">
-        <tr>
-            <td class="signature-box">
-                <div class="label">Signature fournisseur</div>
-            </td>
-            <td class="signature-box">
-                <div class="label">Signature responsable</div>
-            </td>
-        </tr>
-    </table>
 @endsection

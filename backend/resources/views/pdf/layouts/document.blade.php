@@ -83,6 +83,9 @@
 
         /* ---- Blocs adresses ---- */
         .address-table { width: 100%; margin-bottom: 16px; border-collapse: separate; border-spacing: 10px 0; }
+        /* Un seul interlocuteur sur le document : la cellule prend toute la
+           largeur, sinon elle laisse une demi-page vide à sa droite. */
+        .address-table.address-solo .address-box { width: 100%; }
         .address-box {
             width: 50%;
             background-color: #F7F8F9;

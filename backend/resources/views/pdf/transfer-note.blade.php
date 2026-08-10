@@ -134,19 +134,4 @@
             @endif
         </div>
     </div>
-
-    {{-- Signatures --}}
-    <table class="signature-table">
-        <tr>
-            <td class="signature-box">
-                <div class="label">Expédié par</div>
-            </td>
-            <td class="signature-box">
-                <div class="label">Transporteur</div>
-            </td>
-            <td class="signature-box">
-                <div class="label">Reçu par</div>
-            </td>
-        </tr>
-    </table>
 @endsection

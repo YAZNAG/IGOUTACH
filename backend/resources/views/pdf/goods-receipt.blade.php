@@ -16,8 +16,8 @@
 @endsection
 
 @section('content')
-    {{-- Fournisseur / Lieu de réception --}}
-    <table class="address-table">
+    {{-- Fournisseur --}}
+    <table class="address-table address-solo">
         <tr>
             <td class="address-box">
                 <div class="label">Fournisseur</div>
@@ -29,18 +29,6 @@
                     @endif
                     @if ($receipt->supplier?->phone)
                         Tél : {{ $receipt->supplier->phone }}
-                    @endif
-                </div>
-            </td>
-            <td class="address-box">
-                <div class="label">Reçu à</div>
-                <div class="name">{{ $receipt->warehouse?->code }} — {{ $receipt->warehouse?->name }}</div>
-                <div class="detail">
-                    @if ($receipt->warehouse?->address)
-                        {{ $receipt->warehouse->address }}<br>
-                    @endif
-                    @if ($receipt->warehouse?->city)
-                        {{ $receipt->warehouse->city }}
                     @endif
                 </div>
             </td>
@@ -96,16 +84,4 @@
         <div class="label">Notes</div>
         <div>{{ $receipt->notes ?? '' }}</div>
     </div>
-
-    {{-- Signatures --}}
-    <table class="signature-table">
-        <tr>
-            <td class="signature-box">
-                <div class="label">Réceptionné par</div>
-            </td>
-            <td class="signature-box">
-                <div class="label">Contrôlé par</div>
-            </td>
-        </tr>
-    </table>
 @endsection
