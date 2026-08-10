@@ -1,0 +1,124 @@
+name: Application iOS
+
+# Compile l'application iGouTech pour iOS sur un runner macOS : un .ipa ne peut
+# etre produit que sur macOS avec Xcode, contrainte d'Apple qu'aucun outil
+# Windows ne contourne.
+#
+# Deux modes selon ce qui est configure dans les secrets du depot :
+#
+#   - sans certificat  -> build non signe, verifie que le projet compile.
+#                         Ne s'installe sur aucun iPhone. Utile immediatement,
+#                         sans compte Apple Developer.
+#   - avec certificat  -> .ipa signe, televersable sur TestFlight.
+#
+# Le mode est choisi automatiquement : inutile de modifier ce fichier quand le
+# compte Apple sera pret.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profil:
+        description: "Profil compile dans l'application"
+        required: true
+        default: manager
+        type: choice
+        options: [manager, admin]
+      api_url:
+        description: "URL de l'API"
+        required: true
+        default: https://igoutech.optizaworks.com/api/v1
+  push:
+    tags: ['ios-v*']
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Dependances
+        run: flutter pub get
+
+      - name: Analyse
+        run: flutter analyze
+
+      - name: Tests
+        run: flutter test
+
+      - name: Certificat de signature disponible ?
+        id: signature
+        env:
+          CERT: ${{ secrets.IOS_CERTIFICAT_P12 }}
+        run: |
+          if [ -n "$CERT" ]; then
+            echo "presente=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "presente=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Aucun certificat configure — build non signe."
+          fi
+
+      - name: Installer le certificat et le profil
+        if: steps.signature.outputs.presente == 'true'
+        env:
+          CERT_P12: ${{ secrets.IOS_CERTIFICAT_P12 }}
+          CERT_MOT_DE_PASSE: ${{ secrets.IOS_CERTIFICAT_MOT_DE_PASSE }}
+          PROFIL_MOBILEPROVISION: ${{ secrets.IOS_PROFIL_PROVISION }}
+        run: |
+          set -euo pipefail
+          # Trousseau temporaire, detruit avec le runner : le certificat ne
+          # survit pas au job.
+          TROUSSEAU="$RUNNER_TEMP/build.keychain"
+          MDP_TROUSSEAU="$(uuidgen)"
+          security create-keychain -p "$MDP_TROUSSEAU" "$TROUSSEAU"
+          security set-keychain-settings -lut 3600 "$TROUSSEAU"
+          security unlock-keychain -p "$MDP_TROUSSEAU" "$TROUSSEAU"
+          security list-keychains -d user -s "$TROUSSEAU" login.keychain
+
+          echo "$CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$TROUSSEAU" \
+            -P "$CERT_MOT_DE_PASSE" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$MDP_TROUSSEAU" "$TROUSSEAU" > /dev/null
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROFIL_MOBILEPROVISION" | base64 --decode \
+            > ~/Library/MobileDevice/Provisioning\ Profiles/igoutech.mobileprovision
+
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+      - name: Build iOS non signe
+        if: steps.signature.outputs.presente == 'false'
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=API_URL=${{ inputs.api_url || 'https://igoutech.optizaworks.com/api/v1' }} \
+            --dart-define=APP_PROFILE=${{ inputs.profil || 'manager' }}
+
+      - name: Build .ipa signe
+        if: steps.signature.outputs.presente == 'true'
+        run: |
+          flutter build ipa --release \
+            --export-options-plist=ios/ExportOptions.plist \
+            --dart-define=API_URL=${{ inputs.api_url || 'https://igoutech.optizaworks.com/api/v1' }} \
+            --dart-define=APP_PROFILE=${{ inputs.profil || 'manager' }}
+
+      - name: Recuperer le resultat
+        uses: actions/upload-artifact@v4
+        with:
+          name: igoutech-ios-${{ inputs.profil || 'manager' }}
+          # Le .ipa n'existe qu'en mode signe ; sinon on remonte le .app, qui
+          # suffit a prouver que la compilation passe.
+          path: |
+            mobile/build/ios/ipa/*.ipa
+            mobile/build/ios/iphoneos/Runner.app
+          if-no-files-found: error
+          retention-days: 14

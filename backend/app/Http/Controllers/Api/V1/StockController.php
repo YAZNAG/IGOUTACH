@@ -40,6 +40,36 @@ final class StockController extends Controller
     }
 
     /**
+     * Colonne et sens de tri demandés, ramenés à ce qui est autorisé.
+     *
+     * Le tri doit rester au serveur : les tableaux sont paginés, trier la seule
+     * page affichée donnerait un classement faux dès la deuxième page.
+     *
+     * La colonne n'est jamais interpolée depuis la requête sans passer par
+     * cette liste blanche : elle finit dans du SQL brut, où un paramètre lié
+     * n'est pas utilisable.
+     *
+     * Renvoie aussi la clé retenue : l'interface doit pouvoir afficher la
+     * flèche sur la bonne colonne, y compris quand le tri demandé a été rejeté.
+     *
+     * @param  array<string, string>  $colonnes  clé publique => expression SQL
+     * @param  string  $sensDefaut  sens appliqué tant que rien n'est demandé ;
+     *                              un nom se lit de A à Z, une quantité du plus
+     *                              grand au plus petit.
+     * @return array{0: string, 1: string, 2: string}
+     */
+    private function tri(Request $request, array $colonnes, string $defaut, string $sensDefaut = 'desc'): array
+    {
+        $demande = $request->string('sort')->value();
+        $cle = isset($colonnes[$demande]) ? $demande : $defaut;
+
+        $sensDemande = strtolower($request->string('direction')->value());
+        $sens = in_array($sensDemande, ['asc', 'desc'], true) ? $sensDemande : $sensDefaut;
+
+        return [$colonnes[$cle], $sens, $cle];
+    }
+
+    /**
      * Stock d'un lieu : TOUS les articles avec leur quantité (0 si absent).
      */
     /**
@@ -68,6 +98,22 @@ final class StockController extends Controller
         // l'ensemble du catalogue à zéro, soit l'inverse de la réalité.
         $consolide = $warehouseId <= 0;
 
+        // Trier sur la valeur revient à classer les articles par prix d'achat :
+        // on ne l'ouvre qu'à qui a le droit de le consulter, sinon l'ordre
+        // révélerait ce que la colonne masque.
+        $colonnesTriables = [
+            'sku' => 'products.sku',
+            'name' => 'products.name',
+            'quantity' => 'COALESCE(SUM(stocks.quantity), 0)',
+            'min_stock' => 'products.min_stock',
+        ];
+
+        if ($request->user()?->can('product.view_cost_price') ?? false) {
+            $colonnesTriables['value'] = 'COALESCE(SUM(stocks.quantity * stocks.average_cost), 0)';
+        }
+
+        [$colonneTri, $sensTri, $cleTri] = $this->tri($request, $colonnesTriables, 'quantity');
+
         $paginator = DB::table('products')
             ->leftJoin('stocks', function ($join) use ($warehouseId, $consolide): void {
                 $join->on('stocks.product_id', '=', 'products.id');
@@ -82,7 +128,19 @@ final class StockController extends Controller
                 $query->where(fn ($w) => $w->where('products.name', 'like', "%{$term}%")->orWhere('products.sku', 'like', "%{$term}%"));
             })
             ->groupBy('products.id', 'products.sku', 'products.name', 'products.min_stock')
-            ->orderByDesc(DB::raw('COALESCE(SUM(stocks.quantity), 0)'))
+            // Le filtre d'état porte sur une quantité agrégée : il ne peut donc
+            // s'exprimer qu'en HAVING, pas en WHERE.
+            ->when($request->string('status')->isNotEmpty(), function ($query) use ($request): void {
+                $quantite = 'COALESCE(SUM(stocks.quantity), 0)';
+
+                match ($request->string('status')->value()) {
+                    'rupture' => $query->havingRaw("{$quantite} <= 0"),
+                    'low' => $query->havingRaw("{$quantite} > 0 AND products.min_stock > 0 AND {$quantite} < products.min_stock"),
+                    'ok' => $query->havingRaw("{$quantite} > 0 AND ({$quantite} >= products.min_stock OR products.min_stock = 0)"),
+                    default => null,
+                };
+            })
+            ->orderByRaw("{$colonneTri} {$sensTri}")
             ->orderBy('products.name')
             ->select(
                 'products.id as product_id',
@@ -126,6 +184,8 @@ final class StockController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
+                'sort' => $cleTri,
+                'direction' => $sensTri,
             ],
         ]);
     }
@@ -139,13 +199,25 @@ final class StockController extends Controller
         // ne voit QUE les mouvements de son lieu, quel que soit le warehouse_id demande.
         $warehouseId = $this->scopedWarehouseId($request);
 
+        [$colonneTri, $sensTri, $cleTri] = $this->tri($request, [
+            'created_at' => 'stock_movements.created_at',
+            'quantity' => 'stock_movements.quantity',
+            'balance_after' => 'stock_movements.balance_after',
+        ], 'created_at');
+
         $paginator = StockMovement::query()
             ->with(['product:id,sku,name', 'movementType:id,name,code,sign'])
             ->when($warehouseId > 0, fn ($q) => $q->where('warehouse_id', $warehouseId))
             ->when($request->integer('product_id') > 0, fn ($q) => $q->where('product_id', $request->integer('product_id')))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->whereHas('movementType', fn ($t) => $t->where('code', $request->string('type')->value())))
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            // Un mouvement peut porter une date de recherche : filtrer dessus
+            // évite de dérouler des milliers de lignes pour retrouver un jour.
+            ->when($request->date('from') !== null, fn ($q) => $q->whereDate('created_at', '>=', $request->date('from')))
+            ->when($request->date('to') !== null, fn ($q) => $q->whereDate('created_at', '<=', $request->date('to')))
+            ->orderByRaw("{$colonneTri} {$sensTri}")
+            // L'identifiant départage les mouvements d'une même seconde : sans
+            // lui, deux pages successives pourraient répéter ou sauter une ligne.
+            ->orderByDesc('stock_movements.id')
             ->paginate($this->perPage($request));
 
         /** @var array<int, string> $userNames */
@@ -174,6 +246,8 @@ final class StockController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
+                'sort' => $cleTri,
+                'direction' => $sensTri,
             ],
         ]);
     }
@@ -264,12 +338,33 @@ final class StockController extends Controller
     {
         $warehouses = Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']);
 
+        // Total identique à celui affiché : stock des lieux actifs (les seuls
+        // qui ont une colonne) plus la marchandise en transit. Le recalculer
+        // ici plutôt que de trier sur le stock seul évite un classement qui
+        // contredirait la dernière colonne du tableau.
+        $totalSql = <<<'SQL'
+            (SELECT COALESCE(SUM(s.quantity), 0) FROM stocks s
+               JOIN warehouses w ON w.id = s.warehouse_id AND w.is_active = 1
+              WHERE s.product_id = products.id)
+            + (SELECT COALESCE(SUM(tl.quantity_sent), 0) FROM transfer_lines tl
+                 JOIN transfers t ON t.id = tl.transfer_id
+                 JOIN transfer_statuses ts ON ts.id = t.transfer_status_id AND ts.code = 'in_transit'
+                WHERE tl.product_id = products.id)
+            SQL;
+
+        [$colonneTri, $sensTri, $cleTri] = $this->tri($request, [
+            'sku' => 'products.sku',
+            'name' => 'products.name',
+            'total' => $totalSql,
+        ], 'name', 'asc');
+
         $paginator = Product::query()
             ->when($request->string('q')->isNotEmpty(), function ($query) use ($request) {
                 $term = $request->string('q')->value();
                 $query->where(fn ($q) => $q->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%"));
             })
-            ->orderBy('name')
+            ->orderByRaw("{$colonneTri} {$sensTri}")
+            ->orderBy('products.name')
             ->paginate($this->perPage($request));
 
         /** @var list<int> $productIds */
@@ -320,6 +415,8 @@ final class StockController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
+                'sort' => $cleTri,
+                'direction' => $sensTri,
             ],
         ]);
     }

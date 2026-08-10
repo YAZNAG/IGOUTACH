@@ -6,7 +6,6 @@ import '../../core/theme.dart';
 import '../../core/ui/skeletons.dart';
 import '../../core/ui/states.dart';
 import '../../models/lieu_overview.dart';
-import '../shared/update_prompt.dart';
 
 /// Accueil du responsable : son lieu, rien d'autre.
 ///
@@ -25,9 +24,9 @@ class _AccueilResponsableScreenState extends State<AccueilResponsableScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) UpdatePrompt.checkAndShow(context);
-    });
+    // La vérification des mises à jour a été remontée à la racine
+    // (`UpdateWatcher`) : elle couvre désormais les deux profils et se relance
+    // au retour d'arrière-plan.
     _futur = _charger();
   }
 

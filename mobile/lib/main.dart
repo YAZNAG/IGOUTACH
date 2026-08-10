@@ -7,6 +7,7 @@ import 'core/widgets.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/home/responsable_shell.dart';
+import 'features/shared/update_prompt.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +58,12 @@ class _Root extends StatelessWidget {
     final monoLieu = auth.user?.warehouseId != null &&
         !auth.can('stock.view_global');
 
-    return monoLieu ? const ResponsableShell() : const HomeShell();
+    // La surveillance des mises à jour est placée ici, au-dessus des deux
+    // profils : rattachée à un seul écran d'accueil, elle laissait la
+    // direction sans jamais aucune notification de nouvelle version.
+    return UpdateWatcher(
+      child: monoLieu ? const ResponsableShell() : const HomeShell(),
+    );
   }
 }
 

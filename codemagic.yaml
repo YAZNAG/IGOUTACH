@@ -1,0 +1,89 @@
+# Compilation iGouTech sur Codemagic (machines macOS).
+#
+# Deux flux :
+#   ios-non-signe  -> verifie que le projet iOS compile. Aucun compte Apple
+#                     requis. Le resultat ne s'installe sur aucun iPhone.
+#   ios-testflight -> .ipa signe, envoye sur TestFlight. Necessite un compte
+#                     Apple Developer et l'integration App Store Connect
+#                     configuree dans Codemagic.
+#
+# Le second flux echoue tant que le compte Apple n'existe pas : c'est voulu,
+# un .ipa non signe donne l'illusion d'un livrable installable.
+
+definitions:
+  env_commun: &env_commun
+    flutter: stable
+    xcode: latest
+    cocoapods: default
+    vars:
+      API_URL: "https://igoutech.optizaworks.com/api/v1"
+      APP_PROFILE: "manager"
+
+workflows:
+  ios-non-signe:
+    name: iOS — build de verification (non signe)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      <<: *env_commun
+    scripts:
+      - name: Dependances
+        script: cd mobile && flutter pub get
+      - name: Analyse
+        script: cd mobile && flutter analyze
+      - name: Tests
+        script: cd mobile && flutter test
+      - name: Build iOS sans signature
+        script: |
+          cd mobile
+          flutter build ios --release --no-codesign \
+            --dart-define=API_URL=$API_URL \
+            --dart-define=APP_PROFILE=$APP_PROFILE
+    artifacts:
+      - mobile/build/ios/iphoneos/Runner.app
+      - mobile/flutter_drive.log
+
+  ios-testflight:
+    name: iOS — .ipa signe et envoi TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # A creer dans Codemagic : Teams > Integrations > App Store Connect.
+      app_store_connect: igoutech
+    environment:
+      <<: *env_commun
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: ma.igoutech.igoutechMobile
+    scripts:
+      - name: Dependances
+        script: cd mobile && flutter pub get
+      - name: Analyse
+        script: cd mobile && flutter analyze
+      - name: Tests
+        script: cd mobile && flutter test
+      - name: Numero de build
+        script: |
+          # App Store Connect refuse deux envois portant le meme numero :
+          # on repart du dernier numero deja publie, incremente de 1.
+          cd mobile
+          NUMERO=$(app-store-connect get-latest-testflight-build-number \
+            "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          echo "BUILD_NUMBER=$(($NUMERO + 1))" >> $CM_ENV
+      - name: Profils de signature
+        script: xcode-project use-profiles
+      - name: Build .ipa
+        script: |
+          cd mobile
+          flutter build ipa --release \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=$HOME/export_options.plist \
+            --dart-define=API_URL=$API_URL \
+            --dart-define=APP_PROFILE=$APP_PROFILE
+    artifacts:
+      - mobile/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

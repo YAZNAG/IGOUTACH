@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Igoutech Mobile</string>
+	<string>iGouTech</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>igoutech_mobile</string>
+	<string>iGouTech</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,5 +45,23 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- L'application est en français : sans cette clé, l'App Store la
+	     présenterait comme anglophone. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>fr</string>
+	</array>
+	<!-- L'application n'embarque aucun chiffrement propre : elle se contente
+	     de HTTPS, exempté. Le déclarer ici évite qu'Apple repose la question
+	     de conformité export à chaque envoi sur TestFlight. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- url_launcher doit pouvoir vérifier qu'il sait ouvrir la fiche App
+	     Store avant de proposer la mise à jour. -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>itms-apps</string>
+	</array>
 </dict>
 </plist>

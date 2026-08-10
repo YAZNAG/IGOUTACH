@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Options d'export du .ipa, utilisees uniquement par la compilation signee.
+
+  A COMPLETER avant le premier envoi sur TestFlight : remplacer VOTRE_TEAM_ID
+  par l'identifiant d'equipe visible sur developer.apple.com > Membership
+  (10 caracteres, par exemple A1B2C3D4E5).
+
+  Tant qu'aucun certificat n'est configure dans les secrets du depot, le
+  workflow compile sans signature et n'ouvre jamais ce fichier.
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+
+	<key>teamID</key>
+	<string>VOTRE_TEAM_ID</string>
+
+	<!-- Xcode choisit certificat et profil selon le compte : une signature
+	     manuelle obligerait a maintenir les noms de profils a la main. -->
+	<key>signingStyle</key>
+	<string>automatic</string>
+
+	<!-- Le bitcode n'est plus accepte par App Store Connect depuis Xcode 14. -->
+	<key>uploadBitcode</key>
+	<false/>
+
+	<key>uploadSymbols</key>
+	<true/>
+
+	<!-- Les binaires Flutter sont deja compiles pour arm64 : laisser Apple
+	     re-optimiser n'apporte rien et allonge chaque envoi. -->
+	<key>compileBitcode</key>
+	<false/>
+
+	<key>destination</key>
+	<string>export</string>
+</dict>
+</plist>

@@ -40,3 +40,7 @@ node_modules
 *.suo
 *.sln
 .claude/
+
+# Binaires de distribution : ils vivent sur le serveur, pas dans l'historique.
+*.apk
+*.ipa

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'config.dart';
 
@@ -13,6 +14,7 @@ class AppRelease {
     required this.version,
     required this.build,
     required this.url,
+    this.iosUrl,
     this.size,
     this.notes,
     this.mandatory = false,
@@ -20,7 +22,13 @@ class AppRelease {
 
   final String version;
   final int build;
+
+  /// Fichier installable Android. Sans objet sur iOS.
   final String? url;
+
+  /// Page App Store ou TestFlight. Seule voie de mise à jour sur iOS.
+  final String? iosUrl;
+
   final int? size;
   final String? notes;
 
@@ -34,11 +42,16 @@ class AppRelease {
       version: json['version'] as String,
       build: (json['build'] as num?)?.toInt() ?? 0,
       url: json['url'] as String?,
+      iosUrl: json['ios_url'] as String?,
       size: (json['size'] as num?)?.toInt(),
       notes: json['notes'] as String?,
       mandatory: json['mandatory'] == true,
     );
   }
+
+  /// Adresse à utiliser sur la plateforme courante, ou null si la version
+  /// publiée n'est pas distribuable ici.
+  String? get lienPlateforme => Platform.isAndroid ? url : iosUrl;
 
   String get sizeLabel {
     if (size == null) return '';
@@ -49,14 +62,24 @@ class AppRelease {
 
 /// Mise à jour de l'application sans repasser par un transfert de fichier.
 ///
-/// Android n'autorise pas l'installation silencieuse sur un téléphone
-/// ordinaire : on télécharge l'APK puis on ouvre l'installateur du système,
-/// que l'utilisateur confirme d'un tap. C'est la limite de la plateforme,
-/// pas un choix de conception.
+/// Les deux plateformes n'offrent pas le même chemin :
+///
+/// - Android n'autorise pas l'installation silencieuse sur un téléphone
+///   ordinaire, mais accepte qu'on télécharge l'APK et qu'on ouvre
+///   l'installateur du système, que l'utilisateur confirme d'un tap.
+/// - iOS interdit purement et simplement d'installer un binaire hors App
+///   Store ou TestFlight. On ne peut qu'ouvrir la fiche et laisser l'App
+///   Store faire la mise à jour.
+///
+/// C'est la limite des plateformes, pas un choix de conception.
 class UpdateService {
   UpdateService({Dio? dio}) : _dio = dio ?? Dio();
 
   final Dio _dio;
+
+  /// Vrai quand l'application peut installer elle-même la nouvelle version.
+  /// Faux sur iOS : il faut passer par l'App Store.
+  static bool get installationDirecte => Platform.isAndroid;
 
   /// Version publiée si elle est plus récente que celle installée, sinon null.
   Future<AppRelease?> checkForUpdate() async {
@@ -76,7 +99,9 @@ class UpdateService {
         res.data?['data'] as Map<String, dynamic>?,
       );
 
-      if (release == null || release.url == null) return null;
+      // Une version publiée sans lien pour la plateforme courante n'est pas
+      // installable : la proposer n'aboutirait qu'à une impasse.
+      if (release == null || release.lienPlateforme == null) return null;
 
       final installe = int.tryParse(info.buildNumber) ?? 0;
 
@@ -99,6 +124,11 @@ class UpdateService {
     AppRelease release, {
     void Function(double? progress)? onProgress,
   }) async {
+    if (!installationDirecte) {
+      throw StateError(
+        'Sur iPhone, la mise à jour se fait depuis l’App Store.',
+      );
+    }
     if (release.url == null) {
       throw StateError('Aucun fichier à télécharger pour cette version.');
     }
@@ -128,6 +158,26 @@ class UpdateService {
         'Impossible d’ouvrir l’installateur : ${resultat.message}. '
         'Autorisez « Installer des applications inconnues » pour iGouTech.',
       );
+    }
+  }
+
+  /// Ouvre la fiche App Store (ou TestFlight) de la version publiée.
+  ///
+  /// Seule voie de mise à jour sur iOS. L'application quitte l'avant-plan :
+  /// il n'y a rien à attendre ni à surveiller côté iGouTech.
+  Future<void> ouvrirPageMiseAJour(AppRelease release) async {
+    final lien = release.iosUrl;
+    if (lien == null) {
+      throw StateError('Aucune page de mise à jour n’est publiée.');
+    }
+
+    final ouvert = await launchUrl(
+      Uri.parse(lien),
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!ouvert) {
+      throw StateError('Impossible d’ouvrir l’App Store.');
     }
   }
 }

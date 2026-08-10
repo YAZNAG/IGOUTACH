@@ -10,31 +10,35 @@ import {
   type MatrixWarehouse,
   type MovementFilters,
   type MovementType,
+  type StockFilters,
   type StockMeta,
   type StockMovement,
   type StockRow,
+  type TableParams,
 } from './api/stockApi'
 
-export function useStock(warehouseId: number | null, q: string, page: number) {
-  return useQuery<{ data: StockRow[]; meta: { current_page: number; last_page: number; per_page: number; total: number } }>({
-    queryKey: ['stock', warehouseId, q, page],
-    queryFn: () => fetchStock(warehouseId as number, q, page),
+export function useStock(warehouseId: number | null, filters: StockFilters) {
+  return useQuery<{ data: StockRow[]; meta: StockMeta }>({
+    // Chaque critère entre dans la clé : sans cela, changer de tri afficherait
+    // le résultat mis en cache de l'ancien.
+    queryKey: ['stock', warehouseId, filters],
+    queryFn: () => fetchStock(warehouseId as number, filters),
     enabled: warehouseId !== null,
   })
 }
 
 export function useMovements(filters: MovementFilters, enabled: boolean) {
-  return useQuery<{ data: StockMovement[]; meta: { current_page: number; last_page: number; per_page: number; total: number } }>({
+  return useQuery<{ data: StockMovement[]; meta: StockMeta }>({
     queryKey: ['stock-movements', filters],
     queryFn: () => fetchMovements(filters),
     enabled,
   })
 }
 
-export function useMatrix(q: string, page: number) {
+export function useMatrix(q: string, params: TableParams) {
   return useQuery<{ warehouses: MatrixWarehouse[]; data: MatrixRow[]; meta: StockMeta }>({
-    queryKey: ['stock-matrix', q, page],
-    queryFn: () => fetchMatrix(q, page),
+    queryKey: ['stock-matrix', q, params],
+    queryFn: () => fetchMatrix(q, params),
   })
 }
 

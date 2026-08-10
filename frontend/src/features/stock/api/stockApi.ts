@@ -18,6 +18,17 @@ export interface StockMeta {
   last_page: number
   per_page: number
   total: number
+  /** Tri réellement appliqué : le serveur refuse les colonnes inconnues. */
+  sort?: string
+  direction?: 'asc' | 'desc'
+}
+
+/** Paramètres communs aux tableaux paginés du module stock. */
+export interface TableParams {
+  page?: number
+  per_page?: number
+  sort?: string
+  direction?: 'asc' | 'desc'
 }
 
 export interface StockMovement {
@@ -51,18 +62,37 @@ export interface ProductLite {
   name: string
 }
 
-export async function fetchStock(warehouseId: number, q?: string, page = 1): Promise<{ data: StockRow[]; meta: StockMeta }> {
+export interface StockFilters extends TableParams {
+  q?: string
+  /** Filtre d'état : rupture, sous seuil, ou disponible. */
+  status?: 'rupture' | 'low' | 'ok' | ''
+}
+
+export async function fetchStock(
+  warehouseId: number,
+  filters: StockFilters = {},
+): Promise<{ data: StockRow[]; meta: StockMeta }> {
   const { data } = await api.get<{ data: StockRow[]; meta: StockMeta }>('/stock', {
-    params: { warehouse_id: warehouseId, q: q || undefined, page, per_page: 50 },
+    params: {
+      warehouse_id: warehouseId,
+      q: filters.q || undefined,
+      status: filters.status || undefined,
+      page: filters.page ?? 1,
+      per_page: filters.per_page ?? 50,
+      sort: filters.sort,
+      direction: filters.direction,
+    },
   })
   return data
 }
 
-export interface MovementFilters {
+export interface MovementFilters extends TableParams {
   warehouse_id?: number
   product_id?: number
   type?: string
-  page?: number
+  /** Bornes de date incluses, au format AAAA-MM-JJ. */
+  from?: string
+  to?: string
 }
 
 export async function fetchMovements(filters: MovementFilters): Promise<{ data: StockMovement[]; meta: StockMeta }> {
@@ -121,9 +151,18 @@ export interface MatrixRow {
   total: number
 }
 
-export async function fetchMatrix(q: string, page = 1): Promise<{ warehouses: MatrixWarehouse[]; data: MatrixRow[]; meta: StockMeta }> {
+export async function fetchMatrix(
+  q: string,
+  params: TableParams = {},
+): Promise<{ warehouses: MatrixWarehouse[]; data: MatrixRow[]; meta: StockMeta }> {
   const { data } = await api.get<{ warehouses: MatrixWarehouse[]; data: MatrixRow[]; meta: StockMeta }>('/stock/matrix', {
-    params: { q: q || undefined, page, per_page: 50 },
+    params: {
+      q: q || undefined,
+      page: params.page ?? 1,
+      per_page: params.per_page ?? 50,
+      sort: params.sort,
+      direction: params.direction,
+    },
   })
   return data
 }

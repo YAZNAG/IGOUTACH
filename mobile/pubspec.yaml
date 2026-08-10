@@ -41,6 +41,9 @@ dependencies:
   path_provider: ^2.1.6
   open_filex: ^4.7.0
   package_info_plus: ^8.1.2
+  # Sur iOS la mise à jour passe forcément par l'App Store : il faut pouvoir
+  # ouvrir une URL externe, ce que open_filex (fichiers locaux) ne fait pas.
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

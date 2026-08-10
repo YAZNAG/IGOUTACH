@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,75 @@ function errorMessage(error: unknown, fallback: string): string {
 }
 
 type Tab = 'stock' | 'matrix' | 'movements' | 'entry' | 'issue'
+
+const TAILLES_PAGE = [20, 50, 100, 500]
+
+/** Sélecteur du nombre de lignes par page, commun aux trois tableaux. */
+function TaillePage({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <Select
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="w-28"
+      aria-label="Lignes par page"
+    >
+      {TAILLES_PAGE.map((n) => (
+        <option key={n} value={n}>
+          {n} / page
+        </option>
+      ))}
+    </Select>
+  )
+}
+
+/**
+ * Pied de tableau : combien de lignes sont montrées, et de quoi changer de page.
+ *
+ * Le compteur reste affiché même sur une page unique — c'est lui qui dit
+ * combien de lignes le filtre a retenues, information qui disparaîtrait si on
+ * ne l'affichait qu'en cas de pagination.
+ */
+function PiedTableau({
+  meta,
+  page,
+  onPage,
+}: {
+  meta?: { current_page: number; last_page: number; per_page: number; total: number }
+  page: number
+  onPage: (n: number) => void
+}) {
+  if (!meta) return null
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-5 py-3 text-sm text-muted">
+      <span>{paginationInfo(meta)}</span>
+      {meta.last_page > 1 ? (
+        <div className="flex items-center gap-2">
+          <span>
+            Page {meta.current_page} / {meta.last_page}
+          </span>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPage(1)}>
+            «
+          </Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+            Précédent
+          </Button>
+          <Button variant="outline" size="sm" disabled={page >= meta.last_page} onClick={() => onPage(page + 1)}>
+            Suivant
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= meta.last_page}
+            onClick={() => onPage(meta.last_page)}
+          >
+            »
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 const statusBadge: Record<string, { tone: 'ok' | 'warn' | 'bad'; label: string }> = {
   ok: { tone: 'ok', label: 'OK' },
@@ -101,8 +171,28 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
   // pour qui a le droit de le consulter.
   const voitLesCouts = usePermission()('product.view_cost_price')
   const [q, setQ] = useState('')
+  const [status, setStatus] = useState<'' | 'rupture' | 'low' | 'ok'>('')
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useStock(warehouseId, q, page)
+  const [perPage, setPerPage] = useState(50)
+  const [sort, setSort] = useState<SortState>({ sort: 'quantity', direction: 'desc' })
+
+  // Trier ou filtrer redéfinit l'ordre : rester à la page 7 y afficherait des
+  // lignes sans rapport avec ce qu'on vient de demander.
+  function reinitialiser<T>(setter: (v: T) => void) {
+    return (valeur: T) => {
+      setter(valeur)
+      setPage(1)
+    }
+  }
+
+  const { data, isLoading } = useStock(warehouseId, {
+    q,
+    status,
+    page,
+    per_page: perPage,
+    sort: sort.sort,
+    direction: sort.direction,
+  })
   const rows = data?.data ?? []
   const meta = data?.meta
 
@@ -112,7 +202,7 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
         title="Stock par lieu"
         hint={meta ? `${meta.total} référence(s)` : undefined}
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {warehouseId !== null ? (
               <>
                 <Button variant="outline" size="sm" onClick={() => exportStock(warehouseId, 'xlsx')}>
@@ -125,13 +215,22 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
                 </Button>
               </>
             ) : null}
+            <Select
+              value={status}
+              onChange={(e) => reinitialiser(setStatus)(e.target.value as typeof status)}
+              className="w-40"
+              aria-label="État du stock"
+            >
+              <option value="">Tous les états</option>
+              <option value="ok">Disponible</option>
+              <option value="low">Sous seuil</option>
+              <option value="rupture">Rupture</option>
+            </Select>
+            <TaillePage value={perPage} onChange={reinitialiser(setPerPage)} />
             <Input
               placeholder="Rechercher réf / article…"
               value={q}
-              onChange={(e) => {
-                setQ(e.target.value)
-                setPage(1)
-              }}
+              onChange={(e) => reinitialiser(setQ)(e.target.value)}
               className="w-56"
             />
           </div>
@@ -144,12 +243,22 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-muted">
-                <th className="px-5 py-3 font-medium">Référence</th>
-                <th className="px-5 py-3 font-medium">Article</th>
-                <th className="px-5 py-3 text-right font-medium">Quantité</th>
-                <th className="px-5 py-3 text-right font-medium">Seuil</th>
+                <SortableTh field="sku" current={sort} onSort={reinitialiser(setSort)}>
+                  Référence
+                </SortableTh>
+                <SortableTh field="name" current={sort} onSort={reinitialiser(setSort)}>
+                  Article
+                </SortableTh>
+                <SortableTh field="quantity" current={sort} onSort={reinitialiser(setSort)} className="text-right" align="right">
+                  Quantité
+                </SortableTh>
+                <SortableTh field="min_stock" current={sort} onSort={reinitialiser(setSort)} className="text-right" align="right">
+                  Seuil
+                </SortableTh>
                 {voitLesCouts ? (
-                  <th className="px-5 py-3 text-right font-medium">Valeur (DH)</th>
+                  <SortableTh field="value" current={sort} onSort={reinitialiser(setSort)} className="text-right" align="right">
+                    Valeur (DH)
+                  </SortableTh>
                 ) : null}
                 <th className="px-5 py-3 font-medium">Statut</th>
               </tr>
@@ -158,7 +267,9 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={voitLesCouts ? 6 : 5} className="px-5 py-8 text-center text-muted">
-                    Aucun article en stock dans ce lieu.
+                    {q || status
+                      ? 'Aucun article ne correspond à cette recherche.'
+                      : 'Aucun article en stock dans ce lieu.'}
                   </td>
                 </tr>
               ) : (
@@ -186,27 +297,38 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
           </table>
         )}
       </CardBody>
-      {meta && meta.last_page > 1 ? (
-        <div className="flex items-center justify-end gap-2 border-t border-line px-5 py-3 text-sm text-muted">
-          <span>Page {meta.current_page} / {meta.last_page}</span>
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            Précédent
-          </Button>
-          <Button variant="outline" size="sm" disabled={page >= meta.last_page} onClick={() => setPage((p) => p + 1)}>
-            Suivant
-          </Button>
-        </div>
-      ) : null}
+      <PiedTableau meta={meta} page={page} onPage={setPage} />
     </Card>
   )
 }
 
 function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
   const [type, setType] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(50)
+  const [sort, setSort] = useState<SortState>({ sort: 'created_at', direction: 'desc' })
   const { data: types = [] } = useMovementTypes()
+
+  function reinitialiser<T>(setter: (v: T) => void) {
+    return (valeur: T) => {
+      setter(valeur)
+      setPage(1)
+    }
+  }
+
   const { data, isLoading } = useMovements(
-    { warehouse_id: warehouseId ?? undefined, type: type || undefined, page },
+    {
+      warehouse_id: warehouseId ?? undefined,
+      type: type || undefined,
+      from: from || undefined,
+      to: to || undefined,
+      page,
+      per_page: perPage,
+      sort: sort.sort,
+      direction: sort.direction,
+    },
     warehouseId !== null,
   )
   const rows = data?.data ?? []
@@ -216,16 +338,38 @@ function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
     <Card>
       <CardHeader
         title="Journal des mouvements"
-        hint={meta ? `${meta.total}` : undefined}
+        hint={meta ? `${meta.total} mouvement(s)` : undefined}
         action={
-          <Select value={type} onChange={(e) => { setType(e.target.value); setPage(1) }} className="w-52">
-            <option value="">Tous les types</option>
-            {types.map((t) => (
-              <option key={t.code} value={t.code}>
-                {t.name}
-              </option>
-            ))}
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              type="date"
+              value={from}
+              onChange={(e) => reinitialiser(setFrom)(e.target.value)}
+              className="w-40"
+              aria-label="Du"
+            />
+            <Input
+              type="date"
+              value={to}
+              onChange={(e) => reinitialiser(setTo)(e.target.value)}
+              className="w-40"
+              aria-label="Au"
+            />
+            <Select
+              value={type}
+              onChange={(e) => reinitialiser(setType)(e.target.value)}
+              className="w-52"
+              aria-label="Type de mouvement"
+            >
+              <option value="">Tous les types</option>
+              {types.map((t) => (
+                <option key={t.code} value={t.code}>
+                  {t.name}
+                </option>
+              ))}
+            </Select>
+            <TaillePage value={perPage} onChange={reinitialiser(setPerPage)} />
+          </div>
         }
       />
       <CardBody className="p-0">
@@ -235,11 +379,17 @@ function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-muted">
-                <th className="px-5 py-3 font-medium">Date</th>
+                <SortableTh field="created_at" current={sort} onSort={reinitialiser(setSort)}>
+                  Date
+                </SortableTh>
                 <th className="px-5 py-3 font-medium">Article</th>
                 <th className="px-5 py-3 font-medium">Type</th>
-                <th className="px-5 py-3 text-right font-medium">Qté</th>
-                <th className="px-5 py-3 text-right font-medium">Solde</th>
+                <SortableTh field="quantity" current={sort} onSort={reinitialiser(setSort)} className="text-right" align="right">
+                  Qté
+                </SortableTh>
+                <SortableTh field="balance_after" current={sort} onSort={reinitialiser(setSort)} className="text-right" align="right">
+                  Solde
+                </SortableTh>
                 <th className="px-5 py-3 font-medium">Note</th>
                 <th className="px-5 py-3 font-medium">Par</th>
               </tr>
@@ -248,7 +398,7 @@ function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-8 text-center text-muted">
-                    Aucun mouvement.
+                    {type || from || to ? 'Aucun mouvement sur cette période.' : 'Aucun mouvement.'}
                   </td>
                 </tr>
               ) : (
@@ -274,17 +424,7 @@ function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
           </table>
         )}
       </CardBody>
-      {meta && meta.last_page > 1 ? (
-        <div className="flex items-center justify-end gap-2 border-t border-line px-5 py-3 text-sm text-muted">
-          <span>Page {meta.current_page} / {meta.last_page}</span>
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            Précédent
-          </Button>
-          <Button variant="outline" size="sm" disabled={page >= meta.last_page} onClick={() => setPage((p) => p + 1)}>
-            Suivant
-          </Button>
-        </div>
-      ) : null}
+      <PiedTableau meta={meta} page={page} onPage={setPage} />
     </Card>
   )
 }
@@ -292,7 +432,22 @@ function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
 function AllWarehousesMatrix() {
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useMatrix(q, page)
+  const [perPage, setPerPage] = useState(50)
+  const [sort, setSort] = useState<SortState>({ sort: 'name', direction: 'asc' })
+
+  function reinitialiser<T>(setter: (v: T) => void) {
+    return (valeur: T) => {
+      setter(valeur)
+      setPage(1)
+    }
+  }
+
+  const { data, isLoading } = useMatrix(q, {
+    page,
+    per_page: perPage,
+    sort: sort.sort,
+    direction: sort.direction,
+  })
   const warehouses = data?.warehouses ?? []
   const rows = data?.data ?? []
   const meta = data?.meta
@@ -303,7 +458,7 @@ function AllWarehousesMatrix() {
         title="Stock — tous les lieux"
         hint={meta ? `${meta.total} référence(s)` : undefined}
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => exportMatrix('xlsx', q)}>
               <Download className="h-4 w-4" />
               Excel
@@ -312,13 +467,11 @@ function AllWarehousesMatrix() {
               <FileText className="h-4 w-4" />
               PDF
             </Button>
+            <TaillePage value={perPage} onChange={reinitialiser(setPerPage)} />
             <Input
               placeholder="Rechercher réf / article…"
               value={q}
-              onChange={(e) => {
-                setQ(e.target.value)
-                setPage(1)
-              }}
+              onChange={(e) => reinitialiser(setQ)(e.target.value)}
               className="w-56"
             />
           </div>
@@ -331,14 +484,23 @@ function AllWarehousesMatrix() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-muted">
-                <th className="px-5 py-3 font-medium">Référence</th>
-                <th className="px-5 py-3 font-medium">Article</th>
+                <SortableTh field="sku" current={sort} onSort={reinitialiser(setSort)}>
+                  Référence
+                </SortableTh>
+                <SortableTh field="name" current={sort} onSort={reinitialiser(setSort)}>
+                  Article
+                </SortableTh>
+                {/* Les colonnes de lieu ne sont pas triables : le classement se
+                    ferait sur une seule colonne d'une matrice, ce qui n'a pas
+                    d'équivalent côté serveur sans une requête par lieu. */}
                 {warehouses.map((w) => (
                   <th key={w.id} className="px-4 py-3 text-right font-medium" title={w.name}>
                     {w.code}
                   </th>
                 ))}
-                <th className="px-5 py-3 text-right font-medium">Total</th>
+                <SortableTh field="total" current={sort} onSort={reinitialiser(setSort)} className="text-right" align="right">
+                  Total
+                </SortableTh>
               </tr>
             </thead>
             <tbody>
@@ -369,17 +531,7 @@ function AllWarehousesMatrix() {
           </table>
         )}
       </CardBody>
-      {meta && meta.last_page > 1 ? (
-        <div className="flex items-center justify-end gap-2 border-t border-line px-5 py-3 text-sm text-muted">
-          <span>Page {meta.current_page} / {meta.last_page}</span>
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            Précédent
-          </Button>
-          <Button variant="outline" size="sm" disabled={page >= meta.last_page} onClick={() => setPage((p) => p + 1)}>
-            Suivant
-          </Button>
-        </div>
-      ) : null}
+      <PiedTableau meta={meta} page={page} onPage={setPage} />
     </Card>
   )
 }
