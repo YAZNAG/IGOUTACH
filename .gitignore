@@ -44,3 +44,8 @@ node_modules
 # Binaires de distribution : ils vivent sur le serveur, pas dans l'historique.
 *.apk
 *.ipa
+
+# Exception : ce fichier ne porte que l'URL publique de l'API, aucun secret.
+# Sans lui, `npm run build` reprend le .env de developpement et met en ligne un
+# bundle qui appelle localhost.
+!frontend/.env.production
