@@ -159,6 +159,15 @@
         .doc-footer .pagenum:after { content: "Page " counter(page); }
 
         .muted { color: #5C6169; }
+
+        /* ---- Invocation de bas de document ---- */
+        .doua {
+            margin-top: 22px;
+            padding-top: 12px;
+            border-top: 0.8pt solid #E4E5E8;
+            text-align: center;
+        }
+        .doua img { height: 26px; }
     </style>
 </head>
 <body>
@@ -212,6 +221,20 @@
     </table>
 
     @yield('content')
+
+    {{-- Invocation, au bas de chaque document.
+
+         Rendue en image : DomPDF n'assemble pas les lettres arabes et ignore
+         le sens droite-à-gauche, ce qui donnerait des caractères isolés lus à
+         l'envers. L'image `public/images/doua.png` est composée une fois pour
+         toutes avec une police arabe et la mise en forme adéquate ; la
+         modifier suppose de la recomposer, pas d'éditer ce gabarit. --}}
+    @php($doua = public_path('images/doua.png'))
+    @if (file_exists($doua))
+        <div class="doua">
+            <img src="{{ $doua }}" alt="اللهم بارك لنا في تجارتنا">
+        </div>
+    @endif
     </div>
 </body>
 </html>
