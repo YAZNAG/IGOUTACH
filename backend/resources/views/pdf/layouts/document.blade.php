@@ -3,8 +3,26 @@
 <head>
     <meta charset="utf-8">
     <title>@yield('title')</title>
+    @php
+        /* Identité légale, regroupée ici : elle se répète dans l'en-tête et le
+           pied, et la corriger à deux endroits finirait par produire deux
+           versions divergentes. Reprise de la facture officielle IGOUTECH. */
+        $societe = [
+            'raison' => 'STE IGOUTECH S.A.R.L.',
+            'adresse' => 'N 82 BIS HAY EL GHAYATEN AV ESSAADYINE DCHEIRA EL JIHADIA (M)',
+            'ice' => '003519480000090',
+            'if' => '66007361',
+            'tp' => '49706001',
+            'gsm' => '0661341783 / 0526455552',
+            'email' => 'igoutechsarl@gmail.com',
+        ];
+    @endphp
     <style>
-        /* Charte iGouTech : rouge #EE1B0F, encre #141414.
+        /* Document monochrome : le logo est la seule pièce en couleur, tout le
+           reste est en gris et noir. Un document commercial gagne à laisser la
+           couleur à l'identité et rien qu'à elle — les aplats colorés brouillent
+           la lecture et coûtent cher à l'impression.
+
            Mise en page reprise du modèle de facture fourni.
 
            L'en-tête est en flux normal et NON en position fixe : avec DomPDF,
@@ -19,8 +37,9 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Après le reset, sans quoi il annulerait ce padding. */
-        .sheet { padding: 30px 34px 52px 34px; }
+        /* Après le reset, sans quoi il annulerait ce padding. La réserve du bas
+           doit dépasser la hauteur du pied fixe, sinon le contenu passe dessous. */
+        .sheet { padding: 30px 34px 72px 34px; }
 
         body {
             font-family: 'DejaVu Sans', Helvetica, sans-serif;
@@ -36,10 +55,10 @@
         .company-tag { font-size: 8.5pt; color: #141414; text-align: right; font-weight: bold; }
         .company-details { font-size: 7.5pt; color: #5C6169; text-align: right; line-height: 1.6; }
 
-        /* Filet sous l'en-tête : segment rouge appuyé puis trait clair. */
+        /* Filet sous l'en-tête : segment appuyé puis trait clair. */
         .rule { width: 100%; border-collapse: collapse; margin: 10px 0 14px 0; }
         .rule td { height: 2.4pt; padding: 0; font-size: 0; line-height: 0; }
-        .rule .accent { background-color: #EE1B0F; width: 88px; }
+        .rule .accent { background-color: #141414; width: 88px; }
         .rule .rest { background-color: #E4E5E8; height: 0.8pt; }
 
         /* ---- Titre + références ---- */
@@ -48,7 +67,7 @@
 
         .doc-title { font-size: 21pt; font-weight: bold; letter-spacing: -0.5px; line-height: 1.1; }
         .doc-title .a { color: #141414; }
-        .doc-title .b { color: #EE1B0F; }
+        .doc-title .b { color: #5C6169; }
 
         .meta { border-collapse: collapse; margin-left: auto; }
         .meta td { padding: 1px 0 1px 12px; font-size: 8.5pt; }
@@ -67,7 +86,7 @@
         .address-box {
             width: 50%;
             background-color: #F7F8F9;
-            border-left: 3px solid #EE1B0F;
+            border-left: 3px solid #9AA0A6;
             padding: 9px 12px;
             vertical-align: top;
         }
@@ -75,7 +94,7 @@
             font-size: 7pt;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            color: #EE1B0F;
+            color: #5C6169;
             margin-bottom: 5px;
             font-weight: bold;
         }
@@ -85,19 +104,23 @@
         /* ---- Tableau des lignes ---- */
         table.lines { width: 100%; border-collapse: collapse; margin-bottom: 0; }
 
+        /* Cellules entièrement bordées, comme sur le modèle fourni : sur un bon
+           rempli à la main après impression, un simple filet sous la ligne ne
+           suffit pas à séparer les colonnes. */
         table.lines thead th {
             font-size: 7.5pt;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #FFFFFF;
-            background-color: #141414;
-            padding: 8px 9px;
+            background-color: #595F66;
+            border: 0.5pt solid #595F66;
+            padding: 7px 8px;
             text-align: left;
         }
 
         table.lines tbody td {
-            padding: 7px 9px;
-            border-bottom: 0.5pt solid #E4E5E8;
+            padding: 6px 8px;
+            border: 0.5pt solid #C9CDD2;
             font-size: 9pt;
         }
 
@@ -110,14 +133,16 @@
         .totals td { padding: 5px 10px; font-size: 9pt; }
         .totals .k { text-align: right; color: #5C6169; }
         .totals .v { text-align: right; font-weight: bold; white-space: nowrap; }
+        /* Même gris que l'en-tête du tableau : deux aplats différents feraient
+           croire à deux niveaux de lecture là où il n'y en a qu'un. */
         .totals tr.grand td {
-            background-color: #141414;
+            background-color: #595F66;
             color: #FFFFFF;
-            font-size: 11pt;
+            font-size: 10.5pt;
             font-weight: bold;
-            padding: 9px 10px;
+            padding: 8px 10px;
         }
-        .totals tr.grand td.k { color: #FFFFFF; border-left: 3px solid #EE1B0F; }
+        .totals tr.grand td.k { color: #FFFFFF; }
 
         /* ---- Notes ---- */
         .notes-box { margin-top: 18px; border: 0.5pt solid #E4E5E8; padding: 9px 12px; min-height: 42px; }
@@ -125,7 +150,7 @@
             font-size: 7pt;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            color: #EE1B0F;
+            color: #5C6169;
             font-weight: bold;
             margin-bottom: 4px;
         }
@@ -144,16 +169,19 @@
         /* ---- Pied de page ---- */
         .doc-footer {
             position: fixed;
-            bottom: 14px;
+            bottom: 16px;
             left: 34px;
             right: 34px;
-            height: 30px;
-            font-size: 7.5pt;
+            height: 42px;
+            font-size: 6.5pt;
             color: #5C6169;
-            border-top: 0.8pt solid #E4E5E8;
-            padding-top: 7px;
+            border-top: 0.8pt solid #141414;
+            padding-top: 6px;
+            text-align: center;
+            line-height: 1.5;
         }
-        .doc-footer .sep { color: #EE1B0F; }
+        .doc-footer .sep { color: #9AA0A6; }
+        .doc-footer .legal { display: block; }
         /* Numéro seul : DomPDF renvoie 0 pour counter(pages), ce qui affichait
            « Page 1 / 0 ». Mieux vaut pas de total qu'un total faux. */
         .doc-footer .pagenum:after { content: "Page " counter(page); }
@@ -161,27 +189,36 @@
         .muted { color: #5C6169; }
 
         /* ---- Invocation de bas de document ---- */
+        /* Bloc volontairement compact : plus haut, il basculait seul sur une
+           deuxieme page et faisait imprimer une feuille pour une ligne. */
         .doua {
-            margin-top: 22px;
-            padding-top: 12px;
+            margin-top: 12px;
+            padding-top: 8px;
             border-top: 0.8pt solid #E4E5E8;
             text-align: center;
+            page-break-inside: avoid;
         }
-        .doua img { height: 26px; }
+        .doua img { height: 21px; }
     </style>
 </head>
 <body>
+    {{-- Mentions légales : elles doivent figurer sur chaque page, d'où le pied
+         fixe plutôt qu'un bloc en fin de contenu. --}}
     <div class="doc-footer">
-        <table style="width: 100%;">
+        <table style="width: 100%; margin-bottom: 2px;">
             <tr>
-                <td style="width: 22%;">&nbsp;</td>
-                <td style="text-align: center; width: 56%;">
-                    Inzegane — Agadir <span class="sep">&#9670;</span> 0661 24 17 83
-                    <span class="sep">&#9670;</span> 0528 83 88 46
-                </td>
-                <td style="text-align: right; width: 22%;"><span class="pagenum"></span></td>
+                <td style="width: 50%;">&nbsp;</td>
+                <td style="text-align: right; width: 50%;"><span class="pagenum"></span></td>
             </tr>
         </table>
+        <span class="legal">
+            {{ $societe['raison'] }} &nbsp;S.Social : {{ $societe['adresse'] }},
+            ICE : {{ $societe['ice'] }} , IF : {{ $societe['if'] }} , TP : {{ $societe['tp'] }}
+        </span>
+        <span class="legal">
+            GSM : {{ $societe['gsm'] }} &nbsp;<span class="sep">&#9670;</span>&nbsp;
+            Email : {{ $societe['email'] }}
+        </span>
     </div>
 
     <div class="sheet">
@@ -192,11 +229,11 @@
                 <img src="{{ public_path('images/igoutech-logo.png') }}" alt="iGouTech" style="height: 44px;">
             </td>
             <td style="width: 55%;">
-                <div class="company-tag">Solutions informatiques &amp; services numériques</div>
+                <div class="company-tag">{{ $societe['raison'] }}</div>
                 <div class="company-details">
-                    Inzegane — Agadir, Maroc<br>
-                    0661 24 17 83 &nbsp;&nbsp;|&nbsp;&nbsp; 0528 83 88 46<br>
-                    contact&#64;igoutech.ma
+                    {{ $societe['adresse'] }}<br>
+                    {{ $societe['gsm'] }}<br>
+                    {{ $societe['email'] }}
                 </div>
             </td>
         </tr>
