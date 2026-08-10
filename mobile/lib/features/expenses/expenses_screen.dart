@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/expense.dart';
 import 'create_expense_screen.dart';
+import '../shared/period_export.dart';
 
 /// Libellé et couleur d'un statut de charge.
 (String, Color) expenseStatusBadge(String status) => switch (status) {
@@ -27,6 +28,7 @@ class ExpensesScreen extends StatefulWidget {
 
 class _ExpensesScreenState extends State<ExpensesScreen> {
   final _api = ApiClient.instance;
+  Periode _periode = Periode.moisEnCours();
   final _scrollController = ScrollController();
 
   final List<Expense> _expenses = [];
@@ -85,6 +87,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         queryParameters: {
           'page': _page + 1,
           'status': ?_status,
+          'date_from': _periode.duIso,
+          'date_to': _periode.auIso,
         },
       );
       final body = res.data!;
@@ -182,6 +186,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       ),
       body: Column(
         children: [
+          // Liste et export sur la même période : le document reprend
+          // exactement ce que l'écran affiche.
+          PeriodBar(
+            periode: _periode,
+            journal: 'expenses',
+            onChanged: (p) {
+              setState(() => _periode = p);
+              _load(reset: true);
+            },
+          ),
           _buildFilters(),
           Expanded(child: _buildBody(auth.can('expense.approve'))),
         ],

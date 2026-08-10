@@ -11,6 +11,7 @@ import '../../core/widgets.dart';
 import '../../models/stock_movement.dart';
 import '../shared/warehouse_scope.dart';
 import 'movement_detail_screen.dart';
+import '../shared/period_export.dart';
 
 /// Liste des mouvements de stock d'un lieu — implémentation commune aux
 /// entrées (`/stock/entries`) et aux sorties (`/stock/exits`), qui partagent
@@ -199,6 +200,22 @@ class _MovementsListScreenState extends State<MovementsListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            tooltip: 'Exporter la période en PDF',
+            onPressed: () => exporterJournal(
+              context,
+              widget.isExit ? 'stock-exits' : 'stock-entries',
+              // Sans période choisie, le journal porte sur le mois en cours :
+              // le même défaut que le serveur, pour éviter qu'un document
+              // couvre un intervalle différent de ce que l'écran montre.
+              _dateFrom != null && _dateTo != null
+                  ? Periode(_dateFrom!, _dateTo!)
+                  : Periode.moisEnCours(),
+            ),
+          ),
+        ],
         bottom: scope?.selected == null
             ? null
             : WarehouseAppBarLabel(warehouse: scope!.selected!),

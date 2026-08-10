@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\AppReleaseController;
+use App\Http\Controllers\Api\V1\MyOverviewController;
 use App\Http\Controllers\Api\V1\PeriodReportController;
 use App\Http\Controllers\Api\V1\ChequeController;
 use App\Http\Controllers\Api\V1\RecurringExpenseController;
@@ -301,6 +302,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('cheques/{cheque}/status', [ChequeController::class, 'updateStatus'])->middleware('can:cheque.manage');
         Route::delete('cheques/{cheque}', [ChequeController::class, 'destroy'])->middleware('can:cheque.manage');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
+        Route::get('customers/{customer}/overview', [CustomerController::class, 'overview'])->middleware('can:customer.view');
 
         // Caisse — sessions
         Route::get('cash-sessions', [CashSessionController::class, 'index'])->middleware('can:cash.manage');
@@ -343,6 +345,8 @@ Route::prefix('v1')->group(function () {
         Route::get('reports/journal/stock-exits', [PeriodReportController::class, 'stockExits'])->middleware('can:stock.view');
         Route::get('reports/journal/expenses', [PeriodReportController::class, 'expenses'])->middleware('can:expense.create');
 
+        // Tableau de bord du lieu de l'utilisateur, en un seul appel.
+        Route::get('me/overview', [MyOverviewController::class, 'show'])->middleware('can:stock.view');
         Route::get('alerts', [AlertController::class, 'index'])->middleware('can:stock.view');
         Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:report.consolidated');
         Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:report.consolidated');

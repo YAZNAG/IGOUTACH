@@ -42,6 +42,12 @@ final class ExpenseController extends Controller
             ->with(['category:id,name', 'warehouse:id,code', 'user:id,name', 'paymentMethod:id,name'])
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
+            // La periode porte sur la date de la charge, pas sur sa saisie :
+            // une facture de juillet enregistree en aout reste une charge de
+            // juillet.
+            ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('expense_date', '>=', $request->string('date_from')->value()))
+            ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('expense_date', '<=', $request->string('date_to')->value()))
+            ->orderByDesc('expense_date')
             ->orderByDesc('id')
             ->paginate(20);
 

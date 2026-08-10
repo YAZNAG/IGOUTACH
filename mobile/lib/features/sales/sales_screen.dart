@@ -14,6 +14,7 @@ import '../../core/widgets.dart';
 import '../../models/sale.dart';
 import '../shared/payment_sheet.dart';
 import 'create_sale_screen.dart';
+import '../shared/period_export.dart';
 
 /// Télécharge la facture PDF d'une vente puis l'ouvre.
 /// Utilisée par la liste et par l'écran de création.
@@ -51,6 +52,7 @@ class SalesScreen extends StatefulWidget {
 
 class _SalesScreenState extends State<SalesScreen> {
   final _api = ApiClient.instance;
+  Periode _periode = Periode.moisEnCours();
   final _scrollController = ScrollController();
 
   final List<SaleSummary> _sales = [];
@@ -108,6 +110,8 @@ class _SalesScreenState extends State<SalesScreen> {
           'type': 'invoice',
           'per_page': 50,
           'page': _page + 1,
+          'date_from': _periode.duIso,
+          'date_to': _periode.auIso,
         },
       );
       final body = res.data!;
@@ -213,7 +217,21 @@ class _SalesScreenState extends State<SalesScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Nouvelle vente'),
       ),
-      body: _buildBody(),
+      body: Column(
+        children: [
+          // La liste et l'export portent sur la même période : le document
+          // reprend exactement ce que l'écran affiche.
+          PeriodBar(
+            periode: _periode,
+            journal: 'sales',
+            onChanged: (p) {
+              setState(() => _periode = p);
+              _load(reset: true);
+            },
+          ),
+          Expanded(child: _buildBody()),
+        ],
+      ),
     );
   }
 
