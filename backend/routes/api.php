@@ -231,6 +231,9 @@ Route::prefix('v1')->group(function () {
         Route::get('transfers', [TransferController::class, 'index'])->middleware('can:stock.view');
         Route::post('transfers', [TransferController::class, 'store'])->middleware('can:transfer.create');
         Route::get('transfers/{transfer}', [TransferController::class, 'show'])->middleware('can:stock.view');
+        // Bon de transfert imprimable : même permission que la consultation,
+        // imprimer ne révèle rien de plus que la fiche à l'écran.
+        Route::get('transfers/{transfer}/pdf', [TransferController::class, 'pdf'])->middleware('can:stock.view');
         Route::post('transfers/{transfer}/receive', [TransferController::class, 'receive'])->middleware('can:transfer.receive');
         // Un lieu demande, la direction accorde : la demande ne deplace rien.
         Route::post('transfer-requests', [TransferController::class, 'request'])->middleware('can:transfer.request');

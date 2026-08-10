@@ -15,8 +15,11 @@ use App\Domain\Stock\Exceptions\InvalidTransferException;
 use App\Domain\Stock\Models\Transfer;
 use App\Domain\Stock\Models\TransferStatus;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Rules\WarehouseAccessible;
 use Illuminate\Support\Facades\DB;
 use App\Support\Scopes\WarehouseScope;
@@ -306,8 +309,41 @@ final class TransferController extends Controller
         return response()->json(['data' => ['id' => $transfer->id, 'status' => TransferStatus::REFUSED]]);
     }
 
-    public function show(Transfer $transfer): JsonResponse
+    /**
+     * Un transfert ne concerne que ses deux lieux.
+     *
+     * La liste filtrait déjà, mais la consultation par identifiant ne
+     * vérifiait rien : n'importe quel responsable pouvait lire le détail d'un
+     * transfert entre deux autres dépôts en devinant un numéro. Le même garde
+     * protège désormais la fiche et son impression.
+     */
+    private function garantirAcces(Request $request, Transfer $transfer): void
     {
+        $user = $request->user();
+
+        if ($user === null || $user->can(WarehouseScope::DEFAULT_GLOBAL_PERMISSION)) {
+            return;
+        }
+
+        $sien = $user->getAttribute('warehouse_id');
+
+        // Un compte sans lieu rattaché n'est pas cloisonné par cette règle :
+        // le cloisonnement compare deux lieux, il n'a rien à comparer ici. Ce
+        // cas ne concerne pas les responsables, qui ont toujours un lieu.
+        if ($sien === null) {
+            return;
+        }
+
+        if ((int) $transfer->from_warehouse_id !== (int) $sien
+            && (int) $transfer->to_warehouse_id !== (int) $sien) {
+            abort(403, 'Ce transfert ne concerne pas votre lieu.');
+        }
+    }
+
+    public function show(Request $request, Transfer $transfer): JsonResponse
+    {
+        $this->garantirAcces($request, $transfer);
+
         $transfer->load(['fromWarehouse:id,code,name', 'toWarehouse:id,code,name', 'status:id,code,name', 'lines.product:id,sku,name']);
 
         return response()->json(['data' => [
@@ -329,8 +365,57 @@ final class TransferController extends Controller
         ]]);
     }
 
+    /**
+     * Bon de transfert imprimable.
+     *
+     * Le document accompagne physiquement la marchandise : il porte les
+     * quantités envoyées, et les quantités reçues dès qu'elles sont saisies,
+     * pour que l'écart soit lisible sans ouvrir l'application.
+     */
+    public function pdf(Request $request, Transfer $transfer): Response
+    {
+        $this->garantirAcces($request, $transfer);
+
+        $transfer->load([
+            'fromWarehouse:id,code,name,address,city',
+            'toWarehouse:id,code,name,address,city',
+            'status:id,code,name',
+            'lines.product:id,sku,name',
+        ]);
+
+        $noms = User::query()
+            ->whereIn('id', array_filter([
+                $transfer->getAttribute('created_by'),
+                $transfer->getAttribute('approved_by'),
+                $transfer->getAttribute('received_by'),
+            ]))
+            ->pluck('name', 'id')
+            ->all();
+
+        // La réception n'a de sens qu'une fois saisie : avant, la colonne
+        // « Reçu » resterait vide et la ligne d'écart mentirait par omission.
+        $receptionSaisie = $transfer->lines->contains(
+            fn ($ligne): bool => $ligne->quantity_received !== null,
+        );
+
+        $pdf = Pdf::loadView('pdf.transfer-note', [
+            'transfer' => $transfer,
+            'lines' => $transfer->lines,
+            'noms' => $noms,
+            'receptionSaisie' => $receptionSaisie,
+            'totalEnvoye' => (int) $transfer->lines->sum('quantity_sent'),
+            'totalRecu' => (int) $transfer->lines->sum(fn ($l): int => (int) ($l->quantity_received ?? 0)),
+        ])->setPaper('a4');
+
+        return $pdf->download("{$transfer->reference}.pdf");
+    }
+
     public function receive(Request $request, Transfer $transfer, ReceiveTransferAction $action): JsonResponse
     {
+        // Réceptionner crédite le stock du lieu destinataire : la permission
+        // seule ne suffit pas, encore faut-il que ce soit son lieu.
+        $this->garantirAcces($request, $transfer);
+
         /** @var array{quantities?: array<int|string, int>} $data */
         $data = $request->validate([
             'quantities' => ['sometimes', 'array'],
@@ -348,6 +433,6 @@ final class TransferController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        return $this->show($transfer->refresh());
+        return $this->show($request, $transfer->refresh());
     }
 }

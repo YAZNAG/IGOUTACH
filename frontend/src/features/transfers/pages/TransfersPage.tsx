@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Printer, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
+import { downloadFile } from '@/lib/download'
 import type { Paginated } from '@/types'
 
 interface TransferRow {
@@ -143,9 +144,20 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
                         ) : null}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        <Button variant="ghost" size="sm" onClick={() => onOpen(t.id)}>
-                          {t.status === 'in_transit' && can('transfer.receive') ? 'Réceptionner' : 'Consulter'}
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Imprimer le bon de transfert"
+                            aria-label={`Imprimer le bon ${t.reference}`}
+                            onClick={() => imprimerBonDeTransfert(t.id, t.reference)}
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => onOpen(t.id)}>
+                            {t.status === 'in_transit' && can('transfer.receive') ? 'Réceptionner' : 'Consulter'}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -292,6 +304,16 @@ function CreateTransferPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
+/**
+ * Télécharge le bon de transfert.
+ *
+ * La référence sert de nom de fichier quand elle est connue : un dossier plein
+ * de « transfert.pdf » serait inexploitable.
+ */
+function imprimerBonDeTransfert(id: number, reference?: string): void {
+  void downloadFile(`/transfers/${id}/pdf`, `${reference ?? `transfert-${id}`}.pdf`)
+}
+
 function TransferDetailView({ id, onBack }: { id: number; onBack: () => void }) {
   const can = usePermission()
   const qc = useQueryClient()
@@ -332,11 +354,20 @@ function TransferDetailView({ id, onBack }: { id: number; onBack: () => void }) 
             </p>
           </div>
         </div>
-        {inTransit && can('transfer.receive') ? (
-          <Button onClick={() => receive.mutate()} disabled={receive.isPending}>
-            {receive.isPending ? 'Validation…' : 'Valider la réception'}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => imprimerBonDeTransfert(id, transfer?.reference)}
+          >
+            <Printer className="h-4 w-4" />
+            Imprimer le bon
           </Button>
-        ) : null}
+          {inTransit && can('transfer.receive') ? (
+            <Button onClick={() => receive.mutate()} disabled={receive.isPending}>
+              {receive.isPending ? 'Validation…' : 'Valider la réception'}
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {receive.isError ? (
