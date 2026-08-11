@@ -1,5 +1,11 @@
 # Compilation iGouTech sur Codemagic (machines macOS).
 #
+# Le depot est un monorepo : l'application Flutter vit dans mobile/, pas a la
+# racine. D'ou `working_directory` sur chaque workflow — sans lui, l'etape
+# automatique d'installation des dependances cherche un pubspec.yaml a la
+# racine du clone, ne le trouve pas, et le build s'arrete avant meme de
+# commencer (« Failed to install dependencies ... Directory was not found »).
+#
 # Deux flux :
 #   ios-non-signe  -> verifie que le projet iOS compile. Aucun compte Apple
 #                     requis. Le resultat ne s'installe sur aucun iPhone.
@@ -24,28 +30,36 @@ workflows:
     name: iOS — build de verification (non signe)
     instance_type: mac_mini_m2
     max_build_duration: 45
+    working_directory: mobile
     environment:
       <<: *env_commun
     scripts:
+      # Les scripts partent deja de mobile/ : pas de `cd`, il menerait a
+      # mobile/mobile.
       - name: Dependances
-        script: cd mobile && flutter pub get
+        script: flutter pub get
       - name: Analyse
-        script: cd mobile && flutter analyze
+        script: flutter analyze
       - name: Tests
-        script: cd mobile && flutter test
+        script: flutter test
       - name: Build iOS sans signature
         script: |
-          cd mobile
           flutter build ios --release --no-codesign \
             --dart-define=API_URL=$API_URL \
             --dart-define=APP_PROFILE=$APP_PROFILE
+    # Les deux chemins sont listes parce que Codemagic resout les artefacts
+    # tantot depuis le repertoire de travail, tantot depuis la racine du clone
+    # selon la version : le motif qui ne correspond a rien est simplement
+    # ignore, et on evite un build entier perdu pour un artefact introuvable.
     artifacts:
+      - build/ios/iphoneos/Runner.app
       - mobile/build/ios/iphoneos/Runner.app
 
   ios-testflight:
     name: iOS — .ipa signe et envoi TestFlight
     instance_type: mac_mini_m2
     max_build_duration: 60
+    working_directory: mobile
     integrations:
       # A creer dans Codemagic : Teams > Integrations > App Store Connect.
       app_store_connect: igoutech
@@ -56,16 +70,15 @@ workflows:
         bundle_identifier: ma.igoutech.igoutechMobile
     scripts:
       - name: Dependances
-        script: cd mobile && flutter pub get
+        script: flutter pub get
       - name: Analyse
-        script: cd mobile && flutter analyze
+        script: flutter analyze
       - name: Tests
-        script: cd mobile && flutter test
+        script: flutter test
       - name: Numero de build
         script: |
           # App Store Connect refuse deux envois portant le meme numero :
           # on repart du dernier numero deja publie, incremente de 1.
-          cd mobile
           NUMERO=$(app-store-connect get-latest-testflight-build-number \
             "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
           echo "BUILD_NUMBER=$(($NUMERO + 1))" >> $CM_ENV
@@ -73,13 +86,13 @@ workflows:
         script: xcode-project use-profiles
       - name: Build .ipa
         script: |
-          cd mobile
           flutter build ipa --release \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=$HOME/export_options.plist \
             --dart-define=API_URL=$API_URL \
             --dart-define=APP_PROFILE=$APP_PROFILE
     artifacts:
+      - build/ios/ipa/*.ipa
       - mobile/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
