@@ -41,7 +41,6 @@ workflows:
             --dart-define=APP_PROFILE=$APP_PROFILE
     artifacts:
       - mobile/build/ios/iphoneos/Runner.app
-      - mobile/flutter_drive.log
 
   ios-testflight:
     name: iOS — .ipa signe et envoi TestFlight
