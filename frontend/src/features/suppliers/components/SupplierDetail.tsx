@@ -71,7 +71,7 @@ export function SupplierDetail({ supplierId, name, onClose }: { supplierId: numb
         }
       />
       <CardBody className="space-y-4">
-        <div className="flex gap-1 border-b border-line">
+        <div className="flex gap-1 overflow-x-auto border-b border-line">
           {(
             [
               { key: 'contacts', label: 'Contacts' },

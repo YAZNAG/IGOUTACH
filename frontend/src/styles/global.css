@@ -49,6 +49,90 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Tableaux sur téléphone : chaque ligne devient une fiche.
+
+   En dessous de 768 px, un tableau de plusieurs colonnes ne tient pas. Plutôt
+   que de le faire défiler horizontalement — geste que personne ne trouve — on
+   empile : une ligne = un bloc, une cellule = « intitulé : valeur ».
+
+   L'intitulé est déposé dans `data-label` par le composant ResponsiveTables,
+   qui le lit sur l'en-tête réellement affiché.
+--------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  main table.table-fiches thead {
+    display: none;
+  }
+
+  main table.table-fiches,
+  main table.table-fiches tbody,
+  main table.table-fiches tr,
+  main table.table-fiches td {
+    display: block;
+    width: 100%;
+  }
+
+  main table.table-fiches tr {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 0 0 10px 0;
+    padding: 4px 0;
+    background: var(--card);
+  }
+
+  /* Le survol de ligne colore toute la fiche : sur un écran tactile il se
+     déclenche au toucher et masquerait le texte. */
+  main table.table-fiches tbody tr:hover {
+    background: var(--card);
+  }
+
+  main table.table-fiches td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    border: none;
+    padding: 5px 12px;
+    text-align: right;
+  }
+
+  main table.table-fiches td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 45%;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+  }
+
+  /* Cellule sans intitulé : boutons d'action, case à cocher. Elle occupe la
+     largeur plutôt que de s'écraser contre un intitulé absent. */
+  main table.table-fiches td:not([data-label]) {
+    justify-content: flex-end;
+  }
+
+  /* « Aucun résultat » : un message centré, pas une paire intitulé/valeur. */
+  main table.table-fiches td[data-pleine-largeur] {
+    display: block;
+    text-align: center;
+  }
+
+  /* La classe `tabular` aligne à droite : déjà le cas ici, et son
+     alignement forcé décalerait la valeur dans la fiche. */
+  main table.table-fiches td.tabular {
+    text-align: right;
+  }
+
+  /* Un tableau explicitement conservé doit au moins pouvoir défiler. */
+  main table.table-garder {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
 /* Impression des étiquettes : seule la planche est imprimée. */
 @media print {
   body * {

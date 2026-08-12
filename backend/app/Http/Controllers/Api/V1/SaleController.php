@@ -154,11 +154,21 @@ final class SaleController extends Controller
         $product = Product::query()->findOrFail((int) $data['product_id']);
         $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
 
+        // Le plancher EST le prix d'achat (marge minimale nulle) : le renvoyer
+        // à qui n'a pas le droit de consulter les coûts revenait à publier le
+        // prix d'achat de chaque article à tout vendeur. Sans ce nombre,
+        // l'interface ne peut pas afficher le minimum, mais le serveur refuse
+        // toujours une vente en dessous — la règle tient, c'est le chiffre qui
+        // reste couvert.
+        $voitLesCouts = $request->user()?->can('product.view_cost_price') ?? false;
+
         return response()->json(['data' => [
             'unit_price' => $resolved->amount,
             'price_type_code' => $resolved->priceTypeCode,
             'reason' => $resolved->reason,
-            'floor_price' => round($floor, 2),
+            'floor_price' => $voitLesCouts ? round($floor, 2) : null,
+            // Dit à l'interface si elle peut valider la saisie elle-même.
+            'floor_visible' => $voitLesCouts,
         ]]);
     }
 
@@ -216,6 +226,7 @@ final class SaleController extends Controller
         array $lignes,
         ?int $clientId,
         bool $peutVendreSousPlancher,
+        bool $voitLesCouts,
         PriceResolverInterface $resolver,
         MarginCalculatorInterface $margins,
         ProductCostResolver $cost,
@@ -245,12 +256,19 @@ final class SaleController extends Controller
             $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
 
             if ($unitPrice < $floor && ! $peutVendreSousPlancher) {
-                throw new RuntimeException(sprintf(
-                    'Prix sous le plancher pour %s (%.2f < %.2f DH) : autorisation requise.',
-                    $product->sku,
-                    $unitPrice,
-                    $floor,
-                ));
+                // Le plancher est le prix d'achat : l'écrire dans le message
+                // le révélerait à qui n'a pas le droit de le consulter.
+                throw new RuntimeException($voitLesCouts
+                    ? sprintf(
+                        'Prix sous le plancher pour %s (%.2f < %.2f DH) : autorisation requise.',
+                        $product->sku,
+                        $unitPrice,
+                        $floor,
+                    )
+                    : sprintf(
+                        'Prix trop bas pour %s : il ne peut pas descendre sous le coût de l’article.',
+                        $product->sku,
+                    ));
             }
 
             $lineTotal = round($unitPrice * $line['quantity'], 2);
@@ -322,6 +340,7 @@ final class SaleController extends Controller
                     $data['lines'],
                     $data['customer_id'] ?? null,
                     $canBelowFloor,
+                    $request->user()?->can('product.view_cost_price') ?? false,
                     $resolver,
                     $margins,
                     $cost,
@@ -432,6 +451,7 @@ final class SaleController extends Controller
                     $data['lines'],
                     $clientId,
                     $request->user()?->can('sale.sell_below_floor') ?? false,
+                    $request->user()?->can('product.view_cost_price') ?? false,
                     $resolver,
                     $margins,
                     $cost,

@@ -86,7 +86,12 @@ interface DraftLine {
   quantity: number
   unit_price: number
   price_type_code: string | null
-  floor_price: number
+  /**
+   * Plancher de prix, égal au prix d'achat. Vaut `null` quand l'utilisateur
+   * n'a pas le droit de consulter les coûts : l'interface ne peut alors rien
+   * afficher ni vérifier, et le serveur reste seul juge.
+   */
+  floor_price: number | null
   /** Stock disponible sur le lieu choisi. */
   current_stock: number
   /** Prix déverrouillé pour saisie manuelle. */
@@ -409,7 +414,7 @@ export function CreateSalePanel({
     setPriceWarning(null)
     try {
       // Prix résolu côté serveur : type de prix du client, puis paliers.
-      const { data: r } = await api.get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>(
+      const { data: r } = await api.get<{ data: { unit_price: number; price_type_code: string; floor_price: number | null } }>(
         '/sales/price',
         { params: { product_id: p.id, quantity: 1, customer_id: customerId || undefined } },
       )
@@ -433,7 +438,7 @@ export function CreateSalePanel({
         quantity: 1,
         unit_price: 0,
         price_type_code: null,
-        floor_price: 0,
+        floor_price: null,
         current_stock: p.current_stock ?? 0,
         manual: true,
       }])
@@ -471,7 +476,7 @@ export function CreateSalePanel({
     clearTimeout(priceTimers.current[line.product_id])
     priceTimers.current[line.product_id] = setTimeout(() => {
       void api
-        .get<{ data: { unit_price: number; price_type_code: string; floor_price: number } }>('/sales/price', {
+        .get<{ data: { unit_price: number; price_type_code: string; floor_price: number | null } }>('/sales/price', {
           params: { product_id: line.product_id, quantity: qty, customer_id: customerId || undefined },
         })
         .then(({ data: r }) => {
@@ -670,10 +675,10 @@ export function CreateSalePanel({
                   value={l.unit_price}
                   disabled={!l.manual}
                   onChange={(e) => setLines((p) => p.map((x, j) => (j === i ? { ...x, unit_price: Number(e.target.value) } : x)))}
-                  className={`w-full text-right ${l.unit_price < l.floor_price ? 'border-bad' : ''} ${!l.manual ? 'opacity-70' : ''}`}
+                  className={`w-full text-right ${l.floor_price !== null && l.unit_price < l.floor_price ? 'border-bad' : ''} ${!l.manual ? 'opacity-70' : ''}`}
                   aria-label="Prix unitaire"
                   title={
-                    l.unit_price < l.floor_price
+                    l.floor_price !== null && l.unit_price < l.floor_price
                       ? `Sous le plancher (${formatNumber(l.floor_price)} DH)`
                       : l.manual
                         ? 'Prix manuel'

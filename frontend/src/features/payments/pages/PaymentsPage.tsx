@@ -85,7 +85,7 @@ export function PaymentsPage() {
         <p className="text-sm text-muted">Encaissements clients, cycle des chèques et balance âgée.</p>
       </div>
 
-      <div className="flex gap-1 border-b border-line">
+      <div className="flex gap-1 overflow-x-auto border-b border-line">
         {([
           { key: 'payments', label: 'Encaissements' },
           { key: 'aging', label: 'Balance âgée' },

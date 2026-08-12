@@ -58,7 +58,7 @@ export function ArticleSheet({
         }
       />
       <CardBody className="space-y-4">
-        <div className="flex gap-1 border-b border-line">
+        <div className="flex gap-1 overflow-x-auto border-b border-line">
           {(
             [
               { key: 'attributes', label: 'Fiche technique' },

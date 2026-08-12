@@ -141,7 +141,7 @@ export function StockPage() {
         </Select>
       </div>
 
-      <div className="flex gap-1 border-b border-line">
+      <div className="flex gap-1 overflow-x-auto border-b border-line">
         {tabs.filter((t) => t.show).map((t) => (
           <button
             key={t.key}

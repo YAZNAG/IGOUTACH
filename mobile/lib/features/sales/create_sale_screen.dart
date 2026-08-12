@@ -26,6 +26,18 @@ class _LineDraft {
   bool loadingPrice = true;
   String? priceError;
 
+  /// Prix saisi à la main pour cette vente seulement.
+  ///
+  /// Il ne touche pas au tarif de l'article : celui-ci reste ce qu'il est pour
+  /// toutes les autres ventes. Une fois le prix forcé, changer la quantité ne
+  /// le réécrit plus — sinon le vendeur verrait son prix négocié disparaître
+  /// en ajustant une unité.
+  bool prixForce = false;
+
+  /// Prix d'achat, plancher absolu de la vente. `null` quand l'utilisateur n'a
+  /// pas le droit de consulter les coûts : le serveur reste seul juge.
+  double? prixPlancher;
+
   /// Jeton anti-course : seule la dernière requête de prix est retenue.
   int priceRequestId = 0;
 
@@ -158,19 +170,120 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
       if (!mounted || requestId != line.priceRequestId) return;
       final data = res.data!['data'] as Map<String, dynamic>;
       setState(() {
-        line.unitPrice = (data['unit_price'] as num?)?.toDouble();
-        line.priceTypeCode = data['price_type_code'] as String?;
+        // Le plancher n'arrive que pour qui a le droit de voir les coûts.
+        line.prixPlancher = (data['floor_price'] as num?)?.toDouble();
+        // Un prix négocié survit au changement de quantité : le tarif du
+        // palier est calculé, mais il ne reprend pas la main.
+        if (!line.prixForce) {
+          line.unitPrice = (data['unit_price'] as num?)?.toDouble();
+          line.priceTypeCode = data['price_type_code'] as String?;
+        }
         line.loadingPrice = false;
       });
     } catch (e) {
       if (!mounted || requestId != line.priceRequestId) return;
       setState(() {
+        line.loadingPrice = false;
+        // Un article sans tarif défini reste vendable si le vendeur a saisi
+        // un prix : effacer sa saisie parce que le tarif manque serait absurde.
+        if (line.prixForce) return;
         line.unitPrice = null;
         line.priceTypeCode = null;
-        line.loadingPrice = false;
         line.priceError = friendlyError(e);
       });
     }
+  }
+
+  /// Saisie d'un prix de vente pour cette ligne, sur cette vente seulement.
+  ///
+  /// Le tarif de l'article n'est pas touché : il reste celui du catalogue pour
+  /// toutes les autres ventes. La seule limite est le coût d'achat — vendre en
+  /// dessous ferait perdre de l'argent sur chaque unité.
+  Future<void> _modifierPrix(_LineDraft line) async {
+    final controleur = TextEditingController(
+      text: line.unitPrice == null ? '' : line.unitPrice!.toStringAsFixed(2),
+    );
+    String? erreur;
+
+    final valide = await showDialog<bool>(
+      context: context,
+      builder: (contexte) => StatefulBuilder(
+        builder: (contexte, majDialogue) => AlertDialog(
+          title: Text(line.product.name, style: const TextStyle(fontSize: 16)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controleur,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: 'Prix de vente (DH)',
+                  errorText: erreur,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              if (line.prixPlancher != null)
+                Text(
+                  'Minimum : ${formatMoney(line.prixPlancher)} DH',
+                  style: const TextStyle(fontSize: 12.5, color: AppTheme.textMuted),
+                ),
+              const SizedBox(height: 4),
+              const Text(
+                'Ne s’applique qu’à cette vente. Le tarif de l’article reste inchangé.',
+                style: TextStyle(fontSize: 11.5, color: AppTheme.textMuted),
+              ),
+            ],
+          ),
+          actions: [
+            if (line.prixForce)
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    line.prixForce = false;
+                    line.loadingPrice = true;
+                  });
+                  Navigator.of(contexte).pop(false);
+                  _fetchPrice(line);
+                },
+                child: const Text('Reprendre le tarif'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.of(contexte).pop(false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final saisi = double.tryParse(controleur.text.trim().replaceAll(',', '.'));
+                if (saisi == null || saisi <= 0) {
+                  majDialogue(() => erreur = 'Saisissez un prix.');
+                  return;
+                }
+                // Contrôle local quand le plancher est connu. Sinon le serveur
+                // refuse la vente : la règle tient dans les deux cas.
+                if (line.prixPlancher != null && saisi < line.prixPlancher!) {
+                  majDialogue(() => erreur =
+                      'Sous le coût de l’article (${formatMoney(line.prixPlancher)} DH).');
+                  return;
+                }
+                setState(() {
+                  line.unitPrice = saisi;
+                  line.prixForce = true;
+                  line.priceError = null;
+                });
+                Navigator.of(contexte).pop(true);
+              },
+              child: const Text('Appliquer'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    controleur.dispose();
+    if (valide == true && mounted) setState(() {});
   }
 
   void _refreshAllPrices() {
@@ -254,7 +367,8 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
 
     setState(() => _creating = true);
     try {
-      // Le prix unitaire n'est pas envoyé : le serveur applique les paliers.
+      // Le prix unitaire n'est envoyé que pour les lignes négociées : sur les
+      // autres, le serveur applique les paliers, qui font foi.
       final res = await _api.dio.post<Map<String, dynamic>>(
         '/sales',
         data: {
@@ -265,6 +379,8 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
               .map((l) => {
                     'product_id': l.product.id,
                     'quantity': l.quantity,
+                    if (l.prixForce && l.unitPrice != null)
+                      'unit_price': l.unitPrice,
                   })
               .toList(),
         },
@@ -497,6 +613,7 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
                         line: line,
                         onQuantityChanged: (q) => _changeQuantity(line, q),
                         onRemove: () => _removeLine(line),
+                        onPriceTap: () => _modifierPrix(line),
                       ),
                     ),
                 ],
@@ -618,11 +735,15 @@ class _LineCard extends StatelessWidget {
     required this.line,
     required this.onQuantityChanged,
     required this.onRemove,
+    required this.onPriceTap,
   });
 
   final _LineDraft line;
   final ValueChanged<int> onQuantityChanged;
   final VoidCallback onRemove;
+
+  /// Ouvre la saisie d'un prix négocié pour cette ligne.
+  final VoidCallback onPriceTap;
 
   String get _priceTypeLabel => switch (line.priceTypeCode) {
         'detail' => 'Détail',
@@ -701,7 +822,18 @@ class _LineCard extends StatelessWidget {
                     onChanged: onQuantityChanged,
                   ),
                   const SizedBox(width: 12),
-                  Expanded(child: _buildPrice()),
+                  // Toute la zone du prix est tactile : viser un petit crayon
+                  // au pouce, debout dans un magasin, ne marche pas.
+                  Expanded(
+                    child: InkWell(
+                      onTap: line.loadingPrice ? null : onPriceTap,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                        child: _buildPrice(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -746,10 +878,18 @@ class _LineCard extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         AmountText(formatMoney(line.lineTotal), fontSize: 18),
-        if (_priceTypeLabel.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          StatusBadge(label: _priceTypeLabel, color: AppTheme.sky),
-        ],
+        const SizedBox(height: 4),
+        // Un prix négocié ne doit pas se confondre avec un tarif : le badge
+        // dit lequel des deux s'applique.
+        if (line.prixForce)
+          StatusBadge(label: 'Prix modifié', color: AppTheme.warning)
+        else if (_priceTypeLabel.isNotEmpty)
+          StatusBadge(label: _priceTypeLabel, color: AppTheme.sky)
+        else
+          const Text(
+            'Toucher pour fixer le prix',
+            style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+          ),
       ],
     );
   }
