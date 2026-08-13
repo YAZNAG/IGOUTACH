@@ -31,6 +31,13 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   List<ExpenseCategory> _categories = [];
   int? _categoryId;
 
+  /// Modes de règlement proposés quand la charge est payée sur-le-champ.
+  List<({int id, String name})> _modes = [];
+  int? _modeId;
+
+  /// Charge réglée immédiatement, ou portée au crédit et due.
+  bool _payee = true;
+
   WarehouseScope? _scope;
 
   DateTime _date = DateTime.now();
@@ -76,11 +83,22 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       final categories = data
           .map((e) => ExpenseCategory.fromJson(e as Map<String, dynamic>))
           .toList();
+      final resModes =
+          await _api.dio.get<Map<String, dynamic>>('/payment-methods');
+      final modes = (resModes.data!['data'] as List<dynamic>? ?? [])
+          .map((e) => (
+                id: (e as Map<String, dynamic>)['id'] as int,
+                name: e['name'] as String? ?? '',
+              ))
+          .toList();
+
       final scope = await WarehouseScope.load(userWarehouseId);
       if (!mounted) return;
       setState(() {
         _categories = categories;
         _categoryId = categories.isEmpty ? null : categories.first.id;
+        _modes = modes;
+        _modeId = modes.isEmpty ? null : modes.first.id;
         _scope = scope;
         _loading = false;
       });
@@ -121,6 +139,12 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       setState(() => _error = 'Sélectionnez une catégorie.');
       return;
     }
+    // Une charge déclarée payée sans mode de règlement ne se rapproche
+    // d'aucune caisse : le serveur la refuserait de toute façon.
+    if (_payee && _modeId == null) {
+      setState(() => _error = 'Sélectionnez le mode de paiement.');
+      return;
+    }
 
     setState(() {
       _saving = true;
@@ -136,6 +160,10 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
           'label': _label.text.trim(),
           'amount': double.parse(_amount.text.trim().replaceAll(',', '.')),
           'expense_date': apiDate(_date),
+          'payment_status': _payee ? 'paid' : 'unpaid',
+          // Sans règlement, aucun mode : l'envoyer laisserait croire que la
+          // charge a été payée.
+          if (_payee) 'payment_method_id': _modeId,
         },
       );
       if (!mounted) return;
@@ -248,6 +276,57 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
               return null;
             },
           ),
+          const SizedBox(height: 18),
+          // ── Règlement ────────────────────────────────────────────────
+          SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(
+                value: true,
+                label: Text('Payée'),
+                icon: Icon(Icons.payments_outlined),
+              ),
+              ButtonSegment(
+                value: false,
+                label: Text('À crédit'),
+                icon: Icon(Icons.schedule_outlined),
+              ),
+            ],
+            selected: {_payee},
+            onSelectionChanged: (choix) => setState(() {
+              _payee = choix.first;
+              _error = null;
+            }),
+          ),
+          const SizedBox(height: 12),
+          // Le mode n'apparaît que si la charge est réglée : le demander pour
+          // une charge à crédit reviendrait à faire saisir un règlement qui
+          // n'a pas eu lieu.
+          if (_payee)
+            DropdownButtonFormField<int>(
+              initialValue: _modeId,
+              decoration: const InputDecoration(
+                labelText: 'Mode de paiement *',
+                prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+              ),
+              items: _modes
+                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                  .toList(),
+              onChanged: (v) => setState(() => _modeId = v),
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.warningSoft,
+                borderRadius: BorderRadius.circular(AppTheme.radiusField),
+              ),
+              child: const Text(
+                'Cette charge restera due. Elle pourra être réglée plus tard '
+                'depuis la liste des charges.',
+                style: TextStyle(fontSize: 13, color: AppTheme.warning),
+              ),
+            ),
           const SizedBox(height: 18),
           InkWell(
             onTap: _pickDate,

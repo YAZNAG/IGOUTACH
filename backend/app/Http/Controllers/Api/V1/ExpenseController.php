@@ -132,6 +132,10 @@ final class ExpenseController extends Controller
             'expense_date' => $e->expense_date->format('Y-m-d'),
             'has_receipt' => $e->receipt_path !== null,
             'status' => $e->status,
+            // Réglée ou portée au crédit : sans cette information, une charge
+            // impayée serait indiscernable d'une charge réglée en espèces.
+            'payment_status' => $e->payment_status,
+            'paid_at' => $e->paid_at?->format('Y-m-d'),
         ]);
 
         return response()->json([
@@ -155,7 +159,17 @@ final class ExpenseController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'expense_date' => ['required', 'date'],
             'receipt' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            // Réglée sur-le-champ, ou portée au crédit et due.
+            'payment_status' => ['sometimes', 'in:paid,unpaid'],
+            // Exigé dès lors que la charge est déclarée payée : une charge
+            // réglée sans mode de règlement ne se rapproche d'aucune caisse.
+            'payment_method_id' => [
+                'nullable', 'integer', 'exists:payment_methods,id',
+                Rule::requiredIf(fn (): bool => $request->input('payment_status', 'paid') === 'paid'),
+            ],
         ]);
+
+        $reglee = ($data['payment_status'] ?? 'paid') === 'paid';
 
         $receiptPath = null;
         if ($request->hasFile('receipt')) {
@@ -173,9 +187,48 @@ final class ExpenseController extends Controller
             'expense_date' => $data['expense_date'],
             'receipt_path' => $receiptPath,
             'status' => Expense::STATUS_PENDING,
+            'payment_status' => $reglee ? 'paid' : 'unpaid',
+            // Le mode n'a de sens que sur une charge réglée : le conserver sur
+            // une charge à crédit laisserait croire qu'elle a été payée.
+            'payment_method_id' => $reglee ? ($data['payment_method_id'] ?? null) : null,
+            'paid_at' => $reglee ? $data['expense_date'] : null,
         ]);
 
-        return response()->json(['data' => ['id' => $expense->id]], 201);
+        return response()->json(['data' => [
+            'id' => $expense->id,
+            'payment_status' => $expense->payment_status,
+        ]], 201);
+    }
+
+    /**
+     * Règle une charge restée au crédit.
+     *
+     * Sans ce point, une charge portée au crédit n'aurait aucun moyen d'en
+     * sortir : la dette resterait ouverte indéfiniment.
+     */
+    public function pay(Request $request, Expense $expense): JsonResponse
+    {
+        /** @var array{payment_method_id: int, paid_at?: string} $data */
+        $data = $request->validate([
+            'payment_method_id' => ['required', 'integer', 'exists:payment_methods,id'],
+            'paid_at' => ['sometimes', 'date'],
+        ]);
+
+        if ($expense->payment_status === 'paid') {
+            return response()->json(['message' => 'Cette charge est déjà réglée.'], 422);
+        }
+
+        $expense->update([
+            'payment_status' => 'paid',
+            'payment_method_id' => $data['payment_method_id'],
+            'paid_at' => $data['paid_at'] ?? now()->toDateString(),
+        ]);
+
+        return response()->json(['data' => [
+            'id' => $expense->id,
+            'payment_status' => $expense->payment_status,
+            'paid_at' => $expense->paid_at?->toDateString(),
+        ]]);
     }
 
     public function decide(Request $request, Expense $expense): JsonResponse

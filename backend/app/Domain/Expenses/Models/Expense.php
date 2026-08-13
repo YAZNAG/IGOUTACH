@@ -40,6 +40,8 @@ final class Expense extends Model
         'label',
         'amount',
         'payment_method_id',
+        'payment_status',
+        'paid_at',
         'expense_date',
         'receipt_path',
         'status',
@@ -63,6 +65,7 @@ final class Expense extends Model
         return [
             'amount' => 'decimal:2',
             'expense_date' => 'date',
+            'paid_at' => 'date',
         ];
     }
 

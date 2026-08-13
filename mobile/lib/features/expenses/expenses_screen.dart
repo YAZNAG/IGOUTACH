@@ -341,6 +341,10 @@ class _ExpenseCard extends StatelessWidget {
               runSpacing: 4,
               children: [
                 StatusBadge(label: statusLabel, color: statusColor),
+                // Sans ce repère, une charge encore due serait indiscernable
+                // d'une charge réglée en espèces.
+                if (expense.estDue)
+                  const StatusBadge(label: 'À régler', color: AppTheme.warning),
                 if (expense.hasReceipt)
                   const StatusBadge(
                     label: 'Justificatif',

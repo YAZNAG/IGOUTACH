@@ -27,6 +27,8 @@ class Expense {
     this.expenseDate,
     required this.hasReceipt,
     required this.status,
+    this.paymentStatus = 'paid',
+    this.paidAt,
   });
 
   final int id;
@@ -43,7 +45,15 @@ class Expense {
   /// `pending`, `approved` ou `rejected`.
   final String status;
 
+  /// `paid` (réglée) ou `unpaid` (portée au crédit, encore due).
+  final String paymentStatus;
+
+  /// Date du règlement, au format `Y-m-d`.
+  final String? paidAt;
+
   bool get isPending => status == 'pending';
+
+  bool get estDue => paymentStatus == 'unpaid';
 
   factory Expense.fromJson(Map<String, dynamic> json) => Expense(
         id: json['id'] as int,
@@ -55,5 +65,7 @@ class Expense {
         expenseDate: json['expense_date'] as String?,
         hasReceipt: json['has_receipt'] == true,
         status: json['status'] as String? ?? 'pending',
+        paymentStatus: json['payment_status'] as String? ?? 'paid',
+        paidAt: json['paid_at'] as String?,
       );
 }

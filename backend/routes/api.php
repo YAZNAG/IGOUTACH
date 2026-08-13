@@ -326,6 +326,9 @@ Route::prefix('v1')->group(function () {
         Route::get('expenses', [ExpenseController::class, 'index'])->middleware('can:expense.create');
         Route::post('expenses', [ExpenseController::class, 'store'])->middleware('can:expense.create');
         Route::patch('expenses/{expense}/decide', [ExpenseController::class, 'decide'])->middleware('can:expense.approve');
+        // Règlement d'une charge restée au crédit : c'est un mouvement de
+        // trésorerie, il relève de la même autorité que la validation.
+        Route::post('expenses/{expense}/pay', [ExpenseController::class, 'pay'])->middleware('can:expense.approve');
 
         // Inventaires physiques (par lieu, avec date et régularisation)
         Route::get('inventories', [InventoryController::class, 'index'])->middleware('can:inventory.create');
