@@ -319,6 +319,10 @@ Route::prefix('v1')->group(function () {
         // Charges
         Route::get('expense-categories', [ExpenseController::class, 'categories'])->middleware('can:expense.create');
         Route::post('expense-categories', [ExpenseController::class, 'storeCategory'])->middleware('can:expense.approve');
+        // Modifier ou retirer un type engage tout l'historique des charges :
+        // même permission que la création.
+        Route::put('expense-categories/{expenseCategory}', [ExpenseController::class, 'updateCategory'])->middleware('can:expense.approve');
+        Route::delete('expense-categories/{expenseCategory}', [ExpenseController::class, 'destroyCategory'])->middleware('can:expense.approve');
         Route::get('expenses', [ExpenseController::class, 'index'])->middleware('can:expense.create');
         Route::post('expenses', [ExpenseController::class, 'store'])->middleware('can:expense.create');
         Route::patch('expenses/{expense}/decide', [ExpenseController::class, 'decide'])->middleware('can:expense.approve');

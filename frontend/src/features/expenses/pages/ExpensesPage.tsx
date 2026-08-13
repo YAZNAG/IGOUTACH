@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Plus, X } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -177,7 +178,6 @@ function CreateExpensePanel({ onClose }: { onClose: () => void }) {
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const [categoryId, setCategoryId] = useState(0)
-  const [newCategory, setNewCategory] = useState('')
   const [warehouseId, setWarehouseId] = useState(0)
   const [label, setLabel] = useState('')
   const [amount, setAmount] = useState('')
@@ -189,19 +189,6 @@ function CreateExpensePanel({ onClose }: { onClose: () => void }) {
     queryFn: async () => {
       const { data: r } = await api.get<{ data: CategoryOption[] }>('/expense-categories')
       return r.data
-    },
-  })
-
-  const addCategory = useMutation({
-    mutationFn: async () => {
-      await ensureCsrfCookie()
-      const { data: r } = await api.post<{ data: CategoryOption }>('/expense-categories', { name: newCategory })
-      return r.data
-    },
-    onSuccess: (created) => {
-      setNewCategory('')
-      setCategoryId(created.id)
-      qc.invalidateQueries({ queryKey: ['expense-categories'] })
     },
   })
 
@@ -228,19 +215,21 @@ function CreateExpensePanel({ onClose }: { onClose: () => void }) {
       <CardHeader title="Nouvelle charge" />
       <CardBody className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Catégorie" htmlFor="exp-category">
+          <Field label="Type de charge" htmlFor="exp-category">
             <div className="space-y-1">
               <Select id="exp-category" value={categoryId || ''} onChange={(e) => setCategoryId(Number(e.target.value))}>
                 <option value="" disabled>Choisir…</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Select>
+              {/* La création se fait dans Paramètres › Types de charge. Deux
+                  endroits pour alimenter le même référentiel finissaient par
+                  produire des doublons au fil des saisies. */}
               {can('expense.approve') ? (
-                <div className="flex gap-1">
-                  <Input placeholder="Nouvelle catégorie…" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
-                  <Button variant="outline" size="sm" onClick={() => addCategory.mutate()} disabled={addCategory.isPending || newCategory.trim() === ''}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                <p className="text-xs text-muted">
+                  <Link to="/parametres/types-charge" className="underline">
+                    Gérer les types de charge
+                  </Link>
+                </p>
               ) : null}
             </div>
           </Field>

@@ -6,9 +6,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Expenses\Models\Expense;
 use App\Domain\Expenses\Models\ExpenseCategory;
+use App\Domain\Expenses\Models\RecurringExpense;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\UploadedFile;
 use App\Rules\WarehouseAccessible;
 
@@ -18,12 +20,78 @@ use App\Rules\WarehouseAccessible;
  */
 final class ExpenseController extends Controller
 {
-    public function categories(): JsonResponse
+    /**
+     * Types de charge.
+     *
+     * Par défaut seuls les types actifs sont renvoyés : ce sont les listes
+     * déroulantes de saisie qui appellent ce point, et proposer un type retiré
+     * du service ferait ressurgir ce qu'on venait d'écarter. L'écran de
+     * paramétrage, lui, demande explicitement les inactifs pour pouvoir les
+     * réactiver.
+     */
+    public function categories(Request $request): JsonResponse
     {
+        $avecInactifs = $request->boolean('with_inactive');
+
         return response()->json(['data' => ExpenseCategory::query()
-            ->where('is_active', true)
+            ->when(! $avecInactifs, fn ($q) => $q->where('is_active', true))
             ->orderBy('name')
-            ->get(['id', 'name'])]);
+            ->get(['id', 'name', 'is_active'])]);
+    }
+
+    /**
+     * Renomme un type de charge ou le retire du service.
+     *
+     * Renommer n'a aucun effet sur les charges déjà saisies : elles pointent
+     * sur l'identifiant, pas sur le libellé.
+     */
+    public function updateCategory(Request $request, ExpenseCategory $expenseCategory): JsonResponse
+    {
+        /** @var array{name?: string, is_active?: bool} $data */
+        $data = $request->validate([
+            'name' => [
+                'sometimes', 'string', 'max:120',
+                Rule::unique('expense_categories', 'name')->ignore($expenseCategory->id),
+            ],
+            'is_active' => ['sometimes', 'boolean'],
+        ]);
+
+        $expenseCategory->update($data);
+
+        return response()->json(['data' => [
+            'id' => $expenseCategory->id,
+            'name' => $expenseCategory->name,
+            'is_active' => $expenseCategory->is_active,
+        ]]);
+    }
+
+    /**
+     * Supprime un type de charge, à condition qu'aucune écriture ne s'y
+     * rattache.
+     *
+     * Supprimer un type déjà utilisé laisserait des charges orphelines et
+     * fausserait les totaux par type sur tout l'historique. Dans ce cas on
+     * propose la désactivation : le type disparaît des listes de saisie sans
+     * amputer le passé.
+     */
+    public function destroyCategory(ExpenseCategory $expenseCategory): JsonResponse
+    {
+        $charges = Expense::query()->where('expense_category_id', $expenseCategory->id)->count();
+        $recurrentes = RecurringExpense::query()->where('expense_category_id', $expenseCategory->id)->count();
+
+        if ($charges > 0 || $recurrentes > 0) {
+            return response()->json([
+                'message' => sprintf(
+                    'Ce type est utilisé par %d charge(s) et %d charge(s) fixe(s) : il ne peut pas être supprimé. Désactivez-le pour le retirer des listes.',
+                    $charges,
+                    $recurrentes,
+                ),
+            ], 422);
+        }
+
+        $expenseCategory->delete();
+
+        return response()->json(null, 204);
     }
 
     public function storeCategory(Request $request): JsonResponse

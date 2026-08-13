@@ -1,4 +1,4 @@
-import { Bookmark, Building2, CreditCard, Database, Hash, Percent, Ruler, type LucideIcon } from 'lucide-react'
+import { Bookmark, Building2, CreditCard, Database, Hash, Percent, Ruler, Tags, type LucideIcon } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { usePermission } from '@/hooks/usePermission'
 import { cn } from '@/lib/utils'
@@ -16,6 +16,7 @@ const SUB_LINKS: SubLink[] = [
   { label: 'Unités', to: '/parametres/unites', icon: Ruler, permission: 'unit.view' },
   { label: 'Marques', to: '/parametres/marques', icon: Bookmark, permission: 'brand.view' },
   { label: 'Modes de paiement', to: '/parametres/paiements', icon: CreditCard, permission: 'payment_method.view' },
+  { label: 'Types de charge', to: '/parametres/types-charge', icon: Tags, permission: 'expense.create' },
   { label: 'Numérotation', to: '/parametres/numerotation', icon: Hash, permission: 'settings.view' },
   { label: 'Sauvegarde', to: '/parametres/sauvegarde', icon: Database, permission: 'system.backup' },
 ]

@@ -30,6 +30,7 @@ import { SessionsPage } from '@/features/sessions'
 import {
   BackupPage,
   DocumentSequencesPage,
+  ExpenseCategoriesPage,
   GeneralSettingsPage,
   ParametresLayout,
   PaymentMethodsPage,
@@ -117,6 +118,7 @@ export const router = createBrowserRouter([
               { path: 'unites', element: <UnitsPage /> },
               { path: 'marques', element: <BrandsPage /> },
               { path: 'paiements', element: <PaymentMethodsPage /> },
+              { path: 'types-charge', element: <ExpenseCategoriesPage /> },
               { path: 'numerotation', element: <DocumentSequencesPage /> },
               { path: 'sauvegarde', element: <BackupPage /> },
             ],
