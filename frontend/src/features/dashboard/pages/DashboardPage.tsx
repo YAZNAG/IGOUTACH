@@ -4,6 +4,7 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 import { ChartCard } from '../components/ChartCard'
 import { MonthlyFlowChart } from '../components/MonthlyFlowChart'
 import { PaymentMixChart } from '../components/PaymentMixChart'
+import { RankedList } from '../components/RankedList'
 import { SalesTrendChart } from '../components/SalesTrendChart'
 import { StatTile } from '../components/StatTile'
 import { StockByWarehouseChart } from '../components/StockByWarehouseChart'
@@ -134,6 +135,46 @@ export function DashboardPage() {
         >
           <StockByWarehouseChart data={data.stock_by_warehouse} />
         </ChartCard>
+      </div>
+
+      {/* Le chiffre d'affaires sous ses trois angles : où l'on vend, à qui
+          l'on vend, et à qui l'on achète. Lus ensemble, ils disent d'où vient
+          l'argent et où il repart. */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <RankedList
+          title="Chiffre d'affaires par lieu"
+          hint="30 derniers jours."
+          barClassName="bg-brand"
+          rows={data.revenue_by_warehouse.map((row) => ({
+            name: `${row.warehouse} · ${row.name}`,
+            value: row.revenue,
+            detail: `${formatNumber(row.count)} vente(s)`,
+          }))}
+        />
+        <RankedList
+          title="Meilleurs clients"
+          hint="30 derniers jours, avec l'encours actuel."
+          barClassName="bg-ok"
+          rows={data.top_customers.map((row) => ({
+            name: row.name,
+            value: row.revenue,
+            detail: `${formatNumber(row.count)} facture(s)`,
+            note: row.balance > 0 ? `${formatCurrency(row.balance)} dû` : undefined,
+            noteTone: 'bad' as const,
+          }))}
+        />
+        <RankedList
+          title="Principaux fournisseurs"
+          hint="Achats des 30 derniers jours, et reste à payer."
+          barClassName="bg-warn"
+          rows={data.top_suppliers.map((row) => ({
+            name: row.name,
+            value: row.purchases,
+            detail: `${formatNumber(row.count)} réception(s)`,
+            note: row.due > 0 ? `${formatCurrency(row.due)} à payer` : undefined,
+            noteTone: 'bad' as const,
+          }))}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

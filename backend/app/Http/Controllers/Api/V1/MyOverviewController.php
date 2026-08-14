@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Expenses\Models\Expense;
+use App\Domain\Sales\Models\CashRemittance;
+use App\Domain\Sales\Models\CashSession;
 use App\Domain\Sales\Models\Sale;
+use App\Domain\Sales\Services\CashBoxService;
 use App\Http\Controllers\Controller;
 use App\Support\Scopes\WarehouseScope;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +43,12 @@ final class MyOverviewController extends Controller
             'stock' => $this->stock($lieu),
             'receivables' => $this->creances($lieu),
             'expenses_month' => $this->charges($lieu, $debutMois, $aujourdhui),
+            'expenses_today' => $this->charges($lieu, $aujourdhui, $aujourdhui),
+            // Le détail de la journée : c'est ce que le responsable a sous les
+            // yeux quand il fait ses comptes le soir.
+            'today_sales' => $this->ventesDuJour($lieu, $aujourdhui),
+            'today_expenses' => $this->chargesDuJour($lieu, $aujourdhui),
+            'cash' => $this->caisse($lieu),
             'top_products' => $this->meilleuresVentes($lieu, $debutMois),
             'daily' => $this->serieJournaliere($lieu, 14),
             'pending' => $this->aTraiter($lieu),
@@ -149,6 +158,91 @@ final class MyOverviewController extends Controller
             ->whereDate('expense_date', '>=', $du->toDateString())
             ->whereDate('expense_date', '<=', $au->toDateString())
             ->sum('amount'), 2);
+    }
+
+    /**
+     * Ventes confirmées de la journée, la dernière en tête.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function ventesDuJour(?int $lieu, Carbon $jour): array
+    {
+        return Sale::withoutGlobalScopes()
+            ->with('customer:id,name')
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->when($lieu !== null, fn ($q) => $q->where('warehouse_id', $lieu))
+            ->whereDate('confirmed_at', $jour->toDateString())
+            ->orderByDesc('confirmed_at')
+            ->limit(30)
+            ->get()
+            ->map(fn (Sale $s): array => [
+                'id' => $s->id,
+                'reference' => $s->reference,
+                'customer' => $s->customer?->name,
+                'total' => round((float) $s->total, 2),
+                'paid_amount' => round((float) $s->paid_amount, 2),
+                'payment_status' => $s->payment_status,
+                'time' => $s->confirmed_at?->format('H:i'),
+            ])->all();
+    }
+
+    /**
+     * Charges de la journée, la dernière en tête.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function chargesDuJour(?int $lieu, Carbon $jour): array
+    {
+        return Expense::withoutGlobalScopes()
+            ->with('category:id,name')
+            ->when($lieu !== null, fn ($q) => $q->where('warehouse_id', $lieu))
+            ->whereDate('expense_date', $jour->toDateString())
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get()
+            ->map(fn (Expense $e): array => [
+                'id' => $e->id,
+                'label' => $e->label,
+                'category' => $e->category?->name,
+                'amount' => round((float) $e->amount, 2),
+                'payment_status' => $e->payment_status,
+                'status' => $e->status,
+            ])->all();
+    }
+
+    /**
+     * État du tiroir : fonds, entrées, sorties, solde attendu.
+     *
+     * Null pour la direction, qui n'a pas de caisse propre : le consolidé de
+     * plusieurs tiroirs ne veut rien dire quand on cherche à savoir combien il
+     * y a dans celui d'en face.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function caisse(?int $lieu): ?array
+    {
+        if ($lieu === null) {
+            return null;
+        }
+
+        $session = CashSession::withoutGlobalScopes()
+            ->where('warehouse_id', $lieu)
+            ->where('status', CashSession::STATUS_OPEN)
+            ->latest('id')
+            ->first();
+
+        $solde = app(CashBoxService::class)->solde($lieu, $session);
+
+        return [
+            'session_open' => $session !== null,
+            'opened_at' => $session?->opened_at?->format('Y-m-d H:i'),
+            ...$solde,
+            'pending_remittances' => round((float) CashRemittance::withoutGlobalScopes()
+                ->where('warehouse_id', $lieu)
+                ->where('status', CashRemittance::STATUS_PENDING)
+                ->sum('amount'), 2),
+        ];
     }
 
     /**

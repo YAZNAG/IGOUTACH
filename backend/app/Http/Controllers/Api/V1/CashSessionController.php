@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Sales\Models\CashSession;
+use App\Domain\Sales\Services\CashBoxService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Rules\WarehouseAccessible;
 
 /**
@@ -40,16 +40,24 @@ final class CashSessionController extends Controller
     /**
      * Session ouverte pour un lieu (au plus une à la fois).
      */
-    public function current(Request $request): JsonResponse
+    public function current(Request $request, CashBoxService $caisse): JsonResponse
     {
+        $lieu = $request->integer('warehouse_id');
+
         $session = CashSession::query()
             ->with(['warehouse:id,code', 'opener:id,name'])
-            ->where('warehouse_id', $request->integer('warehouse_id'))
+            ->where('warehouse_id', $lieu)
             ->where('status', CashSession::STATUS_OPEN)
             ->latest('id')
             ->first();
 
-        return response()->json(['data' => $session !== null ? $this->serialize($session) : null]);
+        // Le solde accompagne toujours la session, meme absente : sans caisse
+        // ouverte, le responsable voit quand meme ce qui est passe par ses
+        // mains aujourd'hui.
+        return response()->json([
+            'data' => $session !== null ? $this->serialize($session) : null,
+            'cash' => $lieu > 0 ? $caisse->solde($lieu, $session) : null,
+        ]);
     }
 
     public function open(Request $request): JsonResponse
@@ -80,7 +88,7 @@ final class CashSessionController extends Controller
         return response()->json(['data' => $this->serialize($session->load(['warehouse:id,code', 'opener:id,name']))], 201);
     }
 
-    public function close(Request $request, CashSession $cashSession): JsonResponse
+    public function close(Request $request, CashSession $cashSession, CashBoxService $caisse): JsonResponse
     {
         /** @var array{closing_amount: float} $data */
         $data = $request->validate([
@@ -91,12 +99,12 @@ final class CashSessionController extends Controller
             return response()->json(['message' => 'Session déjà clôturée.'], 422);
         }
 
-        // Attendu = fonds d'ouverture + encaissements rattachés à la session.
-        $collected = (float) DB::table('payments')
-            ->where('cash_session_id', $cashSession->id)
-            ->sum('amount');
+        // L'attendu tient compte des sorties : charges payées de la main à la
+        // main et remises faites à l'administration. Ne compter que les
+        // entrées produisait un écart permanent, inexplicable.
+        $solde = $caisse->solde((int) $cashSession->warehouse_id, $cashSession);
 
-        $expected = round((float) $cashSession->opening_amount + $collected, 2);
+        $expected = $solde['expected'];
         $difference = round((float) $data['closing_amount'] - $expected, 2);
 
         $cashSession->update([

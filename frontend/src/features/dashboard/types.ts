@@ -39,6 +39,30 @@ export interface TopProductRow {
   revenue: number
 }
 
+/** Chiffre d'affaires realise par un lieu. */
+export interface WarehouseRevenueRow {
+  warehouse: string
+  name: string
+  count: number
+  revenue: number
+}
+
+/** Un client, ce qu'il a achete et ce qu'il doit encore. */
+export interface TopCustomerRow {
+  name: string
+  count: number
+  revenue: number
+  balance: number
+}
+
+/** Un fournisseur, ce qu'on lui a achete et ce qu'on lui doit. */
+export interface TopSupplierRow {
+  name: string
+  count: number
+  purchases: number
+  due: number
+}
+
 export interface PaymentMixRow {
   status: 'paid' | 'partial' | 'unpaid'
   label: string
@@ -60,6 +84,9 @@ export interface DashboardData {
   monthly_flow: MonthlyFlowPoint[]
   stock_by_warehouse: WarehouseStockRow[]
   top_products: TopProductRow[]
+  revenue_by_warehouse: WarehouseRevenueRow[]
+  top_customers: TopCustomerRow[]
+  top_suppliers: TopSupplierRow[]
   payment_mix: PaymentMixRow[]
   stock: ConsolidatedStockRow[]
 }

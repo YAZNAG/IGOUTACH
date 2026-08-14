@@ -160,6 +160,102 @@ final class DashboardMetricsService
     }
 
     /**
+     * Chiffre d'affaires par lieu de vente.
+     *
+     * La valeur du stock dit ce qu'un lieu détient ; celle-ci dit ce qu'il
+     * rapporte. Un dépôt bien garni qui ne vend rien ne se voit que sur ce
+     * chiffre-là.
+     *
+     * @return list<array{warehouse: string, name: string, count: int, revenue: float}>
+     */
+    public function revenueByWarehouse(int $days = 30): array
+    {
+        $from = Carbon::today()->subDays($days - 1);
+
+        return DB::table('sales')
+            ->join('warehouses', 'warehouses.id', '=', 'sales.warehouse_id')
+            ->selectRaw('warehouses.code as code, warehouses.name as nom, COUNT(*) as nb, SUM(sales.total) as ca')
+            ->where('sales.type', Sale::TYPE_INVOICE)
+            ->where('sales.status', Sale::STATUS_CONFIRMED)
+            ->where('sales.confirmed_at', '>=', $from)
+            ->groupBy('warehouses.id', 'warehouses.code', 'warehouses.name')
+            ->orderByDesc('ca')
+            ->get()
+            ->map(fn ($row) => [
+                'warehouse' => (string) $row->code,
+                'name' => (string) $row->nom,
+                'count' => (int) $row->nb,
+                'revenue' => round((float) $row->ca, 2),
+            ])
+            ->all();
+    }
+
+    /**
+     * Meilleurs clients sur la période, avec ce qu'ils doivent encore.
+     *
+     * @return list<array{name: string, count: int, revenue: float, balance: float}>
+     */
+    public function topCustomers(int $days = 30, int $limit = 8): array
+    {
+        $from = Carbon::today()->subDays($days - 1);
+
+        return DB::table('sales')
+            ->join('customers', 'customers.id', '=', 'sales.customer_id')
+            ->selectRaw('customers.name as nom, customers.balance as encours, COUNT(*) as nb, SUM(sales.total) as ca')
+            ->where('sales.type', Sale::TYPE_INVOICE)
+            ->where('sales.status', Sale::STATUS_CONFIRMED)
+            ->where('sales.confirmed_at', '>=', $from)
+            ->groupBy('customers.id', 'customers.name', 'customers.balance')
+            ->orderByDesc('ca')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => (string) $row->nom,
+                'count' => (int) $row->nb,
+                'revenue' => round((float) $row->ca, 2),
+                'balance' => round((float) $row->encours, 2),
+            ])
+            ->all();
+    }
+
+    /**
+     * Achats par fournisseur sur la période, et ce qu'on leur doit.
+     *
+     * Le pendant des meilleurs clients : d'un côté ce qui rentre, de l'autre
+     * ce qui sort. Les deux se lisent ensemble.
+     *
+     * @return list<array{name: string, count: int, purchases: float, due: float}>
+     */
+    public function topSuppliers(int $days = 30, int $limit = 8): array
+    {
+        $from = Carbon::today()->subDays($days - 1);
+
+        $total = DB::table('goods_receipt_lines')
+            ->selectRaw('COALESCE(SUM(quantity * unit_price), 0)')
+            ->whereColumn('goods_receipt_id', 'goods_receipts.id');
+
+        return DB::table('goods_receipts')
+            ->join('suppliers', 'suppliers.id', '=', 'goods_receipts.supplier_id')
+            ->selectRaw('suppliers.name as nom, COUNT(*) as nb')
+            ->selectSub("SUM(({$total->toSql()}))", 'achats')
+            ->selectSub("SUM(({$total->toSql()}) - goods_receipts.amount_paid)", 'reste')
+            ->mergeBindings($total)
+            ->mergeBindings($total)
+            ->where('goods_receipts.received_at', '>=', $from)
+            ->groupBy('suppliers.id', 'suppliers.name')
+            ->orderByDesc('achats')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => (string) $row->nom,
+                'count' => (int) $row->nb,
+                'purchases' => round((float) $row->achats, 2),
+                'due' => round(max(0, (float) $row->reste), 2),
+            ])
+            ->all();
+    }
+
+    /**
      * Répartition des ventes confirmées par état de règlement.
      *
      * @return list<array{status: string, label: string, count: int, amount: float}>

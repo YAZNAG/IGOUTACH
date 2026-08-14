@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth_provider.dart';
 import '../../core/theme.dart';
+import '../cash/cash_screen.dart';
 import '../expenses/expenses_screen.dart';
 import '../inventory/inventories_screen.dart';
 import '../pricing/pricing_screen.dart';
@@ -113,6 +114,13 @@ class PlusScreen extends StatelessWidget {
         sousTitre: 'Reprendre une marchandise vendue',
         permission: 'sale.return',
         page: () => const CustomerReturnScreen(),
+      ),
+      _Entree(
+        icone: Icons.savings_outlined,
+        titre: 'Caisse',
+        sousTitre: 'Fonds de départ, solde et remises à l’administration',
+        permission: 'payment.create',
+        page: () => const CashScreen(),
       ),
       _Entree(
         icone: Icons.account_balance_wallet_outlined,

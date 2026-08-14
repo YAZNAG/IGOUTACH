@@ -29,6 +29,13 @@ class _CashScreenState extends State<CashScreen> {
   bool _loadingScope = true;
 
   CashSession? _current;
+
+  /// Detail du solde renvoye avec la session : fonds, entrees, sorties.
+  Map<String, dynamic>? _solde;
+
+  /// Remises declarees par ce lieu.
+  List<Map<String, dynamic>> _remises = [];
+
   List<CashSession> _history = [];
   int _page = 0;
   int _lastPage = 1;
@@ -80,18 +87,41 @@ class _CashScreenState extends State<CashScreen> {
         queryParameters: {'warehouse_id': _warehouseId},
       );
       final currentData = current.data!['data'] as Map<String, dynamic>?;
+      final soldeData = current.data!['cash'] as Map<String, dynamic>?;
 
-      final list = await _api.dio.get<Map<String, dynamic>>(
-        '/cash-sessions',
-        queryParameters: {'warehouse_id': _warehouseId, 'page': 1},
-      );
-      final data = list.data!['data'] as List<dynamic>? ?? [];
-      final meta = list.data!['meta'] as Map<String, dynamic>? ?? {};
+      // L'historique et les remises dependent de droits distincts : un refus
+      // sur l'un ne doit pas priver l'utilisateur de l'autre, ni de sa caisse.
+      List<dynamic> data = [];
+      Map<String, dynamic> meta = {};
+      try {
+        final list = await _api.dio.get<Map<String, dynamic>>(
+          '/cash-sessions',
+          queryParameters: {'warehouse_id': _warehouseId, 'page': 1},
+        );
+        data = list.data!['data'] as List<dynamic>? ?? [];
+        meta = list.data!['meta'] as Map<String, dynamic>? ?? {};
+      } catch (_) {
+        data = [];
+      }
+
+      List<Map<String, dynamic>> remises = [];
+      try {
+        final res = await _api.dio.get<Map<String, dynamic>>(
+          '/cash-remittances',
+          queryParameters: {'warehouse_id': _warehouseId},
+        );
+        remises = ((res.data!['data'] as List<dynamic>? ?? []))
+            .cast<Map<String, dynamic>>();
+      } catch (_) {
+        remises = [];
+      }
 
       if (!mounted) return;
       setState(() {
         _current =
             currentData == null ? null : CashSession.fromJson(currentData);
+        _solde = soldeData;
+        _remises = remises;
         _history = data
             .map((e) => CashSession.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -165,6 +195,82 @@ class _CashScreenState extends State<CashScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
+      messenger.showSnackBar(SnackBar(
+        content: Text(friendlyError(e)),
+        backgroundColor: AppTheme.danger,
+      ));
+    }
+  }
+
+  /// Remet une partie du tiroir à l'administration.
+  ///
+  /// Le montant proposé par défaut est le solde entier : c'est le geste
+  /// courant en fin de journée. Le serveur refuse toute somme supérieure à
+  /// ce que la caisse contient.
+  Future<void> _remettre() async {
+    final solde = (_solde?['expected'] as num?)?.toDouble() ?? 0;
+
+    final montant = await _askAmount(
+      title: 'Remettre à l\'administration',
+      label: 'Montant remis (DH)',
+      helper: 'Solde actuel de la caisse : ${formatMoney(solde)}.',
+      action: 'Remettre',
+      initial: solde > 0 ? solde : null,
+    );
+    if (montant == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final res = await _api.dio.post<Map<String, dynamic>>(
+        '/cash-remittances',
+        data: {'warehouse_id': _warehouseId, 'amount': montant},
+      );
+      final reference =
+          (res.data!['data'] as Map<String, dynamic>)['reference'] as String? ?? '';
+      if (!mounted) return;
+      setState(() => _busy = false);
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          'Remise $reference enregistrée. '
+          'Elle reste en attente jusqu\'à confirmation de l\'administration.',
+        ),
+        backgroundColor: AppTheme.success,
+      ));
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      messenger.showSnackBar(SnackBar(
+        content: Text(friendlyError(e)),
+        backgroundColor: AppTheme.danger,
+      ));
+    }
+  }
+
+  /// Annule une remise déclarée par erreur, tant qu'elle n'est pas confirmée.
+  Future<void> _annulerRemise(Map<String, dynamic> remise) async {
+    final confirme = await confirmAction(
+      context,
+      icon: Icons.delete_outline,
+      title: 'Annuler la remise',
+      message: '${remise['reference']} · '
+          '${formatMoney((remise['amount'] as num).toDouble())}\n\n'
+          'La somme reviendra au solde de la caisse.',
+      confirmLabel: 'Annuler la remise',
+      confirmColor: AppTheme.danger,
+    );
+    if (!confirme || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await _api.dio.delete<Map<String, dynamic>>(
+        '/cash-remittances/${remise['id']}',
+      );
+      if (!mounted) return;
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
       messenger.showSnackBar(SnackBar(
         content: Text(friendlyError(e)),
         backgroundColor: AppTheme.danger,
@@ -272,8 +378,11 @@ class _CashScreenState extends State<CashScreen> {
     required String label,
     required String helper,
     required String action,
+    double? initial,
   }) {
-    final controller = TextEditingController();
+    final controller = TextEditingController(
+      text: initial == null ? '' : initial.toStringAsFixed(2),
+    );
     final formKey = GlobalKey<FormState>();
 
     return showDialog<double>(
@@ -328,7 +437,9 @@ class _CashScreenState extends State<CashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!context.watch<AuthProvider>().can('cash.manage')) {
+    // Tenir une caisse ne suppose pas de savoir l'administrer : celui qui
+    // encaisse doit pouvoir consulter son tiroir et remettre son solde.
+    if (!context.watch<AuthProvider>().can('payment.create')) {
       return const NotAllowedView();
     }
 
@@ -370,6 +481,8 @@ class _CashScreenState extends State<CashScreen> {
                         padding: const EdgeInsets.only(top: 8, bottom: 32),
                         children: [
                           _buildCurrentCard(),
+                          _carteSolde(),
+                          _blocRemises(),
                           const Padding(
                             padding: EdgeInsets.fromLTRB(16, 20, 16, 6),
                             child: Text(
@@ -418,6 +531,160 @@ class _CashScreenState extends State<CashScreen> {
     );
   }
 
+  /// Le solde du tiroir, décomposé.
+  ///
+  /// Un responsable qui ne tombe pas juste doit pouvoir dire où l'écart se
+  /// trouve. Le total seul ne le permet pas.
+  Widget _carteSolde() {
+    final solde = _solde;
+    if (solde == null) return const SizedBox.shrink();
+
+    double v(String cle) => (solde[cle] as num?)?.toDouble() ?? 0;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'SOLDE DE LA CAISSE',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.1,
+                color: AppTheme.navy,
+              ),
+            ),
+            const SizedBox(height: 10),
+            _KeyValue(label: 'Fonds de départ', value: formatMoney(v('opening'))),
+            _KeyValue(
+              label: 'Encaissements en espèces',
+              value: '+ ${formatMoney(v('cash_in'))}',
+            ),
+            _KeyValue(
+              label: 'Charges payées en espèces',
+              value: '− ${formatMoney(v('cash_expenses'))}',
+            ),
+            _KeyValue(
+              label: 'Remis à l\'administration',
+              value: '− ${formatMoney(v('remitted'))}',
+            ),
+            const Divider(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'À avoir en caisse',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  formatMoney(v('expected')),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.navy,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Chèques et virements ne passent pas par le tiroir : ils ne '
+              'sont pas comptés ici.',
+              style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+            ),
+            if (context.read<AuthProvider>().can('cash.remit')) ...[
+              const SizedBox(height: 14),
+              FilledButton.icon(
+                onPressed: _busy || v('expected') <= 0 ? null : _remettre,
+                icon: const Icon(Icons.upload_outlined, size: 18),
+                label: const Text('Remettre à l\'administration'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Les remises faites par ce lieu, et où elles en sont.
+  Widget _blocRemises() {
+    if (_remises.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'REMISES À L\'ADMINISTRATION',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                  color: AppTheme.navy,
+                ),
+              ),
+              const SizedBox(height: 4),
+              ..._remises.take(10).map(_ligneRemise),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _ligneRemise(Map<String, dynamic> remise) {
+    final confirmee = remise['status'] == 'received';
+    final montant = (remise['amount'] as num?)?.toDouble() ?? 0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  remise['reference'] as String? ?? '',
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  confirmee
+                      ? 'Reçue par ${remise['received_by'] ?? "l'administration"}'
+                      : 'En attente de confirmation',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: confirmee ? AppTheme.success : AppTheme.warning,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            formatMoney(montant),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          if (!confirmee)
+            IconButton(
+              icon: const Icon(Icons.close, size: 18, color: AppTheme.danger),
+              tooltip: 'Annuler la remise',
+              onPressed: () => _annulerRemise(remise),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCurrentCard() {
     final session = _current;
 
@@ -448,6 +715,14 @@ class _CashScreenState extends State<CashScreen> {
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 16),
+              // Ouvrir la caisse est un droit à part : proposer le bouton à
+              // qui ne l'a pas ne mènerait qu'à un refus du serveur.
+              if (!context.watch<AuthProvider>().can('cash.open'))
+                const Text(
+                  'L\'ouverture de la caisse est réservée au responsable du lieu.',
+                  style: TextStyle(fontSize: 12.5, color: AppTheme.textMuted),
+                )
+              else
               FilledButton.icon(
                 onPressed: _busy ? null : _open,
                 icon: _busy
@@ -516,11 +791,12 @@ class _CashScreenState extends State<CashScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Le cumul des encaissements de la session est calculé par le '
-              'serveur au moment de la clôture.',
+              'Le détail du solde figure ci-dessous : fonds, encaissements en '
+              'espèces, charges réglées et remises.',
               style: TextStyle(color: Colors.white70, fontSize: 11),
             ),
             const SizedBox(height: 16),
+            if (context.watch<AuthProvider>().can('cash.manage'))
             FilledButton.icon(
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,

@@ -6,6 +6,10 @@ import '../../core/theme.dart';
 import '../../core/ui/skeletons.dart';
 import '../../core/ui/states.dart';
 import '../../models/lieu_overview.dart';
+import '../cash/cash_screen.dart';
+import '../expenses/expenses_screen.dart';
+import '../sales/sale_detail_screen.dart';
+import '../sales/sales_screen.dart';
 
 /// Accueil du responsable : son lieu, rien d'autre.
 ///
@@ -72,9 +76,21 @@ class _AccueilResponsableScreenState extends State<AccueilResponsableScreen> {
                 children: [
                   _EnTete(code: d.lieuCode, nom: d.lieuNom),
                   const SizedBox(height: 14),
-                  _CarteValeurStock(stock: d.stock),
-                  const SizedBox(height: 12),
+                  // La caisse d'abord : c'est la question du soir, celle qui
+                  // se règle avec l'administration.
+                  if (d.caisse != null) ...[
+                    _CarteCaisse(caisse: d.caisse!, onChange: _rafraichir),
+                    const SizedBox(height: 12),
+                  ],
                   _VentesDuJour(jour: d.jour, mois: d.mois),
+                  const SizedBox(height: 12),
+                  _JourneeDetail(
+                    ventes: d.ventesDuJour,
+                    charges: d.chargesDuJour,
+                    totalCharges: d.chargesJour,
+                  ),
+                  const SizedBox(height: 12),
+                  _CarteValeurStock(stock: d.stock),
                   const SizedBox(height: 12),
                   if (d.aTraiter.total > 0) ...[
                     _ATraiterCarte(aTraiter: d.aTraiter),
@@ -188,6 +204,358 @@ class _CarteValeurStock extends StatelessWidget {
             style: const TextStyle(fontSize: 12, color: Colors.white70),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Caisse ─────────────────────────────────────────────────────────────────
+
+/// Ce qu'il doit y avoir dans le tiroir, et comment on en sort.
+///
+/// Le solde est décomposé : fonds, entrées, sorties. Un responsable qui ne
+/// tombe pas juste doit pouvoir dire où l'écart se trouve, pas seulement
+/// qu'il existe.
+class _CarteCaisse extends StatelessWidget {
+  const _CarteCaisse({required this.caisse, required this.onChange});
+
+  final Caisse caisse;
+  final Future<void> Function() onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.navy,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.point_of_sale_outlined, size: 16, color: Colors.white70),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: Text(
+                  'Solde de la caisse',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: caisse.sessionOuverte
+                      ? AppTheme.success.withValues(alpha: 0.22)
+                      : Colors.white24,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  caisse.sessionOuverte ? 'Ouverte' : 'Non ouverte',
+                  style: const TextStyle(fontSize: 10.5, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            formatMoney(caisse.solde),
+            style: const TextStyle(
+              fontSize: 27,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.6,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _Poste(libelle: 'Fonds', valeur: caisse.fonds),
+              _Poste(libelle: 'Entrées', valeur: caisse.entrees, signe: '+'),
+              _Poste(libelle: 'Charges', valeur: caisse.chargesEspeces, signe: '−'),
+              _Poste(libelle: 'Remis', valeur: caisse.remises, signe: '−'),
+            ],
+          ),
+          if (caisse.remisesEnAttente > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${formatMoney(caisse.remisesEnAttente)} en attente de confirmation '
+              'par l\'administration.',
+              style: const TextStyle(fontSize: 11, color: Colors.white70),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await Navigator.of(context).push<void>(
+                      MaterialPageRoute(builder: (_) => const CashScreen()),
+                    );
+                    await onChange();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white38),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  icon: const Icon(Icons.savings_outlined, size: 17),
+                  label: Text(
+                    caisse.sessionOuverte
+                        ? 'Gérer la caisse'
+                        : 'Ouvrir la caisse de départ',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Poste extends StatelessWidget {
+  const _Poste({required this.libelle, required this.valeur, this.signe = ''});
+
+  final String libelle;
+  final double valeur;
+  final String signe;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            libelle,
+            style: const TextStyle(fontSize: 10, color: Colors.white60),
+          ),
+          Text(
+            '$signe${formatMoney(valeur)}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Journée ────────────────────────────────────────────────────────────────
+
+/// Ce qui s'est passé aujourd'hui, ligne à ligne.
+class _JourneeDetail extends StatelessWidget {
+  const _JourneeDetail({
+    required this.ventes,
+    required this.charges,
+    required this.totalCharges,
+  });
+
+  final List<VenteDuJour> ventes;
+  final List<ChargeDuJour> charges;
+  final double totalCharges;
+
+  @override
+  Widget build(BuildContext context) {
+    return _Carte(
+      titre: 'La journée',
+      enfant: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SousTitre(
+            texte: 'Ventes',
+            compte: ventes.length,
+            onVoirTout: () => Navigator.of(context).push<void>(
+              MaterialPageRoute(builder: (_) => const SalesScreen()),
+            ),
+          ),
+          if (ventes.isEmpty)
+            const _LigneVide(texte: 'Aucune vente aujourd\'hui.')
+          else
+            ...ventes.take(6).map(
+                  (v) => _LigneJour(
+                    titre: v.reference,
+                    sousTitre: [
+                      v.client ?? 'Client de passage',
+                      if (v.heure != null) v.heure!,
+                    ].join(' · '),
+                    montant: v.total,
+                    // Ce qui reste dû se voit tout de suite : c'est ce qui
+                    // n'est pas dans le tiroir.
+                    note: v.restant > 0 ? '${formatMoney(v.restant)} dû' : null,
+                    couleurNote: AppTheme.warning,
+                    onTap: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => SaleDetailScreen(saleId: v.id),
+                      ),
+                    ),
+                  ),
+                ),
+          if (ventes.length > 6)
+            _LigneVide(texte: 'et ${ventes.length - 6} autre(s)…'),
+          const SizedBox(height: 10),
+          _SousTitre(
+            texte: 'Charges',
+            compte: charges.length,
+            montant: totalCharges,
+            onVoirTout: () => Navigator.of(context).push<void>(
+              MaterialPageRoute(builder: (_) => const ExpensesScreen()),
+            ),
+          ),
+          if (charges.isEmpty)
+            const _LigneVide(texte: 'Aucune charge aujourd\'hui.')
+          else
+            ...charges.take(6).map(
+                  (c) => _LigneJour(
+                    titre: c.libelle,
+                    sousTitre: c.categorie ?? '—',
+                    montant: c.montant,
+                    note: c.due ? 'à régler' : null,
+                    couleurNote: AppTheme.danger,
+                  ),
+                ),
+          if (charges.length > 6)
+            _LigneVide(texte: 'et ${charges.length - 6} autre(s)…'),
+        ],
+      ),
+    );
+  }
+}
+
+class _SousTitre extends StatelessWidget {
+  const _SousTitre({
+    required this.texte,
+    required this.compte,
+    this.montant,
+    this.onVoirTout,
+  });
+
+  final String texte;
+  final int compte;
+  final double? montant;
+  final VoidCallback? onVoirTout;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Text(
+            '$texte ($compte)',
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+          ),
+          if (montant != null && montant! > 0) ...[
+            const SizedBox(width: 6),
+            Text(
+              formatMoney(montant),
+              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+            ),
+          ],
+          const Spacer(),
+          if (onVoirTout != null)
+            TextButton(
+              onPressed: onVoirTout,
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
+              child: const Text('Tout voir', style: TextStyle(fontSize: 12)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LigneJour extends StatelessWidget {
+  const _LigneJour({
+    required this.titre,
+    required this.sousTitre,
+    required this.montant,
+    this.note,
+    this.couleurNote,
+    this.onTap,
+  });
+
+  final String titre;
+  final String sousTitre;
+  final double montant;
+  final String? note;
+  final Color? couleurNote;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titre,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    sousTitre,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatMoney(montant),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+                if (note != null)
+                  Text(
+                    note!,
+                    style: TextStyle(fontSize: 10.5, color: couleurNote ?? AppTheme.textFaint),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LigneVide extends StatelessWidget {
+  const _LigneVide({required this.texte});
+
+  final String texte;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Text(
+        texte,
+        style: const TextStyle(fontSize: 12, color: AppTheme.textFaint),
       ),
     );
   }

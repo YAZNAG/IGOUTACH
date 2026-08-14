@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
+use App\Http\Controllers\Api\V1\CashRemittanceController;
 use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\AppReleaseController;
 use App\Http\Controllers\Api\V1\MyOverviewController;
@@ -325,6 +326,14 @@ Route::prefix('v1')->group(function () {
         Route::get('cash-sessions/current', [CashSessionController::class, 'current'])->middleware('can:payment.create');
         Route::post('cash-sessions/open', [CashSessionController::class, 'open'])->middleware('can:cash.open');
         Route::post('cash-sessions/{cashSession}/close', [CashSessionController::class, 'close'])->middleware('can:cash.manage');
+
+        // Caisse — remises à l'administration. Déclarer ce qu'on remet et
+        // confirmer ce qu'on reçoit sont deux droits distincts : c'est ce qui
+        // fait du décompte une vérification plutôt qu'une déclaration.
+        Route::get('cash-remittances', [CashRemittanceController::class, 'index'])->middleware('can:cash.remit');
+        Route::post('cash-remittances', [CashRemittanceController::class, 'store'])->middleware('can:cash.remit');
+        Route::delete('cash-remittances/{cashRemittance}', [CashRemittanceController::class, 'destroy'])->middleware('can:cash.remit');
+        Route::post('cash-remittances/{cashRemittance}/receive', [CashRemittanceController::class, 'receive'])->middleware('can:cash.remit_receive');
 
         // Charges
         Route::get('expense-categories', [ExpenseController::class, 'categories'])->middleware('can:expense.create');
