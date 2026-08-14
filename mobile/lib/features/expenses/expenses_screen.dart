@@ -170,6 +170,70 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     }
   }
 
+  /// Solde une charge portée au crédit : choix du mode, puis règlement.
+  Future<void> _regler(Expense expense) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    List<({int id, String name})> modes;
+    try {
+      final res = await _api.dio.get<Map<String, dynamic>>('/payment-methods');
+      modes = (res.data!['data'] as List<dynamic>? ?? [])
+          .map((e) => (
+                id: (e as Map<String, dynamic>)['id'] as int,
+                name: e['name'] as String? ?? '',
+              ))
+          .toList();
+    } catch (e) {
+      showErrorSnack(messenger, friendlyError(e));
+      return;
+    }
+    if (!mounted || modes.isEmpty) return;
+
+    // Le mode est demandé avant d'appeler le serveur : sans lui le règlement
+    // serait refusé, autant ne pas faire l'aller-retour pour rien.
+    final choisi = await showModalBottomSheet<int>(
+      context: context,
+      builder: (contexte) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Régler ${expense.label} — ${formatMoney(expense.amount)}',
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ),
+            for (final m in modes)
+              ListTile(
+                leading: const Icon(Icons.account_balance_wallet_outlined),
+                title: Text(m.name),
+                onTap: () => Navigator.of(contexte).pop(m.id),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    if (choisi == null || !mounted) return;
+
+    setState(() => _decidingId = expense.id);
+    try {
+      await _api.dio.post<Map<String, dynamic>>(
+        '/expenses/${expense.id}/pay',
+        data: {'payment_method_id': choisi},
+      );
+      if (!mounted) return;
+      setState(() => _decidingId = null);
+      showSuccessSnack(messenger, 'Charge réglée.');
+      _load(reset: true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _decidingId = null);
+      showErrorSnack(messenger, friendlyError(e));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -197,7 +261,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             },
           ),
           _buildFilters(),
-          Expanded(child: _buildBody(auth.can('expense.approve'))),
+          Expanded(
+            child: _buildBody(
+              auth.can('expense.approve'),
+              auth.can('expense.pay'),
+            ),
+          ),
         ],
       ),
     );
@@ -231,7 +300,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
   }
 
-  Widget _buildBody(bool canApprove) {
+  Widget _buildBody(bool canApprove, bool peutRegler) {
     if (!_firstLoadDone) return const ListSkeleton(itemCount: 5, lines: 3);
     if (_error != null && _expenses.isEmpty) {
       return ErrorView(
@@ -272,6 +341,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             onReject: canApprove && expense.isPending
                 ? () => _decide(expense, 'rejected')
                 : null,
+            onRegler: peutRegler && expense.estDue ? () => _regler(expense) : null,
           );
         },
       ),
@@ -285,12 +355,17 @@ class _ExpenseCard extends StatelessWidget {
     required this.deciding,
     this.onApprove,
     this.onReject,
+    this.onRegler,
   });
 
   final Expense expense;
   final bool deciding;
   final VoidCallback? onApprove;
   final VoidCallback? onReject;
+
+  /// Règlement d'une charge encore due. `null` quand elle est déjà réglée ou
+  /// que l'utilisateur n'a pas le droit de régler.
+  final VoidCallback? onRegler;
 
   @override
   Widget build(BuildContext context) {
@@ -352,6 +427,17 @@ class _ExpenseCard extends StatelessWidget {
                   ),
               ],
             ),
+            if (onRegler != null && !deciding) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onRegler,
+                  icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+                  label: const Text('Régler cette charge'),
+                ),
+              ),
+            ],
             if (onApprove != null || onReject != null) ...[
               const SizedBox(height: 10),
               if (deciding)

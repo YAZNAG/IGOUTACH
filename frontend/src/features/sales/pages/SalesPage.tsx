@@ -135,9 +135,28 @@ export function SalesPage() {
 
 function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   const can = usePermission()
+  const qc = useQueryClient()
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
   const [pickingQuote, setPickingQuote] = useState(false)
+  const [aSupprimer, setASupprimer] = useState<SaleRow | null>(null)
+  const [erreurSuppression, setErreurSuppression] = useState<string | null>(null)
+
+  const supprimer = useMutation({
+    mutationFn: async (id: number) => {
+      await ensureCsrfCookie()
+      await api.delete(`/sales/${id}`)
+    },
+    onSuccess: () => {
+      setASupprimer(null)
+      setErreurSuppression(null)
+      qc.invalidateQueries({ queryKey: KEY })
+    },
+    onError: (e) => {
+      setASupprimer(null)
+      setErreurSuppression(errorMessage(e, 'Suppression impossible.'))
+    },
+  })
 
   const { data, isLoading } = useQuery<Paginated<SaleRow>>({
     queryKey: [...KEY, 'invoices', page],
@@ -175,6 +194,10 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
           </div>
         ) : null}
       </div>
+
+      {erreurSuppression ? (
+        <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{erreurSuppression}</p>
+      ) : null}
 
       {pickingQuote ? <QuotePicker onClose={() => setPickingQuote(false)} onConverted={onOpen} /> : null}
 
@@ -238,6 +261,19 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
+                          {/* Réservé aux ventes annulées : le serveur refuse
+                              toute autre, et celles qui ont laissé une trace. */}
+                          {s.status === 'cancelled' && can('sale.cancel') ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              aria-label={`Supprimer ${s.reference}`}
+                              title="Supprimer définitivement"
+                              onClick={() => { setErreurSuppression(null); setASupprimer(s) }}
+                            >
+                              <Trash2 className="h-4 w-4 text-bad" />
+                            </Button>
+                          ) : null}
                           {s.status === 'confirmed' ? (
                             <Button
                               variant="ghost"
@@ -266,6 +302,23 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
           <Button variant="outline" size="sm" disabled={page >= meta.last_page} onClick={() => setPage((p) => p + 1)}>Suivant</Button>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={aSupprimer !== null}
+        title="Supprimer la vente annulée"
+        message={
+          <>
+            Supprimer définitivement <strong>{aSupprimer?.reference}</strong> ? Cette vente
+            disparaîtra de l'historique. L'opération est refusée si un règlement, une écriture
+            de crédit ou un mouvement de stock s'y rattache.
+          </>
+        }
+        confirmLabel="Supprimer"
+        danger
+        isPending={supprimer.isPending}
+        onConfirm={() => aSupprimer && supprimer.mutate(aSupprimer.id)}
+        onCancel={() => setASupprimer(null)}
+      />
     </div>
   )
 }
@@ -412,13 +465,29 @@ export function CreateSalePanel({
 
   async function addProduct(p: ProductOption) {
     setPriceWarning(null)
+
+    // Article déjà saisi : sa quantité augmente et il remonte en tête plutôt
+    // que d'apparaître deux fois sous le même libellé. C'est bien le dernier
+    // article sur lequel le vendeur a agi.
+    if (lines.some((l) => l.product_id === p.id)) {
+      const existante = lines.find((l) => l.product_id === p.id)!
+      setLines((prev) => [
+        { ...existante, quantity: existante.quantity + 1 },
+        ...prev.filter((l) => l.product_id !== p.id),
+      ])
+      return
+    }
+
     try {
       // Prix résolu côté serveur : type de prix du client, puis paliers.
       const { data: r } = await api.get<{ data: { unit_price: number; price_type_code: string; floor_price: number | null } }>(
         '/sales/price',
         { params: { product_id: p.id, quantity: 1, customer_id: customerId || undefined } },
       )
-      setLines((prev) => [...prev, {
+      // En tete de liste : l'article vient d'etre choisi, c'est sur lui que
+      // le vendeur va agir. En bas, il faudrait defiler pour le retrouver des
+      // que la vente depasse un ecran.
+      setLines((prev) => [{
         product_id: p.id,
         sku: p.sku,
         name: p.name,
@@ -428,10 +497,13 @@ export function CreateSalePanel({
         floor_price: r.data.floor_price,
         current_stock: p.current_stock ?? 0,
         manual: false,
-      }])
+      }, ...prev])
     } catch (error) {
       // L'article est ajouté quand même, le prix se saisit manuellement.
-      setLines((prev) => [...prev, {
+      // En tete de liste : l'article vient d'etre choisi, c'est sur lui que
+      // le vendeur va agir. En bas, il faudrait defiler pour le retrouver des
+      // que la vente depasse un ecran.
+      setLines((prev) => [{
         product_id: p.id,
         sku: p.sku,
         name: p.name,
@@ -441,7 +513,7 @@ export function CreateSalePanel({
         floor_price: null,
         current_stock: p.current_stock ?? 0,
         manual: true,
-      }])
+      }, ...prev])
       const status =
         error && typeof error === 'object' && 'response' in error
           ? (error as { response?: { status?: number } }).response?.status
@@ -870,9 +942,17 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
   async function ajouterLigne(p: ProductOption) {
     setEditSearch('')
     // Un article déjà présent voit sa quantité augmenter : créer une seconde
-    // ligne pour le même article donnerait deux fois le même libellé.
+    // ligne pour le même article donnerait deux fois le même libellé. Il
+    // remonte en tête, comme un article nouvellement choisi — c'est bien le
+    // dernier sur lequel le vendeur a agi.
     if (editLines.some((l) => l.product_id === p.id)) {
-      setEditLines((prev) => prev.map((l) => (l.product_id === p.id ? { ...l, quantity: l.quantity + 1 } : l)))
+      setEditLines((prev) => {
+        const ligne = prev.find((l) => l.product_id === p.id)!
+        return [
+          { ...ligne, quantity: ligne.quantity + 1 },
+          ...prev.filter((l) => l.product_id !== p.id),
+        ]
+      })
       return
     }
 

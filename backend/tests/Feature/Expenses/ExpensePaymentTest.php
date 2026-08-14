@@ -102,7 +102,7 @@ it('ignore un mode transmis sur une charge a credit', function (): void {
 });
 
 it('regle plus tard une charge portee au credit', function (): void {
-    [$user, $lieu, $type] = chargeContexte(['expense.create', 'expense.approve']);
+    [$user, $lieu, $type] = chargeContexte(['expense.create', 'expense.pay']);
     $mode = paiementEspeces();
 
     $id = test()->actingAs($user)->postJson('/api/v1/expenses', [
@@ -123,7 +123,7 @@ it('regle plus tard une charge portee au credit', function (): void {
 });
 
 it('refuse de regler deux fois la meme charge', function (): void {
-    [$user, $lieu, $type] = chargeContexte(['expense.create', 'expense.approve']);
+    [$user, $lieu, $type] = chargeContexte(['expense.create', 'expense.pay']);
     $mode = paiementEspeces();
 
     $id = test()->actingAs($user)->postJson('/api/v1/expenses', [
@@ -141,7 +141,7 @@ it('refuse de regler deux fois la meme charge', function (): void {
         ->assertStatus(422);
 });
 
-it('interdit le reglement a qui ne valide pas les charges', function (): void {
+it('interdit le reglement a qui n\'a pas le droit de regler', function (): void {
     [$user, $lieu, $type] = chargeContexte();
     $mode = paiementEspeces();
 

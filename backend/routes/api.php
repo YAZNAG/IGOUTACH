@@ -272,6 +272,9 @@ Route::prefix('v1')->group(function () {
         Route::put('sales/{sale}', [SaleController::class, 'update'])->middleware('can:sale.create');
         Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])->middleware('can:sale.create');
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])->middleware('can:sale.cancel');
+        // Suppression définitive d'une vente annulée : même autorité que
+        // l'annulation, le contrôleur refuse tout ce qui a laissé une trace.
+        Route::delete('sales/{sale}', [SaleController::class, 'destroy'])->middleware('can:sale.cancel');
         Route::post('sales/{sale}/convert', [SaleController::class, 'convert'])->middleware('can:sale.create');
         Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->middleware('can:sale.create');
         Route::get('sales/{sale}/exit-pdf', [SaleController::class, 'exitPdf'])->middleware('can:sale.create');
@@ -326,9 +329,10 @@ Route::prefix('v1')->group(function () {
         Route::get('expenses', [ExpenseController::class, 'index'])->middleware('can:expense.create');
         Route::post('expenses', [ExpenseController::class, 'store'])->middleware('can:expense.create');
         Route::patch('expenses/{expense}/decide', [ExpenseController::class, 'decide'])->middleware('can:expense.approve');
-        // Règlement d'une charge restée au crédit : c'est un mouvement de
-        // trésorerie, il relève de la même autorité que la validation.
-        Route::post('expenses/{expense}/pay', [ExpenseController::class, 'pay'])->middleware('can:expense.approve');
+        // Règlement d'une charge restée au crédit. Droit distinct de la
+        // validation : un responsable de lieu solde ses dépenses sans pour
+        // autant pouvoir valider les siennes.
+        Route::post('expenses/{expense}/pay', [ExpenseController::class, 'pay'])->middleware('can:expense.pay');
 
         // Inventaires physiques (par lieu, avec date et régularisation)
         Route::get('inventories', [InventoryController::class, 'index'])->middleware('can:inventory.create');

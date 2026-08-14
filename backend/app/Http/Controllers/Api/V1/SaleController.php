@@ -477,6 +477,74 @@ final class SaleController extends Controller
         return $this->show($sale->refresh());
     }
 
+    /**
+     * Supprime définitivement une vente annulée.
+     *
+     * Annuler laisse le document dans l'historique, ce qui encombre la liste
+     * quand il ne s'agissait que d'une saisie ratée. La suppression n'est
+     * ouverte qu'aux ventes qui n'ont laissé aucune trace ailleurs : un
+     * règlement, une écriture au crédit du client ou un mouvement de stock
+     * survivraient à la vente et pointeraient dans le vide, faussant les
+     * rapprochements pour toujours.
+     *
+     * En pratique cela vise les ventes annulées avant confirmation. Une vente
+     * confirmée puis annulée garde son sillage : elle reste consultable.
+     */
+    public function destroy(Request $request, Sale $sale): JsonResponse
+    {
+        $this->assertCanSeeSale($request, $sale);
+
+        if ($sale->status !== Sale::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Seule une vente annulée peut être supprimée.',
+            ], 422);
+        }
+
+        $obstacles = [];
+
+        if (DB::table('payments')->where('sale_id', $sale->id)->exists()) {
+            $obstacles[] = 'un règlement y est rattaché';
+        }
+
+        // Le grand livre client référence par couple type/identifiant, pas par
+        // une colonne sale_id.
+        if (DB::table('customer_ledger_entries')
+            ->where('reference_type', Sale::class)
+            ->where('reference_id', $sale->id)
+            ->exists()
+        ) {
+            $obstacles[] = 'elle a mouvementé le crédit du client';
+        }
+
+        if (DB::table('stock_movements')
+            ->where('reference_type', Sale::class)
+            ->where('reference_id', $sale->id)
+            ->exists()
+        ) {
+            $obstacles[] = 'elle a mouvementé le stock';
+        }
+
+        if (Sale::query()->where('quote_id', $sale->id)->exists()) {
+            $obstacles[] = 'une facture en est issue';
+        }
+
+        if ($obstacles !== []) {
+            return response()->json([
+                'message' => 'Cette vente ne peut pas être supprimée : '
+                    .implode(', ', $obstacles).'. Elle reste consultable comme annulée.',
+            ], 422);
+        }
+
+        // Les lignes partent avec la vente (cascade en base) ; la transaction
+        // garantit qu'on ne laisse pas une vente sans ses lignes.
+        DB::transaction(function () use ($sale): void {
+            $sale->lines()->delete();
+            $sale->delete();
+        });
+
+        return response()->json(null, 204);
+    }
+
     public function show(Sale $sale): JsonResponse
     {
         $this->assertCanSeeSale(request(), $sale);

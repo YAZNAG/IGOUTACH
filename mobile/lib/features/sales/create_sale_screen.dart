@@ -141,12 +141,21 @@ class _CreateSaleScreenState extends State<CreateSaleScreen> {
     final existing =
         _lines.where((l) => l.product.id == product.id).firstOrNull;
     if (existing != null) {
+      // Il remonte en tête comme un article nouvellement choisi : c'est bien
+      // le dernier sur lequel le vendeur vient d'agir.
+      setState(() {
+        _lines.remove(existing);
+        _lines.insert(0, existing);
+      });
       _changeQuantity(existing, existing.quantity + 1);
       return;
     }
 
     final line = _LineDraft(product: product);
-    setState(() => _lines.add(line));
+    // En tête de liste : le vendeur vient de le choisir, c'est sur lui qu'il
+    // va agir. En bas, il faudrait faire défiler pour le retrouver dès que la
+    // vente dépasse un écran.
+    setState(() => _lines.insert(0, line));
     _fetchPrice(line);
   }
 

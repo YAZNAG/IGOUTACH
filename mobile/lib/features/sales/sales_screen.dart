@@ -203,12 +203,42 @@ class _SalesScreenState extends State<SalesScreen> {
     }
   }
 
+  /// Droit d'effacer une vente annulée, lu une fois par construction.
+  bool _peutSupprimer = false;
+
+  /// Supprime définitivement une vente annulée.
+  Future<void> _supprimer(SaleSummary sale) async {
+    final confirme = await confirmAction(
+      context,
+      icon: Icons.delete_outline,
+      title: 'Supprimer la vente',
+      message: '${sale.reference}\n\n'
+          'Elle disparaîtra de l\'historique. L\'opération est refusée si un '
+          'règlement ou un mouvement de stock s\'y rattache.',
+      confirmLabel: 'Supprimer',
+      confirmColor: AppTheme.danger,
+    );
+    if (!confirme || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await _api.dio.delete<void>('/sales/${sale.id}');
+      if (!mounted) return;
+      showSuccessSnack(messenger, 'Vente supprimée.');
+      _load(reset: true);
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnack(messenger, friendlyError(e));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     if (!auth.can('sale.create')) {
       return const NotAllowedView();
     }
+    _peutSupprimer = auth.can('sale.cancel');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ventes')),
@@ -273,6 +303,11 @@ class _SalesScreenState extends State<SalesScreen> {
             onPay: canRecordPayment && sale.isSettleable
                 ? () => _openPayment(sale)
                 : null,
+            // Seules les ventes annulées se suppriment ; le serveur refuse en
+            // plus celles qui ont laissé une trace comptable ou de stock.
+            onSupprimer: _peutSupprimer && sale.status == 'cancelled'
+                ? () => _supprimer(sale)
+                : null,
           );
         },
       ),
@@ -287,6 +322,7 @@ class _SaleTile extends StatelessWidget {
     required this.onDownload,
     required this.paying,
     this.onPay,
+    this.onSupprimer,
   });
 
   final SaleSummary sale;
@@ -297,6 +333,9 @@ class _SaleTile extends StatelessWidget {
   /// `null` quand le règlement n'est pas possible (permission, vente au
   /// comptoir, vente non confirmée ou déjà soldée).
   final VoidCallback? onPay;
+
+  /// `null` sauf sur une vente annulée, pour qui a le droit d'annuler.
+  final VoidCallback? onSupprimer;
 
   (String, Color) get _statusBadge => switch (sale.status) {
         'confirmed' => ('Confirmé', AppTheme.success),
@@ -410,6 +449,21 @@ class _SaleTile extends StatelessWidget {
                   StatusBadge(label: payment.$1, color: payment.$2),
               ],
             ),
+            if (onSupprimer != null) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onSupprimer,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.danger,
+                    side: const BorderSide(color: AppTheme.danger),
+                  ),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Supprimer'),
+                ),
+              ),
+            ],
             if (onPay != null) ...[
               const SizedBox(height: 12),
               Row(
