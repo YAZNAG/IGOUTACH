@@ -38,6 +38,11 @@ class SaleSummary {
 
   /// Une vente est encaissable si elle est confirmée, rattachée à un client
   /// (pas une vente de passage) et pas encore entièrement payée.
+  /// Encore modifiable : rien n'est sorti du stock ni engage de creance.
+  bool get estBrouillon => status == 'draft';
+
+  bool get estConfirmee => status == 'confirmed';
+
   bool get isSettleable =>
       status == 'confirmed' &&
       (customer ?? '').isNotEmpty &&

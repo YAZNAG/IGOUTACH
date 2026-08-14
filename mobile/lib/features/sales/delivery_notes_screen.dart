@@ -20,7 +20,11 @@ import '../shared/period_export.dart';
 /// d'une facture confirmée. On liste donc les ventes qui en ont produit un,
 /// et on ouvre le PDF correspondant.
 class DeliveryNotesScreen extends StatefulWidget {
-  const DeliveryNotesScreen({super.key});
+  const DeliveryNotesScreen({super.key, this.sortie = false});
+
+  /// `true` : bon de sortie (quantites, pour le magasinier).
+  /// `false` : bon de livraison (avec les prix, pour le client).
+  final bool sortie;
 
   @override
   State<DeliveryNotesScreen> createState() => _DeliveryNotesScreenState();
@@ -117,11 +121,11 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
     setState(() => _telechargement = vente.id);
     try {
       final res = await _api.dio.get<List<int>>(
-        '/sales/${vente.id}/exit-pdf',
+        '/sales/${vente.id}/${widget.sortie ? "exit-pdf" : "delivery-pdf"}',
         options: Options(responseType: ResponseType.bytes),
       );
       final dossier = await getApplicationDocumentsDirectory();
-      final nom = 'BL-${vente.reference}'.replaceAll(RegExp(r'[^\w\-]'), '_');
+      final nom = '${widget.sortie ? "BS" : "BL"}-${vente.reference}'.replaceAll(RegExp(r'[^\w\-]'), '_');
       final fichier = File('${dossier.path}${Platform.pathSeparator}$nom.pdf');
       await fichier.writeAsBytes(res.data ?? const []);
       await OpenFilex.open(fichier.path);
@@ -140,7 +144,7 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Bons de livraison')),
+      appBar: AppBar(title: Text(widget.sortie ? 'Bons de sortie' : 'Bons de livraison')),
       body: Column(
         children: [
           PeriodBar(
@@ -172,9 +176,9 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
     }
 
     if (_ventes.isEmpty) {
-      return const EmptyView(
-        icon: Icons.local_shipping_outlined,
-        title: 'Aucun bon de livraison',
+      return EmptyView(
+        icon: widget.sortie ? Icons.outbox_outlined : Icons.local_shipping_outlined,
+        title: widget.sortie ? 'Aucun bon de sortie' : 'Aucun bon de livraison',
         message: 'Les ventes confirmées de la période apparaîtront ici.',
       );
     }
@@ -209,7 +213,7 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
                     )
                   : IconButton(
                       icon: const Icon(Icons.download_outlined),
-                      tooltip: 'Ouvrir le bon de livraison',
+                      tooltip: 'Ouvrir le bon',
                       onPressed: () => _ouvrirBon(vente),
                     ),
               onTap: _telechargement == null ? () => _ouvrirBon(vente) : null,

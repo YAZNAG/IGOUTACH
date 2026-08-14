@@ -12,6 +12,7 @@ import '../transfers/transfer_requests_screen.dart';
 import '../credits/credits_screen.dart';
 import '../payments/payments_screen.dart';
 import '../sales/delivery_notes_screen.dart';
+import '../sales/sales_screen.dart';
 
 /// Menu « Plus » : tout ce qui ne tient pas dans les cinq onglets.
 ///
@@ -62,6 +63,27 @@ class PlusScreen extends StatelessWidget {
           basePath: '/stock/exits',
           isExit: true,
         ),
+      ),
+      _Entree(
+        icone: Icons.description_outlined,
+        titre: 'Bons',
+        sousTitre: 'Ventes en brouillon, encore modifiables',
+        permission: 'sale.create',
+        page: () => const SalesScreen(statut: 'draft', titre: 'Bons'),
+      ),
+      _Entree(
+        icone: Icons.receipt_long_outlined,
+        titre: 'Factures',
+        sousTitre: 'Ventes confirmées',
+        permission: 'sale.create',
+        page: () => const SalesScreen(statut: 'confirmed', titre: 'Factures'),
+      ),
+      _Entree(
+        icone: Icons.outbox_outlined,
+        titre: 'Bons de sortie',
+        sousTitre: 'Quantités sorties du dépôt',
+        permission: 'sale.create',
+        page: () => const DeliveryNotesScreen(sortie: true),
       ),
       _Entree(
         icone: Icons.local_shipping_outlined,

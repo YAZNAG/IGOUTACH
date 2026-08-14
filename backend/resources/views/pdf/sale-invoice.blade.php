@@ -5,6 +5,11 @@
 @section('document_title')
     @if ($sale->type === 'quote')
         <span class="a">DE</span><span class="b">VIS</span>
+    @elseif ($sale->status === 'draft')
+        {{-- Tant qu'elle n'est pas confirmée, la vente n'a rien sorti du stock
+             ni engagé de créance : la nommer « facture » donnerait au client un
+             document qui n'en est pas un. C'est un bon, révisable. --}}
+        <span class="a">B</span><span class="b">ON</span>
     @else
         <span class="a">FAC</span><span class="b">TURE</span>
     @endif

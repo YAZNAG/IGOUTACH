@@ -14,7 +14,34 @@ import '../../core/widgets.dart';
 import '../../models/sale.dart';
 import '../shared/payment_sheet.dart';
 import 'create_sale_screen.dart';
+import 'sale_detail_screen.dart';
 import '../shared/period_export.dart';
+
+/// Télécharge un document d'une vente et l'ouvre.
+///
+/// Le chemin varie selon le document — facture, bon de livraison, bon de
+/// sortie — mais la mecanique est la meme : on evite de la recopier trois fois.
+Future<void> downloadSaleDocument(
+  BuildContext context,
+  int saleId,
+  String chemin,
+  String nomFichier,
+) async {
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final res = await ApiClient.instance.dio.get<List<int>>(
+      '/sales/$saleId/$chemin',
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final dir = await getApplicationDocumentsDirectory();
+    final safeName = nomFichier.replaceAll(RegExp(r'[^\w\-]'), '_');
+    final file = File('${dir.path}${Platform.pathSeparator}$safeName.pdf');
+    await file.writeAsBytes(res.data ?? const []);
+    await OpenFilex.open(file.path);
+  } catch (e) {
+    showErrorSnack(messenger, 'Telechargement impossible : ${friendlyError(e)}');
+  }
+}
 
 /// Télécharge la facture PDF d'une vente puis l'ouvre.
 /// Utilisée par la liste et par l'écran de création.
@@ -44,7 +71,14 @@ Future<void> downloadSalePdf(
 
 /// Liste des ventes (factures) : GET /sales?type=invoice.
 class SalesScreen extends StatefulWidget {
-  const SalesScreen({super.key});
+  const SalesScreen({super.key, this.statut, this.titre});
+
+  /// Restreint la liste a un etat : `draft` (les bons) ou `confirmed`
+  /// (les factures). `null` affiche toutes les ventes.
+  final String? statut;
+
+  /// Titre de l'ecran, pour distinguer bons, factures et ventes.
+  final String? titre;
 
   @override
   State<SalesScreen> createState() => _SalesScreenState();
@@ -108,6 +142,7 @@ class _SalesScreenState extends State<SalesScreen> {
         '/sales',
         queryParameters: {
           'type': 'invoice',
+          if (widget.statut != null) 'status': widget.statut,
           'per_page': 50,
           'page': _page + 1,
           'date_from': _periode.duIso,
@@ -241,7 +276,7 @@ class _SalesScreenState extends State<SalesScreen> {
     _peutSupprimer = auth.can('sale.cancel');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ventes')),
+      appBar: AppBar(title: Text(widget.titre ?? 'Ventes')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreate,
         icon: const Icon(Icons.add),
@@ -297,6 +332,12 @@ class _SalesScreenState extends State<SalesScreen> {
           final sale = _sales[index];
           return _SaleTile(
             sale: sale,
+            onOuvrir: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => SaleDetailScreen(saleId: sale.id)),
+              );
+              if (mounted) _load(reset: true);
+            },
             downloading: _downloadingId == sale.id,
             onDownload: () => _download(sale),
             paying: _payingId == sale.id,
@@ -318,6 +359,7 @@ class _SalesScreenState extends State<SalesScreen> {
 class _SaleTile extends StatelessWidget {
   const _SaleTile({
     required this.sale,
+    required this.onOuvrir,
     required this.downloading,
     required this.onDownload,
     required this.paying,
@@ -326,6 +368,9 @@ class _SaleTile extends StatelessWidget {
   });
 
   final SaleSummary sale;
+
+  /// Ouvre le detail : modification si brouillon, documents si confirmee.
+  final VoidCallback onOuvrir;
   final bool downloading;
   final VoidCallback onDownload;
   final bool paying;
@@ -448,6 +493,20 @@ class _SaleTile extends StatelessWidget {
                 if (payment != null)
                   StatusBadge(label: payment.$1, color: payment.$2),
               ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onOuvrir,
+                icon: Icon(
+                  sale.estBrouillon ? Icons.edit_outlined : Icons.folder_open_outlined,
+                  size: 18,
+                ),
+                // Un brouillon se modifie ; une vente confirmée se consulte et
+                // donne accès à ses documents.
+                label: Text(sale.estBrouillon ? 'Modifier le bon' : 'Ouvrir · Documents'),
+              ),
             ),
             if (onSupprimer != null) ...[
               const SizedBox(height: 10),

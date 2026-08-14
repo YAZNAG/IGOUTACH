@@ -278,7 +278,7 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => downloadFile(`/sales/${s.id}/exit-pdf`, `BL-${s.reference}.pdf`)}
+                              onClick={() => downloadFile(`/sales/${s.id}/delivery-pdf`, `BL-${s.reference}.pdf`)}
                               title="Bon de livraison PDF"
                             >
                               <FileText className="h-4 w-4" />
@@ -907,7 +907,7 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
       qc.invalidateQueries({ queryKey: ['payments'] })
       // Bon de livraison généré automatiquement à la validation d'une facture.
       if (sale?.type === 'invoice') {
-        void downloadFile(`/sales/${id}/exit-pdf`, `BL-${sale.reference}.pdf`)
+        void downloadFile(`/sales/${id}/delivery-pdf`, `BL-${sale.reference}.pdf`)
       }
     },
   })
@@ -1044,11 +1044,25 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => downloadFile(`/sales/${sale.id}/exit-pdf`, `BL-${sale.reference}.pdf`)}
+                  onClick={() => downloadFile(`/sales/${sale.id}/delivery-pdf`, `BL-${sale.reference}.pdf`)}
                   title="Bon de livraison PDF"
                 >
                   <FileText className="h-4 w-4" />
                   Bon de livraison
+                </Button>
+              ) : null}
+              {/* Deux documents distincts : le bon de livraison part chez le
+                  client avec les prix, le bon de sortie reste au dépôt et n'en
+                  porte aucun. */}
+              {sale.type === 'invoice' && sale.status === 'confirmed' ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadFile(`/sales/${sale.id}/exit-pdf`, `BS-${sale.reference}.pdf`)}
+                  title="Bon de sortie PDF (quantités seules)"
+                >
+                  <FileText className="h-4 w-4" />
+                  Bon de sortie
                 </Button>
               ) : null}
             </>

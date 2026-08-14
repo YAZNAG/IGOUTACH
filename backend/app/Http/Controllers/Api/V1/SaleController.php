@@ -681,7 +681,27 @@ final class SaleController extends Controller
      * PDF du bon de sortie (quantités seules, aucun montant).
      * GET /sales/{sale}/exit-pdf
      */
+    /**
+     * Bon de sortie : quantités seules, pour le magasinier.
+     *
+     * Distinct du bon de livraison, qui part chez le client avec les prix. Y
+     * porter les montants les exposerait à toute la chaîne logistique.
+     */
     public function exitPdf(Sale $sale): HttpResponse
+    {
+        $sale->load(['customer', 'warehouse']);
+        $lines = $sale->lines()->with('product:id,sku,name')->get();
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.exit-note', [
+            'sale' => $sale,
+            'lines' => $lines,
+        ])->download('BS-'.$sale->reference.'.pdf');
+    }
+
+    /**
+     * Bon de livraison : remis au client, avec les prix pratiqués sur la vente.
+     */
+    public function deliveryPdf(Sale $sale): HttpResponse
     {
         $sale->load(['customer', 'warehouse']);
         $lines = $sale->lines()->with('product:id,sku,name')->get();

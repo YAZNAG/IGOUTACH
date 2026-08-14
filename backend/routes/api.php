@@ -278,6 +278,8 @@ Route::prefix('v1')->group(function () {
         Route::post('sales/{sale}/convert', [SaleController::class, 'convert'])->middleware('can:sale.create');
         Route::get('sales/{sale}/pdf', [SaleController::class, 'pdf'])->middleware('can:sale.create');
         Route::get('sales/{sale}/exit-pdf', [SaleController::class, 'exitPdf'])->middleware('can:sale.create');
+        // Bon de livraison : le document remis au client, avec les prix.
+        Route::get('sales/{sale}/delivery-pdf', [SaleController::class, 'deliveryPdf'])->middleware('can:sale.create');
 
         // Coûts des articles (CMUP global, valeur stock, dernier achat)
         Route::get('product-costs', [ProductCostController::class, 'index'])->middleware('can:product.view_cost_price');
