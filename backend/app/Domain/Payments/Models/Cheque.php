@@ -21,6 +21,11 @@ final class Cheque extends Model
 {
     use HasFactory;
 
+    public const INSTRUMENT_CHEQUE = 'cheque';
+
+    /** Lettre de change : memes attributs et meme cycle qu'un cheque. */
+    public const INSTRUMENT_TRAITE = 'traite';
+
     public const DIRECTION_IN = 'in';
     public const DIRECTION_OUT = 'out';
 
@@ -34,6 +39,7 @@ final class Cheque extends Model
     public const STATUS_BOUNCED = 'bounced';
 
     protected $fillable = [
+        'instrument',
         'number',
         'cheque_date',
         'amount',

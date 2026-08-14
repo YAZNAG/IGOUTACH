@@ -59,6 +59,16 @@ function errorMessage(error: unknown, fallback: string): string {
   return fallback
 }
 
+/** Facture encore due, proposée au règlement. */
+interface OpenInvoice {
+  id: number
+  reference: string
+  total: number
+  paid_amount: number
+  remaining: number
+  date: string | null
+}
+
 /**
  * Crédits clients : ce que chaque client doit, par ancienneté, avec son
  * relevé de compte et l'encaissement direct. Symétrique des crédits
@@ -76,6 +86,14 @@ export function CustomerCreditsPage() {
   const [receivedAt, setReceivedAt] = useState(() => new Date().toISOString().slice(0, 10))
   const [note, setNote] = useState('')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  /**
+   * Montant affecté à chaque facture, par identifiant.
+   *
+   * Une facture absente de cet objet n'est pas réglée par ce versement. Vide,
+   * l'encaissement retombe sur l'encours global — comportement historique.
+   */
+  const [parFacture, setParFacture] = useState<Record<number, string>>({})
 
   const { data: rows = [], isLoading } = useQuery<AgingRow[]>({
     queryKey: ['customers-aging'],
@@ -104,21 +122,42 @@ export function CustomerCreditsPage() {
     staleTime: 5 * 60_000,
   })
 
+  /** Factures encore dues du client sélectionné, de la plus ancienne. */
+  const { data: facturesDues = [] } = useQuery<OpenInvoice[]>({
+    queryKey: ['open-invoices', selected?.customer_id],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: OpenInvoice[] }>(
+        `/customers/${selected?.customer_id}/open-invoices`,
+      )
+      return data.data
+    },
+    enabled: selected !== null && canCollect,
+  })
+
   const collect = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
+      const ventilations = Object.entries(parFacture)
+        .map(([id, montant]) => ({ sale_id: Number(id), amount: Number(montant) }))
+        .filter((v) => Number.isFinite(v.amount) && v.amount > 0)
+
       await api.post('/payments', {
         customer_id: selected?.customer_id,
         amount: Number(amount),
         payment_method_id: methodId || null,
         received_at: receivedAt,
         note: note.trim() || null,
+        // Sans ventilation, le versement tombe dans l'encours global : c'est
+        // le comportement historique, conservé quand aucune facture n'est
+        // cochée.
+        ...(ventilations.length > 0 ? { allocations: ventilations } : {}),
       })
     },
     onSuccess: () => {
       setSuccessMessage(`Encaissement de ${money(Number(amount))} DH enregistré pour ${selected?.customer}.`)
       setSelected(null)
       setNote('')
+      setParFacture({})
       qc.invalidateQueries({ queryKey: ['customers-aging'] })
       qc.invalidateQueries({ queryKey: ['customer-statement'] })
       qc.invalidateQueries({ queryKey: ['payments'] })
@@ -130,6 +169,9 @@ export function CustomerCreditsPage() {
   const overdue = rows.reduce((sum, r) => sum + r.bucket_61_90 + r.bucket_over_90, 0)
 
   function openCollect(row: AgingRow) {
+    // Repartir de zero : garder la ventilation d'un autre client affecterait
+    // ses factures a celui-ci.
+    setParFacture({})
     setSelected(row)
     setAmount(String(row.total_due))
     setMethodId(0)
@@ -141,6 +183,15 @@ export function CustomerCreditsPage() {
 
   const amountValue = Number(amount)
   const invalidAmount = selected !== null && (!Number.isFinite(amountValue) || amountValue <= 0)
+
+  const totalReparti = Object.values(parFacture)
+    .reduce((somme, v) => somme + (Number(v) || 0), 0)
+
+  // Une répartition qui ne tombe pas juste ferait disparaître la différence :
+  // le serveur la refuse, autant le dire avant l'envoi.
+  const ecartVentilation =
+    Object.keys(parFacture).length > 0 &&
+    Math.abs(totalReparti - (Number(amount) || 0)) > 0.001
 
   return (
     <div className="space-y-6">
@@ -228,8 +279,98 @@ export function CustomerCreditsPage() {
               </Field>
             </div>
 
+            {/* Règlement facture par facture. Sans sélection, le versement
+                réduit l'encours global, comme auparavant. */}
+            {facturesDues.length > 0 ? (
+              <div className="rounded border border-line">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2">
+                  <span className="text-sm font-medium text-ink">
+                    Affecter à des factures ({facturesDues.length} due{facturesDues.length > 1 ? 's' : ''})
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Solder au plus juste : on remplit les factures les
+                        // plus anciennes tant que le montant encaissé suffit.
+                        let reste = Number(amount)
+                        const suivant: Record<number, string> = {}
+                        for (const f of facturesDues) {
+                          if (reste <= 0) break
+                          const part = Math.min(reste, f.remaining)
+                          suivant[f.id] = part.toFixed(2)
+                          reste = Math.round((reste - part) * 100) / 100
+                        }
+                        setParFacture(suivant)
+                      }}
+                    >
+                      Répartir automatiquement
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setParFacture({})}>
+                      Tout décocher
+                    </Button>
+                  </div>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {facturesDues.map((f) => {
+                    const coche = parFacture[f.id] !== undefined
+                    return (
+                      <div key={f.id} className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-2 last:border-0">
+                        <input
+                          type="checkbox"
+                          checked={coche}
+                          aria-label={`Régler ${f.reference}`}
+                          onChange={(e) =>
+                            setParFacture((prev) => {
+                              const suivant = { ...prev }
+                              if (e.target.checked) suivant[f.id] = f.remaining.toFixed(2)
+                              else delete suivant[f.id]
+                              return suivant
+                            })
+                          }
+                        />
+                        <span className="mono text-sm text-muted">{f.reference}</span>
+                        <span className="text-xs text-faint">{f.date ?? ''}</span>
+                        <span className="ml-auto text-sm text-muted">
+                          reste {money(f.remaining)} DH
+                        </span>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={f.remaining}
+                          step={0.01}
+                          disabled={!coche}
+                          value={parFacture[f.id] ?? ''}
+                          onChange={(e) => setParFacture((prev) => ({ ...prev, [f.id]: e.target.value }))}
+                          className="w-28 text-right"
+                          aria-label={`Montant affecté à ${f.reference}`}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-sm">
+                  <span className="text-muted">Réparti</span>
+                  <span className={cn('tabular font-medium', ecartVentilation ? 'text-bad' : 'text-ink')}>
+                    {money(totalReparti)} / {money(Number(amount) || 0)} DH
+                  </span>
+                </div>
+              </div>
+            ) : null}
+
+            {ecartVentilation ? (
+              <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
+                La répartition doit égaler le montant encaissé, sinon la différence disparaîtrait
+                sans trace. Ajustez les montants ou le total.
+              </p>
+            ) : null}
+
             <div className="flex gap-2">
-              <Button onClick={() => collect.mutate()} disabled={collect.isPending || invalidAmount || !canCollect}>
+              <Button
+                onClick={() => collect.mutate()}
+                disabled={collect.isPending || invalidAmount || !canCollect || ecartVentilation}
+              >
                 <HandCoins className="h-4 w-4" />
                 {collect.isPending ? 'Enregistrement…' : 'Encaisser'}
               </Button>

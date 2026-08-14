@@ -311,6 +311,8 @@ Route::prefix('v1')->group(function () {
         Route::patch('cheques/{cheque}/status', [ChequeController::class, 'updateStatus'])->middleware('can:cheque.manage');
         Route::delete('cheques/{cheque}', [ChequeController::class, 'destroy'])->middleware('can:cheque.manage');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
+        // Factures encore dues : sert à choisir celles qu'un règlement solde.
+        Route::get('customers/{customer}/open-invoices', [PaymentController::class, 'openInvoices'])->middleware('can:payment.create');
         Route::get('customers/{customer}/overview', [CustomerController::class, 'overview'])->middleware('can:customer.view');
 
         // Caisse — sessions

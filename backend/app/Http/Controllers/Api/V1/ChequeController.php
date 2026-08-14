@@ -22,6 +22,10 @@ final class ChequeController extends Controller
     {
         $query = Cheque::query()->with(['customer:id,name', 'supplier:id,name']);
 
+        if ($request->filled('instrument')) {
+            $query->where('instrument', $request->string('instrument')->value());
+        }
+
         if ($request->filled('direction')) {
             $query->where('direction', $request->string('direction')->value());
         }
@@ -60,6 +64,9 @@ final class ChequeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
+            // Cheque ou traite : memes champs, meme cycle, seul le nom de
+            // l'effet change.
+            'instrument' => ['sometimes', Rule::in([Cheque::INSTRUMENT_CHEQUE, Cheque::INSTRUMENT_TRAITE])],
             'number' => ['required', 'string', 'max:50'],
             'cheque_date' => ['required', 'date'],
             'amount' => ['required', 'numeric', 'min:0.01'],
@@ -90,6 +97,9 @@ final class ChequeController extends Controller
 
         unset($data['image']);
 
+        // La valeur par défaut vit en base : sans cette ligne, l'objet rendu
+        // juste après la création porterait un instrument vide.
+        $data['instrument'] ??= Cheque::INSTRUMENT_CHEQUE;
         $data['status'] = Cheque::STATUS_PORTFOLIO;
         $data['created_by'] = $request->user()?->id;
 
@@ -170,6 +180,7 @@ final class ChequeController extends Controller
     {
         return [
             'id' => $cheque->id,
+            'instrument' => $cheque->instrument,
             'number' => $cheque->number,
             'cheque_date' => $cheque->cheque_date?->toDateString(),
             'amount' => (float) $cheque->amount,

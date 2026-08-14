@@ -72,6 +72,70 @@ final class PaymentController extends Controller
         ]);
     }
 
+    /**
+     * Factures d'un client encore dues, de la plus ancienne à la plus récente.
+     *
+     * L'ordre est celui du règlement usuel : on solde d'abord ce qui traîne.
+     * Les brouillons et les annulées sont exclus — ils ne doivent rien.
+     */
+    public function openInvoices(Customer $customer): JsonResponse
+    {
+        $factures = Sale::query()
+            ->where('customer_id', $customer->id)
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->whereRaw('paid_amount < total')
+            ->orderBy('created_at')
+            ->get(['id', 'reference', 'total', 'paid_amount', 'payment_status', 'created_at']);
+
+        return response()->json(['data' => $factures->map(fn (Sale $s): array => [
+            'id' => $s->id,
+            'reference' => $s->reference,
+            'total' => (float) $s->total,
+            'paid_amount' => (float) $s->paid_amount,
+            'remaining' => round((float) $s->total - (float) $s->paid_amount, 2),
+            'payment_status' => $s->payment_status,
+            'date' => $s->created_at?->format('Y-m-d'),
+        ])->values()->all()]);
+    }
+
+    /**
+     * Contrôle de cohérence d'un règlement ventilé.
+     *
+     * @param  array{customer_id: int, amount: float, allocations?: list<array{sale_id: int, amount: float}>}  $data
+     * @return string|null  message d'erreur, ou null si tout est cohérent
+     */
+    private function verifierVentilations(array $data): ?string
+    {
+        $ventilations = $data['allocations'] ?? [];
+
+        $identifiants = array_column($ventilations, 'sale_id');
+        if (count($identifiants) !== count(array_unique($identifiants))) {
+            return 'Une même facture est indiquée deux fois.';
+        }
+
+        // Une facture d'un autre client réduirait l'encours du mauvais compte.
+        $etrangeres = Sale::query()
+            ->whereIn('id', $identifiants)
+            ->where(fn ($q) => $q->where('customer_id', '!=', $data['customer_id'])->orWhereNull('customer_id'))
+            ->pluck('reference');
+
+        if ($etrangeres->isNotEmpty()) {
+            return 'Ces factures n’appartiennent pas à ce client : '.$etrangeres->implode(', ').'.';
+        }
+
+        $somme = round(array_sum(array_column($ventilations, 'amount')), 2);
+        if (abs($somme - round((float) $data['amount'], 2)) > 0.001) {
+            return sprintf(
+                'La répartition (%.2f DH) ne correspond pas au montant encaissé (%.2f DH).',
+                $somme,
+                (float) $data['amount'],
+            );
+        }
+
+        return null;
+    }
+
     public function store(Request $request, RecordPaymentAction $action): JsonResponse
     {
         /** @var array{customer_id: int, amount: float, payment_method_id?: int|null, sale_id?: int|null, cash_session_id?: int|null, cheque_reference?: string|null, received_at: string, note?: string|null} $data */
@@ -85,7 +149,18 @@ final class PaymentController extends Controller
             'cheque_id' => ['nullable', 'integer', 'exists:cheques,id'],
             'received_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
+            // Règlement ventilé sur plusieurs factures du même client.
+            'allocations' => ['sometimes', 'array', 'min:1'],
+            'allocations.*.sale_id' => ['required', 'integer', 'exists:sales,id'],
+            'allocations.*.amount' => ['required', 'numeric', 'min:0.01'],
         ]);
+
+        if (isset($data['allocations'])) {
+            $erreur = $this->verifierVentilations($data);
+            if ($erreur !== null) {
+                return response()->json(['message' => $erreur], 422);
+            }
+        }
 
         try {
             $payment = $action->execute($data, $request->user()?->id);
