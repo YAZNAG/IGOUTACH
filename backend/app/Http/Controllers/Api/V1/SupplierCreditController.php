@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Payments\Actions\DeclareChequeAction;
+use App\Domain\Payments\Models\Cheque;
 use App\Domain\Purchasing\Actions\PaySupplierCreditAction;
 use App\Domain\Purchasing\Models\GoodsReceipt;
 use App\Domain\Purchasing\Models\SupplierPayment;
@@ -147,16 +149,42 @@ final class SupplierCreditController extends Controller
      * Enregistre un règlement (total ou partiel) sur un bon de réception.
      * POST /goods-receipts/{id}/pay
      */
-    public function pay(Request $request, GoodsReceipt $goodsReceipt, PaySupplierCreditAction $action): JsonResponse
-    {
-        /** @var array{amount: float, payment_method_id?: int|null, paid_at?: string|null, notes?: string|null} $data */
+    public function pay(
+        Request $request,
+        GoodsReceipt $goodsReceipt,
+        PaySupplierCreditAction $action,
+        DeclareChequeAction $declarer,
+    ): JsonResponse {
+        /** @var array{amount: float, payment_method_id?: int|null, paid_at?: string|null, notes?: string|null, cheque_id?: int|null, cheque?: array{instrument?: string|null, number: string, cheque_date: string, bank?: string|null, origin: string, drawer_name?: string|null}} $data */
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'gt:0'],
             'payment_method_id' => ['nullable', 'integer', 'exists:payment_methods,id'],
             'cheque_id' => ['nullable', 'integer', 'exists:cheques,id'],
             'paid_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
+            // Effet remis au fournisseur : le nôtre, ou celui d'un tiers que
+            // l'on endosse à son profit.
+            ...DeclareChequeAction::reglesImbriquees([
+                Cheque::ORIGIN_OWN,
+                Cheque::ORIGIN_THIRD_PARTY,
+            ]),
         ]);
+
+        if (isset($data['cheque'])) {
+            try {
+                $cheque = $declarer->execute(
+                    donnees: $data['cheque'],
+                    direction: Cheque::DIRECTION_OUT,
+                    montant: (float) $data['amount'],
+                    supplierId: (int) $goodsReceipt->supplier_id,
+                    createdBy: $request->user()?->id,
+                );
+            } catch (RuntimeException $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            $data['cheque_id'] = $cheque->id;
+        }
 
         try {
             $payment = $action->execute(

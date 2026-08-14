@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/product.dart';
+import '../shared/payment_sheet.dart';
 import '../shared/product_picker.dart';
 import 'sales_screen.dart' show downloadSalePdf, downloadSaleDocument;
 
@@ -37,15 +38,23 @@ class _Ligne {
       );
 }
 
-/// Détail d'une vente.
+/// Détail d'une vente ou d'un devis.
 ///
-/// Tant qu'elle est en brouillon, tout se modifie : lignes, quantités, prix.
-/// Une fois confirmée, la vente a sorti du stock et engagé la créance — elle
-/// devient consultable, et ses trois documents sont accessibles.
+/// Tant que le document est en brouillon, tout se modifie : lignes, quantités,
+/// prix. Un devis suit exactement le même chemin qu'un bon — c'est la même
+/// saisie, seule la sortie diffère : le bon se confirme et sort du stock, le
+/// devis se convertit en vente.
+///
+/// Une fois confirmée, la vente a sorti du stock et engagé la créance : elle
+/// devient consultable, ses trois documents sont accessibles, et elle peut
+/// être réglée.
 class SaleDetailScreen extends StatefulWidget {
-  const SaleDetailScreen({super.key, required this.saleId});
+  const SaleDetailScreen({super.key, required this.saleId, this.converti = false});
 
   final int saleId;
+
+  /// Devis déjà transformé en vente : on ne le convertit pas deux fois.
+  final bool converti;
 
   @override
   State<SaleDetailScreen> createState() => _SaleDetailScreenState();
@@ -65,9 +74,20 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   String? _client;
   int? _clientId;
   double _total = 0;
+  double _paye = 0;
   List<_Ligne> _lignes = [];
 
+  /// Passe à `true` dès qu'une action change l'état côté serveur : la liste
+  /// qui nous a ouverts doit se recharger.
+  bool _modifie = false;
+  late bool _converti = widget.converti;
+
   bool get _brouillon => _statut == 'draft';
+
+  bool get _devis => _type == 'quote';
+
+  /// Reste dû d'une facture confirmée.
+  double get _restantDu => (_total - _paye).clamp(0, double.infinity);
 
   @override
   void initState() {
@@ -92,6 +112,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         _client = client?['name'] as String?;
         _clientId = (client?['id'] as num?)?.toInt();
         _total = (d['total'] as num?)?.toDouble() ?? 0;
+        _paye = (d['paid_amount'] as num?)?.toDouble() ?? 0;
         _lignes = (d['lines'] as List<dynamic>? ?? [])
             .map((e) => _Ligne.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -194,7 +215,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         },
       );
       if (!mounted) return;
-      showSuccessSnack(messenger, 'Bon enregistré.');
+      showSuccessSnack(messenger, _devis ? 'Devis enregistré.' : 'Bon enregistré.');
+      _modifie = true;
       await _charger();
     } catch (e) {
       if (!mounted) return;
@@ -222,6 +244,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       await _api.dio.post<Map<String, dynamic>>('/sales/${widget.saleId}/confirm');
       if (!mounted) return;
       showSuccessSnack(messenger, 'Vente confirmée.');
+      _modifie = true;
       await _charger();
     } catch (e) {
       if (!mounted) return;
@@ -231,12 +254,73 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     }
   }
 
+  /// Transforme le devis en vente. Le devis reste, la vente naît en brouillon.
+  Future<void> _convertir() async {
+    final confirme = await confirmAction(
+      context,
+      icon: Icons.swap_horiz,
+      title: 'Convertir en vente',
+      message: 'Créer une vente à partir du devis $_reference ?\n'
+          'Elle naîtra en brouillon, à confirmer ensuite.',
+      confirmLabel: 'Convertir',
+      confirmColor: AppTheme.success,
+    );
+    if (!confirme || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _enregistrement = true);
+    try {
+      final res = await _api.dio.post<Map<String, dynamic>>(
+        '/sales/${widget.saleId}/convert',
+      );
+      final reference =
+          (res.data!['data'] as Map<String, dynamic>)['reference'] as String? ?? '';
+      if (!mounted) return;
+      setState(() {
+        _converti = true;
+        _modifie = true;
+      });
+      showSuccessSnack(messenger, 'Vente $reference créée à partir du devis.');
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnack(messenger, friendlyError(e));
+    } finally {
+      if (mounted) setState(() => _enregistrement = false);
+    }
+  }
+
+  /// Encaisse un règlement sur cette facture précise.
+  Future<void> _regler() async {
+    final clientId = _clientId;
+    if (clientId == null) return;
+
+    final regle = await showPaymentSheet(
+      context,
+      customerId: clientId,
+      customerName: _client ?? 'Client',
+      saleId: widget.saleId,
+      saleReference: _reference,
+      dueAmount: _restantDu,
+    );
+    if (!regle || !mounted) return;
+
+    _modifie = true;
+    showSuccessSnack(ScaffoldMessenger.of(context), 'Règlement enregistré.');
+    await _charger();
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     if (!auth.can('sale.create')) return const NotAllowedView();
 
-    return Scaffold(
+    // Le retour signale à la liste appelante qu'elle doit se recharger.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop(_modifie);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(_reference.isEmpty ? 'Vente' : _reference),
         actions: [
@@ -250,6 +334,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       ),
       body: _corps(),
       bottomNavigationBar: _chargement || _erreur != null ? null : _barreActions(),
+      ),
     );
   }
 
@@ -277,17 +362,32 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       ),
                     ),
                     // Un brouillon n'est pas une facture : le nom du document
-                    // le dit, ici comme sur le PDF.
+                    // le dit, ici comme sur le PDF. Un devis reste un devis,
+                    // brouillon ou non — il n'a jamais rien engagé.
                     StatusBadge(
-                      label: _brouillon
-                          ? 'Bon'
-                          : (_type == 'quote' ? 'Devis' : 'Facture'),
-                      color: _brouillon ? AppTheme.warning : AppTheme.success,
+                      label: _devis
+                          ? (_converti ? 'Devis converti' : 'Devis')
+                          : (_brouillon ? 'Bon' : 'Facture'),
+                      color: _devis
+                          ? (_converti ? AppTheme.sky : AppTheme.warning)
+                          : (_brouillon ? AppTheme.warning : AppTheme.success),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 AmountText(formatMoney(_brouillon ? _totalLocal : _total), fontSize: 22),
+                if (!_brouillon && !_devis && _paye > 0) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _restantDu <= 0
+                        ? 'Réglée intégralement'
+                        : 'Payé ${formatMoney(_paye)} · reste ${formatMoney(_restantDu)}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _restantDu <= 0 ? AppTheme.success : AppTheme.danger,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -310,10 +410,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               style: TextStyle(color: AppTheme.textMuted),
             ),
           ),
-        if (!_brouillon) ...[
-          const SizedBox(height: 12),
-          _documents(),
-        ],
+        const SizedBox(height: 12),
+        _documents(),
       ],
     );
   }
@@ -380,8 +478,14 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     );
   }
 
-  /// Les trois documents d'une vente confirmée.
+  /// Documents disponibles selon l'état du document.
+  ///
+  /// Un devis ou un bon n'a qu'une pièce : lui-même. Le bon de livraison et
+  /// le bon de sortie n'existent qu'après confirmation, puisque rien n'est
+  /// sorti du dépôt avant.
   Widget _documents() {
+    final confirmee = !_brouillon && !_devis;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -394,25 +498,32 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ),
             OutlinedButton.icon(
               onPressed: () => downloadSalePdf(context, widget.saleId, _reference),
-              icon: const Icon(Icons.receipt_long_outlined, size: 18),
-              label: const Text('Facture'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () => downloadSaleDocument(
-                context, widget.saleId, 'delivery-pdf', 'BL-$_reference',
+              icon: Icon(
+                _devis
+                    ? Icons.request_quote_outlined
+                    : Icons.receipt_long_outlined,
+                size: 18,
               ),
-              icon: const Icon(Icons.local_shipping_outlined, size: 18),
-              label: const Text('Bon de livraison'),
+              label: Text(_devis ? 'Devis' : (_brouillon ? 'Bon' : 'Facture')),
             ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () => downloadSaleDocument(
-                context, widget.saleId, 'exit-pdf', 'BS-$_reference',
+            if (confirmee) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => downloadSaleDocument(
+                  context, widget.saleId, 'delivery-pdf', 'BL-$_reference',
+                ),
+                icon: const Icon(Icons.local_shipping_outlined, size: 18),
+                label: const Text('Bon de livraison'),
               ),
-              icon: const Icon(Icons.outbox_outlined, size: 18),
-              label: const Text('Bon de sortie'),
-            ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => downloadSaleDocument(
+                  context, widget.saleId, 'exit-pdf', 'BS-$_reference',
+                ),
+                icon: const Icon(Icons.outbox_outlined, size: 18),
+                label: const Text('Bon de sortie'),
+              ),
+            ],
           ],
         ),
       ),
@@ -420,12 +531,56 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   }
 
   Widget? _barreActions() {
-    if (!_brouillon) {
-      return null;
+    final auth = context.watch<AuthProvider>();
+
+    // Une facture confirmée et encore due se règle depuis son propre écran :
+    // c'est là qu'on la lit, c'est là qu'on encaisse.
+    if (!_brouillon && !_devis) {
+      if (_restantDu <= 0 || _clientId == null || !auth.can('payment.create')) {
+        return null;
+      }
+      return _barre([
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: _enregistrement ? null : _regler,
+            icon: const Icon(Icons.payments_outlined, size: 18),
+            label: Text('Régler ${formatMoney(_restantDu)}'),
+          ),
+        ),
+      ]);
     }
 
-    // Deux actions côte à côte : BottomActionBar n'en porte qu'une, on compose
-    // donc la barre ici plutôt que de détourner le composant partagé.
+    // Un devis ne sort rien du stock : il se convertit, il ne se confirme pas.
+    final VoidCallback? action =
+        _devis ? (_converti ? null : _convertir) : _confirmer;
+
+    return _barre([
+      Expanded(
+        child: OutlinedButton(
+          onPressed: _enregistrement || _lignes.isEmpty || !_brouillon
+              ? null
+              : _enregistrer,
+          child: const Text('Enregistrer'),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: FilledButton(
+          onPressed:
+              _enregistrement || _lignes.isEmpty || action == null ? null : action,
+          child: Text(
+            _enregistrement
+                ? 'En cours…'
+                : (_devis ? (_converti ? 'Déjà converti' : 'Convertir') : 'Confirmer'),
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  /// Barre du bas : BottomActionBar ne porte qu'une action, on compose donc
+  /// ici plutôt que de détourner le composant partagé.
+  Widget _barre(List<Widget> enfants) {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -433,23 +588,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           color: Colors.white,
           border: Border(top: BorderSide(color: AppTheme.border)),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _enregistrement || _lignes.isEmpty ? null : _enregistrer,
-                child: const Text('Enregistrer'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: FilledButton(
-                onPressed: _enregistrement || _lignes.isEmpty ? null : _confirmer,
-                child: Text(_enregistrement ? 'En cours…' : 'Confirmer'),
-              ),
-            ),
-          ],
-        ),
+        child: Row(children: enfants),
       ),
     );
   }

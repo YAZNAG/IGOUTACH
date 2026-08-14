@@ -9,6 +9,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { chequeDraftComplet, chequeDraftVide } from '@/features/cheques/components/ChequeDraftFields'
+import {
+  CustomerChequePanel,
+  type CustomerChequeValue,
+} from '@/features/cheques/components/CustomerChequePanel'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -90,6 +95,10 @@ export function CustomerCreditsPage() {
   const [receivedAt, setReceivedAt] = useState(() => new Date().toISOString().slice(0, 10))
   const [note, setNote] = useState('')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [cheque, setCheque] = useState<CustomerChequeValue>({
+    draft: chequeDraftVide(),
+    autreSignataire: false,
+  })
 
   /**
    * Montant affecté à chaque facture, par identifiant.
@@ -120,10 +129,10 @@ export function CustomerCreditsPage() {
     enabled: selected !== null,
   })
 
-  const { data: methods = [] } = useQuery<{ id: number; name: string }[]>({
+  const { data: methods = [] } = useQuery<{ id: number; name: string; code: string }[]>({
     queryKey: ['payment-method-options'],
     queryFn: async () => {
-      const { data } = await api.get<{ data: { id: number; name: string }[] }>('/payment-methods')
+      const { data } = await api.get<{ data: { id: number; name: string; code: string }[] }>('/payment-methods')
       return data.data
     },
     enabled: selected !== null && canCollect,
@@ -142,6 +151,12 @@ export function CustomerCreditsPage() {
     enabled: selected !== null && canCollect,
   })
 
+  // Le code du mode fait foi : « contient ch » dans le libelle attraperait
+  // d'autres modes.
+  const codeMode = (methods.find((m) => m.id === methodId)?.code ?? '').toUpperCase()
+  const instrument: 'cheque' | 'traite' = codeMode === 'TRAITE' ? 'traite' : 'cheque'
+  const estEffet = codeMode === 'CHEQUE' || codeMode === 'TRAITE'
+
   const collect = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
@@ -159,6 +174,20 @@ export function CustomerCreditsPage() {
         // le comportement historique, conservé quand aucune facture n'est
         // cochée.
         ...(ventilations.length > 0 ? { allocations: ventilations } : {}),
+        // L'effet entre au portefeuille au nom qu'il porte : celui du client
+        // ou celui du tiers qui l'a signe.
+        ...(estEffet && chequeDraftComplet(cheque.draft)
+          ? {
+              cheque: {
+                instrument,
+                number: cheque.draft.number.trim(),
+                cheque_date: cheque.draft.cheque_date,
+                bank: cheque.draft.bank.trim() || null,
+                origin: cheque.autreSignataire ? 'third_party' : 'customer',
+                drawer_name: cheque.autreSignataire ? cheque.draft.drawer_name.trim() : null,
+              },
+            }
+          : {}),
       })
     },
     onSuccess: () => {
@@ -166,6 +195,7 @@ export function CustomerCreditsPage() {
       setSelected(null)
       setNote('')
       setParFacture({})
+      setCheque({ draft: chequeDraftVide(), autreSignataire: false })
       qc.invalidateQueries({ queryKey: ['customers-aging'] })
       qc.invalidateQueries({ queryKey: ['customer-statement'] })
       qc.invalidateQueries({ queryKey: ['payments'] })
@@ -202,6 +232,7 @@ export function CustomerCreditsPage() {
     setMethodId(0)
     setReceivedAt(new Date().toISOString().slice(0, 10))
     setNote('')
+    setCheque({ draft: chequeDraftVide(), autreSignataire: false })
     setSuccessMessage(null)
     collect.reset()
   }
@@ -300,9 +331,18 @@ export function CustomerCreditsPage() {
                 <Input id="cc-date" type="date" value={receivedAt} onChange={(e) => setReceivedAt(e.target.value)} />
               </Field>
               <Field label="Note" htmlFor="cc-note">
-                <Input id="cc-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="N° de chèque…" />
+                <Input id="cc-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Précision…" />
               </Field>
             </div>
+
+            {estEffet ? (
+              <CustomerChequePanel
+                value={cheque}
+                onChange={setCheque}
+                customerName={selected.customer}
+                instrument={instrument}
+              />
+            ) : null}
 
             {/* Règlement facture par facture. Sans sélection, le versement
                 réduit l'encours global, comme auparavant. */}

@@ -65,6 +65,9 @@ final class RolePermissionSeeder extends Seeder
             'sale.create',
             'payment.create',
             'expense.create',
+            // On ne peut pas enregistrer un règlement sans choisir son mode :
+            // consulter la liste fait partie de l'encaissement.
+            'payment_method.view',
         ],
     ];
 

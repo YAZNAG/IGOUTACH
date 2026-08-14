@@ -9,7 +9,7 @@ import '../../core/widgets.dart';
 import '../../models/quote.dart';
 import '../sales/create_sale_screen.dart';
 import '../sales/sales_screen.dart' show downloadSalePdf;
-import 'quote_detail_screen.dart';
+import '../sales/sale_detail_screen.dart';
 
 /// Liste des devis : GET /sales?type=quote.
 ///
@@ -165,10 +165,11 @@ class _QuotesScreenState extends State<QuotesScreen> {
   Future<void> _open(QuoteSummary quote) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => QuoteDetailScreen(
+        // Un devis se modifie comme un bon : c'est le meme ecran, la meme
+        // saisie. Seule la sortie differe.
+        builder: (_) => SaleDetailScreen(
           saleId: quote.id,
-          reference: quote.reference,
-          converted: quote.converted,
+          converti: quote.converted,
         ),
       ),
     );

@@ -83,14 +83,23 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       final categories = data
           .map((e) => ExpenseCategory.fromJson(e as Map<String, dynamic>))
           .toList();
-      final resModes =
-          await _api.dio.get<Map<String, dynamic>>('/payment-methods');
-      final modes = (resModes.data!['data'] as List<dynamic>? ?? [])
-          .map((e) => (
-                id: (e as Map<String, dynamic>)['id'] as int,
-                name: e['name'] as String? ?? '',
-              ))
-          .toList();
+
+      // Les modes de paiement se chargent à part : ils dépendent d'un droit
+      // distinct, et un refus ne doit pas emporter tout l'écran. Sans eux, la
+      // charge se saisit en attente de règlement.
+      List<({int id, String name})> modes = [];
+      try {
+        final resModes =
+            await _api.dio.get<Map<String, dynamic>>('/payment-methods');
+        modes = (resModes.data!['data'] as List<dynamic>? ?? [])
+            .map((e) => (
+                  id: (e as Map<String, dynamic>)['id'] as int,
+                  name: e['name'] as String? ?? '',
+                ))
+            .toList();
+      } catch (_) {
+        modes = [];
+      }
 
       final scope = await WarehouseScope.load(userWarehouseId);
       if (!mounted) return;
@@ -99,6 +108,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
         _categoryId = categories.isEmpty ? null : categories.first.id;
         _modes = modes;
         _modeId = modes.isEmpty ? null : modes.first.id;
+        // Sans mode disponible, se déclarer payé mènerait à un refus du
+        // serveur : la charge part en attente de règlement.
+        if (modes.isEmpty) _payee = false;
         _scope = scope;
         _loading = false;
       });
@@ -302,17 +314,24 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
           // une charge à crédit reviendrait à faire saisir un règlement qui
           // n'a pas eu lieu.
           if (_payee)
-            DropdownButtonFormField<int>(
-              initialValue: _modeId,
-              decoration: const InputDecoration(
-                labelText: 'Mode de paiement *',
-                prefixIcon: Icon(Icons.account_balance_wallet_outlined),
-              ),
-              items: _modes
-                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
-                  .toList(),
-              onChanged: (v) => setState(() => _modeId = v),
-            )
+            _modes.isEmpty
+                ? const ErrorBox(
+                    message: 'Aucun mode de paiement n\'est accessible : '
+                        'enregistrez la charge à crédit, puis réglez-la depuis '
+                        'la liste des charges.',
+                  )
+                : DropdownButtonFormField<int>(
+                    initialValue: _modeId,
+                    decoration: const InputDecoration(
+                      labelText: 'Mode de paiement *',
+                      prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+                    ),
+                    items: _modes
+                        .map((m) =>
+                            DropdownMenuItem(value: m.id, child: Text(m.name)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _modeId = v),
+                  )
           else
             Container(
               width: double.infinity,

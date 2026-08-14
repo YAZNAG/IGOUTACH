@@ -260,11 +260,15 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
     mutationFn: async () => {
       await ensureCsrfCookie()
 
-      // Le chèque est créé avant le règlement : il doit exister pour être
-      // référencé, et il reste au portefeuille même si l'encaissement échoue.
+      const declare = isCheque && chequeDraftComplet(cheque.draft)
+
+      // Une photo suppose un téléversement, donc le portefeuille : ce chemin
+      // exige « cheque.manage ». Sans photo, l'effet est déclaré avec le
+      // règlement lui-même — celui qui encaisse n'a pas à détenir en plus le
+      // droit d'administrer le portefeuille.
       let chequeId: number | null = null
 
-      if (isCheque && chequeDraftComplet(cheque.draft)) {
+      if (declare && cheque.draft.image !== null) {
         const cree = await creerCheque.mutateAsync({
           instrument,
           number: cheque.draft.number.trim(),
@@ -287,6 +291,18 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
         cheque_reference: isCheque ? cheque.draft.number.trim() || null : null,
         cheque_id: chequeId,
         received_at: date,
+        ...(declare && chequeId === null
+          ? {
+              cheque: {
+                instrument,
+                number: cheque.draft.number.trim(),
+                cheque_date: cheque.draft.cheque_date,
+                bank: cheque.draft.bank.trim() || null,
+                origin: cheque.autreSignataire ? 'third_party' : 'customer',
+                drawer_name: cheque.autreSignataire ? cheque.draft.drawer_name.trim() : null,
+              },
+            }
+          : {}),
       })
     },
     onSuccess: () => {

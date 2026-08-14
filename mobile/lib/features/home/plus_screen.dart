@@ -11,6 +11,7 @@ import '../stock/movements_list_screen.dart';
 import '../transfers/transfer_requests_screen.dart';
 import '../credits/credits_screen.dart';
 import '../payments/payments_screen.dart';
+import '../quotes/quotes_screen.dart';
 import '../sales/delivery_notes_screen.dart';
 import '../sales/sales_screen.dart';
 
@@ -63,6 +64,20 @@ class PlusScreen extends StatelessWidget {
           basePath: '/stock/exits',
           isExit: true,
         ),
+      ),
+      _Entree(
+        icone: Icons.request_quote_outlined,
+        titre: 'Devis',
+        sousTitre: 'Proposer un prix sans engager le stock',
+        permission: 'sale.create',
+        page: () => const QuotesScreen(),
+      ),
+      _Entree(
+        icone: Icons.point_of_sale_outlined,
+        titre: 'Ventes',
+        sousTitre: 'Tous les documents de vente',
+        permission: 'sale.create',
+        page: () => const SalesScreen(),
       ),
       _Entree(
         icone: Icons.description_outlined,

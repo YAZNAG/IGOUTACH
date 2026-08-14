@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Customers\Models\Customer;
 use App\Domain\Customers\Models\CustomerLedgerEntry;
 use App\Domain\Customers\Services\CustomerLedger;
+use App\Domain\Payments\Actions\DeclareChequeAction;
+use App\Domain\Payments\Models\Cheque;
 use App\Domain\Sales\Actions\RecordPaymentAction;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Sale;
@@ -169,9 +171,9 @@ final class PaymentController extends Controller
         return null;
     }
 
-    public function store(Request $request, RecordPaymentAction $action): JsonResponse
+    public function store(Request $request, RecordPaymentAction $action, DeclareChequeAction $declarer): JsonResponse
     {
-        /** @var array{customer_id: int, amount: float, payment_method_id?: int|null, sale_id?: int|null, cash_session_id?: int|null, cheque_reference?: string|null, received_at: string, note?: string|null} $data */
+        /** @var array{customer_id: int, amount: float, payment_method_id?: int|null, sale_id?: int|null, cash_session_id?: int|null, cheque_reference?: string|null, received_at: string, note?: string|null, cheque?: array{instrument?: string|null, number: string, cheque_date: string, bank?: string|null, origin: string, drawer_name?: string|null}} $data */
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
@@ -186,6 +188,12 @@ final class PaymentController extends Controller
             'allocations' => ['sometimes', 'array', 'min:1'],
             'allocations.*.sale_id' => ['required', 'integer', 'exists:sales,id'],
             'allocations.*.amount' => ['required', 'numeric', 'min:0.01'],
+            // Effet remis par le client, déclaré au fil de l'encaissement. Le
+            // chèque peut être le sien ou celui d'un tiers.
+            ...DeclareChequeAction::reglesImbriquees([
+                Cheque::ORIGIN_CUSTOMER,
+                Cheque::ORIGIN_THIRD_PARTY,
+            ]),
         ]);
 
         if (isset($data['allocations'])) {
@@ -194,6 +202,27 @@ final class PaymentController extends Controller
                 return response()->json(['message' => $erreur], 422);
             }
         }
+
+        // L'effet est créé avant le règlement : il doit exister pour être
+        // référencé, et il reste au portefeuille même si l'encaissement échoue.
+        if (isset($data['cheque'])) {
+            try {
+                $cheque = $declarer->execute(
+                    donnees: $data['cheque'],
+                    direction: Cheque::DIRECTION_IN,
+                    montant: (float) $data['amount'],
+                    customerId: (int) $data['customer_id'],
+                    createdBy: $request->user()?->id,
+                );
+            } catch (RuntimeException $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            $data['cheque_id'] = $cheque->id;
+            $data['cheque_reference'] ??= $cheque->number;
+        }
+
+        unset($data['cheque']);
 
         try {
             $payment = $action->execute($data, $request->user()?->id);

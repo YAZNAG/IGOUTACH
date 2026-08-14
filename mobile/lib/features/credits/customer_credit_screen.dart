@@ -3,14 +3,38 @@ import 'package:provider/provider.dart';
 
 import '../../core/api_client.dart';
 import '../../core/auth_provider.dart';
+import '../../core/format.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/customer.dart';
 import '../shared/customer_account.dart';
 import '../shared/payment_sheet.dart';
 
+/// Facture encore due (GET /customers/{id}/open-invoices).
+class _FactureDue {
+  const _FactureDue({
+    required this.id,
+    required this.reference,
+    required this.remaining,
+    this.date,
+  });
+
+  final int id;
+  final String reference;
+  final double remaining;
+  final String? date;
+
+  factory _FactureDue.fromJson(Map<String, dynamic> j) => _FactureDue(
+        id: (j['id'] as num).toInt(),
+        reference: j['reference'] as String? ?? '',
+        remaining: (j['remaining'] as num?)?.toDouble() ?? 0,
+        date: j['date'] as String?,
+      );
+}
+
 /// Détail du crédit d'un client : relevé de compte
-/// (GET /customers/{id}/statement) et encaissement direct (sans vente).
+/// (GET /customers/{id}/statement), factures dues réglables une à une, et
+/// encaissement direct sur l'encours.
 class CustomerCreditScreen extends StatefulWidget {
   const CustomerCreditScreen({
     super.key,
@@ -29,6 +53,9 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
   final _api = ApiClient.instance;
 
   List<StatementEntry> _entries = [];
+
+  /// Factures encore dues, réglables une par une.
+  List<_FactureDue> _facturesDues = [];
   double _balance = 0;
   double _creditLimit = 0;
   bool _isBlocked = false;
@@ -63,6 +90,21 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
       final entries = (data['entries'] as List<dynamic>? ?? [])
           .map((e) => StatementEntry.fromJson(e as Map<String, dynamic>))
           .toList();
+      // Le relevé dit ce que le client doit ; les factures ouvertes disent
+      // sur quoi. Un refus ici (droit d'encaisser absent) ne doit pas priver
+      // du relevé lui-même.
+      List<_FactureDue> dues = [];
+      try {
+        final resFactures = await _api.dio.get<Map<String, dynamic>>(
+          '/customers/${widget.customerId}/open-invoices',
+        );
+        dues = (resFactures.data!['data'] as List<dynamic>? ?? [])
+            .map((e) => _FactureDue.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (_) {
+        dues = [];
+      }
+
       if (!mounted) return;
       setState(() {
         _name = customer?['name'] as String? ?? _name;
@@ -70,6 +112,7 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
         _creditLimit = (data['credit_limit'] as num?)?.toDouble() ?? 0;
         _isBlocked = data['is_blocked'] == true;
         _entries = entries;
+        _facturesDues = dues;
         _loading = false;
       });
     } catch (e) {
@@ -93,6 +136,23 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
     if (!mounted || !saved) return;
     _changed = true;
     showSuccessSnack(messenger, 'Encaissement enregistré.');
+    _load();
+  }
+
+  /// Règle une facture précise, plutôt que l'encours global.
+  Future<void> _reglerFacture(_FactureDue facture) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = await showPaymentSheet(
+      context,
+      customerId: widget.customerId,
+      customerName: _name,
+      saleId: facture.id,
+      saleReference: facture.reference,
+      dueAmount: facture.remaining,
+    );
+    if (!mounted || !saved) return;
+    _changed = true;
+    showSuccessSnack(messenger, 'Facture ${facture.reference} réglée.');
     _load();
   }
 
@@ -129,6 +189,13 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
                       padding: const EdgeInsets.only(top: 8, bottom: 96),
                       children: [
                         _buildSummary(),
+                        if (canCollect && _facturesDues.isNotEmpty) ...[
+                          const SectionTitle(
+                            'Factures à régler',
+                            padding: EdgeInsets.fromLTRB(16, 20, 16, 4),
+                          ),
+                          ..._facturesDues.map(_carteFacture),
+                        ],
                         const SectionTitle(
                           'Relevé de compte',
                           padding: EdgeInsets.fromLTRB(16, 20, 16, 4),
@@ -148,6 +215,37 @@ class _CustomerCreditScreenState extends State<CustomerCreditScreen> {
                       ],
                     ),
                   ),
+      ),
+    );
+  }
+
+  /// Une facture due, avec son bouton de règlement.
+  ///
+  /// Régler facture par facture plutôt que l'encours global permet de dire
+  /// exactement ce que le versement solde — c'est ce que le client demande
+  /// quand il paie « la facture de mardi ».
+  Widget _carteFacture(_FactureDue facture) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.receipt_long_outlined, color: AppTheme.sky),
+        title: Text(
+          facture.reference,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Text(
+          'Reste dû ${formatMoney(facture.remaining)}'
+          '${facture.date == null ? '' : ' · ${facture.date}'}',
+          style: const TextStyle(fontSize: 12.5),
+        ),
+        trailing: FilledButton(
+          onPressed: () => _reglerFacture(facture),
+          style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+          child: const Text('Régler'),
+        ),
       ),
     );
   }

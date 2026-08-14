@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Payments\Actions\DeclareChequeAction;
 use App\Domain\Payments\Models\Cheque;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +13,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use RuntimeException;
 
 /**
  * Portefeuille de chèques : saisie, consultation, endossement.
@@ -80,30 +82,34 @@ final class ChequeController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
-        // Un chèque signé par un tiers n'a d'intérêt que si l'on sait qui l'a
-        // signé : sans ce nom, impossible de le réclamer en cas de rejet.
-        if ($data['origin'] === Cheque::ORIGIN_THIRD_PARTY && blank($data['drawer_name'] ?? null)) {
-            return response()->json([
-                'message' => 'Le nom porté sur le chèque est obligatoire pour un chèque signé par un tiers.',
-                'errors' => ['drawer_name' => ['Nom du signataire requis.']],
-            ], 422);
-        }
+        $imagePath = null;
 
         if ($request->hasFile('image')) {
             /** @var UploadedFile $file */
             $file = $request->file('image');
-            $data['image_path'] = (string) $file->store('cheques', 'public');
+            $imagePath = (string) $file->store('cheques', 'public');
         }
 
-        unset($data['image']);
+        try {
+            $cheque = app(DeclareChequeAction::class)->execute(
+                donnees: $data,
+                direction: $data['direction'],
+                montant: (float) $data['amount'],
+                customerId: isset($data['customer_id']) ? (int) $data['customer_id'] : null,
+                supplierId: isset($data['supplier_id']) ? (int) $data['supplier_id'] : null,
+                createdBy: $request->user()?->id,
+                imagePath: $imagePath,
+            );
+        } catch (RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => ['drawer_name' => ['Nom du signataire requis.']],
+            ], 422);
+        }
 
-        // La valeur par défaut vit en base : sans cette ligne, l'objet rendu
-        // juste après la création porterait un instrument vide.
-        $data['instrument'] ??= Cheque::INSTRUMENT_CHEQUE;
-        $data['status'] = Cheque::STATUS_PORTFOLIO;
-        $data['created_by'] = $request->user()?->id;
-
-        $cheque = Cheque::query()->create($data);
+        if (($data['note'] ?? null) !== null) {
+            $cheque->update(['note' => $data['note']]);
+        }
 
         return response()->json(['data' => $this->format($cheque->load(['customer:id,name', 'supplier:id,name']))], 201);
     }

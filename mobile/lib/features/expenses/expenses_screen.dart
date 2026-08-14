@@ -187,7 +187,17 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       showErrorSnack(messenger, friendlyError(e));
       return;
     }
-    if (!mounted || modes.isEmpty) return;
+    if (!mounted) return;
+    // Un écran qui se ferme sans rien dire laisse croire à un bug : la liste
+    // vide a une cause, autant la nommer.
+    if (modes.isEmpty) {
+      showErrorSnack(
+        messenger,
+        'Aucun mode de paiement n\'est défini : demandez à l\'administrateur '
+        'd\'en créer un dans Paramétrage.',
+      );
+      return;
+    }
 
     // Le mode est demandé avant d'appeler le serveur : sans lui le règlement
     // serait refusé, autant ne pas faire l'aller-retour pour rien.
