@@ -365,12 +365,16 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     // le dit, ici comme sur le PDF. Un devis reste un devis,
                     // brouillon ou non — il n'a jamais rien engagé.
                     StatusBadge(
-                      label: _devis
-                          ? (_converti ? 'Devis converti' : 'Devis')
-                          : (_brouillon ? 'Bon' : 'Facture'),
-                      color: _devis
-                          ? (_converti ? AppTheme.sky : AppTheme.warning)
-                          : (_brouillon ? AppTheme.warning : AppTheme.success),
+                      label: _statut == 'cancelled'
+                          ? 'Annulée'
+                          : _devis
+                              ? (_converti ? 'Devis converti' : 'Devis')
+                              : (_brouillon ? 'Bon' : 'Facture'),
+                      color: _statut == 'cancelled'
+                          ? AppTheme.danger
+                          : _devis
+                              ? (_converti ? AppTheme.sky : AppTheme.warning)
+                              : (_brouillon ? AppTheme.warning : AppTheme.success),
                     ),
                   ],
                 ),
@@ -534,9 +538,13 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     final auth = context.watch<AuthProvider>();
 
     // Une facture confirmée et encore due se règle depuis son propre écran :
-    // c'est là qu'on la lit, c'est là qu'on encaisse.
+    // c'est là qu'on la lit, c'est là qu'on encaisse. Une vente annulée, elle,
+    // n'a plus de créance à solder.
     if (!_brouillon && !_devis) {
-      if (_restantDu <= 0 || _clientId == null || !auth.can('payment.create')) {
+      if (_statut != 'confirmed' ||
+          _restantDu <= 0 ||
+          _clientId == null ||
+          !auth.can('payment.create')) {
         return null;
       }
       return _barre([
