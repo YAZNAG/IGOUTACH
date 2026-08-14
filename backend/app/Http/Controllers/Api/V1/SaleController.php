@@ -689,6 +689,6 @@ final class SaleController extends Controller
         return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.delivery-note', [
             'sale' => $sale,
             'lines' => $lines,
-        ])->download('BS-'.$sale->reference.'.pdf');
+        ])->download('BL-'.$sale->reference.'.pdf');
     }
 }

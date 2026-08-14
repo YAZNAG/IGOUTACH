@@ -175,7 +175,7 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
         <div>
           <h1 className="text-xl font-semibold text-ink">Ventes</h1>
           <p className="text-sm text-muted">
-            Factures — la validation sort le stock et génère le bon de sortie. Les devis se créent dans la page Devis.
+            Factures — la validation sort le stock et génère le bon de livraison. Les devis se créent dans la page Devis.
           </p>
         </div>
         {can('sale.create') ? (
@@ -278,8 +278,8 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => downloadFile(`/sales/${s.id}/exit-pdf`, `BS-${s.reference}.pdf`)}
-                              title="Bon de sortie PDF"
+                              onClick={() => downloadFile(`/sales/${s.id}/exit-pdf`, `BL-${s.reference}.pdf`)}
+                              title="Bon de livraison PDF"
                             >
                               <FileText className="h-4 w-4" />
                             </Button>
@@ -905,9 +905,9 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
       qc.invalidateQueries({ queryKey: ['stock-exits'] })
       qc.invalidateQueries({ queryKey: ['customers'] })
       qc.invalidateQueries({ queryKey: ['payments'] })
-      // Bon de sortie généré automatiquement à la validation d'une facture.
+      // Bon de livraison généré automatiquement à la validation d'une facture.
       if (sale?.type === 'invoice') {
-        void downloadFile(`/sales/${id}/exit-pdf`, `BS-${sale.reference}.pdf`)
+        void downloadFile(`/sales/${id}/exit-pdf`, `BL-${sale.reference}.pdf`)
       }
     },
   })
@@ -1044,11 +1044,11 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => downloadFile(`/sales/${sale.id}/exit-pdf`, `BS-${sale.reference}.pdf`)}
-                  title="Bon de sortie (quantités seules)"
+                  onClick={() => downloadFile(`/sales/${sale.id}/exit-pdf`, `BL-${sale.reference}.pdf`)}
+                  title="Bon de livraison PDF"
                 >
                   <FileText className="h-4 w-4" />
-                  Bon de sortie
+                  Bon de livraison
                 </Button>
               ) : null}
             </>
