@@ -2,10 +2,14 @@ import { api } from '@/lib/api'
 
 export type ChequeDirection = 'in' | 'out'
 export type ChequeOrigin = 'customer' | 'own' | 'third_party'
+/** Chèque ou traite : mêmes champs, même cycle. */
+export type ChequeInstrument = 'cheque' | 'traite'
+
 export type ChequeStatus = 'portfolio' | 'handed_over' | 'cashed' | 'bounced'
 
 export interface Cheque {
   id: number
+  instrument: ChequeInstrument
   number: string
   cheque_date: string
   amount: number
@@ -24,6 +28,8 @@ export interface Cheque {
 }
 
 export interface ChequeInput {
+  /** Par défaut « cheque » côté serveur. */
+  instrument?: ChequeInstrument
   number: string
   cheque_date: string
   amount: number

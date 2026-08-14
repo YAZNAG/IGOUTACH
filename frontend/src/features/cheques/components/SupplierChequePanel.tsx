@@ -20,6 +20,11 @@ export function supplierChequeVide(): SupplierChequeValue {
 interface SupplierChequePanelProps {
   value: SupplierChequeValue
   onChange: (value: SupplierChequeValue) => void
+  /**
+   * Effet remis. Chèque et traite se saisissent à l'identique — provenance,
+   * série, date — seul le mot change à l'écran.
+   */
+  instrument?: 'cheque' | 'traite'
 }
 
 /**
@@ -29,7 +34,8 @@ interface SupplierChequePanelProps {
  * second cas on peut endosser un chèque déjà reçu d'un client — seuls ceux
  * encore en portefeuille sont proposés, un chèque remis ne peut pas resservir.
  */
-export function SupplierChequePanel({ value, onChange }: SupplierChequePanelProps) {
+export function SupplierChequePanel({ value, onChange, instrument = 'cheque' }: SupplierChequePanelProps) {
+  const effet = instrument === 'traite' ? 'traite' : 'chèque'
   const tiers = value.source === 'third_party'
   // Le portefeuille n'est interrogé que s'il peut servir.
   const { data: portefeuille = [], isLoading } = useCheques({ endorsable: true }, tiers)
@@ -44,7 +50,7 @@ export function SupplierChequePanel({ value, onChange }: SupplierChequePanelProp
     <Card className="border-dashed">
       <CardBody className="space-y-4">
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium text-ink">Quel chèque remettez-vous ?</legend>
+          <legend className="text-sm font-medium text-ink">Quel {effet} remettez-vous ?</legend>
 
           <label className="flex items-center gap-2 text-sm text-ink">
             <input

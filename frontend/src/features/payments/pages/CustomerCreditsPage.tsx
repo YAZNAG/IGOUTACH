@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { HandCoins, X } from 'lucide-react'
+import { HandCoins, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -23,6 +24,9 @@ interface AgingRow {
 }
 
 interface LedgerEntry {
+  id: number
+  /** Vrai quand l'écriture reflète une facture ou un règlement. */
+  from_document: boolean
   date: string | null
   type: string
   amount: number
@@ -95,6 +99,10 @@ export function CustomerCreditsPage() {
    */
   const [parFacture, setParFacture] = useState<Record<number, string>>({})
 
+  /** Écriture dont la suppression attend confirmation. */
+  const [aConfirmer, setAConfirmer] = useState<LedgerEntry | null>(null)
+  const [erreurSuppression, setErreurSuppression] = useState<string | null>(null)
+
   const { data: rows = [], isLoading } = useQuery<AgingRow[]>({
     queryKey: ['customers-aging'],
     queryFn: async () => {
@@ -162,6 +170,23 @@ export function CustomerCreditsPage() {
       qc.invalidateQueries({ queryKey: ['customer-statement'] })
       qc.invalidateQueries({ queryKey: ['payments'] })
       qc.invalidateQueries({ queryKey: ['customers'] })
+    },
+  })
+
+  const supprimerEcriture = useMutation({
+    mutationFn: async (id: number) => {
+      await ensureCsrfCookie()
+      await api.delete(`/customer-ledger-entries/${id}`)
+    },
+    onSuccess: () => {
+      setAConfirmer(null)
+      qc.invalidateQueries({ queryKey: ['customer-statement'] })
+      qc.invalidateQueries({ queryKey: ['customers-aging'] })
+      qc.invalidateQueries({ queryKey: ['open-invoices'] })
+    },
+    onError: (e) => {
+      setAConfirmer(null)
+      setErreurSuppression(errorMessage(e, 'Suppression impossible.'))
     },
   })
 
@@ -393,6 +418,7 @@ export function CustomerCreditsPage() {
                         <th className="px-4 py-2 font-medium">Note</th>
                         <th className="px-4 py-2 text-right font-medium">Montant</th>
                         <th className="px-4 py-2 text-right font-medium">Encours après</th>
+                        <th className="px-4 py-2" />
                       </tr>
                     </thead>
                     <tbody>
@@ -407,6 +433,21 @@ export function CustomerCreditsPage() {
                               {e.amount > 0 ? '+' : ''}{money(e.amount)}
                             </td>
                             <td className="tabular px-4 py-2 text-right text-ink">{money(e.balance_after)}</td>
+                            <td className="px-4 py-2 text-right">
+                              {/* Une écriture issue d'une facture ou d'un
+                                  règlement se défait par son document : le
+                                  bouton n'apparaît pas, il serait refusé. */}
+                              {!e.from_document && canCollect ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  aria-label="Supprimer cette écriture"
+                                  onClick={() => { setErreurSuppression(null); setAConfirmer(e) }}
+                                >
+                                  <Trash2 className="h-4 w-4 text-bad" />
+                                </Button>
+                              ) : null}
+                            </td>
                           </tr>
                         )
                       })}
@@ -469,6 +510,27 @@ export function CustomerCreditsPage() {
           )}
         </CardBody>
       </Card>
+
+      {erreurSuppression ? (
+        <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{erreurSuppression}</p>
+      ) : null}
+
+      <ConfirmDialog
+        open={aConfirmer !== null}
+        title="Supprimer cette écriture"
+        message={
+          <>
+            Supprimer l'écriture de <strong>{aConfirmer ? money(aConfirmer.amount) : ''} DH</strong>
+            {aConfirmer?.note ? <> « {aConfirmer.note} »</> : null} ? L'encours du client et les
+            soldes suivants du relevé seront recalculés. Cette opération est définitive.
+          </>
+        }
+        confirmLabel="Supprimer"
+        danger
+        isPending={supprimerEcriture.isPending}
+        onConfirm={() => aConfirmer && supprimerEcriture.mutate(aConfirmer.id)}
+        onCancel={() => setAConfirmer(null)}
+      />
     </div>
   )
 }

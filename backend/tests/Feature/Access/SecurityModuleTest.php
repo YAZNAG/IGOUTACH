@@ -52,7 +52,11 @@ it('gère les modes de paiement', function () {
     ])->assertOk()->assertJsonPath('data.name', 'Espèces MAD');
 
     $this->actingAs($user)->deleteJson("/api/v1/payment-methods/{$created['id']}")->assertOk();
-    expect(PaymentMethod::count())->toBe(0);
+
+    // On vérifie que CE mode a disparu, pas que la table est vide : des modes
+    // sont désormais semés par migration, et compter les lignes ferait échouer
+    // ce test à chaque nouveau mode livré.
+    expect(PaymentMethod::query()->find($created['id']))->toBeNull();
 });
 
 it('rattache des utilisateurs à un lieu', function () {

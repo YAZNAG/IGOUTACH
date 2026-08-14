@@ -312,6 +312,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('cheques/{cheque}', [ChequeController::class, 'destroy'])->middleware('can:cheque.manage');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
         // Factures encore dues : sert à choisir celles qu'un règlement solde.
+        // Retrait d'une ecriture saisie a la main ; le controleur refuse
+        // celles adossees a un document.
+        Route::delete('customer-ledger-entries/{entry}', [PaymentController::class, 'destroyLedgerEntry'])->middleware('can:credit.view');
         Route::get('customers/{customer}/open-invoices', [PaymentController::class, 'openInvoices'])->middleware('can:payment.create');
         Route::get('customers/{customer}/overview', [CustomerController::class, 'overview'])->middleware('can:customer.view');
 

@@ -56,4 +56,35 @@ final class CustomerLedger
             return $entry;
         });
     }
+
+    /**
+     * Retire une ecriture et reconstruit la suite du grand-livre.
+     *
+     * Les soldes cumules qui suivent doivent etre recalcules : laisser
+     * « balance_after » tel quel donnerait un releve dont les lignes ne
+     * s'enchainent plus, et un solde client faux.
+     *
+     * Le deblocage n'est pas automatique : un client bloque pour depassement
+     * le reste tant qu'on ne l'a pas debloque a la main, comme a l'ordinaire.
+     */
+    public function supprimerEcriture(CustomerLedgerEntry $entry): void
+    {
+        DB::transaction(function () use ($entry): void {
+            /** @var Customer $customer */
+            $customer = Customer::query()->lockForUpdate()->findOrFail($entry->customer_id);
+
+            $entry->delete();
+
+            $solde = 0.0;
+            CustomerLedgerEntry::query()
+                ->where('customer_id', $customer->id)
+                ->orderBy('id')
+                ->each(function (CustomerLedgerEntry $ligne) use (&$solde): void {
+                    $solde = round($solde + (float) $ligne->amount, 2);
+                    $ligne->update(['balance_after' => $solde]);
+                });
+
+            $customer->update(['balance' => $solde]);
+        });
+    }
 }

@@ -12,6 +12,11 @@ interface CustomerChequePanelProps {
   onChange: (value: CustomerChequeValue) => void
   /** Nom du client réglant la facture, affiché comme choix par défaut. */
   customerName?: string | null
+  /**
+   * Effet saisi. Chèque et traite portent les mêmes champs et le même choix
+   * de signataire : seul le mot change à l'écran.
+   */
+  instrument?: 'cheque' | 'traite'
 }
 
 /**
@@ -21,8 +26,10 @@ interface CustomerChequePanelProps {
  * client règle avec le chèque d'un tiers, et c'est ce nom-là que la banque
  * opposera en cas de rejet.
  */
-export function CustomerChequePanel({ value, onChange, customerName }: CustomerChequePanelProps) {
+export function CustomerChequePanel({ value, onChange, customerName, instrument = 'cheque' }: CustomerChequePanelProps) {
   const nomClient = customerName?.trim() ? customerName : 'le client'
+  const effet = instrument === 'traite' ? 'la traite' : 'le chèque'
+  const effetCourt = instrument === 'traite' ? 'traite' : 'chèque'
 
   function choisirSignataire(autre: boolean) {
     onChange({
@@ -36,7 +43,7 @@ export function CustomerChequePanel({ value, onChange, customerName }: CustomerC
   return (
     <Card className="border-dashed">
       <CardBody className="space-y-4">
-        <p className="text-sm font-medium text-ink">Détails du chèque</p>
+        <p className="text-sm font-medium text-ink">Détails de {effetCourt === 'traite' ? 'la traite' : 'du chèque'}</p>
 
         <ChequeDraftFields
           value={value.draft}
@@ -45,7 +52,7 @@ export function CustomerChequePanel({ value, onChange, customerName }: CustomerC
         />
 
         <fieldset className="space-y-2">
-          <legend className="text-sm text-muted">Le chèque est au nom de :</legend>
+          <legend className="text-sm text-muted">{effet.charAt(0).toUpperCase() + effet.slice(1)} est au nom de :</legend>
 
           <label className="flex items-center gap-2 text-sm text-ink">
             <input
@@ -74,7 +81,7 @@ export function CustomerChequePanel({ value, onChange, customerName }: CustomerC
               type="text"
               value={value.draft.drawer_name}
               onChange={(e) => onChange({ ...value, draft: { ...value.draft, drawer_name: e.target.value } })}
-              placeholder="Nom porté sur le chèque"
+              placeholder={`Nom porté sur ${effet}`}
               className="w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink outline-none focus:border-sky"
             />
           ) : null}

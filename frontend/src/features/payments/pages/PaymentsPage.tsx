@@ -250,7 +250,11 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   const selected = customers.find((c) => c.id === customerId)
   const method = methods.find((m) => m.id === methodId)
   // Le code fait foi : « inclut ch » dans le libellé attrapait d'autres modes.
-  const isCheque = (method?.code ?? '').toUpperCase() === 'CHEQUE'
+  const codeMode = (method?.code ?? '').toUpperCase()
+  // Chèque et traite se saisissent de la même façon : mêmes champs, même
+  // choix de signataire. Seul l'effet enregistré diffère.
+  const instrument: 'cheque' | 'traite' = codeMode === 'TRAITE' ? 'traite' : 'cheque'
+  const isCheque = codeMode === 'CHEQUE' || codeMode === 'TRAITE'
 
   const create = useMutation({
     mutationFn: async () => {
@@ -262,6 +266,7 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
 
       if (isCheque && chequeDraftComplet(cheque.draft)) {
         const cree = await creerCheque.mutateAsync({
+          instrument,
           number: cheque.draft.number.trim(),
           cheque_date: cheque.draft.cheque_date,
           amount: Number(amount),
@@ -341,6 +346,7 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
             value={cheque}
             onChange={setCheque}
             customerName={selected?.name}
+            instrument={instrument}
           />
         ) : null}
 

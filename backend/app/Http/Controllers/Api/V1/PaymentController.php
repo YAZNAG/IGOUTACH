@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Customers\Models\Customer;
 use App\Domain\Customers\Models\CustomerLedgerEntry;
+use App\Domain\Customers\Services\CustomerLedger;
 use App\Domain\Sales\Actions\RecordPaymentAction;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Sale;
@@ -70,6 +71,38 @@ final class PaymentController extends Controller
                 'total' => $payments->total(),
             ],
         ]);
+    }
+
+    /**
+     * Supprime une écriture du relevé client.
+     *
+     * Réservée aux écritures saisies à la main. Une écriture adossée à une
+     * facture, un règlement ou un retour est le reflet d'un document : la
+     * supprimer laisserait le document en place et le relevé ne
+     * correspondrait plus à rien. Ces cas se défont en annulant le document
+     * lui-même, qui rend son écriture inverse.
+     *
+     * Les soldes cumulés suivants sont recalculés : sinon le relevé
+     * afficherait des lignes qui ne s'enchaînent plus.
+     */
+    public function destroyLedgerEntry(CustomerLedgerEntry $entry, CustomerLedger $ledger): JsonResponse
+    {
+        if ($entry->reference_type !== null) {
+            $origine = match (true) {
+                str_contains((string) $entry->reference_type, 'Sale') => 'une vente',
+                str_contains((string) $entry->reference_type, 'Payment') => 'un règlement',
+                default => 'un document',
+            };
+
+            return response()->json([
+                'message' => "Cette écriture provient d'{$origine} : elle ne peut pas être supprimée seule. "
+                    .'Annulez le document, son écriture inverse suivra.',
+            ], 422);
+        }
+
+        $ledger->supprimerEcriture($entry);
+
+        return response()->json(null, 204);
     }
 
     /**
@@ -253,11 +286,15 @@ final class PaymentController extends Controller
             ->limit(200)
             ->get()
             ->map(fn (CustomerLedgerEntry $e): array => [
+                'id' => $e->id,
                 'date' => $e->created_at?->format('Y-m-d H:i'),
                 'type' => $e->type,
                 'amount' => (float) $e->amount,
                 'balance_after' => (float) $e->balance_after,
                 'note' => $e->note,
+                // Une écriture adossée à un document ne se supprime pas seule :
+                // l'interface n'a pas à proposer un bouton qui sera refusé.
+                'from_document' => $e->reference_type !== null,
             ]);
 
         return response()->json(['data' => [
