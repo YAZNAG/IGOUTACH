@@ -244,6 +244,41 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     }
   }
 
+  /// Supprime une charge. Si elle etait reglee en especes, sa somme revient
+  /// au tiroir : le solde se recalcule depuis les charges, il n'y a rien a
+  /// recrediter a la main.
+  Future<void> _supprimer(Expense expense) async {
+    final confirme = await confirmAction(
+      context,
+      icon: Icons.delete_outline,
+      title: 'Supprimer cette charge',
+      // La conséquence qui compte doit être annoncée avant, pas découverte
+      // après : une charge réglée rend sa somme au tiroir.
+      message: '${expense.label} — ${formatMoney(expense.amount)}\n\n'
+          '${expense.estDue ? "Cette charge est portée au crédit : la caisse n'est pas concernée." : "Cette charge est réglée : son montant reviendra en caisse."}',
+      confirmLabel: 'Supprimer',
+      confirmColor: AppTheme.danger,
+    );
+    if (!confirme || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _decidingId = expense.id);
+    try {
+      final res = await _api.dio.delete<Map<String, dynamic>>('/expenses/${expense.id}');
+      if (!mounted) return;
+      setState(() => _decidingId = null);
+      showSuccessSnack(
+        messenger,
+        res.data?['message'] as String? ?? 'Charge supprimée.',
+      );
+      _load(reset: true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _decidingId = null);
+      showErrorSnack(messenger, friendlyError(e));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -275,6 +310,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             child: _buildBody(
               auth.can('expense.approve'),
               auth.can('expense.pay'),
+              auth.can('expense.delete'),
             ),
           ),
         ],
@@ -310,7 +346,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
   }
 
-  Widget _buildBody(bool canApprove, bool peutRegler) {
+  Widget _buildBody(bool canApprove, bool peutRegler, bool peutSupprimer) {
     if (!_firstLoadDone) return const ListSkeleton(itemCount: 5, lines: 3);
     if (_error != null && _expenses.isEmpty) {
       return ErrorView(
@@ -352,6 +388,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 ? () => _decide(expense, 'rejected')
                 : null,
             onRegler: peutRegler && expense.estDue ? () => _regler(expense) : null,
+            onSupprimer: peutSupprimer ? () => _supprimer(expense) : null,
           );
         },
       ),
@@ -366,6 +403,7 @@ class _ExpenseCard extends StatelessWidget {
     this.onApprove,
     this.onReject,
     this.onRegler,
+    this.onSupprimer,
   });
 
   final Expense expense;
@@ -376,6 +414,9 @@ class _ExpenseCard extends StatelessWidget {
   /// Règlement d'une charge encore due. `null` quand elle est déjà réglée ou
   /// que l'utilisateur n'a pas le droit de régler.
   final VoidCallback? onRegler;
+
+  /// `null` sans le droit de supprimer.
+  final VoidCallback? onSupprimer;
 
   @override
   Widget build(BuildContext context) {
@@ -437,15 +478,32 @@ class _ExpenseCard extends StatelessWidget {
                   ),
               ],
             ),
-            if (onRegler != null && !deciding) ...[
+            if ((onRegler != null || onSupprimer != null) && !deciding) ...[
               const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: onRegler,
-                  icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
-                  label: const Text('Régler cette charge'),
-                ),
+              Row(
+                children: [
+                  if (onRegler != null)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onRegler,
+                        icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+                        label: const Text('Régler'),
+                      ),
+                    ),
+                  if (onRegler != null && onSupprimer != null) const SizedBox(width: 8),
+                  if (onSupprimer != null)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onSupprimer,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.danger,
+                          side: const BorderSide(color: AppTheme.danger),
+                        ),
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: const Text('Supprimer'),
+                      ),
+                    ),
+                ],
               ),
             ],
             if (onApprove != null || onReject != null) ...[

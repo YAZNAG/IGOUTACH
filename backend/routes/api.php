@@ -354,6 +354,9 @@ Route::prefix('v1')->group(function () {
         // validation : un responsable de lieu solde ses dépenses sans pour
         // autant pouvoir valider les siennes.
         Route::post('expenses/{expense}/pay', [ExpenseController::class, 'pay'])->middleware('can:expense.pay');
+        // Supprimer une charge reglee en especes rend sa somme au tiroir : le
+        // solde se recalcule depuis les charges, il n'y a rien a recrediter.
+        Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->middleware('can:expense.delete');
 
         // Inventaires physiques (par lieu, avec date et régularisation)
         Route::get('inventories', [InventoryController::class, 'index'])->middleware('can:inventory.create');

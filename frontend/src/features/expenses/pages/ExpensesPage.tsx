@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Plus, X } from 'lucide-react'
+import { Check, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -24,6 +25,8 @@ interface ExpenseRow {
   expense_date: string
   has_receipt: boolean
   status: string
+  payment_status: string
+  payment_method: string | null
 }
 
 interface CategoryOption {
@@ -59,6 +62,11 @@ export function ExpensesPage() {
     },
   })
 
+  /** Charge dont la suppression attend confirmation. */
+  const [aConfirmer, setAConfirmer] = useState<ExpenseRow | null>(null)
+  const [erreurSuppression, setErreurSuppression] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+
   const decide = useMutation({
     mutationFn: async ({ id, decision }: { id: number; decision: 'approved' | 'rejected' }) => {
       await ensureCsrfCookie()
@@ -67,11 +75,58 @@ export function ExpensesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 
+  const supprimer = useMutation({
+    mutationFn: async (id: number) => {
+      await ensureCsrfCookie()
+      const { data: r } = await api.delete<{ message: string }>(`/expenses/${id}`)
+      return r.message
+    },
+    onSuccess: (message) => {
+      setAConfirmer(null)
+      setErreurSuppression(null)
+      setMessage(message)
+      qc.invalidateQueries({ queryKey: KEY })
+    },
+    onError: (e) => {
+      setAConfirmer(null)
+      setErreurSuppression(errorMessage(e, 'Suppression impossible.'))
+    },
+  })
+
   const expenses = data?.data ?? []
   const meta = data?.meta
+  const peutAgir = can('expense.approve') || can('expense.delete')
+
 
   return (
     <div className="space-y-6">
+      {message ? (
+        <p className="rounded border border-line bg-ok-bg px-3 py-2 text-sm text-ok">{message}</p>
+      ) : null}
+      {erreurSuppression ? (
+        <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{erreurSuppression}</p>
+      ) : null}
+
+      <ConfirmDialog
+        open={aConfirmer !== null}
+        title="Supprimer cette charge"
+        // Le retour de la somme au tiroir est la consequence qui compte : elle
+        // doit etre annoncee avant, pas decouverte apres.
+        message={
+          aConfirmer === null
+            ? ''
+            : `${aConfirmer.label} — ${formatNumber(aConfirmer.amount)} DH.` +
+              (aConfirmer.payment_status === 'paid'
+                ? ' Cette charge est réglée : son montant reviendra en caisse.'
+                : ' Cette charge est portée au crédit : la caisse n’est pas concernée.')
+        }
+        confirmLabel="Supprimer"
+        danger
+        isPending={supprimer.isPending}
+        onCancel={() => setAConfirmer(null)}
+        onConfirm={() => { if (aConfirmer) supprimer.mutate(aConfirmer.id) }}
+      />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-ink">Charges</h1>
@@ -103,7 +158,7 @@ export function ExpensesPage() {
                   <th className="px-5 py-3 text-right font-medium">Montant (DH)</th>
                   <th className="px-5 py-3 font-medium">Date</th>
                   <th className="px-5 py-3 font-medium">Statut</th>
-                  {can('expense.approve') ? <th className="px-5 py-3 text-right font-medium">Décision</th> : null}
+                  {peutAgir ? <th className="px-5 py-3 text-right font-medium">Actions</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -126,10 +181,11 @@ export function ExpensesPage() {
                         {e.status === 'pending' ? <Badge tone="warn">En attente</Badge> : null}
                         {e.status === 'rejected' ? <Badge tone="bad">Rejetée</Badge> : null}
                       </td>
-                      {can('expense.approve') ? (
+                      {peutAgir ? (
                         <td className="px-5 py-3 text-right">
-                          {e.status === 'pending' ? (
-                            <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-1">
+                            {can('expense.approve') && e.status === 'pending' ? (
+                              <>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -148,8 +204,20 @@ export function ExpensesPage() {
                               >
                                 <X className="h-4 w-4" />
                               </Button>
-                            </div>
-                          ) : null}
+                              </>
+                            ) : null}
+                            {can('expense.delete') ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-bad hover:bg-bad-bg"
+                                onClick={() => { setErreurSuppression(null); setAConfirmer(e) }}
+                                aria-label={`Supprimer ${e.label}`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            ) : null}
+                          </div>
                         </td>
                       ) : null}
                     </tr>

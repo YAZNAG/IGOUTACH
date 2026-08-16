@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Expenses\Models\Expense;
 use App\Domain\Expenses\Models\ExpenseCategory;
 use App\Domain\Expenses\Models\RecurringExpense;
+use App\Domain\Sales\Models\CashSession;
+use App\Domain\Sales\Services\CashBoxService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -229,6 +231,60 @@ final class ExpenseController extends Controller
             'payment_status' => $expense->payment_status,
             'paid_at' => $expense->paid_at?->toDateString(),
         ]]);
+    }
+
+    /**
+     * Supprime une charge, et rend son montant à la caisse s'il en était sorti.
+     *
+     * Rien n'est à recréditer explicitement : le solde du tiroir se recalcule
+     * à partir des charges réglées en espèces. La charge disparue, la somme
+     * revient d'elle-même — c'est la même vérité lue deux fois, pas deux
+     * écritures à tenir d'accord.
+     *
+     * Une seule porte reste fermée : une caisse déjà clôturée a été comptée
+     * sur la foi de cette charge. La retirer après coup ferait mentir un écart
+     * que quelqu'un a constaté et signé.
+     */
+    public function destroy(Request $request, Expense $expense, CashBoxService $caisse): JsonResponse
+    {
+        $sortieEspeces = $expense->payment_status === 'paid'
+            && $expense->paymentMethod?->type === 'cash'
+            && $expense->warehouse_id !== null;
+
+        if ($sortieEspeces) {
+            $jour = ($expense->paid_at ?? $expense->created_at)?->toDateString();
+
+            $sessionClose = CashSession::withoutGlobalScopes()
+                ->where('warehouse_id', $expense->warehouse_id)
+                ->where('status', CashSession::STATUS_CLOSED)
+                ->whereDate('opened_at', '<=', $jour)
+                ->whereDate('closed_at', '>=', $jour)
+                ->exists();
+
+            if ($sessionClose) {
+                return response()->json([
+                    'message' => 'La caisse de ce jour est déjà clôturée : cette charge y a été comptée. '
+                        .'Saisissez plutôt une régularisation.',
+                ], 422);
+            }
+        }
+
+        $expense->delete();
+
+        $solde = $expense->warehouse_id !== null
+            ? $caisse->solde((int) $expense->warehouse_id, CashSession::withoutGlobalScopes()
+                ->where('warehouse_id', $expense->warehouse_id)
+                ->where('status', CashSession::STATUS_OPEN)
+                ->latest('id')
+                ->first())
+            : null;
+
+        return response()->json([
+            'message' => $sortieEspeces
+                ? 'Charge supprimée : son montant est revenu en caisse.'
+                : 'Charge supprimée.',
+            'cash' => $solde,
+        ]);
     }
 
     public function decide(Request $request, Expense $expense): JsonResponse
