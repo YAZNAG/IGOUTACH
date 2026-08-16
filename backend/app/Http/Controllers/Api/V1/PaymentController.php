@@ -177,7 +177,11 @@ final class PaymentController extends Controller
         $data = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_method_id' => ['nullable', 'integer', 'exists:payment_methods,id'],
+            // Le mode est obligatoire : un encaissement sans mode ne se
+            // rapproche d'aucune caisse ni d'aucun compte. Trois règlements
+            // ainsi enregistrés ont suffi à rendre un compte client
+            // incompréhensible — l'argent était là, personne ne savait où.
+            'payment_method_id' => ['required', 'integer', 'exists:payment_methods,id'],
             'sale_id' => ['nullable', 'integer', 'exists:sales,id'],
             'cash_session_id' => ['nullable', 'integer', 'exists:cash_sessions,id'],
             'cheque_reference' => ['nullable', 'string', 'max:60'],

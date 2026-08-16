@@ -167,7 +167,7 @@ export function CustomerCreditsPage() {
       await api.post('/payments', {
         customer_id: selected?.customer_id,
         amount: Number(amount),
-        payment_method_id: methodId || null,
+        payment_method_id: methodId,
         received_at: receivedAt,
         note: note.trim() || null,
         // Sans ventilation, le versement tombe dans l'encours global : c'est
@@ -434,7 +434,7 @@ export function CustomerCreditsPage() {
             <div className="flex gap-2">
               <Button
                 onClick={() => collect.mutate()}
-                disabled={collect.isPending || invalidAmount || !canCollect || ecartVentilation}
+                disabled={collect.isPending || invalidAmount || !canCollect || !methodId || ecartVentilation}
               >
                 <HandCoins className="h-4 w-4" />
                 {collect.isPending ? 'Enregistrement…' : 'Encaisser'}

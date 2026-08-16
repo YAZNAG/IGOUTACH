@@ -287,7 +287,7 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
       await api.post('/payments', {
         customer_id: customerId,
         amount: Number(amount),
-        payment_method_id: methodId || null,
+        payment_method_id: methodId,
         cheque_reference: isCheque ? cheque.draft.number.trim() || null : null,
         cheque_id: chequeId,
         received_at: date,
@@ -378,6 +378,9 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
             disabled={
               create.isPending ||
               !customerId ||
+              // Un reglement sans mode ne se rapproche d'aucune caisse : le
+              // serveur le refuse desormais, autant le dire avant l'envoi.
+              !methodId ||
               Number(amount) <= 0 ||
               (isCheque && !chequeDraftComplet(cheque.draft)) ||
               (isCheque && cheque.autreSignataire && cheque.draft.drawer_name.trim() === '')

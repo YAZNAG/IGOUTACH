@@ -21,6 +21,7 @@ it('declare le cheque du client avec l\'encaissement', function (): void {
 
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeCheque()->id,
         'amount' => 1500,
         'received_at' => now()->toDateString(),
         'cheque' => [
@@ -47,6 +48,7 @@ it('declare la traite d\'un tiers avec son nom', function (): void {
 
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeCheque()->id,
         'amount' => 800,
         'received_at' => now()->toDateString(),
         'cheque' => [
@@ -71,6 +73,7 @@ it('refuse un effet de tiers sans nom du signataire', function (): void {
     // Sans ce nom, impossible de réclamer l'effet en cas de rejet.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeCheque()->id,
         'amount' => 800,
         'received_at' => now()->toDateString(),
         'cheque' => [
@@ -91,6 +94,7 @@ it('refuse un cheque client presente comme le notre', function (): void {
     // client qui paie, pas nous.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeCheque()->id,
         'amount' => 800,
         'received_at' => now()->toDateString(),
         'cheque' => [
@@ -135,4 +139,17 @@ it('declare notre cheque en reglant un fournisseur', function (): void {
     expect($cheque->direction)->toBe(Cheque::DIRECTION_OUT)
         ->and($cheque->origin)->toBe(Cheque::ORIGIN_OWN)
         ->and($cheque->supplier_id)->toBe($receipt->supplier_id);
+});
+
+it('refuse un encaissement sans mode de reglement', function (): void {
+    $user = grantUser(['payment.create', 'payment.view']);
+    $client = Customer::factory()->create();
+
+    // Trois reglements ainsi enregistres ont suffi a rendre un compte client
+    // incomprehensible : l'argent etait la, personne ne savait par ou.
+    test()->actingAs($user)->postJson('/api/v1/payments', [
+        'customer_id' => $client->id,
+        'amount' => 400,
+        'received_at' => now()->toDateString(),
+    ])->assertStatus(422)->assertJsonValidationErrors('payment_method_id');
 });

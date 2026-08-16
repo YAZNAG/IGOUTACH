@@ -39,7 +39,10 @@ final class RecordPaymentAction
                 ? PaymentMethod::query()->find($data['payment_method_id'])
                 : null;
 
-            $isCheque = $method !== null && str_contains(mb_strtolower($method->name), 'ch');
+            // Le type du mode fait foi. Chercher « ch » dans le libellé
+            // attrapait « Cash » et manquait la traite — qui suit pourtant le
+            // même cycle qu'un chèque : reçu, déposé, encaissé ou impayé.
+            $isCheque = $method?->type === 'cheque' || isset($data['cheque_id']);
 
             $payment = Payment::query()->create([
                 'reference' => $this->numbers->next('payment'),

@@ -132,6 +132,7 @@ it('encaisse un paiement : encours réduit et facture soldée', function () {
 
     $this->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $customer->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 300,
         'sale_id' => $sale,
         'received_at' => now()->format('Y-m-d'),

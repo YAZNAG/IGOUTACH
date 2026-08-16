@@ -67,6 +67,7 @@ it('solde deux factures d\'un seul versement', function (): void {
 
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 500,
         'received_at' => now()->toDateString(),
         'allocations' => [
@@ -87,6 +88,7 @@ it('regle partiellement une facture et solde l\'autre', function (): void {
 
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 320,
         'received_at' => now()->toDateString(),
         'allocations' => [
@@ -108,6 +110,7 @@ it('refuse une repartition qui ne correspond pas au montant encaisse', function 
     // Sans ce contrôle, la différence disparaîtrait sans trace.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 500,
         'received_at' => now()->toDateString(),
         'allocations' => [['sale_id' => $a, 'amount' => 300]],
@@ -121,6 +124,7 @@ it('refuse d\'affecter plus que le du d\'une facture', function (): void {
     // Un trop-perçu rendrait la facture soldée et l'excédent invisible.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 400,
         'received_at' => now()->toDateString(),
         'allocations' => [['sale_id' => $a, 'amount' => 400]],
@@ -137,6 +141,7 @@ it('refuse la facture d\'un autre client', function (): void {
     // L'affecter réduirait l'encours du mauvais compte.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 100,
         'received_at' => now()->toDateString(),
         'allocations' => [['sale_id' => $facture, 'amount' => 100]],
@@ -149,6 +154,7 @@ it('refuse deux fois la meme facture dans une repartition', function (): void {
 
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 200,
         'received_at' => now()->toDateString(),
         'allocations' => [
@@ -166,6 +172,7 @@ it('liste les factures encore dues du client, des plus anciennes', function (): 
     // Soldée : elle ne doit plus figurer parmi les factures dues.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 200,
         'received_at' => now()->toDateString(),
         'allocations' => [['sale_id' => $b, 'amount' => 200]],
@@ -189,6 +196,7 @@ it('reste compatible avec un reglement vise sur une seule facture', function ():
     // désormais sa ventilation.
     test()->actingAs($user)->postJson('/api/v1/payments', [
         'customer_id' => $client->id,
+        'payment_method_id' => modeEspeces()->id,
         'amount' => 150,
         'sale_id' => $a,
         'received_at' => now()->toDateString(),

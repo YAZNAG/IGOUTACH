@@ -15,14 +15,6 @@ use App\Models\User;
 /**
  * Le tiroir-caisse : ce qui entre, ce qui sort, ce qui doit rester.
  */
-function especes(): PaymentMethod
-{
-    return PaymentMethod::firstOrCreate(
-        ['code' => 'CASH'],
-        ['name' => 'Espèces', 'type' => 'cash', 'position' => 1, 'is_active' => true],
-    );
-}
-
 function sessionOuverte(Warehouse $lieu, float $fonds, User $par): CashSession
 {
     return CashSession::query()->create([
@@ -37,7 +29,7 @@ function sessionOuverte(Warehouse $lieu, float $fonds, User $par): CashSession
 it('deduit les charges payees en especes du solde attendu', function (): void {
     $lieu = Warehouse::factory()->create();
     $user = grantUser(['payment.create', 'cash.open', 'cash.manage'], ['warehouse_id' => $lieu->id]);
-    $mode = especes();
+    $mode = modeEspeces();
 
     sessionOuverte($lieu, 1000, $user);
 
@@ -192,7 +184,7 @@ it('supprime une remise en attente mais pas une remise confirmee', function (): 
 it('cloture la caisse sur le solde reel, sorties comprises', function (): void {
     $lieu = Warehouse::factory()->create();
     $user = grantUser(['payment.create', 'cash.open', 'cash.manage', 'cash.remit'], ['warehouse_id' => $lieu->id]);
-    $mode = especes();
+    $mode = modeEspeces();
 
     $session = sessionOuverte($lieu, 1000, $user);
 

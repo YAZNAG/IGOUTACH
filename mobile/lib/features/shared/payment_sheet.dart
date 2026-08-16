@@ -95,8 +95,9 @@ class _PaymentSheetState extends State<_PaymentSheet> {
   List<PaymentMethod> _methods = [];
   int? _methodId;
 
-  /// `false` quand GET /payment-methods échoue (permission absente) :
-  /// l'encaissement reste possible, `payment_method_id` étant facultatif.
+  /// `false` quand GET /payment-methods échoue. L'encaissement est alors
+  /// bloqué : un règlement sans mode ne se rapproche d'aucune caisse, et
+  /// c'est exactement ce qui a rendu un compte client incompréhensible.
   bool _methodsAvailable = true;
   bool _loadingMethods = true;
 
@@ -299,6 +300,13 @@ class _PaymentSheetState extends State<_PaymentSheet> {
     final montant = _amount;
     if (montant == null || montant <= 0) return null;
 
+    if (_methodId == null) {
+      return _methodsAvailable
+          ? 'Choisissez le mode de paiement.'
+          : 'Les modes de paiement n\'ont pas pu être chargés : '
+              'réessayez avant d\'enregistrer.';
+    }
+
     if (_estEffet) {
       if (_chequeNumero.text.trim().isEmpty) {
         return 'Saisissez le numéro de ${_motEffet == 'la traite' ? 'la traite' : 'du chèque'}.';
@@ -341,7 +349,7 @@ class _PaymentSheetState extends State<_PaymentSheet> {
         data: {
           'customer_id': widget.customerId,
           'amount': _amount,
-          'payment_method_id': ?_methodId,
+          'payment_method_id': _methodId,
           'sale_id': ?widget.saleId,
           'received_at': apiDate(_receivedAt),
           if (_noteController.text.trim().isNotEmpty)
@@ -561,7 +569,7 @@ class _PaymentSheetState extends State<_PaymentSheet> {
                   ],
                   const SizedBox(height: 20),
                   FilledButton.icon(
-                    onPressed: _saving ? null : _submit,
+                    onPressed: _saving || _methodId == null ? null : _submit,
                     icon: _saving
                         ? const SizedBox(
                             width: 20,
