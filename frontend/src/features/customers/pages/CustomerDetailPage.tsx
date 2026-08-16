@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { EntityActivityCard } from '@/features/dashboard/components/EntityActivityCard'
 import { api } from '@/lib/api'
 import {
   fetchCustomer,
@@ -199,6 +200,15 @@ export function CustomerDetailPage() {
           ) : null}
         </CardBody>
       </Card>
+
+      {/* Ce que ce client pèse, et depuis quand. Le relevé dit ce qu'il doit ;
+          ceci dit ce qu'il rapporte. */}
+      <EntityActivityCard
+        path={`/customers/${customerId}/stats`}
+        measureKey="revenue"
+        title="Chiffre d'affaires du client"
+        countLabel="facture"
+      />
 
       {/* Historique des sorties (ventes) */}
       <Card>

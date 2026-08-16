@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
+import { EntityActivityCard } from '@/features/dashboard/components/EntityActivityCard'
 import { usePermission } from '@/hooks/usePermission'
 import { cn, formatNumber } from '@/lib/utils'
 import { fetchStockEntries, type StockEntryList } from '@/features/stock/api/stockEntriesApi'
@@ -39,9 +40,10 @@ const PO_BADGES: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad' | '
   cancelled: { label: 'Annulé', tone: 'bad' },
 }
 
-type Tab = 'credit' | 'orders' | 'receipts' | 'entries' | 'catalogue'
+type Tab = 'activity' | 'credit' | 'orders' | 'receipts' | 'entries' | 'catalogue'
 
 const TABS: { key: Tab; label: string }[] = [
+  { key: 'activity', label: 'Activité' },
   { key: 'credit', label: 'Crédit & règlements' },
   { key: 'orders', label: 'Bons de commande' },
   { key: 'receipts', label: 'Réceptions' },
@@ -71,7 +73,7 @@ export function SupplierDetailPage() {
   const can = usePermission()
 
   const supplierId = id ? Number(id) : 0
-  const [tab, setTab] = useState<Tab>('credit')
+  const [tab, setTab] = useState<Tab>('activity')
 
   const { data: supplier, isLoading } = useQuery<Supplier>({
     queryKey: ['supplier', supplierId],
@@ -324,6 +326,15 @@ export function SupplierDetailPage() {
       </div>
 
       {/* Onglet Crédit & règlements */}
+      {tab === 'activity' ? (
+        <EntityActivityCard
+          path={`/suppliers/${supplierId}/activity`}
+          measureKey="purchases"
+          title="Achats auprès de ce fournisseur"
+          countLabel="réception"
+        />
+      ) : null}
+
       {tab === 'credit' ? (
         <div className="space-y-6">
           {paying ? (

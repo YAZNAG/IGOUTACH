@@ -30,6 +30,10 @@ final class DashboardController extends Controller
                 'top_customers' => $metrics->topCustomers(30),
                 'top_suppliers' => $metrics->topSuppliers(30),
                 'payment_mix' => $metrics->paymentMix(30),
+                // Une créance de 30 jours et une de 120 ne valent pas la même
+                // chose : le total seul masque ce qui inquiète.
+                'aging' => $metrics->agingBuckets(),
+                'expenses_by_category' => $metrics->expensesByCategory(30),
                 'stock' => $overview->consolidatedStock(20),
             ],
         ]);

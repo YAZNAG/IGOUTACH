@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { EntityActivityCard } from '@/features/dashboard/components/EntityActivityCard'
 import { usePermission } from '@/hooks/usePermission'
 import { api } from '@/lib/api'
 import type { Paginated } from '@/types'
@@ -51,9 +52,14 @@ export function WarehouseDetailPage() {
 
   const [selected, setSelected] = useState<number[]>([])
 
+  // Tant que la requete charge, « = [] » fabrique un tableau neuf a chaque
+  // rendu : l'effet se relancait sans fin et React finissait par abandonner.
+  // On ne reecrit la selection que si les identifiants changent reellement.
+  const attachedIds = attached.map((u) => u.id).join(',')
+
   useEffect(() => {
-    setSelected(attached.map((u) => u.id))
-  }, [attached])
+    setSelected(attachedIds === '' ? [] : attachedIds.split(',').map(Number))
+  }, [attachedIds])
 
   function toggle(userId: number) {
     setSelected((prev) => (prev.includes(userId) ? prev.filter((i) => i !== userId) : [...prev, userId]))
@@ -82,6 +88,16 @@ export function WarehouseDetailPage() {
         <KpiCard label="Sous le seuil" value={summary ? String(summary.below_threshold) : '…'} tone={summary && summary.below_threshold > 0 ? 'warn' : undefined} />
         <KpiCard label="Ruptures" value={summary ? String(summary.ruptures) : '…'} tone={summary && summary.ruptures > 0 ? 'bad' : undefined} />
       </div>
+
+      {/* La valeur du stock dit ce que le lieu detient ; celle-ci dit ce
+          qu'il rapporte. Un depot bien garni qui ne vend rien ne se voit que
+          sur ce chiffre-la. */}
+      <EntityActivityCard
+        path={`/warehouses/${warehouseId}/stats`}
+        measureKey="revenue"
+        title="Chiffre d'affaires du lieu"
+        countLabel="vente"
+      />
 
       {summary?.seller_missing ? (
         <p className="rounded border border-line bg-warn-bg px-3 py-2 text-sm text-warn">

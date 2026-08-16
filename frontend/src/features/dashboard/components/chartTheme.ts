@@ -1,28 +1,60 @@
 /**
- * Palette et réglages communs aux graphiques du tableau de bord.
+ * Palette et réglages communs aux graphiques.
  *
  * Les couleurs pointent vers les variables du thème : les graphiques suivent
  * donc le mode clair comme le mode sombre sans duplication de palette.
  */
 export const chartColors = {
-  sales: 'var(--sky)',
-  purchases: 'var(--navy-3)',
+  /** Série unique : le rouge de la marque. Une seule couleur n'a personne à
+   *  qui se confondre, et le graphique reste identifiable comme le nôtre. */
+  brand: 'var(--brand)',
+  sales: 'var(--chart-1)',
+  purchases: 'var(--chart-3)',
   ok: 'var(--ok)',
   warn: 'var(--warn)',
   bad: 'var(--bad)',
   grid: 'var(--line)',
   axis: 'var(--faint)',
+  surface: 'var(--card)',
 } as const
 
-/** Teintes successives pour les séries catégorielles (lieux, articles…). */
+/**
+ * Teintes successives des séries catégorielles, dans l'ordre d'attribution.
+ *
+ * Elles sont attribuées dans cet ordre et ne se recyclent pas : au-delà de
+ * cinq séries, on regroupe le reste sous « Autres » plutôt que d'inventer une
+ * sixième teinte qui se confondrait avec une existante.
+ *
+ * La couleur suit l'entité, jamais son rang : un filtre qui change le nombre
+ * de séries ne doit pas repeindre les survivantes.
+ */
 export const seriesPalette = [
-  'var(--sky)',
-  'var(--navy-3)',
-  'var(--ok)',
-  'var(--warn)',
-  'var(--navy)',
-  'var(--sky-2)',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
 ] as const
+
+/** Nombre de séries au-delà duquel le reste est regroupé. */
+export const MAX_SERIES = seriesPalette.length
+
+/**
+ * Couleur d'une entité, stable quel que soit le nombre de séries affichées.
+ *
+ * On passe l'index de l'entité dans la liste complète, pas sa position à
+ * l'écran : sinon masquer une série repeindrait toutes les suivantes.
+ */
+export function seriesColor(index: number): string {
+  return seriesPalette[Math.min(index, MAX_SERIES - 1)]
+}
+
+/** Couleurs d'état — réservées, jamais réutilisées comme « série 4 ». */
+export const statusColors = {
+  paid: 'var(--ok)',
+  partial: 'var(--warn)',
+  unpaid: 'var(--bad)',
+} as const
 
 export const axisProps = {
   stroke: chartColors.axis,
@@ -40,3 +72,11 @@ export const tooltipStyle = {
   fontSize: '12px',
   color: 'var(--ink)',
 } as const
+
+/** Curseur de survol discret : il situe sans masquer la marque. */
+export const cursorStyle = { fill: 'var(--line)', fillOpacity: 0.35 } as const
+
+/** Extrémités arrondies des barres, côté valeur uniquement. */
+export const barRadius = [4, 4, 0, 0] as [number, number, number, number]
+
+export const barRadiusHorizontal = [0, 4, 4, 0] as [number, number, number, number]

@@ -160,6 +160,162 @@ final class DashboardMetricsService
     }
 
     /**
+     * Chiffre d'affaires mois par mois pour une entité donnée.
+     *
+     * Le même calcul sert au lieu, au client et au fournisseur : seule la
+     * colonne filtrée change. Les mois sans activité valent zéro — une courbe
+     * qui saute les mois creux laisserait croire à une activité continue.
+     *
+     * @param  'warehouse_id'|'customer_id'  $colonne
+     * @return list<array{month: string, label: string, revenue: float, count: int}>
+     */
+    public function monthlyRevenueFor(string $colonne, int $id, int $months = 12): array
+    {
+        $debut = Carbon::today()->startOfMonth()->subMonths($months - 1);
+
+        // Regroupement par jour puis agrégation en PHP : la mise en forme du
+        // mois côté base varie d'un moteur à l'autre, pas celle-ci.
+        $lignes = Sale::withoutGlobalScopes()
+            ->selectRaw('DATE(confirmed_at) as jour, SUM(total) as ca, COUNT(*) as nb')
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->where($colonne, $id)
+            ->where('confirmed_at', '>=', $debut)
+            ->groupBy('jour')
+            ->get();
+
+        $paniers = [];
+
+        for ($i = 0; $i < $months; $i++) {
+            $mois = $debut->copy()->addMonths($i);
+            $paniers[$mois->format('Y-m')] = [
+                'month' => $mois->format('Y-m'),
+                'label' => $this->moisCourt($mois),
+                'revenue' => 0.0,
+                'count' => 0,
+            ];
+        }
+
+        foreach ($lignes as $ligne) {
+            $cle = substr((string) $ligne->getAttribute('jour'), 0, 7);
+            if (isset($paniers[$cle])) {
+                $paniers[$cle]['revenue'] = round($paniers[$cle]['revenue'] + (float) $ligne->getAttribute('ca'), 2);
+                $paniers[$cle]['count'] += (int) $ligne->getAttribute('nb');
+            }
+        }
+
+        return array_values($paniers);
+    }
+
+    /**
+     * Achats mois par mois auprès d'un fournisseur.
+     *
+     * Le pendant de [monthlyRevenueFor] côté entrées : les réceptions n'ont
+     * pas de total stocké, il se recompose depuis leurs lignes.
+     *
+     * @return list<array{month: string, label: string, purchases: float, count: int}>
+     */
+    public function monthlyPurchasesFor(int $supplierId, int $months = 12): array
+    {
+        $debut = Carbon::today()->startOfMonth()->subMonths($months - 1);
+
+        $lignes = DB::table('goods_receipts')
+            ->join('goods_receipt_lines as l', 'l.goods_receipt_id', '=', 'goods_receipts.id')
+            ->selectRaw('DATE(goods_receipts.received_at) as jour')
+            ->selectRaw('SUM(l.quantity * l.unit_price) as achats, COUNT(DISTINCT goods_receipts.id) as nb')
+            ->where('goods_receipts.supplier_id', $supplierId)
+            ->where('goods_receipts.received_at', '>=', $debut)
+            ->groupBy('jour')
+            ->get();
+
+        $paniers = [];
+
+        for ($i = 0; $i < $months; $i++) {
+            $mois = $debut->copy()->addMonths($i);
+            $paniers[$mois->format('Y-m')] = [
+                'month' => $mois->format('Y-m'),
+                'label' => $this->moisCourt($mois),
+                'purchases' => 0.0,
+                'count' => 0,
+            ];
+        }
+
+        foreach ($lignes as $ligne) {
+            $cle = substr((string) $ligne->jour, 0, 7);
+            if (isset($paniers[$cle])) {
+                $paniers[$cle]['purchases'] = round($paniers[$cle]['purchases'] + (float) $ligne->achats, 2);
+                $paniers[$cle]['count'] += (int) $ligne->nb;
+            }
+        }
+
+        return array_values($paniers);
+    }
+
+    /**
+     * Encours clients par tranche d'ancienneté.
+     *
+     * Une créance de 30 jours et une de 120 ne valent pas la même chose : le
+     * total seul masque exactement ce qui inquiète.
+     *
+     * @return list<array{bucket: string, amount: float}>
+     */
+    public function agingBuckets(): array
+    {
+        $aujourdhui = Carbon::today();
+
+        $tranches = [
+            ['0 – 30 j', 0, 30],
+            ['31 – 60 j', 31, 60],
+            ['61 – 90 j', 61, 90],
+            ['+ de 90 j', 91, 100000],
+        ];
+
+        $factures = Sale::withoutGlobalScopes()
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->whereRaw('paid_amount < total')
+            ->get(['confirmed_at', 'total', 'paid_amount']);
+
+        return array_map(function (array $t) use ($factures, $aujourdhui): array {
+            [$libelle, $min, $max] = $t;
+
+            $montant = $factures
+                ->filter(function ($f) use ($min, $max, $aujourdhui): bool {
+                    $age = $f->confirmed_at === null ? 0 : $aujourdhui->diffInDays($f->confirmed_at, absolute: true);
+
+                    return $age >= $min && $age <= $max;
+                })
+                ->sum(fn ($f): float => (float) $f->total - (float) $f->paid_amount);
+
+            return ['bucket' => $libelle, 'amount' => round((float) $montant, 2)];
+        }, $tranches);
+    }
+
+    /**
+     * Charges du mois par catégorie.
+     *
+     * @return list<array{name: string, amount: float, count: int}>
+     */
+    public function expensesByCategory(int $days = 30): array
+    {
+        $depuis = Carbon::today()->subDays($days - 1);
+
+        return DB::table('expenses')
+            ->join('expense_categories as c', 'c.id', '=', 'expenses.expense_category_id')
+            ->selectRaw('c.name as nom, SUM(expenses.amount) as montant, COUNT(*) as nb')
+            ->where('expenses.expense_date', '>=', $depuis->toDateString())
+            ->groupBy('c.id', 'c.name')
+            ->orderByDesc('montant')
+            ->get()
+            ->map(fn ($r) => [
+                'name' => (string) $r->nom,
+                'amount' => round((float) $r->montant, 2),
+                'count' => (int) $r->nb,
+            ])
+            ->all();
+    }
+
+    /**
      * Chiffre d'affaires par lieu de vente.
      *
      * La valeur du stock dit ce qu'un lieu détient ; celle-ci dit ce qu'il

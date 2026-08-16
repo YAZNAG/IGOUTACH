@@ -42,6 +42,31 @@
   --bad: #a51d1d;
   --bad-bg: #fbebeb;
 
+  /* Palette des séries de graphiques.
+     ---------------------------------------------------------------------
+     Elle est distincte des couleurs de marque et des couleurs d'état, pour
+     deux raisons vérifiées et non supposées :
+
+     1. --navy et --sky sont des alias de --brand. Les employer comme séries
+        peignait les séries 1 et 5 de la même couleur, et 2 et 6 aussi.
+     2. Le rouge de marque et l'ambre d'alerte se confondent en deutéranopie
+        (ΔE 1,5 sur 100) : un daltonien ne distinguait aucune des deux séries.
+
+     Ces cinq teintes sont dérivées de la palette Okabe-Ito et validées dans
+     les deux modes : bande de clarté, chroma, séparation daltonienne des
+     paires voisines et contraste sur le fond. L'ordre est celui de
+     l'attribution — il ne se recycle pas au-delà de cinq séries, on regroupe
+     alors sous « Autres ».
+
+     L'ambre (--chart-5) descend sous 3:1 en mode clair : partout où il sert,
+     une légende et des étiquettes visibles portent l'identité, jamais la
+     couleur seule. */
+  --chart-1: #0072b2;
+  --chart-2: #009e73;
+  --chart-3: #d55e00;
+  --chart-4: #cc79a7;
+  --chart-5: #e69f00;
+
   --radius: 8px;
   --radius-lg: 12px;
 
@@ -82,6 +107,16 @@
   --warn-bg: #33280f;
   --bad: #f0736f;
   --bad-bg: #351a1c;
+
+  /* Le mode sombre n'est pas un inversement des teintes claires : sa bande de
+     clarté est plus étroite (L 0,48–0,67), et un simple éclaircissement en
+     sortait. Ces valeurs sont choisies puis validées contre le fond sombre,
+     teinte par teinte, dans le même ordre d'attribution. */
+  --chart-1: #2f8fd0;
+  --chart-2: #0fa87d;
+  --chart-3: #e2661a;
+  --chart-4: #c2739e;
+  --chart-5: #b57f10;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.55);

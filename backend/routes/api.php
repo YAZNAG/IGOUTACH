@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashRemittanceController;
+use App\Http\Controllers\Api\V1\EntityStatsController;
 use App\Http\Controllers\Api\V1\CashSessionController;
 use App\Http\Controllers\Api\V1\AppReleaseController;
 use App\Http\Controllers\Api\V1\MyOverviewController;
@@ -209,6 +210,7 @@ Route::prefix('v1')->group(function () {
         Route::put('suppliers/{supplier}/products/{product}', [SupplierProductController::class, 'attach'])->middleware('can:supplier.update');
         Route::delete('suppliers/{supplier}/products/{product}', [SupplierProductController::class, 'detach'])->middleware('can:supplier.update');
         Route::get('suppliers/{supplier}/stats', [SupplierProductController::class, 'stats'])->middleware('can:supplier.view');
+        Route::get('suppliers/{supplier}/activity', [EntityStatsController::class, 'supplier'])->middleware('can:supplier.view');
 
         // Stock — consultation & bon de sortie
         Route::get('stock', [StockController::class, 'index'])->middleware('can:stock.view');
@@ -320,6 +322,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('customer-ledger-entries/{entry}', [PaymentController::class, 'destroyLedgerEntry'])->middleware('can:credit.view');
         Route::get('customers/{customer}/open-invoices', [PaymentController::class, 'openInvoices'])->middleware('can:payment.create');
         Route::get('customers/{customer}/overview', [CustomerController::class, 'overview'])->middleware('can:customer.view');
+        // Activite chiffree par entite : le classement du tableau de bord dit
+        // qui pese le plus, ces series disent comment chacun a evolue.
+        Route::get('customers/{customer}/stats', [EntityStatsController::class, 'customer'])->middleware('can:customer.view');
 
         // Caisse — sessions
         Route::get('cash-sessions', [CashSessionController::class, 'index'])->middleware('can:cash.manage');
@@ -390,6 +395,7 @@ Route::prefix('v1')->group(function () {
         Route::get('warehouse-types', [WarehouseTypeController::class, 'index'])->middleware('can:warehouse.view');
         Route::get('warehouses', [WarehouseController::class, 'index'])->middleware('can:warehouse.view');
         Route::get('warehouses/{warehouse}', [WarehouseController::class, 'show'])->middleware('can:warehouse.view');
+        Route::get('warehouses/{warehouse}/stats', [EntityStatsController::class, 'warehouse'])->middleware('can:warehouse.view');
         Route::get('warehouses/{warehouse}/users', [WarehouseController::class, 'users'])->middleware('can:warehouse.view');
         Route::get('warehouses/{warehouse}/summary', [WarehouseController::class, 'summary'])->middleware('can:warehouse.view');
         Route::post('warehouses/{warehouse}/assign-users', [WarehouseController::class, 'assignUsers'])->middleware('can:warehouse.assign_users');

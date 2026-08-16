@@ -77,6 +77,19 @@ export interface ConsolidatedStockRow {
   total_quantity: number
 }
 
+/** Encours par tranche d'anciennete. */
+export interface AgingBucketRow {
+  bucket: string
+  amount: number
+}
+
+/** Charges de la periode, par categorie. */
+export interface ExpenseCategoryRow {
+  name: string
+  amount: number
+  count: number
+}
+
 export interface DashboardData {
   summary: DashboardSummary
   financial: FinancialSummary
@@ -88,5 +101,7 @@ export interface DashboardData {
   top_customers: TopCustomerRow[]
   top_suppliers: TopSupplierRow[]
   payment_mix: PaymentMixRow[]
+  aging: AgingBucketRow[]
+  expenses_by_category: ExpenseCategoryRow[]
   stock: ConsolidatedStockRow[]
 }

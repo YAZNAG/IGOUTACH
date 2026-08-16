@@ -1,7 +1,7 @@
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatCompact, formatCurrency, formatNumber } from '@/lib/utils'
 import type { WarehouseStockRow } from '../types'
-import { axisProps, seriesPalette, tooltipStyle } from './chartTheme'
+import { axisProps, chartColors, tooltipStyle } from './chartTheme'
 
 interface StockByWarehouseChartProps {
   data: WarehouseStockRow[]
@@ -29,11 +29,10 @@ export function StockByWarehouseChart({ data }: StockByWarehouseChartProps) {
             ]
           }}
         />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={26}>
-          {data.map((row, index) => (
-            <Cell key={row.warehouse} fill={seriesPalette[index % seriesPalette.length]} />
-          ))}
-        </Bar>
+        {/* Une seule mesure comparee entre lieux : la longueur porte tout,
+            la couleur ne distingue rien et reste donc unique. Peindre une
+            teinte par rang faisait changer de couleur un lieu qui monte. */}
+        <Bar dataKey="value" fill={chartColors.brand} radius={[0, 4, 4, 0]} maxBarSize={26} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   )

@@ -29,8 +29,8 @@ export function MonthlyFlowChart({ data }: MonthlyFlowChartProps) {
           wrapperStyle={{ fontSize: '12px', color: 'var(--muted)' }}
           formatter={(value) => (value === 'sales' ? 'Ventes' : 'Achats')}
         />
-        <Bar dataKey="sales" fill={chartColors.sales} radius={[4, 4, 0, 0]} maxBarSize={28} />
-        <Bar dataKey="purchases" fill={chartColors.purchases} radius={[4, 4, 0, 0]} maxBarSize={28} />
+        <Bar dataKey="sales" fill={chartColors.sales} radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+        <Bar dataKey="purchases" fill={chartColors.purchases} radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   )

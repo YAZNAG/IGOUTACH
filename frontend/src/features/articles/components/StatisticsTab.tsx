@@ -142,7 +142,7 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
                       name === 'revenue' ? "Chiffre d'affaires" : 'Quantité',
                     ]}
                   />
-                  <Bar dataKey="quantity" fill="var(--sky)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="quantity" fill="var(--sky)" radius={[4, 4, 0, 0]} maxBarSize={32} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -4,10 +4,11 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 import { ChartCard } from '../components/ChartCard'
 import { MonthlyFlowChart } from '../components/MonthlyFlowChart'
 import { PaymentMixChart } from '../components/PaymentMixChart'
-import { RankedList } from '../components/RankedList'
+import { RankedBarChart } from '../components/RankedBarChart'
 import { SalesTrendChart } from '../components/SalesTrendChart'
 import { StatTile } from '../components/StatTile'
 import { StockByWarehouseChart } from '../components/StockByWarehouseChart'
+import { chartColors } from '../components/chartTheme'
 import { useDashboard } from '../hooks'
 
 function SkeletonBlock({ className }: { className?: string }) {
@@ -139,42 +140,99 @@ export function DashboardPage() {
 
       {/* Le chiffre d'affaires sous ses trois angles : où l'on vend, à qui
           l'on vend, et à qui l'on achète. Lus ensemble, ils disent d'où vient
-          l'argent et où il repart. */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <RankedList
+          l'argent et où il repart.
+
+          Deux par rangée et non trois : mesuré à 1280 px, une grille de trois
+          ne laissait que 76 px de tracé une fois l'axe des noms posé — la
+          barre, seul support de la comparaison, y disparaissait. */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard
           title="Chiffre d'affaires par lieu"
           hint="30 derniers jours."
-          barClassName="bg-brand"
-          rows={data.revenue_by_warehouse.map((row) => ({
-            name: `${row.warehouse} · ${row.name}`,
-            value: row.revenue,
-            detail: `${formatNumber(row.count)} vente(s)`,
-          }))}
-        />
-        <RankedList
+          isEmpty={data.revenue_by_warehouse.length === 0}
+          emptyLabel="Aucune vente sur la période."
+          fitContent
+        >
+          <RankedBarChart
+            rows={data.revenue_by_warehouse.map((row) => ({
+              name: row.warehouse,
+              value: row.revenue,
+              detail: `${row.name} — ${formatNumber(row.count)} vente(s)`,
+            }))}
+          />
+        </ChartCard>
+
+        <ChartCard
           title="Meilleurs clients"
           hint="30 derniers jours, avec l'encours actuel."
-          barClassName="bg-ok"
-          rows={data.top_customers.map((row) => ({
-            name: row.name,
-            value: row.revenue,
-            detail: `${formatNumber(row.count)} facture(s)`,
-            note: row.balance > 0 ? `${formatCurrency(row.balance)} dû` : undefined,
-            noteTone: 'bad' as const,
-          }))}
-        />
-        <RankedList
+          isEmpty={data.top_customers.length === 0}
+          emptyLabel="Aucune vente sur la période."
+          fitContent
+        >
+          <RankedBarChart
+            color={chartColors.sales}
+            rows={data.top_customers.map((row) => ({
+              name: row.name,
+              value: row.revenue,
+              detail: `${formatNumber(row.count)} facture(s)`,
+              note: row.balance > 0 ? `${formatCurrency(row.balance)} encore dûs` : undefined,
+            }))}
+          />
+        </ChartCard>
+
+        <ChartCard
           title="Principaux fournisseurs"
-          hint="Achats des 30 derniers jours, et reste à payer."
-          barClassName="bg-warn"
-          rows={data.top_suppliers.map((row) => ({
-            name: row.name,
-            value: row.purchases,
-            detail: `${formatNumber(row.count)} réception(s)`,
-            note: row.due > 0 ? `${formatCurrency(row.due)} à payer` : undefined,
-            noteTone: 'bad' as const,
-          }))}
-        />
+          hint="Achats des 30 derniers jours."
+          isEmpty={data.top_suppliers.length === 0}
+          emptyLabel="Aucune réception sur la période."
+          fitContent
+        >
+          <RankedBarChart
+            color={chartColors.purchases}
+            valueLabel="Achats"
+            rows={data.top_suppliers.map((row) => ({
+              name: row.name,
+              value: row.purchases,
+              detail: `${formatNumber(row.count)} réception(s)`,
+              note: row.due > 0 ? `${formatCurrency(row.due)} à payer` : undefined,
+            }))}
+          />
+        </ChartCard>
+      </div>
+
+      {/* Ce que l'on attend, et ce que l'on dépense. */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard
+          title="Créances par ancienneté"
+          hint="Ce qui reste dû sur les factures confirmées."
+          isEmpty={data.aging.every((row) => row.amount === 0)}
+          emptyLabel="Aucune créance en cours."
+          fitContent
+        >
+          <RankedBarChart
+            color={chartColors.warn}
+            valueLabel="Reste dû"
+            rows={data.aging.map((row) => ({ name: row.bucket, value: row.amount }))}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Charges par catégorie"
+          hint="30 derniers jours."
+          isEmpty={data.expenses_by_category.length === 0}
+          emptyLabel="Aucune charge sur la période."
+          fitContent
+        >
+          <RankedBarChart
+            color={chartColors.purchases}
+            valueLabel="Charges"
+            rows={data.expenses_by_category.slice(0, 8).map((row) => ({
+              name: row.name,
+              value: row.amount,
+              detail: `${formatNumber(row.count)} charge(s)`,
+            }))}
+          />
+        </ChartCard>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
