@@ -207,6 +207,43 @@ export interface ProductStatistics {
   monthly: Array<{ month: string; label: string; quantity: number; revenue: number }>
   by_warehouse: Array<{ warehouse: string; name: string; quantity: number; revenue: number }>
   top_customers: Array<{ customer: string; quantity: number; revenue: number }>
+  /**
+   * Prix applique mois par mois. `null` sur un mois sans vente : un prix nul
+   * n'a jamais ete pratique, la courbe ne doit pas y plonger.
+   *
+   * `cost` est absent sans la permission « product.view_cost_price ».
+   */
+  price_history: Array<{
+    month: string
+    label: string
+    min: number | null
+    avg: number | null
+    max: number | null
+    cost?: number
+  }>
+  /** Chaque vente, avec le prix qui y a ete applique. */
+  recent_sales: Array<{
+    sale_id: number
+    reference: string
+    date: string
+    customer: string | null
+    warehouse: string | null
+    quantity: number
+    unit_price: number
+    line_total: number
+    price_type: string | null
+  }>
+  /** Absent sans la permission de voir les couts. */
+  recent_purchases?: Array<{
+    receipt_id: number
+    reference: string
+    date: string
+    supplier: string | null
+    warehouse: string | null
+    quantity: number
+    unit_price: number
+    line_total: number
+  }>
 }
 
 export type HistoryModule = 'sale' | 'quote' | 'receipt' | 'transfer' | 'inventory'

@@ -336,6 +336,20 @@ final class ProductController extends Controller
         // suffirait de diviser le cout par la quantite vendue.
         if (! ($request->user()?->can('product.view_cost_price') ?? false)) {
             unset($stats['cost_of_goods'], $stats['gross_margin'], $stats['margin_percent']);
+
+            // Les achats detailles portent le prix paye au fournisseur, et la
+            // courbe de prix le compare au prix de vente : les laisser
+            // contournerait la meme permission par un autre chemin.
+            unset($stats['recent_purchases']);
+
+            $stats['price_history'] = array_map(
+                static function (array $point): array {
+                    unset($point['cost']);
+
+                    return $point;
+                },
+                $stats['price_history'],
+            );
         }
 
         return response()->json(['data' => $stats]);

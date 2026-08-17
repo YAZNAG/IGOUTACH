@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { formatCompact, formatCurrency, formatNumber } from '@/lib/utils'
 import { useProductStatistics } from '../hooks'
+import { PriceHistoryChart } from './PriceHistoryChart'
 import type { ProductDetail, StockDetail } from '../api/articlesApi'
 
 interface StatisticsTabProps {
@@ -60,6 +62,11 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
 
   const aVendu = stats.sales_volume > 0
   const valeurStock = Number(stock.total_valuation || 0)
+  const voitLesCouts = stats.recent_purchases !== undefined
+  const ventes = stats.recent_sales ?? []
+  const achats = stats.recent_purchases ?? []
+  const prix = stats.price_history ?? []
+  const aDesPrix = prix.some((p) => p.avg !== null)
 
   return (
     <div className="space-y-6">
@@ -149,6 +156,118 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
           )}
         </CardBody>
       </Card>
+
+      <Card>
+        <CardHeader
+          title="Prix de vente appliqué"
+          hint="Le plus bas, le moyen et le plus haut de chaque mois."
+        />
+        <CardBody>
+          {!aDesPrix ? (
+            <div className="flex h-[260px] items-center justify-center rounded-lg border border-dashed border-line">
+              <p className="text-sm text-muted">Aucune vente sur la période.</p>
+            </div>
+          ) : (
+            <div className="h-[260px] w-full">
+              <PriceHistoryChart data={prix} showCost={voitLesCouts} />
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Historique des ventes"
+          hint={`${formatNumber(ventes.length)} ligne(s) — le prix appliqué à chacune.`}
+        />
+        <CardBody className="p-0">
+          {ventes.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted">Aucune vente sur la période.</p>
+          ) : (
+            <div className="max-h-[420px] overflow-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-card">
+                  <tr className="border-b border-line text-left text-muted">
+                    <th className="px-5 py-3 font-medium">Document</th>
+                    <th className="px-5 py-3 font-medium">Date</th>
+                    <th className="px-5 py-3 font-medium">Client</th>
+                    <th className="px-5 py-3 font-medium">Lieu</th>
+                    <th className="px-5 py-3 text-right font-medium">Qté</th>
+                    <th className="px-5 py-3 text-right font-medium">Prix unitaire</th>
+                    <th className="px-5 py-3 text-right font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ventes.map((v) => (
+                    <tr key={`${v.sale_id}-${v.reference}`} className="border-b border-line last:border-0">
+                      <td className="px-5 py-3">
+                        <Link to={`/ventes?ref=${v.reference}`} className="mono text-sky hover:underline">
+                          {v.reference}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3 text-muted">{v.date}</td>
+                      <td className="px-5 py-3 text-ink">{v.customer ?? 'Client de passage'}</td>
+                      <td className="mono px-5 py-3 text-muted">{v.warehouse ?? '—'}</td>
+                      <td className="tabular px-5 py-3 text-right text-muted">{formatNumber(v.quantity)}</td>
+                      <td className="tabular px-5 py-3 text-right font-medium text-ink">
+                        {formatCurrency(v.unit_price)}
+                      </td>
+                      <td className="tabular px-5 py-3 text-right text-ink">{formatCurrency(v.line_total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Les prix d'achat sont des couts : la carte n'existe que pour qui a le
+          droit de les voir. */}
+      {voitLesCouts ? (
+        <Card>
+          <CardHeader
+            title="Historique des achats"
+            hint={`${formatNumber(achats.length)} réception(s) — le prix payé au fournisseur.`}
+          />
+          <CardBody className="p-0">
+            {achats.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted">Aucune réception sur la période.</p>
+            ) : (
+              <div className="max-h-[420px] overflow-auto">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-card">
+                    <tr className="border-b border-line text-left text-muted">
+                      <th className="px-5 py-3 font-medium">Réception</th>
+                      <th className="px-5 py-3 font-medium">Date</th>
+                      <th className="px-5 py-3 font-medium">Fournisseur</th>
+                      <th className="px-5 py-3 font-medium">Lieu</th>
+                      <th className="px-5 py-3 text-right font-medium">Qté</th>
+                      <th className="px-5 py-3 text-right font-medium">Prix unitaire</th>
+                      <th className="px-5 py-3 text-right font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {achats.map((a) => (
+                      <tr key={`${a.receipt_id}-${a.reference}`} className="border-b border-line last:border-0">
+                        <td className="mono px-5 py-3 text-muted">{a.reference}</td>
+                        <td className="px-5 py-3 text-muted">{a.date}</td>
+                        <td className="px-5 py-3 text-ink">{a.supplier ?? '—'}</td>
+                        <td className="mono px-5 py-3 text-muted">{a.warehouse ?? '—'}</td>
+                        <td className="tabular px-5 py-3 text-right text-muted">{formatNumber(a.quantity)}</td>
+                        <td className="tabular px-5 py-3 text-right font-medium text-ink">
+                          {formatCurrency(a.unit_price)}
+                        </td>
+                        <td className="tabular px-5 py-3 text-right text-ink">{formatCurrency(a.line_total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
