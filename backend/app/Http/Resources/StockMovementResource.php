@@ -37,6 +37,18 @@ class StockMovementResource extends JsonResource
                     'name' => $this->movementType->name,
                 ];
             }),
+            // Le code du type, à plat : l'écran s'en sert pour choisir le
+            // signe et la pastille, et le lire à travers l'objet imbriqué
+            // obligeait chaque appelant à charger la relation.
+            'type' => $this->movementType?->code,
+            'warehouse_name' => $this->warehouse?->name,
+            'warehouse_code' => $this->warehouse?->code,
+            // L'auteur peut manquer : import initial, ou compte supprimé
+            // depuis. On renvoie null plutôt que d'omettre la clé, pour que
+            // l'absence se lise au lieu de se deviner.
+            'user' => $this->user !== null
+                ? ['id' => $this->user->id, 'name' => $this->user->name]
+                : null,
         ];
     }
 }

@@ -35,8 +35,14 @@ export function MovementsTab({ movements, isLoading }: MovementsTabProps) {
   const [typeFilter, setTypeFilter] = useState('')
   const [warehouseFilter, setWarehouseFilter] = useState('')
 
-  const warehouses = Array.from(new Set(movements.map((m) => m.warehouse_name)))
-  const types = Array.from(new Set(movements.map((m) => m.type)))
+  // Les listes de filtres écartent les valeurs absentes : proposer « aucun
+  // lieu » comme choix de filtre n'aurait aucun sens.
+  const warehouses = Array.from(
+    new Set(movements.map((m) => m.warehouse_name).filter((n): n is string => n !== null)),
+  )
+  const types = Array.from(
+    new Set(movements.map((m) => m.type).filter((t): t is string => t !== null)),
+  )
 
   const filtered = movements.filter((m) => {
     if (typeFilter && m.type !== typeFilter) return false
@@ -110,19 +116,23 @@ export function MovementsTab({ movements, isLoading }: MovementsTabProps) {
                     </td>
                     <td className="px-5 py-3">
                       <Badge
-                        tone={movementTypeTones[m.type] || 'sky'}
+                        tone={(m.type ? movementTypeTones[m.type] : undefined) || 'sky'}
                         className="text-xs"
                       >
-                        {movementTypeLabels[m.type] || m.type}
+                        {(m.type ? movementTypeLabels[m.type] : null) || m.type || 'Mouvement'}
                       </Badge>
                     </td>
-                    <td className="px-5 py-3 text-ink">{m.warehouse_name}</td>
+                    <td className="px-5 py-3 text-ink">{m.warehouse_name ?? '—'}</td>
                     <td className="px-5 py-3 text-right font-medium text-ink">
                       {m.type === 'exit' || m.type === 'transfer_out' ? '-' : '+'}
                       {m.quantity}
                     </td>
-                    <td className="px-5 py-3 text-muted">{m.reference || '—'}</td>
-                    <td className="px-5 py-3 text-ink">{m.user.name}</td>
+                    <td className="px-5 py-3 text-muted">
+                      {m.reference_id !== null ? `#${m.reference_id}` : '—'}
+                    </td>
+                    {/* Sans auteur connu, on le dit : un blanc laisserait
+                        croire a un defaut d'affichage. */}
+                    <td className="px-5 py-3 text-ink">{m.user?.name ?? 'Non attribué'}</td>
                   </tr>
                 ))}
               </tbody>

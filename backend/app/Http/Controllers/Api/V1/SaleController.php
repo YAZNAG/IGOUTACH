@@ -89,6 +89,17 @@ final class SaleController extends Controller
             ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->string('search')->isNotEmpty(), fn ($q) => $q->where('reference', 'like', '%'.$request->string('search')->value().'%'))
+            // Filtre par famille d'articles : la vente est retenue dès qu'une
+            // de ses lignes en relève. Une vente mêlant deux familles apparaît
+            // donc dans les deux — c'est voulu : on cherche « les ventes où il
+            // y a eu des câbles », pas « les ventes de câbles uniquement ».
+            ->when($request->integer('category_id') > 0, fn ($q) => $q->whereHas(
+                'lines',
+                fn ($l) => $l->whereHas(
+                    'product',
+                    fn ($p) => $p->where('category_id', $request->integer('category_id')),
+                ),
+            ))
             ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '>=', $request->string('date_from')->value()))
             ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()))
             ->orderByDesc('id')

@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
+import { useCategories } from '@/features/categories/hooks'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { downloadFile } from '@/lib/download'
@@ -142,6 +143,32 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   const [aSupprimer, setASupprimer] = useState<SaleRow | null>(null)
   const [erreurSuppression, setErreurSuppression] = useState<string | null>(null)
 
+  // Filtres de la liste. Ils vivent ici et non dans l'URL : on revient sur
+  // cette page en boucle depuis le detail d'une vente, et repartir a zero a
+  // chaque retour ferait refaire la selection.
+  const [lieu, setLieu] = useState(0)
+  const [categorie, setCategorie] = useState(0)
+  const [du, setDu] = useState('')
+  const [au, setAu] = useState('')
+
+  const { data: lieux = [] } = useWarehouseOptions()
+  const { data: categories = [] } = useCategories()
+
+  const filtres = {
+    warehouse_id: lieu || undefined,
+    category_id: categorie || undefined,
+    date_from: du || undefined,
+    date_to: au || undefined,
+  }
+  const filtreActif = lieu > 0 || categorie > 0 || du !== '' || au !== ''
+
+  /** Change un filtre et revient en page 1 : la page 7 d'un autre filtre
+   *  serait souvent vide, ce qui se lit comme « aucun resultat ». */
+  function appliquer(action: () => void) {
+    action()
+    setPage(1)
+  }
+
   const supprimer = useMutation({
     mutationFn: async (id: number) => {
       await ensureCsrfCookie()
@@ -159,15 +186,89 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   })
 
   const { data, isLoading } = useQuery<Paginated<SaleRow>>({
-    queryKey: [...KEY, 'invoices', page],
+    queryKey: [...KEY, 'invoices', page, lieu, categorie, du, au],
     queryFn: async () => {
-      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', { params: { page, type: 'invoice' } })
+      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', {
+        params: { page, type: 'invoice', ...filtres },
+      })
       return r
     },
   })
 
   const sales = data?.data ?? []
   const meta = data?.meta
+
+  const barreFiltres = (
+    <Card>
+      <CardBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <Field label="Lieu" htmlFor="vte-lieu">
+          <Select
+            id="vte-lieu"
+            value={lieu}
+            onChange={(e) => appliquer(() => setLieu(Number(e.target.value)))}
+          >
+            <option value={0}>Tous les lieux</option>
+            {lieux.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.code} · {w.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label="Famille d'articles" htmlFor="vte-categorie">
+          <Select
+            id="vte-categorie"
+            value={categorie}
+            onChange={(e) => appliquer(() => setCategorie(Number(e.target.value)))}
+          >
+            <option value={0}>Toutes les familles</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label="Du" htmlFor="vte-du">
+          <Input
+            id="vte-du"
+            type="date"
+            value={du}
+            onChange={(e) => appliquer(() => setDu(e.target.value))}
+          />
+        </Field>
+
+        <Field label="Au" htmlFor="vte-au">
+          <Input
+            id="vte-au"
+            type="date"
+            value={au}
+            onChange={(e) => appliquer(() => setAu(e.target.value))}
+          />
+        </Field>
+
+        <div className="flex items-end">
+          <Button
+            variant="ghost"
+            className="w-full"
+            disabled={!filtreActif}
+            onClick={() =>
+              appliquer(() => {
+                setLieu(0)
+                setCategorie(0)
+                setDu('')
+                setAu('')
+              })
+            }
+          >
+            Effacer les filtres
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
+  )
 
   return (
     <div className="space-y-6">
@@ -203,8 +304,17 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
 
       {creating ? <CreateSalePanel fixedType="invoice" onClose={() => setCreating(false)} onCreated={onOpen} /> : null}
 
+      {barreFiltres}
+
       <Card>
-        <CardHeader title="Factures" hint={meta ? `${meta.total}` : undefined} />
+        <CardHeader
+          title="Factures"
+          hint={
+            meta
+              ? `${meta.total}${filtreActif ? ' (filtrées)' : ''}`
+              : undefined
+          }
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>

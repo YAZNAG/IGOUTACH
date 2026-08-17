@@ -120,13 +120,24 @@ export interface Movement {
   id: number
   product_id: number
   warehouse_id: number
-  warehouse_name: string
-  type: string
+  /** Absent tant que la relation n'est pas chargee par l'appelant. */
+  warehouse_name: string | null
+  warehouse_code: string | null
+  /** Code du type de mouvement : entry, exit, transfer_in… */
+  type: string | null
   quantity: number
-  reference: string | null
-  notes: string | null
+  reference_type: string | null
+  reference_id: number | null
+  note: string | null
   created_at: string
-  user: { id: number; name: string }
+  /**
+   * Auteur du mouvement, ou `null`.
+   *
+   * Un import initial n'a pas d'auteur, et un compte supprime laisse ses
+   * mouvements orphelins. Le declarer non nullable a fait tomber l'ecran des
+   * le premier cas rencontre.
+   */
+  user: { id: number; name: string } | null
 }
 
 export interface PriceInfo {

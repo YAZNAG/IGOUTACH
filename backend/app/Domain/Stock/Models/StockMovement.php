@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Stock\Models;
 
 use App\Domain\Catalog\Models\Product;
+use App\Models\User;
 use App\Support\Concerns\BelongsToWarehouse;
 use Database\Factories\StockMovementFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -73,6 +74,20 @@ class StockMovement extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Auteur du mouvement.
+     *
+     * Nullable : les mouvements d'un import initial, ou ceux d'un compte
+     * supprimé depuis, n'ont personne à qui être attribués. Un écran qui
+     * l'oublie tombe sur ce cas dès la première correction de stock.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

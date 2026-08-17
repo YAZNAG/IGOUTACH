@@ -288,7 +288,9 @@ final class ProductController extends Controller
     public function movements(Request $request, Product $product): JsonResponse
     {
         $paginator = StockMovement::query()
-            ->with(['movementType:id,code,name'])
+            // Le lieu et l'auteur sont affichés sur chaque ligne : sans ce
+            // chargement, la liste déclencherait deux requêtes par mouvement.
+            ->with(['movementType:id,code,name', 'warehouse:id,code,name', 'user:id,name'])
             ->where('product_id', $product->id)
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->whereHas('movementType', fn ($t) => $t->where('code', $request->string('type')->value())))
