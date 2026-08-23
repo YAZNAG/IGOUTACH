@@ -230,6 +230,15 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   })
   const creerCheque = useCreateCheque()
 
+  /**
+   * Justificatif facultatif du reglement.
+   *
+   * Un virement ne laisse aucune trace dans le tiroir : l'avis de la banque
+   * est la seule piece qui prouve qu'il est arrive. Pouvoir l'attacher evite
+   * d'avoir a le retrouver dans un telephone six mois plus tard.
+   */
+  const [justificatif, setJustificatif] = useState<File | null>(null)
+
   const { data: customers = [] } = useQuery<CustomerOption[]>({
     queryKey: ['payment-customer-search', search],
     queryFn: async () => {
@@ -255,6 +264,7 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   // choix de signataire. Seul l'effet enregistré diffère.
   const instrument: 'cheque' | 'traite' = codeMode === 'TRAITE' ? 'traite' : 'cheque'
   const isCheque = codeMode === 'CHEQUE' || codeMode === 'TRAITE'
+  const estVirement = codeMode === 'TRANSFER'
 
   const create = useMutation({
     mutationFn: async () => {
@@ -284,7 +294,7 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
         chequeId = cree.id
       }
 
-      await api.post('/payments', {
+      const corps: Record<string, unknown> = {
         customer_id: customerId,
         amount: Number(amount),
         payment_method_id: methodId,
@@ -303,9 +313,34 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
               },
             }
           : {}),
-      })
+      }
+
+      if (justificatif === null) {
+        await api.post('/payments', corps)
+        return
+      }
+
+      // Avec un fichier, la requete passe en multipart. L'objet « cheque »
+      // imbrique s'y aplatit en « cheque[cle] », que Laravel recompose.
+      const formulaire = new FormData()
+      for (const [cle, valeur] of Object.entries(corps)) {
+        if (valeur === null || valeur === undefined) continue
+        if (cle === 'cheque' && typeof valeur === 'object') {
+          for (const [sousCle, sousValeur] of Object.entries(valeur as Record<string, unknown>)) {
+            if (sousValeur !== null && sousValeur !== undefined) {
+              formulaire.append(`cheque[${sousCle}]`, String(sousValeur))
+            }
+          }
+          continue
+        }
+        formulaire.append(cle, String(valeur))
+      }
+      formulaire.append('receipt', justificatif)
+
+      await api.post('/payments', formulaire)
     },
     onSuccess: () => {
+      setJustificatif(null)
       qc.invalidateQueries({ queryKey: KEY })
       qc.invalidateQueries({ queryKey: ['customers'] })
       onClose()
@@ -364,6 +399,34 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
             customerName={selected?.name}
             instrument={instrument}
           />
+        ) : null}
+
+        {/* Le virement ne laisse aucune trace au comptoir : l'avis de la
+            banque est la seule piece qui prouve qu'il est arrive. */}
+        {estVirement ? (
+          <Field label="Avis de virement (facultatif)" htmlFor="pay-receipt">
+            <div className="space-y-1">
+              <Input
+                id="pay-receipt"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => {
+                  const fichier = e.target.files?.[0] ?? null
+                  if (fichier && fichier.size > 4 * 1024 * 1024) {
+                    window.alert('L’image depasse 4 Mo.')
+                    e.target.value = ''
+                    return
+                  }
+                  setJustificatif(fichier)
+                }}
+              />
+              <p className="text-xs text-faint">
+                {justificatif
+                  ? `${justificatif.name} sera joint au reglement.`
+                  : 'JPG, PNG ou WebP, 4 Mo maximum.'}
+              </p>
+            </div>
+          </Field>
         ) : null}
 
         {create.isError ? (

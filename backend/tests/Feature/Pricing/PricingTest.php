@@ -27,13 +27,20 @@ it('résout le prix détail pour une petite quantité', function () {
     expect($resolved->priceTypeCode)->toBe(PriceType::DETAIL)->and($resolved->amount)->toBe(18.0);
 });
 
-it('résout le demi-gros au palier de 10', function () {
-    $resolved = app(PriceResolverInterface::class)->resolve($this->product->id, 10);
+it('résout le demi-gros au palier de 3', function () {
+    $resolved = app(PriceResolverInterface::class)->resolve($this->product->id, 3);
     expect($resolved->priceTypeCode)->toBe(PriceType::SEMI_GROS)->and($resolved->amount)->toBe(16.0);
 });
 
-it('résout le gros au palier de 50', function () {
-    $resolved = app(PriceResolverInterface::class)->resolve($this->product->id, 60);
+it('reste au détail juste sous le palier du demi-gros', function () {
+    // La borne compte autant que le palier : à 2 unités on paie encore le
+    // prix de détail, c'est à 3 que le tarif bascule.
+    $resolved = app(PriceResolverInterface::class)->resolve($this->product->id, 2);
+    expect($resolved->priceTypeCode)->toBe(PriceType::DETAIL);
+});
+
+it('résout le gros au palier de 10', function () {
+    $resolved = app(PriceResolverInterface::class)->resolve($this->product->id, 10);
     expect($resolved->priceTypeCode)->toBe(PriceType::GROS)->and($resolved->amount)->toBe(14.0);
 });
 

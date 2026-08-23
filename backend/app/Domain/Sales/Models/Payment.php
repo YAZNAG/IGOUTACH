@@ -49,6 +49,7 @@ final class Payment extends Model
         'received_at',
         'user_id',
         'note',
+        'receipt_path',
     ];
 
     /**

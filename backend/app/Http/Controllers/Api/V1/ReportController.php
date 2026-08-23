@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exports\ArrayExport;
 use App\Http\Controllers\Controller;
+use App\Domain\Sales\Services\ProfitReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -149,6 +150,32 @@ final class ReportController extends Controller
     /**
      * Marges réalisées par article (ventes confirmées, coût CMUP actuel).
      */
+    /**
+     * Bénéfice de la période, vu par lieu, par client et par fournisseur.
+     *
+     * GET /reports/profit?from=&to=
+     */
+    public function profit(Request $request, ProfitReportService $benefices): JsonResponse
+    {
+        /** @var array{from?: string|null, to?: string|null} $data */
+        $data = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+        ]);
+
+        $du = $data['from'] ?? now()->startOfMonth()->format('Y-m-d');
+        $au = $data['to'] ?? now()->format('Y-m-d');
+
+        return response()->json(['data' => [
+            'from' => $du,
+            'to' => $au,
+            'totals' => $benefices->totaux($du, $au),
+            'by_warehouse' => $benefices->parLieu($du, $au),
+            'by_customer' => $benefices->parClient($du, $au),
+            'by_supplier' => $benefices->parFournisseur($du, $au),
+        ]]);
+    }
+
     public function margins(Request $request): JsonResponse
     {
         /** @var array{from?: string|null, to?: string|null} $data */

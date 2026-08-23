@@ -15,6 +15,8 @@ use App\Domain\Sales\Models\Sale;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 /**
@@ -62,6 +64,11 @@ final class PaymentController extends Controller
             'cheque_status' => $p->cheque_status,
             'cheque_reference' => $p->cheque_reference,
             'received_at' => $p->received_at->format('Y-m-d'),
+            // Sans cette URL, le justificatif serait enregistre sans jamais
+            // pouvoir etre relu.
+            'receipt_url' => $p->receipt_path !== null
+                ? Storage::disk('public')->url($p->receipt_path)
+                : null,
         ]);
 
         return response()->json([
@@ -188,6 +195,8 @@ final class PaymentController extends Controller
             'cheque_id' => ['nullable', 'integer', 'exists:cheques,id'],
             'received_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
+            // Justificatif facultatif : l'avis de virement, le plus souvent.
+            'receipt' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             // Règlement ventilé sur plusieurs factures du même client.
             'allocations' => ['sometimes', 'array', 'min:1'],
             'allocations.*.sale_id' => ['required', 'integer', 'exists:sales,id'],
@@ -227,6 +236,14 @@ final class PaymentController extends Controller
         }
 
         unset($data['cheque']);
+
+        if ($request->hasFile('receipt')) {
+            /** @var UploadedFile $fichier */
+            $fichier = $request->file('receipt');
+            $data['receipt_path'] = (string) $fichier->store('payments', 'public');
+        }
+
+        unset($data['receipt']);
 
         try {
             $payment = $action->execute($data, $request->user()?->id);

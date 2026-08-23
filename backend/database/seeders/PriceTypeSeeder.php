@@ -14,8 +14,8 @@ final class PriceTypeSeeder extends Seeder
      */
     public const TYPES = [
         ['code' => 'detail', 'name' => 'Détail', 'rank' => 1, 'min_quantity' => 1],
-        ['code' => 'semi_gros', 'name' => 'Demi-gros', 'rank' => 2, 'min_quantity' => 10],
-        ['code' => 'gros', 'name' => 'Gros', 'rank' => 3, 'min_quantity' => 50],
+        ['code' => 'semi_gros', 'name' => 'Demi-gros', 'rank' => 2, 'min_quantity' => 3],
+        ['code' => 'gros', 'name' => 'Gros', 'rank' => 3, 'min_quantity' => 10],
     ];
 
     public function run(): void
