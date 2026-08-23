@@ -175,12 +175,23 @@ final class DashboardMetricsService
 
         // Regroupement par jour puis agrégation en PHP : la mise en forme du
         // mois côté base varie d'un moteur à l'autre, pas celle-ci.
+        //
+        // Le coût se lit sur les lignes, pas sur l'en-tête de la vente : une
+        // sous-requête plutôt qu'une jointure, sinon chaque vente serait
+        // comptée autant de fois qu'elle a d'articles et le chiffre
+        // d'affaires se trouverait multiplié.
+        $couts = DB::table('sale_lines')
+            ->join('products', 'products.id', '=', 'sale_lines.product_id')
+            ->selectRaw('sale_lines.sale_id, SUM(sale_lines.quantity * products.cost_price) as cout')
+            ->groupBy('sale_lines.sale_id');
+
         $lignes = Sale::withoutGlobalScopes()
-            ->selectRaw('DATE(confirmed_at) as jour, SUM(total) as ca, COUNT(*) as nb')
-            ->where('type', Sale::TYPE_INVOICE)
-            ->where('status', Sale::STATUS_CONFIRMED)
-            ->where($colonne, $id)
-            ->where('confirmed_at', '>=', $debut)
+            ->leftJoinSub($couts, 'c', 'c.sale_id', '=', 'sales.id')
+            ->selectRaw('DATE(sales.confirmed_at) as jour, SUM(sales.total) as ca, COUNT(*) as nb, COALESCE(SUM(c.cout), 0) as cout')
+            ->where('sales.type', Sale::TYPE_INVOICE)
+            ->where('sales.status', Sale::STATUS_CONFIRMED)
+            ->where('sales.'.$colonne, $id)
+            ->where('sales.confirmed_at', '>=', $debut)
             ->groupBy('jour')
             ->get();
 
@@ -192,6 +203,8 @@ final class DashboardMetricsService
                 'month' => $mois->format('Y-m'),
                 'label' => $this->moisCourt($mois),
                 'revenue' => 0.0,
+                'cost' => 0.0,
+                'profit' => 0.0,
                 'count' => 0,
             ];
         }
@@ -200,6 +213,8 @@ final class DashboardMetricsService
             $cle = substr((string) $ligne->getAttribute('jour'), 0, 7);
             if (isset($paniers[$cle])) {
                 $paniers[$cle]['revenue'] = round($paniers[$cle]['revenue'] + (float) $ligne->getAttribute('ca'), 2);
+                $paniers[$cle]['cost'] = round($paniers[$cle]['cost'] + (float) $ligne->getAttribute('cout'), 2);
+                $paniers[$cle]['profit'] = round($paniers[$cle]['revenue'] - $paniers[$cle]['cost'], 2);
                 $paniers[$cle]['count'] += (int) $ligne->getAttribute('nb');
             }
         }

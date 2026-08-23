@@ -4,6 +4,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { formatCompact, formatCurrency, formatNumber } from '@/lib/utils'
 import { useProductStatistics } from '../hooks'
+import { RankedBarChart } from '@/features/dashboard/components/RankedBarChart'
+import { chartColors } from '@/features/dashboard/components/chartTheme'
 import { PriceHistoryChart } from './PriceHistoryChart'
 import type { ProductDetail, StockDetail } from '../api/articlesApi'
 
@@ -276,6 +278,16 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
             {stats.by_warehouse.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted">Aucune vente sur la période.</p>
             ) : (
+              <>
+              <div className="px-3 pt-3">
+                <RankedBarChart
+                  rows={stats.by_warehouse.map((row) => ({
+                    name: row.warehouse,
+                    value: row.revenue,
+                    detail: `${row.name} — ${formatNumber(row.quantity)} unité(s)`,
+                  }))}
+                />
+              </div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
@@ -299,6 +311,7 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </CardBody>
         </Card>
@@ -311,6 +324,17 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
                 Aucun client identifié — ventes au comptoir uniquement.
               </p>
             ) : (
+              <>
+              <div className="px-3 pt-3">
+                <RankedBarChart
+                  color={chartColors.sales}
+                  rows={stats.top_customers.map((row) => ({
+                    name: row.customer,
+                    value: row.revenue,
+                    detail: `${formatNumber(row.quantity)} unité(s)`,
+                  }))}
+                />
+              </div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
@@ -331,6 +355,7 @@ export function StatisticsTab({ product, stock }: StatisticsTabProps) {
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </CardBody>
         </Card>

@@ -4,6 +4,7 @@ import { api } from '@/lib/api'
 import { cn, formatCurrency, formatNumber } from '@/lib/utils'
 import { MonthlySeriesChart, type MonthlyPoint } from './MonthlySeriesChart'
 import { RankedBarChart } from './RankedBarChart'
+import { RevenueProfitChart, type RevenueProfitPoint } from './RevenueProfitChart'
 import { chartColors } from './chartTheme'
 
 interface Totals {
@@ -14,6 +15,10 @@ interface Totals {
   last_closed_month: number
   change_percent: number | null
   documents: number
+  /** Absents quand l'utilisateur n'a pas le droit de voir les couts. */
+  cost?: number
+  profit?: number
+  margin_percent?: number | null
 }
 
 interface TopRow {
@@ -117,6 +122,18 @@ export function EntityActivityCard({
   const { totals } = data
   const variation = totals.change_percent
 
+  // Le benefice n'est montre qu'a qui peut voir les couts : le serveur retire
+  // ces clefs aux autres, l'ecran suit sans avoir a connaitre la permission.
+  const montreLeBenefice = totals.profit !== undefined
+  const pointsBenefice: RevenueProfitPoint[] = data.monthly.map((m) => ({
+    month: m.month,
+    label: m.label,
+    revenue: Number(m.revenue ?? 0),
+    cost: Number(m.cost ?? 0),
+    profit: Number(m.profit ?? 0),
+    count: m.count,
+  }))
+
   return (
     <div className="space-y-4">
       <Card className="flex flex-col">
@@ -129,7 +146,20 @@ export function EntityActivityCard({
               precision={`${formatNumber(totals.documents)} ${countLabel}${totals.documents > 1 ? 's' : ''}`}
             />
             <Chiffre libelle="Moyenne mensuelle" valeur={formatCurrency(totals.average)} />
-            <Chiffre libelle="Meilleur mois" valeur={formatCurrency(totals.best)} />
+            {montreLeBenefice ? (
+              <Chiffre
+                libelle="Bénéfice 12 mois"
+                valeur={formatCurrency(totals.profit ?? 0)}
+                precision={
+                  totals.margin_percent === null || totals.margin_percent === undefined
+                    ? undefined
+                    : `marge de ${totals.margin_percent} %`
+                }
+                ton={(totals.profit ?? 0) >= 0 ? 'ok' : 'bad'}
+              />
+            ) : (
+              <Chiffre libelle="Meilleur mois" valeur={formatCurrency(totals.best)} />
+            )}
             <Chiffre
               libelle="Mois en cours"
               valeur={formatCurrency(totals.current_month)}
@@ -150,12 +180,16 @@ export function EntityActivityCard({
             </div>
           ) : (
             <div className="h-[220px] w-full">
-              <MonthlySeriesChart
-                data={points}
-                measureLabel={title}
-                countLabel={countLabel}
-                color={color}
-              />
+              {montreLeBenefice ? (
+                <RevenueProfitChart data={pointsBenefice} countLabel={countLabel} />
+              ) : (
+                <MonthlySeriesChart
+                  data={points}
+                  measureLabel={title}
+                  countLabel={countLabel}
+                  color={color}
+                />
+              )}
             </div>
           )}
         </CardBody>

@@ -25,6 +25,33 @@ final class EntityStatsController extends Controller
     public function __construct(private readonly DashboardMetricsService $metrics) {}
 
     /**
+     * Efface toute trace du coût pour qui n'a pas le droit de le voir.
+     *
+     * Le bénéfice se déduit du chiffre d'affaires moins le coût : le laisser
+     * passer contournerait « product.view_cost_price » aussi sûrement que
+     * d'afficher le prix d'achat lui-même.
+     *
+     * @param  array<string, mixed>  $donnees
+     * @return array<string, mixed>
+     */
+    private function masquerLesCouts(array $donnees): array
+    {
+        if (request()->user()?->can('product.view_cost_price') ?? false) {
+            return $donnees;
+        }
+
+        unset($donnees['totals']['cost'], $donnees['totals']['profit'], $donnees['totals']['margin_percent']);
+
+        $donnees['monthly'] = array_map(static function (array $point): array {
+            unset($point['cost'], $point['profit']);
+
+            return $point;
+        }, $donnees['monthly']);
+
+        return $donnees;
+    }
+
+    /**
      * Ce qu'un lieu vend : série mensuelle, totaux, meilleurs articles et
      * meilleurs clients.
      */
@@ -32,12 +59,12 @@ final class EntityStatsController extends Controller
     {
         $serie = $this->metrics->monthlyRevenueFor('warehouse_id', $warehouse->id);
 
-        return response()->json(['data' => [
+        return response()->json(['data' => $this->masquerLesCouts([
             'monthly' => $serie,
             'totals' => $this->totaux($serie, 'revenue'),
             'top_products' => $this->meilleursArticles(['sales.warehouse_id' => $warehouse->id]),
             'top_customers' => $this->meilleursClients($warehouse->id),
-        ]]);
+        ])]);
     }
 
     /**
@@ -47,11 +74,11 @@ final class EntityStatsController extends Controller
     {
         $serie = $this->metrics->monthlyRevenueFor('customer_id', $customer->id);
 
-        return response()->json(['data' => [
+        return response()->json(['data' => $this->masquerLesCouts([
             'monthly' => $serie,
             'totals' => $this->totaux($serie, 'revenue'),
             'top_products' => $this->meilleursArticles(['sales.customer_id' => $customer->id]),
-        ]]);
+        ])]);
     }
 
     /**
@@ -87,6 +114,11 @@ final class EntityStatsController extends Controller
         $moisClos = $nombre >= 2 ? (float) $valeurs[$nombre - 2] : 0.0;
         $moisPrecedent = $nombre >= 3 ? (float) $valeurs[$nombre - 3] : 0.0;
 
+        // Le coût et le bénéfice n'existent que sur les séries de ventes ;
+        // une série d'achats fournisseur n'en porte pas.
+        $cout = array_sum(array_column($serie, 'cost'));
+        $benefice = array_sum(array_column($serie, 'profit'));
+
         return [
             'total' => round((float) $total, 2),
             'average' => $nombre > 0 ? round((float) $total / $nombre, 2) : 0.0,
@@ -97,6 +129,9 @@ final class EntityStatsController extends Controller
                 ? round((($moisClos - $moisPrecedent) / $moisPrecedent) * 100, 1)
                 : null,
             'documents' => (int) array_sum(array_column($serie, 'count')),
+            'cost' => round((float) $cout, 2),
+            'profit' => round((float) $benefice, 2),
+            'margin_percent' => $total > 0 ? round(($benefice / $total) * 100, 1) : null,
         ];
     }
 
