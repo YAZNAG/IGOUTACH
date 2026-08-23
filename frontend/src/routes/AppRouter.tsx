@@ -11,7 +11,7 @@ import { CustomerDetailPage, CustomersPage } from '@/features/customers'
 import { ExpensesPage, RecurringExpensesPage } from '@/features/expenses'
 import { InventoryPage } from '@/features/inventory'
 import { CustomerCreditsPage, PaymentsPage } from '@/features/payments'
-import { AlertsPage, ReportsPage } from '@/features/pilotage'
+import { AlertsPage, BreakdownPage, ReportsPage } from '@/features/pilotage'
 import {
   CreatePurchaseOrderPage,
   EditPurchaseOrderPage,
@@ -66,6 +66,8 @@ export const router = createBrowserRouter([
           { path: '/', element: <HomePage /> },
           { path: '/alertes', element: <AlertsPage /> },
           { path: '/rapports', element: <ReportsPage /> },
+          { path: '/chiffre-affaires', element: <BreakdownPage mesure="revenue" /> },
+          { path: '/benefice', element: <BreakdownPage mesure="profit" /> },
           { path: '/stock', element: <StockPage /> },
           { path: '/stock-entries', element: <StockEntriesPage /> },
           { path: '/stock-entries/:id', element: <StockEntryDetailPage /> },

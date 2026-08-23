@@ -64,6 +64,7 @@ final class ProfitReportService
                 // Le taux situe la performance : 500 DH de marge sur 1 000 DH
                 // de vente n'est pas la même affaire que sur 50 000 DH.
                 'margin_percent' => $ca > 0 ? round(($benefice / $ca) * 100, 1) : null,
+                'quantity' => isset($r->quantity) ? (int) $r->quantity : null,
             ];
         }
 
@@ -137,6 +138,31 @@ final class ProfitReportService
     }
 
     /**
+     * Bénéfice par article.
+     *
+     * C'est le découpage le plus fin : il dit non seulement ce qui se vend,
+     * mais ce qui vaut la peine d'être vendu. Un article très demandé à marge
+     * nulle occupe du stock sans rien rapporter.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function parArticle(string $du, string $au, int $limite = 20): array
+    {
+        return $this->formater(
+            $this->lignes($du, $au)
+                ->groupBy('products.id', 'products.sku', 'products.name')
+                ->orderByDesc('profit')
+                ->limit($limite)
+                ->get([
+                    DB::raw("CONCAT(products.sku, ' — ', products.name) as name"),
+                    DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                    DB::raw('SUM(sale_lines.quantity) as quantity'),
+                    ...$this->mesures(),
+                ]),
+        );
+    }
+
+    /**
      * Bénéfice par fournisseur : la marge dégagée sur les articles qu'il livre.
      *
      * Le rattachement vient des réceptions, pas du catalogue. La table de
@@ -173,6 +199,37 @@ final class ProfitReportService
                     ...$this->mesures(),
                 ]),
         );
+    }
+
+    /**
+     * Ce que le bénéfice affiché doit à des prix d'achat manquants.
+     *
+     * Un article vendu sans prix d'achat connu ressort à 100 % de marge :
+     * ce n'est pas du bénéfice pur, c'est un coût que personne n'a saisi.
+     * Sans cet avertissement, le chiffre se lit comme une performance alors
+     * qu'il signale une lacune de saisie.
+     *
+     * @return array<string, mixed>
+     */
+    public function coutsManquants(string $du, string $au): array
+    {
+        $r = $this->lignes($du, $au)
+            ->where(function ($q): void {
+                $q->whereNull('products.cost_price')->orWhere('products.cost_price', '<=', 0);
+            })
+            ->first([
+                DB::raw('COUNT(DISTINCT products.id) as articles'),
+                DB::raw('ROUND(SUM(sale_lines.line_total), 2) as revenue'),
+            ]);
+
+        $caSansCout = (float) ($r->revenue ?? 0);
+        $caTotal = (float) ($this->lignes($du, $au)->sum('sale_lines.line_total'));
+
+        return [
+            'products' => (int) ($r->articles ?? 0),
+            'revenue' => $caSansCout,
+            'revenue_share' => $caTotal > 0 ? round(($caSansCout / $caTotal) * 100, 1) : 0.0,
+        ];
     }
 
     /**

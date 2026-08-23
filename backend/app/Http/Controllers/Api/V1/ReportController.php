@@ -151,11 +151,16 @@ final class ReportController extends Controller
      * Marges réalisées par article (ventes confirmées, coût CMUP actuel).
      */
     /**
-     * Bénéfice de la période, vu par lieu, par client et par fournisseur.
+     * L'activité de la période, découpée par lieu, client, article et
+     * fournisseur.
      *
-     * GET /reports/profit?from=&to=
+     * Une seule source pour deux écrans : le chiffre d'affaires et le
+     * bénéfice sortent de la même requête. Deux endpoints auraient fini par
+     * diverger, et personne n'aurait su lequel croire.
+     *
+     * GET /reports/breakdown?from=&to=
      */
-    public function profit(Request $request, ProfitReportService $benefices): JsonResponse
+    public function breakdown(Request $request, ProfitReportService $benefices): JsonResponse
     {
         /** @var array{from?: string|null, to?: string|null} $data */
         $data = $request->validate([
@@ -166,14 +171,37 @@ final class ReportController extends Controller
         $du = $data['from'] ?? now()->startOfMonth()->format('Y-m-d');
         $au = $data['to'] ?? now()->format('Y-m-d');
 
-        return response()->json(['data' => [
+        $donnees = [
             'from' => $du,
             'to' => $au,
             'totals' => $benefices->totaux($du, $au),
             'by_warehouse' => $benefices->parLieu($du, $au),
             'by_customer' => $benefices->parClient($du, $au),
+            'by_product' => $benefices->parArticle($du, $au),
             'by_supplier' => $benefices->parFournisseur($du, $au),
-        ]]);
+            'missing_cost' => $benefices->coutsManquants($du, $au),
+        ];
+
+        // Le bénéfice se déduit du chiffre d'affaires moins le coût : le
+        // laisser passer contournerait « product.view_cost_price ».
+        if (! ($request->user()?->can('product.view_cost_price') ?? false)) {
+            unset(
+                $donnees['totals']['cost'],
+                $donnees['totals']['profit'],
+                $donnees['totals']['margin_percent'],
+                $donnees['missing_cost'],
+            );
+
+            foreach (['by_warehouse', 'by_customer', 'by_product', 'by_supplier'] as $bloc) {
+                $donnees[$bloc] = array_map(static function (array $ligne): array {
+                    unset($ligne['cost'], $ligne['profit'], $ligne['margin_percent']);
+
+                    return $ligne;
+                }, $donnees[$bloc]);
+            }
+        }
+
+        return response()->json(['data' => $donnees]);
     }
 
     public function margins(Request $request): JsonResponse

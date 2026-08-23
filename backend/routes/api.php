@@ -392,7 +392,7 @@ Route::prefix('v1')->group(function () {
         Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:report.consolidated');
         Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:report.consolidated');
         Route::get('reports/dormant-products', [ReportController::class, 'dormantProducts'])->middleware('can:report.consolidated');
-        Route::get('reports/profit', [ReportController::class, 'profit'])->middleware('can:report.consolidated');
+        Route::get('reports/breakdown', [ReportController::class, 'breakdown'])->middleware('can:report.consolidated');
         Route::get('reports/margins', [ReportController::class, 'margins'])->middleware('can:report.consolidated');
 
         // Lieux — types (référentiel) et lieux
