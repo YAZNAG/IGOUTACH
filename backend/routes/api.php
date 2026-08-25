@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\ProductCostController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductImageController;
 use App\Http\Controllers\Api\V1\ProductPriceController;
+use App\Http\Controllers\Api\V1\PurchasePriceController;
 use App\Http\Controllers\Api\V1\ProductSerialController;
 use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\ReportController;
@@ -119,6 +120,10 @@ Route::prefix('v1')->group(function () {
         Route::get('products/{product}/statistics', [ProductController::class, 'statistics'])->middleware('can:product.view');
         Route::get('products/{product}/suppliers', [ProductController::class, 'suppliers'])->middleware('can:product.view');
         Route::get('products/{product}/history', [ProductController::class, 'history'])->middleware('can:product.view');
+        // Prix d'achat et receptions qui le justifient. Le cout est une donnee
+        // sensible : la meme permission que partout ailleurs.
+        Route::get('products/{product}/purchase-history', [PurchasePriceController::class, 'history'])->middleware('can:product.view_cost_price');
+        Route::patch('products/{product}/purchase-price', [PurchasePriceController::class, 'update'])->middleware('can:product.set_price');
 
         // Catalogue — fiche technique (attributs + modèle par catégorie)
         Route::get('products/{product}/attributes', [ProductAttributeController::class, 'index'])->middleware('can:product.view');

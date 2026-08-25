@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Download, FileText, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -171,10 +172,32 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
   // pour qui a le droit de le consulter.
   const voitLesCouts = usePermission()('product.view_cost_price')
   const [q, setQ] = useState('')
-  const [status, setStatus] = useState<'' | 'rupture' | 'low' | 'ok'>('')
+  // L'etat initial vient de l'URL : c'est ainsi qu'une alerte peut mener
+  // directement aux articles qu'elle signale, plutot qu'a la liste entiere
+  // ou l'utilisateur devrait refaire le filtre a la main.
+  const [parametres, setParametres] = useSearchParams()
+  const filtreInitial = parametres.get('status')
+  const [status, setStatus] = useState<'' | 'rupture' | 'low' | 'ok'>(
+    filtreInitial === 'low' || filtreInitial === 'rupture' || filtreInitial === 'ok'
+      ? filtreInitial
+      : '',
+  )
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(50)
   const [sort, setSort] = useState<SortState>({ sort: 'quantity', direction: 'desc' })
+
+  /** Change le filtre et le reporte dans l'URL, pour que le lien reste partageable. */
+  function changerStatut(valeur: '' | 'rupture' | 'low' | 'ok') {
+    setStatus(valeur)
+    setPage(1)
+    const suivants = new URLSearchParams(parametres)
+    if (valeur === '') {
+      suivants.delete('status')
+    } else {
+      suivants.set('status', valeur)
+    }
+    setParametres(suivants, { replace: true })
+  }
 
   // Trier ou filtrer redéfinit l'ordre : rester à la page 7 y afficherait des
   // lignes sans rapport avec ce qu'on vient de demander.
@@ -217,7 +240,7 @@ function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
             ) : null}
             <Select
               value={status}
-              onChange={(e) => reinitialiser(setStatus)(e.target.value as typeof status)}
+              onChange={(e) => changerStatut(e.target.value as typeof status)}
               className="w-40"
               aria-label="État du stock"
             >

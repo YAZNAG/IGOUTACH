@@ -118,9 +118,41 @@ final class ProductController extends Controller
         return ProductResource::make($updated);
     }
 
-    public function updatePricing(UpdatePricingRequest $request, Product $product, SetProductPriceAction $action): ProductResource
-    {
-        $updated = $action->execute($product, PricingData::fromArray($request->validated()));
+    public function updatePricing(
+        UpdatePricingRequest $request,
+        Product $product,
+        SetProductPriceAction $action,
+    ): ProductResource|JsonResponse {
+        $donnees = $request->validated();
+
+        // Vendre en dessous du cout ne se decide pas par inadvertance. Le
+        // cout de reference est le CMUP quand il y a du stock, sinon le prix
+        // d'achat — la meme regle que partout ailleurs dans l'application.
+        $stock = DB::table('stocks')
+            ->selectRaw('SUM(quantity) as q, SUM(quantity * average_cost) as v')
+            ->where('product_id', $product->id)
+            ->first();
+
+        $quantite = (int) ($stock->q ?? 0);
+        $cout = $quantite > 0
+            ? round((float) ($stock->v ?? 0) / $quantite, 2)
+            : round((float) ($donnees['cost_price'] ?? $product->cost_price ?? 0), 2);
+
+        $vente = round((float) $donnees['sale_price'], 2);
+
+        if ($cout > 0 && $vente > 0 && $vente < $cout) {
+            return response()->json([
+                'message' => sprintf(
+                    'Le prix de vente (%s DH) est inférieur au coût de l’article (%s DH) : '
+                    .'cette vente se ferait à perte.',
+                    number_format($vente, 2, ',', ' '),
+                    number_format($cout, 2, ',', ' '),
+                ),
+                'errors' => ['sale_price' => ['Prix de vente inférieur au coût.']],
+            ], 422);
+        }
+
+        $updated = $action->execute($product, PricingData::fromArray($donnees));
 
         return ProductResource::make($updated);
     }

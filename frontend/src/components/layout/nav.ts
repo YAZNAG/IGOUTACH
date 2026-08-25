@@ -101,6 +101,7 @@ export const navGroups: NavGroup[] = [
       { label: 'Catégories', to: '/categories', icon: Tags, permission: 'category.view' },
       { label: 'Tarifs de vente', to: '/tarifs', icon: Tag, permission: 'price.view' },
       { label: 'Coûts des articles', to: '/couts', icon: Calculator, permission: 'product.view_cost_price' },
+      { label: "Prix d'achat", to: '/prix-achat', icon: Receipt, permission: 'product.view_cost_price' },
       { label: 'Unités', to: '/unites', icon: Ruler, permission: 'unit.view' },
       { label: 'Marques', to: '/marques', icon: Tag, permission: 'brand.view' },
     ],

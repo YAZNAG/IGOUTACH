@@ -25,7 +25,7 @@ import {
 } from '@/features/purchases'
 import { QuotesPage, SalesPage } from '@/features/sales'
 import { TransfersPage } from '@/features/transfers'
-import { PricingPage, ProductCostsPage } from '@/features/pricing'
+import { PricingPage, ProductCostsPage, PurchasePricesPage } from '@/features/pricing'
 import { SessionsPage } from '@/features/sessions'
 import {
   BackupPage,
@@ -96,6 +96,7 @@ export const router = createBrowserRouter([
           { path: '/articles/:id', element: <ProductDetailPage /> },
           { path: '/tarifs', element: <PricingPage /> },
           { path: '/couts', element: <ProductCostsPage /> },
+          { path: '/prix-achat', element: <PurchasePricesPage /> },
           { path: '/unites', element: <UnitsPage /> },
           { path: '/marques', element: <BrandsPage /> },
           { path: '/fournisseurs', element: <SuppliersPage /> },

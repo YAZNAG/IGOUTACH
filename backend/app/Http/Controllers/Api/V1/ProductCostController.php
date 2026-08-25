@@ -90,6 +90,10 @@ final class ProductCostController extends Controller
             'name' => $product->name,
             'category' => $product->category?->name,
             'total_quantity' => $qty,
+            // Le prix d'achat de la fiche, distinct du CMUP : le premier est
+            // saisi, le second constate. Les voir cote a cote est le seul
+            // moyen de reperer une fiche restee sur un ancien prix.
+            'purchase_price' => $product->cost_price !== null ? (float) $product->cost_price : null,
             'cmup' => round($cmup, 2),
             'stock_value' => round($value, 2),
             'last_purchase_price' => $product->getAttribute('last_purchase_price') !== null
@@ -155,7 +159,7 @@ final class ProductCostController extends Controller
     {
         $products = $this->baseQuery($request)->orderBy('name')->get();
 
-        $headings = ['Référence', 'Article', 'Catégorie', 'Stock total', 'CMUP (DH)', 'Valeur stock (DH)', 'Dernier achat (DH)', 'Date dernier achat', 'Prix détail (DH)', 'Marge (%)'];
+        $headings = ['Référence', 'Article', 'Catégorie', 'Stock total', "Prix d'achat (DH)", 'CMUP (DH)', 'Valeur stock (DH)', 'Dernier achat (DH)', 'Date dernier achat', 'Prix détail (DH)', 'Marge (%)'];
 
         $rows = $products->map(function (Product $p): array {
             $row = $this->toRow($p);
@@ -165,6 +169,7 @@ final class ProductCostController extends Controller
                 $row['name'],
                 $row['category'] ?? '—',
                 $row['total_quantity'],
+                $row['purchase_price'] !== null ? number_format($row['purchase_price'], 2, '.', '') : '—',
                 number_format($row['cmup'], 2, '.', ''),
                 number_format($row['stock_value'], 2, '.', ''),
                 $row['last_purchase_price'] !== null ? number_format($row['last_purchase_price'], 2, '.', '') : '—',

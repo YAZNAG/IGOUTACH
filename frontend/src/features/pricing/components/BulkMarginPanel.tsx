@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -34,6 +35,35 @@ export function BulkMarginPanel({ categories, onClose }: { categories: Category[
     gros: toNumber(grosMargin),
   }
   const hasMargin = Object.values(margins).some((m) => m !== undefined)
+
+  /** Prévisualisation dont l'application attend confirmation. */
+  const [aConfirmer, setAConfirmer] = useState<{ count: number } | null>(null)
+
+  /**
+   * Demande l'application. Sans prévisualisation préalable, on la déclenche
+   * d'abord : l'utilisateur voit toujours ce qu'il change avant de l'écrire.
+   */
+  async function demanderApplication() {
+    if (preview !== null) {
+      setAConfirmer({ count: preview.count })
+
+      return
+    }
+
+    try {
+      const resultat = await mutation.mutateAsync({
+        margins,
+        category_id: categoryId || undefined,
+        apply: false,
+      })
+      setAConfirmer({ count: resultat.count })
+    } catch {
+      // La previsualisation a echoue : le message d'erreur du panneau prend
+      // le relais. Sans ce filet, la promesse rejetee ne remonterait nulle
+      // part et le bouton paraitrait de nouveau sans effet — le defaut meme
+      // que l'on corrige ici.
+    }
+  }
 
   function run(apply: boolean) {
     mutation.mutate({
@@ -157,19 +187,44 @@ export function BulkMarginPanel({ categories, onClose }: { categories: Category[
           </>
         ) : null}
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => run(false)} disabled={mutation.isPending || !hasMargin}>
             Prévisualiser
           </Button>
-          <Button
-            onClick={() => run(true)}
-            disabled={mutation.isPending || preview === null}
-            title={preview === null ? "Prévisualisez d'abord" : undefined}
-          >
-            Appliquer {preview ? `(${preview.count} articles)` : ''}
+          {/* Même raison qu'ailleurs : un bouton grisé sans explication
+              visible se lit comme un bouton cassé. */}
+          <Button onClick={demanderApplication} disabled={mutation.isPending || !hasMargin}>
+            {mutation.isPending
+              ? 'En cours…'
+              : `Appliquer${preview ? ` (${preview.count} articles)` : ''}`}
           </Button>
           <Button variant="ghost" onClick={onClose}>Fermer</Button>
+          {!hasMargin ? (
+            <span className="text-xs text-muted">Renseignez une marge pour continuer.</span>
+          ) : preview === null && !mutation.isPending ? (
+            <span className="text-xs text-muted">
+              Le détail des changements s'affichera avant toute écriture.
+            </span>
+          ) : null}
         </div>
+
+        <ConfirmDialog
+          open={aConfirmer !== null}
+          title="Appliquer les marges"
+          message={
+            aConfirmer === null
+              ? ''
+              : `${aConfirmer.count} article(s) vont voir leur prix de vente recalculé à partir de leur coût. ` +
+                'Les tarifs actuels sont conservés en historique.'
+          }
+          confirmLabel="Appliquer"
+          isPending={mutation.isPending}
+          onCancel={() => setAConfirmer(null)}
+          onConfirm={() => {
+            setAConfirmer(null)
+            run(true)
+          }}
+        />
       </CardBody>
     </Card>
   )

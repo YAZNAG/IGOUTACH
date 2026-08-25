@@ -20,6 +20,8 @@ interface CostRow {
   name: string
   category: string | null
   total_quantity: number
+  /** Prix d'achat saisi sur la fiche article, distinct du CMUP constate. */
+  purchase_price: number | null
   cmup: number
   stock_value: number
   last_purchase_price: number | null
@@ -171,6 +173,7 @@ export function ProductCostsPage() {
                     <th className="px-4 py-3 font-medium">Article</th>
                     <th className="px-4 py-3 font-medium">Catégorie</th>
                     <th className="px-4 py-3 text-right font-medium">Stock total</th>
+                    <th className="px-4 py-3 text-right font-medium">Prix d'achat (DH)</th>
                     <th className="px-4 py-3 text-right font-medium">CMUP (DH)</th>
                     <th className="px-4 py-3 text-right font-medium">Valeur stock</th>
                     <th className="px-4 py-3 text-right font-medium">Dernier achat</th>
@@ -187,6 +190,11 @@ export function ProductCostsPage() {
                       <td className="px-4 py-3 text-ink">{row.name}</td>
                       <td className="px-4 py-3 text-muted">{row.category ?? '—'}</td>
                       <td className="tabular px-4 py-3 text-right text-muted">{formatNumber(row.total_quantity)}</td>
+                      <td className="tabular px-4 py-3 text-right text-ink">
+                        {row.purchase_price !== null && row.purchase_price > 0
+                          ? formatMoney(row.purchase_price)
+                          : '—'}
+                      </td>
                       <td className="tabular px-4 py-3 text-right font-semibold text-ink">{formatMoney(row.cmup)}</td>
                       <td className="tabular px-4 py-3 text-right text-ink">{formatMoney(row.stock_value)}</td>
                       <td className="tabular px-4 py-3 text-right text-muted">

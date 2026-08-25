@@ -14,7 +14,9 @@ interface AlertRow {
 
 /** Écran vers lequel chaque alerte renvoie pour agir. */
 const ALERT_LINKS: Record<string, string> = {
-  low_stock: '/achats',
+  // Mene aux articles concernes, pas a la page des achats : « Traiter » doit
+  // montrer ce qu'il y a a traiter.
+  low_stock: '/stock?status=low',
   below_floor: '/tarifs',
   over_credit: '/clients',
   late_transfers: '/transferts',
