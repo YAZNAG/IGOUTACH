@@ -5,12 +5,23 @@ import '../../core/auth_provider.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/warehouse.dart';
+import '../alerts/alerts_screen.dart';
+import '../cash/cash_screen.dart';
+import '../catalog/catalog_screen.dart';
 import '../credits/credits_screen.dart';
 import '../customers/customers_screen.dart';
 import '../expenses/expenses_screen.dart';
 import '../inventory/inventories_screen.dart';
+import '../payments/payments_screen.dart';
 import '../pricing/pricing_screen.dart';
+import '../purchases/goods_receipts_screen.dart';
+import '../purchases/purchase_orders_screen.dart';
+import '../quotes/quotes_screen.dart';
+import '../reports/reports_screen.dart';
+import '../sales/delivery_notes_screen.dart';
 import '../sales/sales_screen.dart';
+import '../suppliers/suppliers_screen.dart';
+import '../transfers/transfer_requests_screen.dart';
 import '../shared/warehouse_scope.dart';
 import '../stock/customer_return_screen.dart';
 import '../stock/stock_entries_screen.dart';
@@ -103,6 +114,22 @@ class _HomeShellState extends State<HomeShell> {
           permission: 'stock.entry',
           builder: (_) => const CustomerReturnScreen(),
         ),
+        _Module(
+          title: 'Transferts',
+          subtitle: "Marchandise d'un lieu à l'autre",
+          icon: Icons.swap_horiz_rounded,
+          // La liste des transferts se lit avec « stock.view », comme la
+          // route qui la sert : « transfer.view » n'existe pas.
+          permission: 'stock.view',
+          builder: (_) => const TransferRequestsScreen(),
+        ),
+        _Module(
+          title: 'Articles',
+          subtitle: 'Le catalogue et son stock',
+          icon: Icons.inventory_2_rounded,
+          permission: 'product.view',
+          builder: (_) => const CatalogScreen(),
+        ),
       ],
     ),
     _Section(
@@ -124,11 +151,59 @@ class _HomeShellState extends State<HomeShell> {
           builder: (_) => const SalesScreen(),
         ),
         _Module(
+          title: 'Devis',
+          subtitle: 'Proposer un prix sans engager le stock',
+          icon: Icons.request_quote_rounded,
+          permission: 'sale.create',
+          builder: (_) => const QuotesScreen(),
+        ),
+        _Module(
           title: 'Crédits clients',
           subtitle: 'Suivre ce qui reste dû',
           icon: Icons.credit_card_rounded,
           permission: 'payment.view',
           builder: (_) => const CreditsScreen(),
+        ),
+        _Module(
+          title: 'Règlements',
+          subtitle: 'Encaissements enregistrés',
+          icon: Icons.payments_rounded,
+          permission: 'payment.view',
+          builder: (_) => const PaymentsScreen(),
+        ),
+        _Module(
+          title: 'Bons de livraison',
+          subtitle: 'Documents des ventes confirmées',
+          icon: Icons.local_shipping_rounded,
+          permission: 'sale.create',
+          builder: (_) => const DeliveryNotesScreen(),
+        ),
+      ],
+    ),
+    _Section(
+      title: 'Achats',
+      color: AppTheme.accentStock,
+      modules: [
+        _Module(
+          title: 'Fournisseurs',
+          subtitle: 'Fiches et coordonnées',
+          icon: Icons.storefront_rounded,
+          permission: 'supplier.view',
+          builder: (_) => const SuppliersScreen(),
+        ),
+        _Module(
+          title: 'Bons de commande',
+          subtitle: 'Ce qui est commandé, ce qui reste à recevoir',
+          icon: Icons.shopping_cart_rounded,
+          permission: 'purchase.view',
+          builder: (_) => const PurchaseOrdersScreen(),
+        ),
+        _Module(
+          title: 'Réceptions',
+          subtitle: 'Marchandise reçue et son règlement',
+          icon: Icons.move_to_inbox_rounded,
+          permission: 'receipt.view',
+          builder: (_) => const GoodsReceiptsScreen(),
         ),
       ],
     ),
@@ -149,6 +224,27 @@ class _HomeShellState extends State<HomeShell> {
           icon: Icons.sell_rounded,
           permission: 'price.view',
           builder: (_) => const PricingScreen(),
+        ),
+        _Module(
+          title: 'Caisse',
+          subtitle: 'Fonds, solde et remises',
+          icon: Icons.savings_rounded,
+          permission: 'payment.create',
+          builder: (_) => const CashScreen(),
+        ),
+        _Module(
+          title: 'Alertes',
+          subtitle: 'Ce qui demande une décision',
+          icon: Icons.warning_amber_rounded,
+          permission: 'stock.view',
+          builder: (_) => const AlertsScreen(),
+        ),
+        _Module(
+          title: 'Rapports',
+          subtitle: 'Ventes, marges et valorisation',
+          icon: Icons.insert_chart_outlined_rounded,
+          permission: 'report.consolidated',
+          builder: (_) => const ReportsScreen(),
         ),
       ],
     ),
