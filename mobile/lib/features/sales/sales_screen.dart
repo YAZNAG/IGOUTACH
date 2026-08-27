@@ -25,12 +25,15 @@ Future<void> downloadSaleDocument(
   BuildContext context,
   int saleId,
   String chemin,
-  String nomFichier,
-) async {
+  String nomFichier, {
+  /// Racine du document. Les transferts ont leurs propres PDF ; le reste du
+  /// telechargement — fichier temporaire, ouverture, erreurs — est identique.
+  String base = '/sales',
+}) async {
   final messenger = ScaffoldMessenger.of(context);
   try {
     final res = await ApiClient.instance.dio.get<List<int>>(
-      '/sales/$saleId/$chemin',
+      '$base/$saleId/$chemin',
       options: Options(responseType: ResponseType.bytes),
     );
     final dir = await getApplicationDocumentsDirectory();

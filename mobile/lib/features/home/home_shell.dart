@@ -21,7 +21,7 @@ import '../reports/reports_screen.dart';
 import '../sales/delivery_notes_screen.dart';
 import '../sales/sales_screen.dart';
 import '../suppliers/suppliers_screen.dart';
-import '../transfers/transfer_requests_screen.dart';
+import '../transfers/transfers_screen.dart';
 import '../shared/warehouse_scope.dart';
 import '../stock/customer_return_screen.dart';
 import '../stock/stock_entries_screen.dart';
@@ -116,12 +116,12 @@ class _HomeShellState extends State<HomeShell> {
         ),
         _Module(
           title: 'Transferts',
-          subtitle: "Marchandise d'un lieu à l'autre",
+          subtitle: 'Créer, approuver et réceptionner',
           icon: Icons.swap_horiz_rounded,
           // La liste des transferts se lit avec « stock.view », comme la
           // route qui la sert : « transfer.view » n'existe pas.
           permission: 'stock.view',
-          builder: (_) => const TransferRequestsScreen(),
+          builder: (_) => const TransfersScreen(),
         ),
         _Module(
           title: 'Articles',
