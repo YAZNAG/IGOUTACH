@@ -9,6 +9,7 @@
         <tr><td class="k">N°</td><td class="v">{{ $order->number }}</td></tr>
         <tr><td class="k">Date</td><td class="v">{{ $order->ordered_at?->format('d/m/Y') ?? '—' }}</td></tr>
         <tr><td class="k">Livraison prévue</td><td class="v">{{ $order->expected_at?->format('d/m/Y') ?? '—' }}</td></tr>
+        <tr><td class="k">Établi le</td><td class="v">{{ $order->created_at?->format('d/m/Y à H:i') ?? '—' }}</td></tr>
     </table>
 @endsection
 

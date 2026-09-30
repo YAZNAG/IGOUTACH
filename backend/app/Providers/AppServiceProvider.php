@@ -14,7 +14,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Tous les PDF passent par cette enveloppe : l'arabe (noms de clients,
+        // libellés) y est lié et remis dans le bon sens.
+        $this->app->bind('dompdf.wrapper', fn ($app) => new \App\Support\Pdf\ArabicAwarePdf(
+            $app['dompdf'], $app['config'], $app['files'], $app['view'],
+        ));
     }
 
     /**

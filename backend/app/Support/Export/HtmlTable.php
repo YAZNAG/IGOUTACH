@@ -35,7 +35,7 @@ final class HtmlTable
         return <<<HTML
         <!DOCTYPE html>
         <html lang="fr"><head><meta charset="utf-8"><style>
-            body { font-family: helvetica, sans-serif; color: #0f1b2d; font-size: 11px; }
+            body { font-family: 'DejaVu Sans', sans-serif; color: #0f1b2d; font-size: 11px; }
             h1 { color: #0b2a5b; font-size: 16px; margin: 0 0 2px; }
             .meta { color: #647a99; font-size: 10px; margin-bottom: 10px; }
             table { width: 100%; border-collapse: collapse; }

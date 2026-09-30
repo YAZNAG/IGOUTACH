@@ -7,7 +7,11 @@
 @section('document_meta')
     <table class="meta">
         <tr><td class="k">N°</td><td class="v">{{ $receipt->number }}</td></tr>
+        {{-- `received_at` est saisi comme une date : les 29 reçus en base
+             sont tous a minuit pile. Afficher « a 00:00 » ferait croire a une
+             reception nocturne. L'heure reelle est celle de la saisie. --}}
         <tr><td class="k">Réception</td><td class="v">{{ $receipt->received_at?->format('d/m/Y') ?? '—' }}</td></tr>
+        <tr><td class="k">Établi le</td><td class="v">{{ $receipt->created_at?->format('d/m/Y à H:i') ?? '—' }}</td></tr>
         @if ($receipt->purchaseOrder)
             <tr><td class="k">BC d'origine</td><td class="v">{{ $receipt->purchaseOrder->number }}</td></tr>
         @endif

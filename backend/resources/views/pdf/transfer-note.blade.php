@@ -8,12 +8,46 @@
     <table class="meta">
         <tr><td class="k">N°</td><td class="v">{{ $transfer->reference }}</td></tr>
         <tr><td class="k">État</td><td class="v">{{ $transfer->status?->name ?? '—' }}</td></tr>
-        <tr><td class="k">Expédié le</td><td class="v">{{ $transfer->sent_at?->format('d/m/Y H:i') ?? '—' }}</td></tr>
-        <tr><td class="k">Reçu le</td><td class="v">{{ $transfer->received_at?->format('d/m/Y H:i') ?? '—' }}</td></tr>
+        @php
+            $cree = $transfer->created_at?->format('d/m/Y à H:i');
+        @endphp
+        {{-- Un transfert expedie dans la foulee de sa creation porterait deux
+             fois le meme horodatage : on ne l'affiche que s'il apporte une
+             information. --}}
+        @if ($cree !== null && $cree !== $transfer->sent_at?->format('d/m/Y à H:i'))
+        <tr><td class="k">Créé le</td><td class="v">{{ $cree }}</td></tr>
+        @endif
+        <tr><td class="k">Expédié le</td><td class="v">{{ $transfer->sent_at?->format('d/m/Y à H:i') ?? '—' }}</td></tr>
+        <tr><td class="k">Reçu le</td><td class="v">{{ $transfer->received_at?->format('d/m/Y à H:i') ?? '—' }}</td></tr>
     </table>
 @endsection
 
 @section('content')
+    {{-- Mise en forme propre au bon de transfert : lignes resserrees (un bon de
+         cinquante articles tenait sur quatre pages), numero de ligne pour le
+         pointage au telephone, reference sur une ligne, zebrage leger. --}}
+    <style>
+        table.lines.tr thead th { padding: 5px 6px; }
+        table.lines.tr tbody td { padding: 3px 6px; font-size: 8.5pt; line-height: 1.25; }
+        table.lines.tr tbody tr:nth-child(even) td { background-color: #F7F8F9; }
+        table.lines.tr td.no { color: #9AA0A6; text-align: center; font-size: 7.5pt; }
+        table.lines.tr td.ref { font-family: 'DejaVu Sans Mono', monospace; font-size: 7.5pt; color: #3C4046; }
+        table.lines.tr td.qte { font-weight: bold; }
+        table.lines.tr td.coche { text-align: center; color: #9AA0A6; }
+        table.lines.tr td.ecart-neg { color: #B42318; font-weight: bold; }
+        table.lines.tr td.ecart-pos { color: #1F7A3A; font-weight: bold; }
+        .tr-bandeau { width: 100%; border-collapse: collapse; margin: 0 0 10px 0; }
+        .tr-bandeau td { background-color: #141414; color: #FFFFFF; padding: 6px 12px; font-size: 9pt; }
+        .tr-bandeau td.d { text-align: right; }
+    </style>
+
+    <table class="tr-bandeau">
+        <tr>
+            <td><strong>{{ $transfer->fromWarehouse?->code }}</strong> &nbsp;→&nbsp; <strong>{{ $transfer->toWarehouse?->code }}</strong></td>
+            <td class="d">{{ $lines->count() }} article(s) · {{ $totalEnvoye }} unité(s) envoyée(s)</td>
+        </tr>
+    </table>
+
     {{-- Lieu d'origine / lieu de destination --}}
     <table class="address-table">
         <tr>
@@ -46,15 +80,20 @@
 
     {{-- Lignes. Les colonnes « Reçu » et « Écart » n'apparaissent qu'une fois
          la réception saisie : vides, elles laisseraient croire à un manquant. --}}
-    <table class="lines">
+    {{-- Sans reception saisie, une colonne « Reçu » vide et une case de
+         pointage restent a remplir a la main par le lieu destinataire. --}}
+    <table class="lines tr">
         <thead>
             <tr>
-                <th style="width: 16%;">Réf</th>
+                <th style="width: 5%; text-align: center;">N°</th>
+                <th style="width: 22%;">Réf</th>
                 <th>Désignation</th>
-                <th class="num" style="width: 12%;">Envoyé</th>
+                <th class="num" style="width: 10%;">Envoyé</th>
+                <th class="num" style="width: 10%;">Reçu</th>
                 @if ($receptionSaisie)
-                    <th class="num" style="width: 12%;">Reçu</th>
-                    <th class="num" style="width: 12%;">Écart</th>
+                    <th class="num" style="width: 9%;">Écart</th>
+                @else
+                    <th style="width: 7%; text-align: center;">✓</th>
                 @endif
             </tr>
         </thead>
@@ -65,20 +104,21 @@
                     $ecart = $recu === null ? null : (int) $recu - (int) $line->quantity_sent;
                 @endphp
                 <tr>
-                    <td>{{ $line->product?->sku ?? '—' }}</td>
+                    <td class="no">{{ $loop->iteration }}</td>
+                    <td class="ref">{{ $line->product?->sku ?? '—' }}</td>
                     <td>{{ $line->product?->name ?? '—' }}</td>
-                    <td class="num">{{ $line->quantity_sent }}</td>
+                    <td class="num qte">{{ $line->quantity_sent }}</td>
+                    <td class="num">{{ $receptionSaisie ? ($recu ?? '—') : '' }}</td>
                     @if ($receptionSaisie)
-                        <td class="num">{{ $recu ?? '—' }}</td>
-                        <td class="num">
+                        <td class="num {{ $ecart !== null && $ecart < 0 ? 'ecart-neg' : ($ecart > 0 ? 'ecart-pos' : '') }}">
                             @if ($ecart === null)
                                 —
-                            @elseif ($ecart === 0)
-                                0
                             @else
-                                <strong>{{ $ecart > 0 ? '+'.$ecart : $ecart }}</strong>
+                                {{ $ecart > 0 ? '+'.$ecart : $ecart }}
                             @endif
                         </td>
+                    @else
+                        <td class="coche">☐</td>
                     @endif
                 </tr>
             @endforeach
@@ -134,4 +174,21 @@
             @endif
         </div>
     </div>
+
+    {{-- Signatures : le bon accompagne la marchandise et revient signé. --}}
+    <table class="signature-table" style="page-break-inside: avoid;">
+        <tr>
+            <td class="signature-box" style="width: 33%;">
+                <div class="label">Expéditeur</div>
+                <div class="muted" style="font-size: 7.5pt;">{{ $transfer->fromWarehouse?->code }}</div>
+            </td>
+            <td class="signature-box" style="width: 33%;">
+                <div class="label">Transporteur</div>
+            </td>
+            <td class="signature-box" style="width: 33%;">
+                <div class="label">Réceptionnaire</div>
+                <div class="muted" style="font-size: 7.5pt;">{{ $transfer->toWarehouse?->code }}</div>
+            </td>
+        </tr>
+    </table>
 @endsection

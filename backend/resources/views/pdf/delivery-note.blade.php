@@ -8,7 +8,15 @@
     <table class="meta">
         <tr><td class="k">N°</td><td class="v">BL-{{ $sale->reference }}</td></tr>
         <tr><td class="k">Vente</td><td class="v">{{ $sale->reference }}</td></tr>
-        <tr><td class="k">Date</td><td class="v">{{ ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y') ?? '—' }}</td></tr>
+        <tr><td class="k">Date</td><td class="v">{{ ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y à H:i') ?? '—' }}</td></tr>
+        @php($etabli = $sale->created_at?->format('d/m/Y à H:i'))
+        @php($affiche = ($sale->confirmed_at ?? $sale->created_at)?->format('d/m/Y à H:i'))
+        {{-- La plupart des ventes sont confirmees dans la minute : repeter le
+             meme horodatage sur deux lignes n'apprend rien. On ne montre la
+             date de saisie que lorsqu'elle differe de la date du document. --}}
+        @if ($etabli !== null && $etabli !== $affiche)
+        <tr><td class="k">Établi le</td><td class="v">{{ $etabli }}</td></tr>
+        @endif
     </table>
 @endsection
 
