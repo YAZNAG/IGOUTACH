@@ -13,6 +13,7 @@ use App\Domain\Stock\DTOs\TransferLineData;
 use App\Domain\Stock\Exceptions\InsufficientStockException;
 use App\Domain\Stock\Exceptions\InvalidTransferException;
 use App\Domain\Stock\Models\Transfer;
+use App\Domain\Warehouses\Models\Warehouse;
 use App\Domain\Stock\Models\TransferStatus;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -33,8 +34,35 @@ final class TransferController extends Controller
     public function index(Request $request): JsonResponse
     {
         $transfers = Transfer::query()
-            ->with(['fromWarehouse:id,code', 'toWarehouse:id,code', 'status:id,code,name'])
+            // Les articles sont charges avec la liste : sans eux, la colonne
+            // « Articles » declencherait une requete par ligne affichee.
+            ->with([
+                'fromWarehouse:id,code',
+                'toWarehouse:id,code',
+                'status:id,code,name',
+                'lines:id,transfer_id,product_id,quantity_sent,quantity_received',
+                'lines.product:id,sku,name',
+                'requestedBy:id,name',
+            ])
             ->withCount('lines')
+            // Filtre par statut : c'est ce qui permet d'isoler les demandes en
+            // attente, sur le tableau de bord comme sur la page des transferts.
+            ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->whereHas(
+                'status',
+                fn ($s) => $s->where('code', $request->string('status')->value()),
+            ))
+            // On cherche un transfert par sa reference, par un de ses deux
+            // lieux, ou par un article qu'il contient : c'est souvent
+            // l'article qu'on a en tete, pas le numero du bon.
+            ->when($request->string('search')->isNotEmpty(), function ($q) use ($request) {
+                $terme = '%'.$request->string('search')->value().'%';
+                $q->where(function ($sub) use ($terme) {
+                    $sub->where('reference', 'like', $terme)
+                        ->orWhereHas('fromWarehouse', fn ($w) => $w->where('code', 'like', $terme)->orWhere('name', 'like', $terme))
+                        ->orWhereHas('toWarehouse', fn ($w) => $w->where('code', 'like', $terme)->orWhere('name', 'like', $terme))
+                        ->orWhereHas('lines.product', fn ($p) => $p->where('name', 'like', $terme)->orWhere('sku', 'like', $terme));
+                });
+            })
             ->when($request->integer('warehouse_id') > 0, function ($q) use ($request) {
                 $id = $request->integer('warehouse_id');
                 $q->where(fn ($sub) => $sub->where('from_warehouse_id', $id)->orWhere('to_warehouse_id', $id));
@@ -54,7 +82,7 @@ final class TransferController extends Controller
             ->orderByDesc('id')
             ->paginate(20);
 
-        $transfers->through(function (Transfer $t): array {
+        $transfers->through(function (Transfer $t) use ($request): array {
             $inTransitDays = $t->status?->code === TransferStatus::IN_TRANSIT && $t->sent_at !== null
                 ? (int) $t->sent_at->diffInDays(now())
                 : null;
@@ -67,10 +95,37 @@ final class TransferController extends Controller
                 'status' => $t->status?->code,
                 'status_name' => $t->status?->name,
                 'lines_count' => $t->lines_count,
+                // Les articles du transfert, pour que la liste dise ce qui
+                // bouge et pas seulement combien de lignes.
+                'products' => $t->lines->map(fn ($l): array => [
+                    // L'identifiant permet d'accorder une demande ligne par
+                    // ligne depuis la liste, quantites ajustees comprises.
+                    'product_id' => $l->product_id,
+                    'sku' => $l->product?->sku,
+                    'name' => $l->product?->name,
+                    'quantity' => (int) $l->quantity_sent,
+                    // Une reception avec ecart doit se voir des la liste :
+                    // c'est le cas qui demande une action.
+                    'quantity_received' => $l->quantity_received !== null
+                        ? (int) $l->quantity_received
+                        : null,
+                ])->values()->all(),
+                'created_at' => $t->created_at?->format('Y-m-d H:i'),
                 'sent_at' => $t->sent_at?->format('Y-m-d H:i'),
                 'received_at' => $t->received_at?->format('Y-m-d H:i'),
                 'days_in_transit' => $inTransitDays,
                 'is_late' => $inTransitDays !== null && $inTransitDays > 3,
+                // Ce qu'il faut pour traiter une demande depuis la liste,
+                // sans ouvrir la fiche : qui la fait, quand, et pourquoi.
+                'requested_by' => $t->requestedBy?->name,
+                'requested_at' => $t->requested_at?->format('Y-m-d H:i'),
+                'note' => $t->note,
+                // Calcule ici plutot que devine a l'ecran : la regle (direction,
+                // ou responsable du lieu qui fournit) ne doit vivre qu'a un
+                // seul endroit.
+                'can_arbitrate' => $t->status?->code === TransferStatus::REQUESTED
+                    && ($request->user()?->can('transfer.approve') ?? false)
+                    && $this->peutArbitrer($request, $t),
             ];
         });
 
@@ -105,7 +160,7 @@ final class TransferController extends Controller
             return new TransferLineData(
                 productId: $line['product_id'],
                 quantity: $line['quantity'],
-                unitCost: $cost->unitCost($product),
+                unitCost: $cost->purchaseCost($product),
             );
         }, $data['lines']);
 
@@ -130,6 +185,49 @@ final class TransferController extends Controller
      * Aucune marchandise ne bouge : la demande attend un accord. Sans cela,
      * le stock du lieu source diminuerait sur simple demande.
      */
+    /**
+     * Lieux auxquels on peut demander de la marchandise.
+     *
+     * GET /transfer-requests/sources
+     *
+     * La liste generale des lieux est cloisonnee : un responsable n'y voit que
+     * le sien. C'est juste pour tout ce qu'il administre, mais une demande de
+     * reapprovisionnement se fait par definition AUPRES D'UN AUTRE lieu — le
+     * formulaire ne proposait donc aucune source, et la demande etait
+     * impossible. On expose ici le strict necessaire pour choisir : code et
+     * nom, sans stock ni valeur.
+     */
+    public function requestSources(Request $request): JsonResponse
+    {
+        $monLieu = (int) ($request->user()?->getAttribute('warehouse_id') ?? 0);
+
+        $lieux = Warehouse::withoutGlobalScopes()
+            ->where('is_active', true)
+            ->when($monLieu > 0, fn ($q) => $q->where('id', '!=', $monLieu))
+            ->orderBy('code')
+            ->get(['id', 'code', 'name']);
+
+        return response()->json([
+            'data' => $lieux->map(fn (Warehouse $w): array => [
+                'id' => $w->id,
+                'code' => $w->code,
+                'name' => $w->name,
+            ])->values()->all(),
+            // Le lieu du demandeur, pour que l'ecran n'ait pas a le deviner :
+            // c'est lui qui recoit, et le serveur n'acceptera pas d'autre
+            // destination de la part d'un responsable.
+            'meta' => [
+                'destination_id' => $monLieu > 0 ? $monLieu : null,
+                // Nomme, pour que l'ecran dise « Pour VEH / H-1 » plutot qu'un
+                // anonyme « votre lieu » : le responsable doit voir ou arrivera
+                // la marchandise.
+                'destination' => $monLieu > 0
+                    ? Warehouse::withoutGlobalScopes()->whereKey($monLieu)->first(['id', 'code', 'name'])?->only(['id', 'code', 'name'])
+                    : null,
+            ],
+        ]);
+    }
+
     public function request(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -246,7 +344,7 @@ final class TransferController extends Controller
             $lignes[] = new TransferLineData(
                 productId: (int) $l->product_id,
                 quantity: $quantite,
-                unitCost: $cost->unitCost($l->product),
+                unitCost: $cost->purchaseCost($l->product),
             );
         }
 
@@ -352,6 +450,7 @@ final class TransferController extends Controller
             'from' => $transfer->fromWarehouse?->code,
             'to' => $transfer->toWarehouse?->code,
             'status' => $transfer->status?->code,
+            'created_at' => $transfer->created_at?->format('Y-m-d H:i'),
             'sent_at' => $transfer->sent_at?->format('Y-m-d H:i'),
             'received_at' => $transfer->received_at?->format('Y-m-d H:i'),
             'note' => $transfer->note,

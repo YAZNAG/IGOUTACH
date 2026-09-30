@@ -42,6 +42,7 @@ import {
   StockEntryDetailPage,
   StockExitDetailPage,
   StockExitsPage,
+  MovementsJournalPage,
   StockPage,
   SupplierReturnsPage,
 } from '@/features/stock'
@@ -49,16 +50,19 @@ import { SupplierDetailPage, SuppliersPage } from '@/features/suppliers'
 import { UnitsPage } from '@/features/units'
 import { WarehouseDetailPage, WarehousesPage } from '@/features/warehouses'
 import { HomePage } from './HomePage'
+import { ErrorPage } from './ErrorPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PublicOnlyRoute } from './PublicOnlyRoute'
 
 export const router = createBrowserRouter([
   {
     element: <PublicOnlyRoute />,
+    errorElement: <ErrorPage />,
     children: [{ path: '/login', element: <LoginPage /> }],
   },
   {
     element: <ProtectedRoute />,
+    errorElement: <ErrorPage />,
     children: [
       {
         element: <AppLayout />,
@@ -69,6 +73,7 @@ export const router = createBrowserRouter([
           { path: '/chiffre-affaires', element: <BreakdownPage mesure="revenue" /> },
           { path: '/benefice', element: <BreakdownPage mesure="profit" /> },
           { path: '/stock', element: <StockPage /> },
+          { path: '/mouvements', element: <MovementsJournalPage /> },
           { path: '/stock-entries', element: <StockEntriesPage /> },
           { path: '/stock-entries/:id', element: <StockEntryDetailPage /> },
           { path: '/stock-exits', element: <StockExitsPage /> },
@@ -111,6 +116,7 @@ export const router = createBrowserRouter([
           { path: '/roles', element: <RolesPage /> },
           { path: '/sessions', element: <SessionsPage /> },
           { path: '/audit', element: <AuditPage /> },
+          { path: '*', element: <ErrorPage /> },
           {
             path: '/parametres',
             element: <ParametresLayout />,

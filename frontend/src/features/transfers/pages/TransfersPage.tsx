@@ -6,12 +6,16 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
-import { downloadFile } from '@/lib/download'
+import { openPdf } from '@/lib/download'
 import type { Paginated } from '@/types'
+import { formatDateHeure } from '@/lib/utils'
+import { DemandesEnAttente } from '../components/DemandesEnAttente'
 
 interface TransferRow {
   id: number
@@ -21,6 +25,16 @@ interface TransferRow {
   status: string
   status_name: string | null
   lines_count: number
+  /** Articles transferes, dans l'ordre des lignes du bon. */
+  products: {
+    sku: string | null
+    name: string | null
+    quantity: number
+    /** Quantite reellement recue, `null` tant que le bon est en transit. */
+    quantity_received: number | null
+  }[]
+  /** Horodatage de la creation du transfert, avant tout envoi. */
+  created_at: string | null
   sent_at: string | null
   received_at: string | null
   days_in_transit: number | null
@@ -62,6 +76,66 @@ function errorMessage(error: unknown, fallback: string): string {
   return fallback
 }
 
+/** Nombre d'articles nommes avant de basculer sur « et N autres ». */
+const ARTICLES_VISIBLES = 3
+
+/**
+ * Les articles d'un transfert, en clair.
+ *
+ * « 4 lignes » ne dit pas ce qui a bouge ; c'est pourtant l'article qu'on a
+ * en tete quand on cherche un transfert. Au-dela de trois, la liste
+ * deborderait la ligne du tableau : on nomme les premiers et on compte le
+ * reste, dont le detail reste accessible en ouvrant le bon.
+ */
+function ArticlesTransferes({
+  produits,
+}: {
+  produits: {
+    sku: string | null
+    name: string | null
+    quantity: number
+    quantity_received: number | null
+  }[]
+}) {
+  if (produits.length === 0) return <span className="text-faint">—</span>
+
+  const nommes = produits.slice(0, ARTICLES_VISIBLES)
+  const reste = produits.length - nommes.length
+
+  return (
+    <span
+      className="block truncate"
+      title={produits
+        .map((p) => {
+          const recu =
+            p.quantity_received !== null && p.quantity_received !== p.quantity
+              ? ` (reçu ${p.quantity_received})`
+              : ''
+          return `${p.quantity} × ${p.name ?? p.sku ?? '?'}${recu}`
+        })
+        .join('\n')}
+    >
+      {nommes.map((p, i) => {
+        // Un ecart entre envoye et recu doit se voir sans ouvrir le bon :
+        // c'est le seul cas qui demande une action.
+        const ecart = p.quantity_received !== null && p.quantity_received !== p.quantity
+        return (
+          <span key={i}>
+            {i > 0 ? ', ' : ''}
+            <span className="text-ink">{p.name ?? p.sku ?? '—'}</span>
+            <span className={ecart ? 'text-bad' : 'text-faint'}>
+              {' ×'}
+              {p.quantity}
+              {ecart ? ` (reçu ${p.quantity_received})` : ''}
+            </span>
+          </span>
+        )
+      })}
+      {reste > 0 ? <span className="text-faint"> et {reste} autre{reste > 1 ? 's' : ''}</span> : null}
+    </span>
+  )
+}
+
 /**
  * Transferts inter-lieux : liste avec alerte transit > 3 jours,
  * création (envoi) et réception avec saisie des écarts.
@@ -81,10 +155,18 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
 
+  const [recherche, setRecherche] = useState('')
+
+  // La liste est paginee : filtrer les vingt lignes affichees laisserait
+  // croire qu'un transfert n'existe pas parce qu'il est page 3.
+  const rechercheRetardee = useDebouncedValue(recherche, 300)
+
   const { data, isLoading } = useQuery<Paginated<TransferRow>>({
-    queryKey: [...KEY, page],
+    queryKey: [...KEY, page, rechercheRetardee],
     queryFn: async () => {
-      const { data: r } = await api.get<Paginated<TransferRow>>('/transfers', { params: { page } })
+      const { data: r } = await api.get<Paginated<TransferRow>>('/transfers', {
+        params: { page, search: rechercheRetardee || undefined },
+      })
       return r
     },
   })
@@ -97,7 +179,7 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-ink">Transferts</h1>
-          <p className="text-sm text-muted">Mouvements de marchandise entre lieux — le CMUP voyage avec la marchandise.</p>
+          <p className="text-sm text-muted">Mouvements de marchandise entre lieux — la valeur voyage avec la marchandise.</p>
         </div>
         {can('transfer.create') && !creating ? (
           <Button onClick={() => setCreating(true)}>
@@ -109,8 +191,24 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
 
       {creating ? <CreateTransferPanel onClose={() => setCreating(false)} /> : null}
 
+      <DemandesEnAttente />
+
       <Card>
-        <CardHeader title="Historique" hint={meta ? `${meta.total}` : undefined} />
+        <CardHeader
+          title="Historique"
+          hint={meta ? `${meta.total}` : undefined}
+          action={
+            <SearchInput
+              value={recherche}
+              onChange={(v) => {
+                setRecherche(v)
+                setPage(1)
+              }}
+              placeholder="Référence, lieu ou article…"
+              className="w-72"
+            />
+          }
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -120,23 +218,36 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
                 <tr className="border-b border-line text-left text-muted">
                   <th className="px-5 py-3 font-medium">Référence</th>
                   <th className="px-5 py-3 font-medium">Trajet</th>
+                  <th className="px-5 py-3 font-medium">Articles</th>
                   <th className="px-5 py-3 text-right font-medium">Lignes</th>
                   <th className="px-5 py-3 font-medium">Envoyé le</th>
+                  <th className="px-5 py-3 font-medium">Créé le</th>
                   <th className="px-5 py-3 font-medium">Statut</th>
                   <th className="px-5 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {transfers.length === 0 ? (
-                  <tr><td colSpan={6} className="px-5 py-8 text-center text-muted">Aucun transfert.</td></tr>
+                  <tr><td colSpan={8} className="px-5 py-8 text-center text-muted">
+                    {recherche ? 'Aucun transfert ne correspond à cette recherche.' : 'Aucun transfert.'}
+                  </td></tr>
                 ) : (
                   transfers.map((t) => (
                     <tr key={t.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{t.reference}</td>
                       <td className="px-5 py-3 text-ink">{t.from} → {t.to}</td>
+                      <td className="max-w-xs px-5 py-3 text-muted">
+                        <ArticlesTransferes produits={t.products} />
+                      </td>
                       <td className="tabular px-5 py-3 text-right text-muted">{t.lines_count}</td>
-                      <td className="px-5 py-3 text-muted">{t.sent_at ?? '—'}</td>
+                      <td className="px-5 py-3 text-muted">{formatDateHeure(t.sent_at)}</td>
+                      <td className="px-5 py-3 text-faint">{formatDateHeure(t.created_at)}</td>
                       <td className="px-5 py-3">
+                        {/* Une demande, un refus ou une annulation n'avaient aucun
+                            badge : la ligne affichait un statut vide. */}
+                        {t.status === 'requested' ? <Badge tone="warn">Demande en attente</Badge> : null}
+                        {t.status === 'refused' ? <Badge tone="bad">Refusée</Badge> : null}
+                        {t.status === 'cancelled' ? <Badge tone="neutral">Annulé</Badge> : null}
                         {t.status === 'received' ? <Badge tone="ok">Reçu</Badge> : null}
                         {t.status === 'in_transit' && !t.is_late ? <Badge tone="sky">En transit</Badge> : null}
                         {t.status === 'in_transit' && t.is_late ? (
@@ -246,7 +357,9 @@ function CreateTransferPanel({ onClose }: { onClose: () => void }) {
                   <button
                     type="button"
                     onClick={() => {
-                      setLines((p) => [...p, { product_id: o.id, sku: o.sku, name: o.name, quantity: 1 }])
+                      // Le dernier article ajoute passe en tete : c'est celui dont on
+                      // saisit la quantite, il doit rester sous les yeux.
+                      setLines((p) => [{ product_id: o.id, sku: o.sku, name: o.name, quantity: 1 }, ...p])
                       setSearch('')
                     }}
                     className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface-2"
@@ -311,7 +424,11 @@ function CreateTransferPanel({ onClose }: { onClose: () => void }) {
  * de « transfert.pdf » serait inexploitable.
  */
 function imprimerBonDeTransfert(id: number, reference?: string): void {
-  void downloadFile(`/transfers/${id}/pdf`, `${reference ?? `transfert-${id}`}.pdf`)
+  // Le bon s'ouvre dans un onglet pour etre imprime ; un echec se dit, au lieu
+  // de laisser croire que le bouton ne fait rien.
+  openPdf(`/transfers/${id}/pdf`, `${reference ?? `transfert-${id}`}.pdf`).catch(() => {
+    window.alert("Le bon de transfert n'a pas pu être généré. Réessayez dans un instant.")
+  })
 }
 
 function TransferDetailView({ id, onBack }: { id: number; onBack: () => void }) {

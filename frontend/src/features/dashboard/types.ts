@@ -10,6 +10,7 @@ export interface FinancialSummary {
   sales_month: number
   outstanding: number
   stock_value: number
+  stock_value_purchase: number
 }
 
 export interface SalesTrendPoint {

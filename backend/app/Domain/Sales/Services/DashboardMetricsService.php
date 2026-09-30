@@ -117,7 +117,8 @@ final class DashboardMetricsService
     {
         return DB::table('stocks')
             ->join('warehouses', 'warehouses.id', '=', 'stocks.warehouse_id')
-            ->selectRaw('warehouses.code as code, warehouses.name as nom, SUM(stocks.quantity) as unites, SUM(stocks.quantity * stocks.average_cost) as valeur')
+            ->join('products', 'products.id', '=', 'stocks.product_id')
+            ->selectRaw('warehouses.code as code, warehouses.name as nom, SUM(stocks.quantity) as unites, SUM(stocks.quantity * products.cost_price) as valeur')
             ->where('warehouses.is_active', true)
             ->groupBy('warehouses.id', 'warehouses.code', 'warehouses.name')
             ->orderByDesc('valeur')
@@ -469,7 +470,7 @@ final class DashboardMetricsService
     /**
      * Indicateurs financiers du mois en cours.
      *
-     * @return array{revenue_month: float, sales_month: int, outstanding: float, stock_value: float}
+     * @return array{revenue_month: float, sales_month: int, outstanding: float, stock_value: float, stock_value_purchase: float}
      */
     public function financialSummary(): array
     {
@@ -483,13 +484,27 @@ final class DashboardMetricsService
             ->first();
 
         $outstanding = (float) DB::table('customers')->sum('balance');
-        $stockValue = (float) DB::table('stocks')->selectRaw('COALESCE(SUM(quantity * average_cost), 0) as v')->value('v');
+        // Une seule valeur de stock, au coût d'achat. Deux valorisations
+        // concurrentes obligeaient à choisir laquelle croire.
+        $stockValue = (float) DB::table('stocks')
+            ->join('products', 'products.id', '=', 'stocks.product_id')
+            ->selectRaw('COALESCE(SUM(stocks.quantity * products.cost_price), 0) as v')->value('v');
+
+        // Deux valorisations, et elles ne disent pas la meme chose : le cout
+        // moyen porte l'histoire des entrees successives, le prix d'achat dit
+        // ce que coute le reapprovisionnement aujourd'hui. L'ecart entre les
+        // deux est justement ce qu'on veut voir.
+        $stockValuePurchase = (float) DB::table('stocks')
+            ->join('products', 'products.id', '=', 'stocks.product_id')
+            ->selectRaw('COALESCE(SUM(stocks.quantity * products.cost_price), 0) as v')
+            ->value('v');
 
         return [
             'revenue_month' => round((float) ($month?->getAttribute('ca') ?? 0), 2),
             'sales_month' => (int) ($month?->getAttribute('nb') ?? 0),
             'outstanding' => round($outstanding, 2),
             'stock_value' => round($stockValue, 2),
+            'stock_value_purchase' => round($stockValuePurchase, 2),
         ];
     }
 

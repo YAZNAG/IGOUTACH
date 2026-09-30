@@ -44,6 +44,7 @@ class Transfer extends Model
         return [
             'sent_at' => 'datetime',
             'received_at' => 'datetime',
+            'requested_at' => 'datetime',
         ];
     }
 
@@ -74,6 +75,17 @@ class Transfer extends Model
     /**
      * @return HasMany<TransferLine, $this>
      */
+    /**
+     * Qui a demande la marchandise. Null pour un transfert pousse
+     * directement par la direction, qui ne passe pas par une demande.
+     *
+     * @return BelongsTo<\App\Models\User, $this>
+     */
+    public function requestedBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'requested_by');
+    }
+
     public function lines(): HasMany
     {
         return $this->hasMany(TransferLine::class);

@@ -7,7 +7,7 @@ interface StockByWarehouseChartProps {
   data: WarehouseStockRow[]
 }
 
-/** Valeur du stock détenue par chaque lieu, valorisée au CMUP. */
+/** Valeur du stock détenue par chaque lieu, valorisée au coût d'achat. */
 export function StockByWarehouseChart({ data }: StockByWarehouseChartProps) {
   return (
     <ResponsiveContainer width="100%" height="100%">

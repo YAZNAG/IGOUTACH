@@ -9,6 +9,7 @@ import {
   FileBarChart,
   FileText,
   HandCoins,
+  History,
   LayoutDashboard,
   MonitorSmartphone,
   Package,
@@ -38,6 +39,12 @@ export interface NavItem {
   icon: LucideIcon
   /** Permission requise pour afficher l'entrée. Absente = toujours visible. */
   permission?: string
+  /**
+   * Permission qui MASQUE l'entrée. Sert aux doublons d'un même écran : un
+   * responsable a « Mon tableau de bord », la direction a « Vue globale » —
+   * les deux pointent vers l'accueil, chacun ne doit voir que le sien.
+   */
+  hiddenFor?: string
 }
 
 export interface NavGroup {
@@ -50,6 +57,7 @@ export const navGroups: NavGroup[] = [
     title: 'Pilotage',
     items: [
       { label: 'Vue globale', to: '/', icon: LayoutDashboard, permission: 'stock.view_global' },
+      { label: 'Mon tableau de bord', to: '/', icon: LayoutDashboard, permission: 'stock.view', hiddenFor: 'stock.view_global' },
       { label: 'Alertes', to: '/alertes', icon: AlertTriangle, permission: 'stock.view' },
       { label: "Chiffre d'affaires", to: '/chiffre-affaires', icon: TrendingUp, permission: 'report.consolidated' },
       { label: 'Bénéfice', to: '/benefice', icon: PiggyBank, permission: 'report.consolidated' },
@@ -60,6 +68,7 @@ export const navGroups: NavGroup[] = [
     title: 'Stock',
     items: [
       { label: 'État du stock', to: '/stock', icon: Boxes, permission: 'stock.view' },
+      { label: 'Historique des mouvements', to: '/mouvements', icon: History, permission: 'stock.view' },
       { label: 'Entrées de stock', to: '/stock-entries', icon: PackagePlus, permission: 'stock.view' },
       { label: 'Sorties de stock', to: '/stock-exits', icon: PackageMinus, permission: 'stock.view' },
       { label: 'Transferts', to: '/transferts', icon: ArrowLeftRight, permission: 'stock.view' },

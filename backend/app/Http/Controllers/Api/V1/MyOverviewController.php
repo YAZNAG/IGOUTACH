@@ -104,7 +104,9 @@ final class MyOverviewController extends Controller
         $base = DB::table('stocks')
             ->when($lieu !== null, fn ($q) => $q->where('warehouse_id', $lieu));
 
-        $valeur = (float) (clone $base)->sum(DB::raw('quantity * average_cost'));
+        $valeur = (float) (clone $base)
+            ->join('products', 'products.id', '=', 'stocks.product_id')
+            ->sum(DB::raw('stocks.quantity * products.cost_price'));
         $unites = (int) (clone $base)->sum('quantity');
         $refs = (int) (clone $base)->where('quantity', '>', 0)->distinct()->count('product_id');
         $ruptures = (int) (clone $base)->where('quantity', '<=', 0)->count();

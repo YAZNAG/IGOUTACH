@@ -48,7 +48,11 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           {navGroups.map((group) => {
-            const items = group.items.filter((item) => !item.permission || can(item.permission))
+            const items = group.items.filter(
+              (item) =>
+                (!item.permission || can(item.permission)) &&
+                !(item.hiddenFor && can(item.hiddenFor)),
+            )
             if (items.length === 0) return null
 
             return (

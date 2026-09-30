@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domain\Catalog\Models\Category;
+use App\Domain\Catalog\Models\Product;
+use App\Domain\Catalog\Models\Unit;
 use App\Domain\Sales\Models\Sale;
+use App\Domain\Stock\Models\Stock;
 use App\Domain\Warehouses\Models\Warehouse;
 
 function metricsSale(int $warehouseId, float $total, string $paymentStatus, string $confirmedAt): Sale
@@ -88,7 +92,7 @@ it('agrège le stock par lieu avec sa valeur au coût moyen', function (): void 
     $response->assertJsonStructure([
         'data' => [
             'summary',
-            'financial' => ['revenue_month', 'sales_month', 'outstanding', 'stock_value'],
+            'financial' => ['revenue_month', 'sales_month', 'outstanding', 'stock_value', 'stock_value_purchase'],
             'sales_trend',
             'monthly_flow',
             'stock_by_warehouse',
@@ -99,4 +103,29 @@ it('agrège le stock par lieu avec sa valeur au coût moyen', function (): void 
     ]);
 
     expect($response->json('data.monthly_flow'))->toHaveCount(6);
+});
+
+it('valorise le stock au coût moyen et au prix d\'achat séparément', function (): void {
+    $warehouse = Warehouse::factory()->create();
+    $admin = grantUser(['stock.view_global'], ['warehouse_id' => $warehouse->id]);
+
+    // Coût moyen 6, prix d'achat 8 : l'article a été réapprovisionné plus cher
+    // que la moyenne qu'il traîne. Les deux valorisations doivent diverger,
+    // sinon l'une des deux ne sert à rien.
+    $product = Product::factory()->create([
+        'category_id' => Category::factory()->create()->id,
+        'unit_id' => Unit::factory()->create()->id,
+        'cost_price' => 8,
+        'sale_price' => 30,
+    ]);
+
+    Stock::withoutGlobalScopes()->create([
+        'warehouse_id' => $warehouse->id, 'product_id' => $product->id,
+        'quantity' => 10, 'reserved_quantity' => 0, 'average_cost' => '6.00',
+    ]);
+
+    $financial = $this->actingAs($admin)->getJson('/api/v1/dashboard')->json('data.financial');
+
+    expect((float) $financial['stock_value'])->toBe(60.0)
+        ->and((float) $financial['stock_value_purchase'])->toBe(80.0);
 });
