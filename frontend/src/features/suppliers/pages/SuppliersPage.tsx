@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
 import { usePermission } from '@/hooks/usePermission'
 import type { Supplier, SupplierInput } from '../api/suppliersApi'
+import { HistoriqueAchats } from '../components/HistoriqueAchats'
 import { useCreateSupplier, useDeleteSupplier, useSuppliers, useUpdateSupplier } from '../hooks'
 
 function errorMessage(error: unknown, fallback: string): string {
@@ -290,6 +291,8 @@ export function SuppliersPage() {
           ) : null}
         </div>
       ) : null}
+
+      <HistoriqueAchats />
 
       <ConfirmDialog
         open={deleting !== null}

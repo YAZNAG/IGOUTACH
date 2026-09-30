@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -52,6 +54,12 @@ export function RecurringExpensesPage() {
   const canPay = can('expense.approve')
 
   const { data: charges = [], isLoading } = useRecurringExpenses()
+
+  // La liste des charges fixes n'est pas paginee.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    charges,
+    (c) => [c.label, c.category?.name, c.warehouse?.name, c.warehouse?.code],
+  )
   const { data: enAttente } = usePendingOccurrences()
   // useWarehouses renvoie une page paginee, pas un tableau.
   const { data: pageLieux } = useWarehouses()
@@ -316,13 +324,19 @@ export function RecurringExpensesPage() {
 
       {/* ── Liste des charges ──────────────────────────────────────── */}
       <Card>
-        <CardHeader title="Charges définies" />
+        <CardHeader
+          title="Charges définies"
+          hint={actif ? `${resultats.length} sur ${charges.length}` : `${charges.length} charge(s)`}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Libellé, catégorie, lieu…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="py-10 text-center text-sm text-muted">Chargement…</p>
-          ) : charges.length === 0 ? (
+          ) : resultats.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted">
-              Aucune charge fixe. Créez-en une : loyer, abonnement, salaire…
+              {actif
+                ? 'Aucune charge fixe ne correspond à cette recherche.'
+                : 'Aucune charge fixe. Créez-en une : loyer, abonnement, salaire…'}
             </p>
           ) : (
             <table className="w-full text-sm">
@@ -339,7 +353,7 @@ export function RecurringExpensesPage() {
                 </tr>
               </thead>
               <tbody>
-                {charges.map((c) => (
+                {resultats.map((c) => (
                   <tr key={c.id} className="border-b border-line last:border-0">
                     <td className="px-5 py-3 text-ink">{c.label}</td>
                     <td className="px-5 py-3 text-muted">{c.category?.name ?? '—'}</td>

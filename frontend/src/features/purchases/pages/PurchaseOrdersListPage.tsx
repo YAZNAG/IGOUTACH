@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useSupplierOptions, useWarehouseOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
-import { formatNumber } from '@/lib/utils'
+import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import { useCancelPurchaseOrder, usePurchaseOrders, useSendPurchaseOrder } from '../hooks'
 import type { PurchaseOrderFilters } from '../api/purchaseOrdersApi'
 
@@ -238,7 +238,8 @@ export function PurchaseOrdersListPage() {
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
                     <th className="px-5 py-3 font-medium">N°</th>
-                    <th className="px-5 py-3 font-medium">Date</th>
+                    <th className="px-5 py-3 font-medium">Date de commande</th>
+                    <th className="px-5 py-3 font-medium">Créé le</th>
                     <th className="px-5 py-3 font-medium">Fournisseur</th>
                     <th className="px-5 py-3 font-medium">Lieu</th>
                     <th className="px-5 py-3 text-right font-medium">Références</th>
@@ -262,7 +263,13 @@ export function PurchaseOrdersListPage() {
                       <tr key={order.id} className="border-b border-line last:border-0">
                         <td className="mono px-5 py-3 font-medium text-ink">{order.number}</td>
                         <td className="px-5 py-3 text-muted">
-                          {order.ordered_at ? new Date(order.ordered_at).toLocaleDateString('fr-FR') : '—'}
+                          {formatDate(order.ordered_at)}
+                        </td>
+                        {/* La date de commande est saisie a la main ;
+                            celle-ci dit quand le bon est entre dans
+                            l'application. */}
+                        <td className="px-5 py-3 text-faint">
+                          {formatDateHeure(order.created_at)}
                         </td>
                         <td className="px-5 py-3 text-ink">{order.supplier.name ?? '—'}</td>
                         <td className="px-5 py-3 text-muted">

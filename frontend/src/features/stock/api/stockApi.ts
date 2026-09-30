@@ -34,12 +34,17 @@ export interface TableParams {
 export interface StockMovement {
   id: number
   created_at: string
+  product_id: number
   sku: string
   name: string
+  warehouse_code: string | null
+  warehouse_name: string | null
   type: string
   type_code: string
   quantity: number
   balance_after: number
+  /** Numero lisible du document d'origine, resolu par le serveur. */
+  document: { label: string; kind: string | null; id: number | null } | null
   note: string | null
   user: string | null
 }
@@ -89,6 +94,8 @@ export async function fetchStock(
 export interface MovementFilters extends TableParams {
   warehouse_id?: number
   product_id?: number
+  /** Texte libre sur la reference ou la designation de l'article. */
+  search?: string
   type?: string
   /** Bornes de date incluses, au format AAAA-MM-JJ. */
   from?: string

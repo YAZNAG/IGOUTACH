@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useSupplierOptions, useWarehouseOptions } from '@/features/access/hooks'
 import { downloadFile } from '@/lib/download'
-import { formatNumber } from '@/lib/utils'
+import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import { useGoodsReceipts } from '../hooks'
 import type { GoodsReceiptFilters } from '../api/goodsReceiptsApi'
 
@@ -185,6 +185,7 @@ export function GoodsReceiptsListPage() {
                   <tr className="border-b border-line text-left text-muted">
                     <th className="px-5 py-3 font-medium">N°</th>
                     <th className="px-5 py-3 font-medium">Date de réception</th>
+                    <th className="px-5 py-3 font-medium">Saisie le</th>
                     <th className="px-5 py-3 font-medium">BC d'origine</th>
                     <th className="px-5 py-3 font-medium">Fournisseur</th>
                     <th className="px-5 py-3 font-medium">Lieu</th>
@@ -199,11 +200,10 @@ export function GoodsReceiptsListPage() {
                   {receipts.map((receipt) => (
                     <tr key={receipt.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 font-medium text-ink">{receipt.number}</td>
-                      <td className="px-5 py-3 text-muted">
-                        {receipt.received_at
-                          ? new Date(receipt.received_at).toLocaleDateString('fr-FR')
-                          : '—'}
-                      </td>
+                      <td className="px-5 py-3 text-muted">{formatDate(receipt.received_at)}</td>
+                      {/* La date de reception est choisie a la main, sans
+                          heure. Celle-ci dit quand le bon a ete enregistre. */}
+                      <td className="px-5 py-3 text-faint">{formatDateHeure(receipt.created_at)}</td>
                       <td className="px-5 py-3">
                         {receipt.purchase_order ? (
                           <Link

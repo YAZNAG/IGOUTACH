@@ -1,20 +1,50 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Download, FileText, Lock, LockOpen, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { ArrowLeft, Download, FileDown, FileText, HandCoins, Lock, LockOpen, Pencil, Plus, Receipt, Table2, Trash2, TrendingUp, Wallet } from 'lucide-react'
+import { StatTile } from '@/features/dashboard/components/StatTile'
+import { useRef, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { useCategories } from '@/features/categories/hooks'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { downloadFile } from '@/lib/download'
-import { formatNumber } from '@/lib/utils'
+import { formatCurrency, formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import type { Paginated } from '@/types'
+import { JournalDesVentes } from '../components/JournalDesVentes'
+
+/**
+ * Message porté par un export refusé.
+ *
+ * Le téléchargement demande un Blob : un 422 arrive donc lui aussi en Blob,
+ * et son message reste illisible tant qu'on ne l'a pas relu en texte.
+ */
+async function messageExport(erreur: unknown): Promise<string> {
+  const reponse = (erreur as { response?: { data?: unknown } })?.response
+  const corps = reponse?.data
+
+  if (corps instanceof Blob) {
+    try {
+      const json = JSON.parse(await corps.text()) as { message?: string }
+      if (json.message) return json.message
+    } catch {
+      // Un blob qui n'est pas du JSON : on retombe sur le message générique.
+    }
+  }
+
+  if (corps && typeof corps === 'object' && 'message' in corps) {
+    return String((corps as { message: unknown }).message)
+  }
+
+  return "L'export n'a pas abouti. Réessayez, ou resserrez la période."
+}
 
 export interface SaleRow {
   id: number
@@ -30,6 +60,8 @@ export interface SaleRow {
   quote_id: number | null
   converted: boolean
   created_at: string | null
+  /** Qui a saisi la vente. Null pour qui n'a pas la vue multi-lieux. */
+  created_by?: string | null
 }
 
 interface SaleDetail {
@@ -45,6 +77,8 @@ interface SaleDetail {
   paid_amount: number
   payment_status: string
   confirmed_at: string | null
+  created_at: string | null
+  updated_at: string | null
   note: string | null
   lines: {
     product_id: number
@@ -101,16 +135,6 @@ interface DraftLine {
 
 const KEY = ['sales'] as const
 
-/** Valeur retardée : évite une requête serveur à chaque frappe. */
-function useDebouncedValue(value: string, delayMs: number): string {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delayMs)
-    return () => clearTimeout(timer)
-  }, [value, delayMs])
-  return debounced
-}
-
 function errorMessage(error: unknown, fallback: string): string {
   if (error && typeof error === 'object' && 'response' in error) {
     const response = (error as { response?: { data?: { message?: string } } }).response
@@ -124,6 +148,81 @@ function errorMessage(error: unknown, fallback: string): string {
  * (type de prix du client puis paliers de quantité), le stock sort à la
  * confirmation et la créance alimente le crédit client.
  */
+interface BilanLieuData {
+  sales: { count: number; total: number; collected: number; credit: number }
+  customers_balance: number
+  expenses: { count: number; total: number }
+  cash: { cash_in: number; cash_expenses: number; remitted: number; remaining: number }
+}
+
+/**
+ * Bilan d'un lieu sur la periode filtree : n'apparait qu'une fois un lieu
+ * choisi, car additionner les tiroirs de plusieurs lieux ne dit rien.
+ */
+function BilanLieu({ params, nomLieu }: { params: Record<string, string | number | undefined>; nomLieu: string }) {
+  const { data, isLoading } = useQuery<BilanLieuData>({
+    queryKey: ['sales-summary', params],
+    queryFn: async () => {
+      const { data: r } = await api.get<{ data: BilanLieuData }>('/sales/summary', { params })
+      return r.data
+    },
+    placeholderData: keepPreviousData,
+  })
+
+  if (isLoading || !data) return <p className="text-sm text-muted">Calcul du bilan…</p>
+
+  const periode =
+    params.date_from && params.date_to
+      ? `du ${formatDate(String(params.date_from))} au ${formatDate(String(params.date_to))}`
+      : params.date_from
+        ? `depuis le ${formatDate(String(params.date_from))}`
+        : params.date_to
+          ? `jusqu’au ${formatDate(String(params.date_to))}`
+          : 'toutes dates'
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium text-ink">
+        Bilan {nomLieu} · {periode}
+      </p>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatTile
+          label="Total des ventes"
+          value={data.sales.total}
+          currency
+          icon={TrendingUp}
+          tone="ok"
+          hint={`${formatNumber(data.sales.count)} vente(s) confirmée(s) · encaissé ${formatCurrency(data.sales.collected)}`}
+        />
+        <StatTile
+          label="Crédit clients"
+          value={data.sales.credit}
+          currency
+          icon={HandCoins}
+          tone={data.sales.credit > 0 ? 'warn' : 'navy'}
+          hint={`Reste à payer sur ces ventes · encours total des clients ${formatCurrency(data.customers_balance)}`}
+        />
+        <StatTile
+          label="Total des charges"
+          value={data.expenses.total}
+          currency
+          icon={Receipt}
+          tone="bad"
+          hint={`${formatNumber(data.expenses.count)} charge(s), hors rejetées`}
+        />
+        <StatTile
+          label="Reste en caisse"
+          value={data.cash.remaining}
+          currency
+          icon={Wallet}
+          tone="navy"
+          hint={`Espèces ${formatCurrency(data.cash.cash_in)} − charges ${formatCurrency(data.cash.cash_expenses)} − remises ${formatCurrency(data.cash.remitted)}`}
+        />
+      </div>
+    </div>
+  )
+}
+
 export function SalesPage() {
   const [detailId, setDetailId] = useState<number | null>(null)
 
@@ -150,6 +249,11 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   const [categorie, setCategorie] = useState(0)
   const [du, setDu] = useState('')
   const [au, setAu] = useState('')
+  const [recherche, setRecherche] = useState('')
+
+  // La liste est paginee par le serveur : filtrer les vingt lignes affichees
+  // laisserait croire qu'une facture n'existe pas parce qu'elle est page 3.
+  const rechercheRetardee = useDebouncedValue(recherche, 300)
 
   const { data: lieux = [] } = useWarehouseOptions()
   const { data: categories = [] } = useCategories()
@@ -160,7 +264,37 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
     date_from: du || undefined,
     date_to: au || undefined,
   }
-  const filtreActif = lieu > 0 || categorie > 0 || du !== '' || au !== ''
+  const filtresListe = { ...filtres, search: rechercheRetardee || undefined }
+
+  const [exportEnCours, setExportEnCours] = useState<string | null>(null)
+  const [erreurExport, setErreurExport] = useState<string | null>(null)
+
+  /**
+   * Les exports reprennent les filtres de l'ecran, periode comprise : un
+   * fichier qui ne correspondrait pas au tableau affiche serait un piege.
+   */
+  async function exporter(quoi: 'tableau' | 'detail', format: 'xlsx' | 'pdf') {
+    const cle = `${quoi}-${format}`
+    setExportEnCours(cle)
+    setErreurExport(null)
+    try {
+      const params = new URLSearchParams({ format, type: 'invoice' })
+      if (du) params.set('date_from', du)
+      if (au) params.set('date_to', au)
+      if (lieu) params.set('warehouse_id', String(lieu))
+      if (categorie) params.set('category_id', String(categorie))
+      if (rechercheRetardee) params.set('search', rechercheRetardee)
+
+      const chemin = quoi === 'detail' ? '/sales/lines/export' : '/sales/export'
+      const nom = quoi === 'detail' ? 'IGOUTECH_ventes-detail' : 'IGOUTECH_ventes'
+      await downloadFile(`${chemin}?${params.toString()}`, `${nom}.${format}`)
+    } catch (e) {
+      setErreurExport(await messageExport(e))
+    } finally {
+      setExportEnCours(null)
+    }
+  }
+  const filtreActif = lieu > 0 || categorie > 0 || du !== '' || au !== '' || recherche !== ''
 
   /** Change un filtre et revient en page 1 : la page 7 d'un autre filtre
    *  serait souvent vide, ce qui se lit comme « aucun resultat ». */
@@ -186,10 +320,10 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   })
 
   const { data, isLoading } = useQuery<Paginated<SaleRow>>({
-    queryKey: [...KEY, 'invoices', page, lieu, categorie, du, au],
+    queryKey: [...KEY, 'invoices', page, lieu, categorie, du, au, rechercheRetardee],
     queryFn: async () => {
       const { data: r } = await api.get<Paginated<SaleRow>>('/sales', {
-        params: { page, type: 'invoice', ...filtres },
+        params: { page, type: 'invoice', ...filtresListe },
       })
       return r
     },
@@ -198,9 +332,24 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
   const sales = data?.data ?? []
   const meta = data?.meta
 
+  // La direction voit qui a saisi chaque vente ; un vendeur n'a pas a suivre
+  // le travail de ses collegues. La regle vit cote serveur, qui ne renseigne
+  // l'auteur que dans ce cas : l'ecran s'y aligne.
+  const voitLesAuteurs = can('stock.view_global')
+
   const barreFiltres = (
     <Card>
-      <CardBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <CardBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <Field label="Recherche" htmlFor="vte-recherche">
+          <SearchInput
+            id="vte-recherche"
+            value={recherche}
+            onChange={(v) => appliquer(() => setRecherche(v))}
+            placeholder="Référence ou client…"
+            className="w-full"
+          />
+        </Field>
+
         <Field label="Lieu" htmlFor="vte-lieu">
           <Select
             id="vte-lieu"
@@ -260,6 +409,7 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                 setCategorie(0)
                 setDu('')
                 setAu('')
+                setRecherche('')
               })
             }
           >
@@ -280,7 +430,51 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
           </p>
         </div>
         {can('sale.create') ? (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exporter('tableau', 'xlsx')}
+              disabled={exportEnCours !== null}
+            >
+              <Download className="h-4 w-4" />
+              {exportEnCours === 'tableau-xlsx' ? 'Export…' : 'Excel'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exporter('tableau', 'pdf')}
+              disabled={exportEnCours !== null}
+            >
+              <FileText className="h-4 w-4" />
+              {exportEnCours === 'tableau-pdf' ? 'Export…' : 'PDF'}
+            </Button>
+            {/* Le detail montre les prix d'achat : il suit la permission qui
+                garde les couts, pas celle des ventes. */}
+            {can('product.view_cost_price') ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => exporter('detail', 'xlsx')}
+                  disabled={exportEnCours !== null}
+                  title="Une ligne par article vendu, avec prix de vente, prix d'achat et bénéfice"
+                >
+                  <Table2 className="h-4 w-4" />
+                  {exportEnCours === 'detail-xlsx' ? 'Export…' : 'Détail Excel'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => exporter('detail', 'pdf')}
+                  disabled={exportEnCours !== null}
+                  title="Le même détail en PDF — limité à 400 lignes, resserrez la période au besoin"
+                >
+                  <FileDown className="h-4 w-4" />
+                  {exportEnCours === 'detail-pdf' ? 'Export…' : 'Détail PDF'}
+                </Button>
+              </>
+            ) : null}
             <Button
               variant="outline"
               onClick={() => { setPickingQuote((v) => !v); setCreating(false) }}
@@ -300,11 +494,26 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
         <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{erreurSuppression}</p>
       ) : null}
 
+      {erreurExport ? (
+        <p className="rounded border border-line bg-warn-bg px-3 py-2 text-sm text-warn">{erreurExport}</p>
+      ) : null}
+
       {pickingQuote ? <QuotePicker onClose={() => setPickingQuote(false)} onConverted={onOpen} /> : null}
 
       {creating ? <CreateSalePanel fixedType="invoice" onClose={() => setCreating(false)} onCreated={onOpen} /> : null}
 
       {barreFiltres}
+
+      {lieu > 0 ? (
+        <BilanLieu
+          params={{ type: 'invoice', ...filtres, search: rechercheRetardee || undefined }}
+          nomLieu={lieux.find((w) => w.id === lieu)?.code ?? ''}
+        />
+      ) : null}
+
+      {/* Le journal partage les filtres de la liste : lire un total qui ne
+          correspond pas aux lignes affichees serait pire que pas de total. */}
+      <JournalDesVentes filtres={filtres} />
 
       <Card>
         <CardHeader
@@ -325,6 +534,7 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                   <th className="px-5 py-3 font-medium">Référence</th>
                   <th className="px-5 py-3 font-medium">Date</th>
                   <th className="px-5 py-3 font-medium">Client</th>
+                  {voitLesAuteurs ? <th className="px-5 py-3 font-medium">Saisie par</th> : null}
                   <th className="px-5 py-3 text-right font-medium">Lignes</th>
                   <th className="px-5 py-3 text-right font-medium">Total (DH)</th>
                   <th className="px-5 py-3 font-medium">Statut</th>
@@ -334,7 +544,7 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
               </thead>
               <tbody>
                 {sales.length === 0 ? (
-                  <tr><td colSpan={8} className="px-5 py-8 text-center text-muted">Aucune vente.</td></tr>
+                  <tr><td colSpan={voitLesAuteurs ? 9 : 8} className="px-5 py-8 text-center text-muted">Aucune vente.</td></tr>
                 ) : (
                   sales.map((s) => (
                     <tr key={s.id} className="border-b border-line last:border-0">
@@ -342,8 +552,11 @@ function SalesList({ onOpen }: { onOpen: (id: number) => void }) {
                         {s.reference}
                         {s.quote_id !== null ? <span className="ml-1 text-xs text-faint" title="Issue d'un devis">↩</span> : null}
                       </td>
-                      <td className="px-5 py-3 text-muted">{s.created_at ?? '—'}</td>
+                      <td className="px-5 py-3 text-muted">{formatDateHeure(s.created_at)}</td>
                       <td className="px-5 py-3 text-ink">{s.customer ?? <span className="text-muted">Passager</span>}</td>
+                      {voitLesAuteurs ? (
+                        <td className="px-5 py-3 text-muted">{s.created_by ?? '—'}</td>
+                      ) : null}
                       <td className="tabular px-5 py-3 text-right text-muted">{s.lines_count}</td>
                       <td className="tabular px-5 py-3 text-right text-ink">{formatNumber(s.total)}</td>
                       <td className="px-5 py-3">
@@ -490,7 +703,7 @@ function QuotePicker({ onClose, onConverted }: { onClose: () => void; onConverte
                 {quotes.map((q) => (
                   <tr key={q.id} className={`border-b border-line last:border-0 ${q.converted ? 'opacity-50' : ''}`}>
                     <td className="mono px-4 py-2 text-muted">{q.reference}</td>
-                    <td className="px-4 py-2 text-muted">{q.created_at ?? '—'}</td>
+                    <td className="px-4 py-2 text-muted">{formatDateHeure(q.created_at)}</td>
                     <td className="px-4 py-2 text-ink">{q.customer ?? <span className="text-muted">Passager</span>}</td>
                     <td className="tabular px-4 py-2 text-right text-muted">{q.lines_count}</td>
                     <td className="tabular px-4 py-2 text-right text-ink">{formatNumber(q.total)}</td>
@@ -1078,13 +1291,14 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
       // Article sans tarif : le vendeur saisira le prix à la main.
     }
 
-    setEditLines((prev) => [...prev, {
+    // En tete, comme a la creation : c'est l'article sur lequel on va agir.
+    setEditLines((prev) => [{
       product_id: p.id,
       sku: p.sku,
       name: p.name,
       quantity: 1,
       unit_price: unitPrice,
-    }])
+    }, ...prev])
   }
 
   const editSubtotal = editLines.reduce((somme, l) => somme + l.quantity * l.unit_price, 0)
@@ -1135,6 +1349,18 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
               {sale?.status === 'confirmed' ? <Badge tone="ok">Confirmé</Badge> : null}
               {sale?.status === 'draft' ? <Badge tone="warn">Brouillon</Badge> : null}
               {sale?.status === 'cancelled' ? <Badge tone="bad">Annulé</Badge> : null}
+            </p>
+            {/* Creation et confirmation sont deux moments distincts : un
+                brouillon saisi le lundi peut n'etre confirme que le jeudi.
+                N'afficher que l'un des deux rend l'ecart invisible. */}
+            <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-faint">
+              <span>Créée le {formatDateHeure(sale?.created_at)}</span>
+              {sale?.confirmed_at ? (
+                <span>Confirmée le {formatDateHeure(sale.confirmed_at)}</span>
+              ) : null}
+              {sale?.updated_at && sale.updated_at !== sale.created_at ? (
+                <span>Dernière modification le {formatDateHeure(sale.updated_at)}</span>
+              ) : null}
             </p>
           </div>
         </div>

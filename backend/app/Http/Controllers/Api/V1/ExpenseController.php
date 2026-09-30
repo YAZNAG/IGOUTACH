@@ -106,10 +106,15 @@ final class ExpenseController extends Controller
         return response()->json(['data' => ['id' => $category->id, 'name' => $category->name]], 201);
     }
 
-    public function index(Request $request): JsonResponse
+    /**
+     * Filtres communs a la liste et aux exports : un fichier qui ne
+     * correspondrait pas au tableau affiche serait un piege.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<Expense>
+     */
+    private function filtrer(Request $request)
     {
-        $expenses = Expense::query()
-            ->with(['category:id,name', 'warehouse:id,code', 'user:id,name', 'paymentMethod:id,name'])
+        return Expense::query()
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
             // La periode porte sur la date de la charge, pas sur sa saisie :
@@ -117,6 +122,25 @@ final class ExpenseController extends Controller
             // juillet.
             ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('expense_date', '>=', $request->string('date_from')->value()))
             ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('expense_date', '<=', $request->string('date_to')->value()))
+            // La recherche porte aussi sur la categorie : on cherche « loyer »
+            // sans savoir si c'est le libelle de la charge ou sa famille.
+            ->when($request->string('search')->isNotEmpty(), function ($q) use ($request): void {
+                $terme = '%'.$request->string('search')->value().'%';
+                $q->where(function ($x) use ($terme): void {
+                    $x->where('label', 'like', $terme)
+                        ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $terme));
+                });
+            });
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        // Total de la selection entiere, pas des vingt lignes de la page : c'est
+        // la somme d'un lieu sur une periode qu'on vient chercher en filtrant.
+        $montantTotal = (float) $this->filtrer($request)->where('status', '!=', 'rejected')->sum('amount');
+
+        $expenses = $this->filtrer($request)
+            ->with(['category:id,name', 'warehouse:id,code', 'user:id,name', 'paymentMethod:id,name'])
             ->orderByDesc('expense_date')
             ->orderByDesc('id')
             ->paginate(20);
@@ -132,6 +156,11 @@ final class ExpenseController extends Controller
             // sinon l'information est enregistree sans jamais etre montree.
             'payment_method' => $e->paymentMethod?->name,
             'expense_date' => $e->expense_date->format('Y-m-d'),
+            // `expense_date` est la date de la charge ; `created_at`
+            // celle de sa saisie. Une facture de juillet enregistree
+            // en aout n'a pas la meme histoire selon qu'on lit l'une
+            // ou l'autre.
+            'created_at' => $e->created_at?->format('Y-m-d H:i'),
             'has_receipt' => $e->receipt_path !== null,
             'status' => $e->status,
             // Réglée ou portée au crédit : sans cette information, une charge
@@ -147,15 +176,108 @@ final class ExpenseController extends Controller
                 'last_page' => $expenses->lastPage(),
                 'per_page' => $expenses->perPage(),
                 'total' => $expenses->total(),
+                'total_amount' => round($montantTotal, 2),
             ],
         ]);
     }
 
+    /**
+     * Export Excel ou PDF des charges filtrees (lieu, periode, statut, recherche).
+     */
+    public function export(Request $request): JsonResponse|\Symfony\Component\HttpFoundation\Response
+    {
+        $charges = $this->filtrer($request)
+            ->with(['category:id,name', 'warehouse:id,code', 'user:id,name', 'paymentMethod:id,name'])
+            ->orderByDesc('expense_date')
+            ->orderByDesc('id')
+            ->get();
+
+        $headings = ['Date', 'Libelle', 'Type', 'Lieu', 'Saisie par', 'Mode de reglement', 'Reglement', 'Statut', 'Montant (DH)'];
+
+        $rows = $charges->map(fn (Expense $e): array => [
+            $e->expense_date->format('d/m/Y'),
+            $e->label,
+            $e->category?->name ?? '',
+            $e->warehouse?->code ?? 'Societe',
+            $e->user?->name ?? '',
+            $e->paymentMethod?->name ?? '',
+            $e->payment_status === 'paid' ? 'Reglee' : 'A payer',
+            match ($e->status) {
+                'approved' => 'Validee',
+                'pending' => 'En attente',
+                'rejected' => 'Rejetee',
+                default => (string) $e->status,
+            },
+            number_format((float) $e->amount, 2, '.', ''),
+        ])->all();
+
+        // Les charges rejetees figurent dans le fichier mais pas dans le total :
+        // elles n'ont jamais ete depensees.
+        $retenues = $charges->where('status', '!=', 'rejected');
+        $rows[] = array_fill(0, count($headings), '');
+        $rows[] = ['', 'TOTAL ('.$retenues->count().' charge(s), hors rejetees)', '', '', '', '', '', '',
+            number_format((float) $retenues->sum('amount'), 2, '.', '')];
+
+        $titre = 'Charges'.$this->libelleLieu($request).$this->suffixePeriode($request);
+
+        if ($request->string('format')->value() === 'pdf') {
+            $plafond = \App\Support\Pdf\PdfLimit::lignes();
+            if (count($rows) > $plafond) {
+                return response()->json([
+                    'message' => 'Cet export represente '.count($rows)." lignes, plus que ce qu'un PDF peut tenir "
+                        ."sur ce serveur (limite : {$plafond}). Resserrez la periode, ou choisissez l'export Excel.",
+                ], 422);
+            }
+
+            return \Barryvdh\DomPDF\Facade\Pdf::loadHtml(\App\Support\Export\HtmlTable::render($titre, $headings, $rows))
+                ->setPaper('a4', 'landscape')
+                ->download('IGOUTECH_charges.pdf');
+        }
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ArrayExport($headings, $rows),
+            'IGOUTECH_charges.xlsx',
+        );
+    }
+
+    private function libelleLieu(Request $request): string
+    {
+        $id = $request->integer('warehouse_id');
+        if ($id <= 0) {
+            return '';
+        }
+
+        $code = \App\Domain\Warehouses\Models\Warehouse::query()->whereKey($id)->value('code');
+
+        return $code ? ' — '.$code : '';
+    }
+
+    /** « du 01/09/2026 au 15/09/2026 », ou rien sans borne. */
+    private function suffixePeriode(Request $request): string
+    {
+        $du = $request->string('date_from')->value();
+        $au = $request->string('date_to')->value();
+        $f = static fn (string $d): string => \Carbon\Carbon::parse($d)->format('d/m/Y');
+
+        return match (true) {
+            $du !== '' && $au !== '' => ' du '.$f($du).' au '.$f($au),
+            $du !== '' => ' depuis le '.$f($du),
+            $au !== '' => " jusqu'au ".$f($au),
+            default => '',
+        };
+    }
+
     public function store(Request $request): JsonResponse
     {
-        /** @var array{expense_category_id: int, warehouse_id?: int|null, label: string, amount: float, expense_date: string} $data */
         $data = $request->validate([
-            'expense_category_id' => ['required', 'integer', 'exists:expense_categories,id'],
+            // Le type se choisit dans la liste, ou se nomme sur-le-champ avec
+            // « category_name ». Obliger à créer le type d'abord conduisait
+            // à ranger une dépense inhabituelle sous un type approchant, et
+            // le libellé perdait alors la seule trace de sa vraie nature.
+            'expense_category_id' => [
+                'required_without:category_name', 'nullable', 'integer', 'exists:expense_categories,id',
+            ],
+            'category_name' => ['required_without:expense_category_id', 'nullable', 'string', 'max:120'],
             'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
             'label' => ['required', 'string', 'max:191'],
             'amount' => ['required', 'numeric', 'min:0.01'],
@@ -171,6 +293,21 @@ final class ExpenseController extends Controller
             ],
         ]);
 
+        // Un type saisi à la main rejoint le référentiel : le suivant qui
+        // engage la même dépense le trouvera dans la liste. La recherche est
+        // insensible à la casse et aux espaces de bord, sans quoi « Taxes »,
+        // « taxes » et « Taxes  » deviendraient trois familles distinctes.
+        $categorieId = $data['expense_category_id'] ?? null;
+
+        if ($categorieId === null) {
+            $nom = trim((string) $data['category_name']);
+
+            $categorie = ExpenseCategory::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($nom)])->first()
+                ?? ExpenseCategory::query()->create(['name' => $nom]);
+
+            $categorieId = $categorie->id;
+        }
+
         $reglee = ($data['payment_status'] ?? 'paid') === 'paid';
 
         $receiptPath = null;
@@ -181,7 +318,7 @@ final class ExpenseController extends Controller
         }
 
         $expense = Expense::query()->create([
-            'expense_category_id' => $data['expense_category_id'],
+            'expense_category_id' => $categorieId,
             'warehouse_id' => $data['warehouse_id'] ?? null,
             'user_id' => (int) $request->user()?->id,
             'label' => $data['label'],

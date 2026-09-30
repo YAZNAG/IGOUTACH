@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { downloadFile } from '@/lib/download'
-import { formatNumber } from '@/lib/utils'
+import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import { useGoodsReceipt } from '../hooks'
 
 function formatMoney(value: number): string {
@@ -17,6 +19,14 @@ export function GoodsReceiptDetailPage() {
 
   const receiptId = id ? Number(id) : 0
   const { data: receipt, isLoading } = useGoodsReceipt(receiptId)
+
+  // Un bon de reception peut porter des dizaines de lignes. Le hook est
+  // appele ici, avant les retours anticipes : l'ordre des hooks ne doit pas
+  // changer d'un rendu a l'autre.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    receipt?.lines ?? [],
+    (line) => [line.product.sku, line.product.name],
+  )
 
   if (isLoading) {
     return (
@@ -78,9 +88,11 @@ export function GoodsReceiptDetailPage() {
           <div className="grid gap-4 sm:grid-cols-4">
             <div>
               <p className="text-xs font-medium text-muted">Date de réception</p>
-              <p className="text-sm text-ink">
-                {receipt.received_at ? new Date(receipt.received_at).toLocaleDateString('fr-FR') : '—'}
-              </p>
+              <p className="text-sm text-ink">{formatDate(receipt.received_at)}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">Saisie le</p>
+              <p className="text-sm text-ink">{formatDateHeure(receipt.created_at)}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-muted">BC d'origine</p>
@@ -115,10 +127,20 @@ export function GoodsReceiptDetailPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Lignes reçues" />
+        <CardHeader
+          title="Lignes reçues"
+          hint={
+            actif
+              ? `${resultats.length} sur ${receipt.lines.length}`
+              : `${receipt.lines.length} ligne(s)`
+          }
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Référence ou article…" />}
+        />
         <CardBody className="p-0">
-          {receipt.lines.length === 0 ? (
-            <div className="p-5 text-center text-sm text-muted">Aucune ligne.</div>
+          {resultats.length === 0 ? (
+            <div className="p-5 text-center text-sm text-muted">
+              {actif ? 'Aucune ligne ne correspond à cette recherche.' : 'Aucune ligne.'}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -132,7 +154,7 @@ export function GoodsReceiptDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {receipt.lines.map((line) => (
+                  {resultats.map((line) => (
                     <tr key={line.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{line.product.sku ?? '—'}</td>
                       <td className="px-5 py-3 text-ink">{line.product.name ?? '—'}</td>

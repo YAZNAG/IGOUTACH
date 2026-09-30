@@ -10,7 +10,7 @@ import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { useSupplierOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
-import { cn } from '@/lib/utils'
+import { cn, formatDate } from '@/lib/utils'
 import {
   usePaymentMethods,
   usePaySupplierCredit,
@@ -18,6 +18,7 @@ import {
   useSupplierCredits,
 } from '../hooks'
 import type { SupplierCreditRow } from '../api/supplierCreditsApi'
+import { HistoriqueReglementsFournisseurs } from '../components/HistoriqueReglementsFournisseurs'
 
 function formatMoney(value: number): string {
   return value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -209,7 +210,7 @@ export function SupplierCreditsPage() {
                     <tbody>
                       {history.map((p) => (
                         <tr key={p.id} className="border-b border-line last:border-0">
-                          <td className="px-3 py-2 text-muted">{new Date(p.paid_at).toLocaleDateString('fr-FR')}</td>
+                          <td className="px-3 py-2 text-muted">{formatDate(p.paid_at)}</td>
                           <td className="px-3 py-2 text-muted">{p.payment_method ?? '—'}</td>
                           <td className="px-3 py-2 text-muted">{p.notes ?? ''}</td>
                           <td className="tabular px-3 py-2 text-right font-medium text-ink">{formatMoney(p.amount)} DH</td>
@@ -366,6 +367,8 @@ export function SupplierCreditsPage() {
           </CardBody>
         </Card>
       ) : null}
+
+      <HistoriqueReglementsFournisseurs />
     </div>
   )
 }

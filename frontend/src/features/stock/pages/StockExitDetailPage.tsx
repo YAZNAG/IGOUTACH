@@ -118,7 +118,7 @@ export function StockExitDetailPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Valorisation (CMUP de sortie)" />
+        <CardHeader title="Valorisation à la sortie" />
         <CardBody>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div>
@@ -129,7 +129,7 @@ export function StockExitDetailPage() {
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted">CMUP au moment de la sortie</p>
+              <p className="text-xs font-medium text-muted">Coût unitaire au moment de la sortie</p>
               <p className="text-2xl font-semibold text-ink">{formatMoney(exit.unit_cost)} DH</p>
             </div>
             <div>

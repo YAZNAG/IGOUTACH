@@ -1,4 +1,5 @@
 export { StockPage } from './pages/StockPage'
+export { MovementsJournalPage } from './pages/MovementsJournalPage'
 export { StockEntriesPage } from './pages/StockEntriesPage'
 export { StockEntryDetailPage } from './pages/StockEntryDetailPage'
 export { StockExitsPage } from './pages/StockExitsPage'

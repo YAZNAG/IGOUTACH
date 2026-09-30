@@ -5,6 +5,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -208,6 +210,19 @@ export function SupplierDetailPage() {
     )
   }
 
+  // Les deux tableaux de cet onglet arrivent complets : le filtre les
+  // parcourt en entier, il n'y a pas de page cachee derriere.
+  const creances = useRechercheLocale(credits?.rows ?? [], (row) => [
+    row.number,
+    row.purchase_order?.number,
+  ])
+  const reglements = useRechercheLocale(payments?.rows ?? [], (p) => [
+    p.goods_receipt?.number,
+    p.payment_method,
+    p.notes,
+    p.created_by,
+  ])
+
   const totalDue = credits?.total_due ?? 0
   const mutationError = apiErrorMessage(payMutation.error)
 
@@ -407,10 +422,30 @@ export function SupplierDetailPage() {
           ) : null}
 
           <Card>
-            <CardHeader title="Réceptions à régler" hint={credits ? `${credits.receipts_count} en cours` : undefined} />
+            <CardHeader
+              title="Réceptions à régler"
+              hint={
+                creances.actif
+                  ? `${creances.resultats.length} sur ${credits?.rows.length ?? 0}`
+                  : credits
+                    ? `${credits.receipts_count} en cours`
+                    : undefined
+              }
+              action={
+                <SearchInput
+                  value={creances.terme}
+                  onChange={creances.setTerme}
+                  placeholder="N° de réception…"
+                />
+              }
+            />
             <CardBody className="p-0">
-              {(credits?.rows ?? []).length === 0 ? (
-                <p className="p-5 text-center text-sm text-muted">Aucun crédit en cours pour ce fournisseur. ✓</p>
+              {creances.resultats.length === 0 ? (
+                <p className="p-5 text-center text-sm text-muted">
+                  {creances.actif
+                    ? 'Aucune réception ne correspond à cette recherche.'
+                    : 'Aucun crédit en cours pour ce fournisseur. ✓'}
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -426,7 +461,7 @@ export function SupplierDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(credits?.rows ?? []).map((row) => (
+                      {creances.resultats.map((row) => (
                         <tr key={row.id} className="border-b border-line last:border-0">
                           <td className="px-5 py-3">
                             <Link to={`/goods-receipts/${row.id}`} className="mono font-medium text-sky hover:underline">
@@ -465,10 +500,21 @@ export function SupplierDetailPage() {
             <CardHeader
               title="Historique des règlements"
               hint={payments ? `Total réglé : ${formatMoney(payments.total_paid)} DH` : undefined}
+              action={
+                <SearchInput
+                  value={reglements.terme}
+                  onChange={reglements.setTerme}
+                  placeholder="Réception, méthode, note…"
+                />
+              }
             />
             <CardBody className="p-0">
-              {(payments?.rows ?? []).length === 0 ? (
-                <p className="p-5 text-center text-sm text-muted">Aucun règlement enregistré.</p>
+              {reglements.resultats.length === 0 ? (
+                <p className="p-5 text-center text-sm text-muted">
+                  {reglements.actif
+                    ? 'Aucun règlement ne correspond à cette recherche.'
+                    : 'Aucun règlement enregistré.'}
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -483,7 +529,7 @@ export function SupplierDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(payments?.rows ?? []).map((p) => (
+                      {reglements.resultats.map((p) => (
                         <tr key={p.id} className="border-b border-line last:border-0">
                           <td className="px-5 py-3 text-muted">{formatDate(p.paid_at)}</td>
                           <td className="px-5 py-3">

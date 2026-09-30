@@ -5,10 +5,12 @@ import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { downloadFile } from '@/lib/download'
-import { formatNumber } from '@/lib/utils'
+import { formatDateHeure, formatNumber } from '@/lib/utils'
 import type { Paginated } from '@/types'
 import { CreateSalePanel, SaleDetailView, type SaleRow } from './SalesPage'
 
@@ -35,11 +37,18 @@ export function QuotesPage() {
   const [detailId, setDetailId] = useState<number | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [recherche, setRecherche] = useState('')
+
+  // La liste est paginee par le serveur : la recherche part avec la requete,
+  // filtrer les lignes affichees ne fouillerait que la page en cours.
+  const rechercheRetardee = useDebouncedValue(recherche, 300)
 
   const { data, isLoading } = useQuery<Paginated<SaleRow>>({
-    queryKey: ['sales', 'quotes', page],
+    queryKey: ['sales', 'quotes', page, rechercheRetardee],
     queryFn: async () => {
-      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', { params: { page, type: 'quote' } })
+      const { data: r } = await api.get<Paginated<SaleRow>>('/sales', {
+        params: { page, type: 'quote', search: rechercheRetardee || undefined },
+      })
       return r
     },
   })
@@ -103,7 +112,20 @@ export function QuotesPage() {
       ) : null}
 
       <Card>
-        <CardHeader title="Devis créés" hint={meta ? `${meta.total}` : undefined} />
+        <CardHeader
+          title="Devis créés"
+          hint={meta ? `${meta.total}` : undefined}
+          action={
+            <SearchInput
+              value={recherche}
+              onChange={(v) => {
+                setRecherche(v)
+                setPage(1)
+              }}
+              placeholder="Référence ou client…"
+            />
+          }
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -127,7 +149,7 @@ export function QuotesPage() {
                   quotes.map((q) => (
                     <tr key={q.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{q.reference}</td>
-                      <td className="px-5 py-3 text-muted">{q.created_at ?? '—'}</td>
+                      <td className="px-5 py-3 text-muted">{formatDateHeure(q.created_at)}</td>
                       <td className="px-5 py-3 text-ink">{q.customer ?? <span className="text-muted">Passager</span>}</td>
                       <td className="tabular px-5 py-3 text-right text-muted">{q.lines_count}</td>
                       <td className="tabular px-5 py-3 text-right text-ink">{formatNumber(q.total)}</td>

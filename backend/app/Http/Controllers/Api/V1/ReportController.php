@@ -171,10 +171,39 @@ final class ReportController extends Controller
         $du = $data['from'] ?? now()->startOfMonth()->format('Y-m-d');
         $au = $data['to'] ?? now()->format('Y-m-d');
 
+        // La période précédente, de même longueur et immédiatement avant :
+        // un chiffre sans point de comparaison ne dit pas si l'on progresse.
+        $debut = \Illuminate\Support\Carbon::parse($du);
+        $fin = \Illuminate\Support\Carbon::parse($au);
+        $jours = $debut->diffInDays($fin) + 1;
+        $duPrec = $debut->copy()->subDays($jours)->format('Y-m-d');
+        $auPrec = $debut->copy()->subDay()->format('Y-m-d');
+
+        $charges = $benefices->charges($du, $au);
+        $chargesPrec = $benefices->charges($duPrec, $auPrec);
+        $totaux = $benefices->totaux($du, $au);
+        $totauxPrec = $benefices->totaux($duPrec, $auPrec);
+
         $donnees = [
             'from' => $du,
             'to' => $au,
-            'totals' => $benefices->totaux($du, $au),
+            'totals' => $totaux,
+            'expenses' => $charges,
+            // Marge brute moins charges : le seul chiffre qui dise ce qui
+            // reste vraiment.
+            'net_result' => round($totaux['profit'] - $charges['total'], 2),
+            'cash' => $benefices->encaissements($du, $au),
+            'series' => $benefices->serie($du, $au),
+            'previous' => [
+                'from' => $duPrec,
+                'to' => $auPrec,
+                'revenue' => $totauxPrec['revenue'],
+                'cost' => $totauxPrec['cost'],
+                'profit' => $totauxPrec['profit'],
+                'documents' => $totauxPrec['documents'],
+                'expenses' => $chargesPrec['total'],
+                'net_result' => round($totauxPrec['profit'] - $chargesPrec['total'], 2),
+            ],
             'by_warehouse' => $benefices->parLieu($du, $au),
             'by_customer' => $benefices->parClient($du, $au),
             'by_product' => $benefices->parArticle($du, $au),
@@ -190,7 +219,19 @@ final class ReportController extends Controller
                 $donnees['totals']['profit'],
                 $donnees['totals']['margin_percent'],
                 $donnees['missing_cost'],
+                // Le résultat net se ramène au bénéfice dès qu'on connaît les
+                // charges : le laisser passer contournerait la permission.
+                $donnees['net_result'],
+                $donnees['previous']['cost'],
+                $donnees['previous']['profit'],
+                $donnees['previous']['net_result'],
             );
+
+            $donnees['series'] = array_map(static function (array $jour): array {
+                unset($jour['cost'], $jour['profit']);
+
+                return $jour;
+            }, $donnees['series']);
 
             foreach (['by_warehouse', 'by_customer', 'by_product', 'by_supplier'] as $bloc) {
                 $donnees[$bloc] = array_map(static function (array $ligne): array {

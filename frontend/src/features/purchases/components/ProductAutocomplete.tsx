@@ -2,6 +2,7 @@ import { Loader2, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useProductAutoComplete } from '../hooks'
 import type { ProductOption } from '../api/purchaseOrdersApi'
 
@@ -12,16 +13,6 @@ interface ProductAutocompleteProps {
   exclude?: number[]
   warehouseId?: number
   placeholder?: string
-}
-
-/** Valeur retardée : évite une requête à chaque frappe. */
-function useDebouncedValue(value: string, delayMs: number): string {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delayMs)
-    return () => clearTimeout(timer)
-  }, [value, delayMs])
-  return debounced
 }
 
 export function ProductAutocomplete({

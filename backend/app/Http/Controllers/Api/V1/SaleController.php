@@ -15,7 +15,12 @@ use App\Domain\Sales\Actions\ConfirmSaleAction;
 use App\Domain\Sales\Models\Sale;
 use App\Domain\Stock\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
+use App\Exports\ArrayExport;
 use App\Support\Documents\DocumentNumberGeneratorInterface;
+use App\Support\Export\HtmlTable;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,18 +82,34 @@ final class SaleController extends Controller
         }
     }
 
-    public function index(Request $request): JsonResponse
+    /**
+     * Filtres communs a la liste et aux exports.
+     *
+     * Un export qui ne filtrerait pas comme l'ecran produirait un fichier
+     * different de ce que l'utilisateur a sous les yeux — et le cloisonnement
+     * par vendeur sauterait avec.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<Sale>  $q
+     * @return \Illuminate\Database\Eloquent\Builder<Sale>
+     */
+    private function appliquerFiltres(Request $request, $q)
     {
-        $sales = Sale::query()
-            ->with(['customer:id,code,name', 'warehouse:id,code'])
-            ->withCount('lines')
+        return $q
             // Cloisonnement vendeur : ses ventes + celles de ses clients.
-            ->when(! $this->hasGlobalView($request), fn ($q) => $this->scopeToSeller($request, $q))
+            ->when(! $this->hasGlobalView($request), fn ($x) => $this->scopeToSeller($request, $x))
             ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->where('type', $request->string('type')->value()))
             ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
             ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
-            ->when($request->string('search')->isNotEmpty(), fn ($q) => $q->where('reference', 'like', '%'.$request->string('search')->value().'%'))
+            // On cherche une vente par sa reference ou par son client :
+            // limiter a la reference obligerait a la connaitre par coeur.
+            ->when($request->string('search')->isNotEmpty(), function ($q) use ($request): void {
+                $terme = '%'.$request->string('search')->value().'%';
+                $q->where(function ($x) use ($terme): void {
+                    $x->where('reference', 'like', $terme)
+                        ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $terme)->orWhere('code', 'like', $terme));
+                });
+            })
             // Filtre par famille d'articles : la vente est retenue dès qu'une
             // de ses lignes en relève. Une vente mêlant deux familles apparaît
             // donc dans les deux — c'est voulu : on cherche « les ventes où il
@@ -101,7 +122,16 @@ final class SaleController extends Controller
                 ),
             ))
             ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '>=', $request->string('date_from')->value()))
-            ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()))
+            ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()));
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        // « user » : qui a saisi la vente. Charge ici pour eviter une requete
+        // par ligne affichee.
+        $sales = $this->appliquerFiltres($request, Sale::query()
+            ->with(['customer:id,code,name', 'warehouse:id,code', 'user:id,name'])
+            ->withCount('lines'))
             ->orderByDesc('id')
             ->paginate(in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20);
 
@@ -110,6 +140,13 @@ final class SaleController extends Controller
             ->whereNotNull('quote_id')
             ->pluck('quote_id')
             ->all();
+
+        // Savoir qui a saisi une vente releve du pilotage, pas du comptoir :
+        // la colonne n'est servie qu'a la direction. On s'appuie sur la seule
+        // vue multi-lieux, pas sur « hasGlobalView » qui accepte aussi
+        // « customer.view_all » — un responsable de lieu la possede, et il
+        // aurait vu qui a saisi quoi.
+        $voitLesAuteurs = $request->user()?->can('stock.view_global') ?? false;
 
         $sales->through(fn (Sale $s): array => [
             'id' => $s->id,
@@ -125,6 +162,7 @@ final class SaleController extends Controller
             'quote_id' => $s->quote_id,
             'converted' => $s->type === Sale::TYPE_QUOTE && in_array($s->id, $convertedQuoteIds, true),
             'created_at' => $s->created_at?->format('Y-m-d H:i'),
+            'created_by' => $voitLesAuteurs ? $s->user?->name : null,
         ]);
 
         return response()->json([
@@ -136,6 +174,438 @@ final class SaleController extends Controller
                 'total' => $sales->total(),
             ],
         ]);
+    }
+
+    /**
+     * Journal des ventes : une ligne par jour, avec les documents du jour.
+     *
+     * La liste paginée ne dit pas ce qu'a pesé une journée — il faudrait
+     * additionner de tête sur plusieurs pages. Le journal agrège côté
+     * serveur, sur l'ensemble filtré et non sur la page courante.
+     *
+     * Mêmes filtres et même cloisonnement que la liste : un vendeur ne voit
+     * dans son journal que ce qu'il voit dans sa liste.
+     */
+    /**
+     * GET /sales/export?format=pdf|xlsx — le tableau tel qu'il est affiche.
+     */
+    /**
+     * Bilan d'un lieu sur la periode filtree : ventes, credit clients, charges
+     * et reste en caisse. Il suit les memes filtres que la liste, pour que le
+     * total lu corresponde aux lignes affichees.
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $request->validate([
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+        ]);
+
+        $lieu = $request->integer('warehouse_id');
+        $du = $request->string('date_from')->value();
+        $au = $request->string('date_to')->value();
+
+        $ventes = $this->appliquerFiltres($request, Sale::query())
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->selectRaw('COUNT(*) as nb, COALESCE(SUM(total),0) as ca, COALESCE(SUM(paid_amount),0) as encaisse')
+            ->first();
+
+        $ca = round((float) ($ventes?->ca ?? 0), 2);
+        $encaisse = round((float) ($ventes?->encaisse ?? 0), 2);
+
+        $charges = \App\Domain\Expenses\Models\Expense::query()
+            ->where('warehouse_id', $lieu)
+            ->where('status', '!=', 'rejected')
+            ->when($du !== '', fn ($q) => $q->whereDate('expense_date', '>=', $du))
+            ->when($au !== '', fn ($q) => $q->whereDate('expense_date', '<=', $au))
+            ->selectRaw('COUNT(*) as nb, COALESCE(SUM(amount),0) as total')
+            ->first();
+
+        // Encours actuel des clients ayant achete dans ce lieu : il vit sur la
+        // fiche client, sans date.
+        $encours = (float) DB::table('customers')
+            ->whereIn('id', DB::table('sales')->select('customer_id')->where('warehouse_id', $lieu)->whereNotNull('customer_id'))
+            ->where('balance', '>', 0)
+            ->sum('balance');
+
+        $debut = $du !== '' ? \Illuminate\Support\Carbon::parse($du)->startOfDay() : \Illuminate\Support\Carbon::create(2000, 1, 1);
+        $fin = $au !== '' ? \Illuminate\Support\Carbon::parse($au)->endOfDay() : now();
+        $caisse = app(\App\Domain\Sales\Services\CashBoxService::class)->soldePeriode($lieu, $debut, $fin);
+
+        return response()->json(['data' => [
+            'sales' => [
+                'count' => (int) ($ventes?->nb ?? 0),
+                'total' => $ca,
+                'collected' => $encaisse,
+                'credit' => round($ca - $encaisse, 2),
+            ],
+            'customers_balance' => round($encours, 2),
+            'expenses' => [
+                'count' => (int) ($charges?->nb ?? 0),
+                'total' => round((float) ($charges?->total ?? 0), 2),
+            ],
+            'cash' => $caisse,
+        ]]);
+    }
+
+    public function export(Request $request): BinaryFileResponse|HttpResponse|JsonResponse
+    {
+        $ventes = $this->appliquerFiltres($request, Sale::query()
+            ->with(['customer:id,code,name', 'warehouse:id,code', 'user:id,name'])
+            ->withCount('lines'))
+            ->orderByDesc('id')
+            ->get();
+
+        $voitLesAuteurs = $request->user()?->can('stock.view_global') ?? false;
+
+        $headings = ['Reference', 'Date et heure', 'Type', 'Statut', 'Client', 'Lieu',
+            'Lignes', 'Total (DH)', 'Paye (DH)', 'Reste (DH)', 'Reglement'];
+        if ($voitLesAuteurs) {
+            $headings[] = 'Saisie par';
+        }
+
+        $rows = $ventes->map(fn (Sale $v): array => array_merge([
+            $v->reference,
+            $v->created_at?->format('d/m/Y H:i') ?? '',
+            $this->libelleType($v->type),
+            $this->libelleStatut($v->status),
+            $v->customer?->name ?? 'Comptoir',
+            $v->warehouse?->code ?? '',
+            $v->lines_count,
+            number_format((float) $v->total, 2, '.', ''),
+            number_format((float) $v->paid_amount, 2, '.', ''),
+            number_format(max((float) $v->total - (float) $v->paid_amount, 0), 2, '.', ''),
+            $this->libelleReglement($v->payment_status),
+        ], $voitLesAuteurs ? [$v->user?->name ?? ''] : []))->values()->all();
+
+        $titre = 'Ventes'.$this->suffixePeriode($request);
+
+        if ($request->string('format')->value() === 'pdf') {
+            if (($refus = $this->refuserPdfTropLong(count($rows))) !== null) {
+                return $refus;
+            }
+
+            return Pdf::loadHtml(HtmlTable::render($titre, $headings, $rows))
+                ->setPaper('a4', 'landscape')
+                ->download('IGOUTECH_ventes.pdf');
+        }
+
+        return Excel::download(new ArrayExport($headings, $rows), 'IGOUTECH_ventes.xlsx');
+    }
+
+    /**
+     * GET /sales/lines/export?date_from&date_to&format — une ligne par article vendu.
+     *
+     * Le prix d'achat est celui que porte la fiche AUJOURD'HUI : la ligne de
+     * vente n'enregistre pas le cout du jour de la vente. Sur un article dont
+     * le prix d'achat a change depuis, la marge affichee est donc celle que
+     * l'on ferait en revendant maintenant, pas celle realisee a l'epoque.
+     */
+    public function linesExport(Request $request): BinaryFileResponse|HttpResponse|JsonResponse
+    {
+        $ventes = $this->appliquerFiltres($request, Sale::query()
+            ->with(['customer:id,code,name', 'warehouse:id,code', 'lines.product:id,sku,name,cost_price']))
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        $headings = ['Date et heure', 'Reference', 'Client', 'Lieu',
+            'Reference article', 'Article', 'Quantite vendue', 'Prix de vente (DH)',
+            'Total vente (DH)', "Prix d'achat (DH)", "Total achat (DH)",
+            'Benefice unitaire (DH)', 'Benefice total (DH)', 'Statut'];
+
+        $rows = [];
+
+        // Les totaux sont tenus par statut : melanger une vente annulee aux
+        // ventes reelles gonflerait le chiffre d'affaires d'une marchandise
+        // qui est revenue en stock. Chaque statut a donc son bilan.
+        $bilans = [];
+        $bilanVide = ['ventes' => [], 'lignes' => 0, 'quantite' => 0, 'vente' => 0.0, 'achat' => 0.0];
+
+        foreach ($ventes as $v) {
+            $statut = (string) $v->status;
+            $bilans[$statut] ??= $bilanVide;
+
+            foreach ($v->lines as $l) {
+                $quantite = (int) $l->quantity;
+                $prixVente = round((float) $l->unit_price, 2);
+                $totalLigne = round((float) $l->line_total, 2);
+                $prixAchat = round((float) ($l->product->cost_price ?? 0), 2);
+                $achatLigne = round($quantite * $prixAchat, 2);
+                $beneficeUnitaire = round($prixVente - $prixAchat, 2);
+                $beneficeLigne = round($totalLigne - $achatLigne, 2);
+
+                $bilans[$statut]['ventes'][$v->id] = true;
+                $bilans[$statut]['lignes']++;
+                $bilans[$statut]['quantite'] += $quantite;
+                $bilans[$statut]['vente'] += $totalLigne;
+                $bilans[$statut]['achat'] += $achatLigne;
+
+                // Sans prix d'achat connu, le benefice n'est pas calculable :
+                // afficher zero laisserait croire a une vente a prix coutant.
+                $connu = $prixAchat > 0;
+
+                $rows[] = [
+                    $v->created_at?->format('d/m/Y H:i') ?? '',
+                    $v->reference,
+                    $v->customer?->name ?? 'Comptoir',
+                    $v->warehouse?->code ?? '',
+                    $l->product?->sku ?? '',
+                    $l->product?->name ?? '',
+                    $quantite,
+                    number_format($prixVente, 2, '.', ''),
+                    number_format($totalLigne, 2, '.', ''),
+                    $connu ? number_format($prixAchat, 2, '.', '') : '',
+                    $connu ? number_format($achatLigne, 2, '.', '') : '',
+                    $connu ? number_format($beneficeUnitaire, 2, '.', '') : '',
+                    $connu ? number_format($beneficeLigne, 2, '.', '') : '',
+                    $this->libelleStatut($v->status),
+                ];
+            }
+        }
+
+        // La synthese, en bas du tableau. Une ligne vide l'en detache pour
+        // qu'elle ne se lise pas comme une vente de plus.
+        $vide = array_fill(0, count($headings), '');
+        $bilan = function (string $libelle, string $valeur) use ($headings): array {
+            $ligne = array_fill(0, count($headings), '');
+            $ligne[0] = $libelle;
+            $ligne[count($headings) - 2] = $valeur;
+
+            return $ligne;
+        };
+
+        // Les confirmees d'abord : ce sont elles qui font le resultat. Les
+        // annulees suivent, pour memoire — on veut savoir combien de ventes
+        // ont ete defaites et quel benefice a ete perdu avec.
+        $ordre = [
+            Sale::STATUS_CONFIRMED => 'VENTES CONFIRMEES',
+            Sale::STATUS_CANCELLED => 'VENTES ANNULEES',
+            'draft' => 'BROUILLONS (non valides)',
+        ];
+
+        foreach ($ordre as $statut => $titreBloc) {
+            $b = $bilans[$statut] ?? null;
+
+            // Un statut absent de la periode ne merite pas un bloc de zeros.
+            if ($b === null) {
+                continue;
+            }
+
+            $beneficeBloc = round($b['vente'] - $b['achat'], 2);
+
+            $rows[] = $vide;
+            $rows[] = $bilan($titreBloc, '');
+            $rows[] = $bilan('   Nombre de ventes', (string) count($b['ventes']));
+            $rows[] = $bilan('   Nombre de lignes', (string) $b['lignes']);
+            $rows[] = $bilan('   Quantite vendue', (string) $b['quantite']);
+            $rows[] = $bilan('   Total des ventes', number_format($b['vente'], 2, '.', ''));
+            $rows[] = $bilan("   Total des prix d'achat", number_format($b['achat'], 2, '.', ''));
+            $rows[] = $bilan('   Total des benefices', number_format($beneficeBloc, 2, '.', ''));
+
+            // Les 30 % ne se calculent que sur ce qui a ete reellement vendu :
+            // une part d'un benefice annule ne se verse pas.
+            if ($statut === Sale::STATUS_CONFIRMED) {
+                $rows[] = $bilan('   30 % DU BENEFICE', number_format(round($beneficeBloc * 0.30, 2), 2, '.', ''));
+            }
+        }
+
+        $titre = 'Detail des ventes, ligne par ligne'.$this->suffixePeriode($request);
+
+        if ($request->string('format')->value() === 'pdf') {
+            if (($refus = $this->refuserPdfTropLong(count($rows))) !== null) {
+                return $refus;
+            }
+
+            return Pdf::loadHtml(HtmlTable::render($titre, $headings, $rows))
+                ->setPaper('a4', 'landscape')
+                ->download('IGOUTECH_ventes-detail.pdf');
+        }
+
+        return Excel::download(new ArrayExport($headings, $rows), 'IGOUTECH_ventes-detail.xlsx');
+    }
+
+    /**
+     * Refuse un PDF trop volumineux plutot que de laisser le serveur tomber.
+     *
+     * dompdf compose la page entiere en memoire : au-dela de quelques
+     * milliers de lignes il epuise la limite php et la requete meurt sans
+     * message. Excel n'a pas cette limite — on y renvoie.
+     */
+    private function refuserPdfTropLong(int $lignes): ?JsonResponse
+    {
+        $plafond = $this->plafondPdf();
+
+        if ($lignes <= $plafond) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => "Cet export represente {$lignes} lignes : c'est plus que ce que la "
+                ."composition d'un PDF peut tenir en memoire sur ce serveur (limite : {$plafond} "
+                ."lignes). Resserrez la periode, ou choisissez l'export Excel, qui n'a pas cette limite.",
+            'lines' => $lignes,
+            'limit' => $plafond,
+        ], 422);
+    }
+
+    /**
+     * Nombre de lignes qu'un PDF peut tenir, deduit de la memoire allouee.
+     *
+     * Le plafond etait ecrit en dur. Il ne pouvait qu'etre faux : la memoire
+     * accordee a PHP depend du serveur, et une valeur figee laissait soit des
+     * exports refuses pour rien, soit — bien pire — des requetes tuees sans
+     * message, l'utilisateur ne voyant qu'un « Server Error ».
+     *
+     * Mesure sur ce serveur : 100 lignes tiennent dans 72 Mo, 200 dans 122,
+     * 300 dans 166, 500 dans 302. Soit environ 0,6 Mo par ligne au-dela d'une
+     * base de 25 Mo. On ne s'autorise que 75 % de la memoire : le reste sert a
+     * Laravel, a la requete et a la reponse.
+     */
+    private function plafondPdf(): int
+    {
+        $limite = $this->memoireAlloueeEnMo();
+
+        // Sans limite declaree (-1), on plafonne quand meme : composer 10 000
+        // lignes prendrait des minutes et immobiliserait le serveur.
+        if ($limite <= 0) {
+            return 1000;
+        }
+
+        $utilisable = ($limite * 0.75) - 25;
+
+        return max(50, (int) floor($utilisable / 0.6));
+    }
+
+    private function memoireAlloueeEnMo(): int
+    {
+        $brut = trim((string) ini_get('memory_limit'));
+
+        if ($brut === '' || $brut === '-1') {
+            return -1;
+        }
+
+        $valeur = (int) $brut;
+
+        return match (strtoupper(substr($brut, -1))) {
+            'G' => $valeur * 1024,
+            'M' => $valeur,
+            'K' => intdiv($valeur, 1024),
+            default => intdiv($valeur, 1048576),
+        };
+    }
+
+    /**
+     * « du 01/09/2026 au 08/09/2026 », ou rien si aucune borne n'est posee.
+     * Un export sans sa periode ne se relit pas trois mois plus tard.
+     */
+    private function suffixePeriode(Request $request): string
+    {
+        $du = $request->string('date_from')->value();
+        $au = $request->string('date_to')->value();
+
+        if ($du === '' && $au === '') {
+            return '';
+        }
+
+        $format = static fn (string $d): string => $d !== ''
+            ? \Carbon\Carbon::parse($d)->format('d/m/Y')
+            : '';
+
+        if ($du !== '' && $au !== '') {
+            return ' du '.$format($du).' au '.$format($au);
+        }
+
+        return $du !== '' ? ' depuis le '.$format($du) : " jusqu'au ".$format($au);
+    }
+
+    private function libelleType(?string $type): string
+    {
+        return match ($type) {
+            'invoice' => 'Facture',
+            'ticket' => 'Ticket',
+            'quote' => 'Devis',
+            default => (string) $type,
+        };
+    }
+
+    private function libelleStatut(?string $statut): string
+    {
+        return match ($statut) {
+            'draft' => 'Brouillon',
+            'confirmed' => 'Confirmee',
+            'cancelled' => 'Annulee',
+            default => (string) $statut,
+        };
+    }
+
+    private function libelleReglement(?string $statut): string
+    {
+        return match ($statut) {
+            'paid' => 'Paye',
+            'partial' => 'Partiel',
+            'unpaid' => 'Non paye',
+            default => (string) $statut,
+        };
+    }
+
+    public function journal(Request $request): JsonResponse
+    {
+        $base = fn () => Sale::query()
+            ->when(! $this->hasGlobalView($request), fn ($q) => $this->scopeToSeller($request, $q))
+            ->where('type', Sale::TYPE_INVOICE)
+            ->when($request->string('status')->isNotEmpty(), fn ($q) => $q->where('status', $request->string('status')->value()))
+            ->when($request->integer('customer_id') > 0, fn ($q) => $q->where('customer_id', $request->integer('customer_id')))
+            ->when($request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
+            ->when($request->integer('category_id') > 0, fn ($q) => $q->whereHas(
+                'lines',
+                fn ($l) => $l->whereHas(
+                    'product',
+                    fn ($p) => $p->where('category_id', $request->integer('category_id')),
+                ),
+            ))
+            ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '>=', $request->string('date_from')->value()))
+            ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()));
+
+        // Un devis n'est pas une vente : le journal ne compte que les
+        // factures, sinon les totaux annonceraient un CA qui n'existe pas.
+        $jours = $base()
+            ->selectRaw('DATE(created_at) as jour, COUNT(*) as documents,
+                         COALESCE(SUM(total), 0) as ca,
+                         COALESCE(SUM(paid_amount), 0) as encaisse')
+            ->groupByRaw('DATE(created_at)')
+            ->orderByDesc('jour')
+            ->limit(120)
+            ->get();
+
+        $lignes = $jours->map(fn (Sale $j): array => [
+            'date' => (string) $j->getAttribute('jour'),
+            'documents' => (int) $j->getAttribute('documents'),
+            'revenue' => round((float) $j->getAttribute('ca'), 2),
+            'collected' => round((float) $j->getAttribute('encaisse'), 2),
+            'credit' => round((float) $j->getAttribute('ca') - (float) $j->getAttribute('encaisse'), 2),
+        ])->all();
+
+        // Les totaux portent sur tout le filtre, pas sur les 120 jours
+        // affichés : un total qui ne couvre que l'écran ment.
+        $totaux = $base()
+            ->selectRaw('COUNT(*) as documents, COALESCE(SUM(total), 0) as ca, COALESCE(SUM(paid_amount), 0) as encaisse')
+            ->first();
+
+        $ca = round((float) ($totaux?->getAttribute('ca') ?? 0), 2);
+        $encaisse = round((float) ($totaux?->getAttribute('encaisse') ?? 0), 2);
+
+        return response()->json(['data' => [
+            'days' => $lignes,
+            'totals' => [
+                'documents' => (int) ($totaux?->getAttribute('documents') ?? 0),
+                'revenue' => $ca,
+                'collected' => $encaisse,
+                'credit' => round($ca - $encaisse, 2),
+            ],
+        ]]);
     }
 
     /**
@@ -163,7 +633,7 @@ final class SaleController extends Controller
 
     /** @var Product $product */
         $product = Product::query()->findOrFail((int) $data['product_id']);
-        $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
+        $floor = $margins->floorPrice($cost->purchaseCost($product), 0.0);
 
         // Le plancher EST le prix d'achat (marge minimale nulle) : le renvoyer
         // à qui n'a pas le droit de consulter les coûts revenait à publier le
@@ -264,7 +734,7 @@ final class SaleController extends Controller
 
             /** @var Product $product */
             $product = Product::query()->findOrFail($line['product_id']);
-            $floor = $margins->floorPrice($cost->unitCost($product), 0.0);
+            $floor = $margins->floorPrice($cost->purchaseCost($product), 0.0);
 
             if ($unitPrice < $floor && ! $peutVendreSousPlancher) {
                 // Le plancher est le prix d'achat : l'écrire dans le message
@@ -581,6 +1051,10 @@ final class SaleController extends Controller
             'paid_amount' => (float) $sale->paid_amount,
             'payment_status' => $sale->payment_status,
             'confirmed_at' => $sale->confirmed_at?->format('Y-m-d H:i'),
+            // Date ET heure de saisie : une facture confirmee le
+            // lendemain de sa creation ne se distingue pas autrement.
+            'created_at' => $sale->created_at?->format('Y-m-d H:i'),
+            'updated_at' => $sale->updated_at?->format('Y-m-d H:i'),
             'note' => $sale->note,
             'lines' => $sale->lines->map(fn ($l): array => [
                 // Nécessaire à la modification d'un brouillon : sans lui,

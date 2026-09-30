@@ -11,7 +11,7 @@ import { Select } from '@/components/ui/Select'
 import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { usePermission } from '@/hooks/usePermission'
-import { cn } from '@/lib/utils'
+import { cn, formatDateHeure } from '@/lib/utils'
 import { formatNumber } from '@/lib/utils'
 import { exportMatrix, exportStock, ISSUE_REASONS, searchProducts, type IssueLine, type ProductLite } from '../api/stockApi'
 import { useEntryStock, useIssueStock, useMatrix, useMovements, useMovementTypes, useStock } from '../hooks'
@@ -168,7 +168,7 @@ export function StockPage() {
 }
 
 function StockByWarehouse({ warehouseId }: { warehouseId: number | null }) {
-  // Le coût moyen est le prix d'achat : la colonne « Valeur » n'existe que
+  // Le coût affiché est le coût d'achat : la colonne « Valeur » n'existe que
   // pour qui a le droit de le consulter.
   const voitLesCouts = usePermission()('product.view_cost_price')
   const [q, setQ] = useState('')
@@ -427,7 +427,7 @@ function MovementsJournal({ warehouseId }: { warehouseId: number | null }) {
               ) : (
                 rows.map((m) => (
                   <tr key={m.id} className="border-b border-line last:border-0">
-                    <td className="px-5 py-3 text-muted">{new Date(m.created_at).toLocaleString('fr-FR')}</td>
+                    <td className="px-5 py-3 text-muted">{formatDateHeure(m.created_at)}</td>
                     <td className="px-5 py-3 text-ink">
                       <span className="mono text-xs text-faint">{m.sku}</span> {m.name}
                     </td>

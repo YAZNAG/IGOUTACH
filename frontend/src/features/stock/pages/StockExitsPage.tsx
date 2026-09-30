@@ -71,7 +71,7 @@ export function StockExitsPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink">Sorties de stock</h1>
           <p className="text-sm text-muted">
-            Un mouvement par ligne : ventes, transferts expédiés, régularisations négatives — valorisés au CMUP.
+            Un mouvement par ligne : ventes, transferts expédiés, régularisations négatives — valorisés au coût constaté à la sortie.
           </p>
         </div>
         <div className="flex gap-2">
@@ -157,7 +157,7 @@ export function StockExitsPage() {
                     <th className="px-4 py-3 font-medium">Lieu</th>
                     <th className="px-4 py-3 font-medium">Article</th>
                     <th className="px-4 py-3 text-right font-medium">Qté</th>
-                    <th className="px-4 py-3 text-right font-medium">CMUP (DH)</th>
+                    <th className="px-4 py-3 text-right font-medium">Coût unitaire (DH)</th>
                     <th className="px-4 py-3 text-right font-medium">Valeur</th>
                     <th className="px-4 py-3 text-right font-medium">Solde après</th>
                     <th className="px-4 py-3 text-right font-medium">Actions</th>

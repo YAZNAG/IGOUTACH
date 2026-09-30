@@ -1,7 +1,8 @@
 import { api } from '@/lib/api'
 import type { StockEntryFilters, StockEntryList, StockEntryRow } from './stockEntriesApi'
 
-// Les sorties partagent la forme des entrées (mêmes colonnes, valorisation au CMUP).
+// Les sorties partagent la forme des entrées (mêmes colonnes, valorisées au
+// coût constaté au moment du mouvement).
 export type StockExitRow = StockEntryRow
 export type StockExitList = StockEntryList
 export interface StockExitFilters extends StockEntryFilters {

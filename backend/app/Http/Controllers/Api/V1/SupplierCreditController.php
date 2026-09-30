@@ -91,6 +91,61 @@ final class SupplierCreditController extends Controller
     }
 
     /**
+     * Journal de tous les règlements fournisseurs, tous fournisseurs confondus.
+     * GET /supplier-payments?supplier_id=&date_from=&date_to=&payment_method_id=
+     *
+     * L'historique par fournisseur existe déjà, mais il oblige à ouvrir un
+     * fournisseur à la fois : impossible de répondre à « qu'a-t-on payé cette
+     * semaine ». Ce journal couvre la période, pas un tiers.
+     */
+    public function paymentsJournal(Request $request): JsonResponse
+    {
+        $filtres = fn ($q) => $q
+            ->when($request->integer('supplier_id') > 0, fn ($x) => $x->where('supplier_id', $request->integer('supplier_id')))
+            ->when($request->integer('payment_method_id') > 0, fn ($x) => $x->where('payment_method_id', $request->integer('payment_method_id')))
+            ->when($request->string('date_from')->isNotEmpty(), fn ($x) => $x->whereDate('paid_at', '>=', $request->string('date_from')->value()))
+            ->when($request->string('date_to')->isNotEmpty(), fn ($x) => $x->whereDate('paid_at', '<=', $request->string('date_to')->value()));
+
+        $paiements = $filtres(SupplierPayment::query()
+            ->with([
+                'paymentMethod:id,name',
+                'createdBy:id,name',
+                'goodsReceipt:id,number',
+                'supplier:id,code,name',
+            ]))
+            ->orderByDesc('paid_at')
+            ->orderByDesc('id')
+            ->limit(300)
+            ->get()
+            ->map(fn (SupplierPayment $p): array => [
+                'id' => $p->id,
+                'supplier' => $p->supplier?->name,
+                'supplier_id' => $p->supplier_id,
+                'goods_receipt' => $p->goodsReceipt?->number,
+                'goods_receipt_id' => $p->goods_receipt_id,
+                'amount' => (float) $p->amount,
+                'paid_at' => $p->paid_at->format('Y-m-d'),
+                'created_at' => $p->created_at?->format('Y-m-d H:i'),
+                'payment_method' => $p->paymentMethod?->name,
+                'notes' => $p->notes,
+                'created_by' => $p->createdBy?->name,
+            ]);
+
+        // Le total porte sur toute la période filtrée, pas sur les 300 lignes
+        // affichées : autrement il annoncerait moins que la réalité.
+        $totaux = $filtres(SupplierPayment::query())
+            ->selectRaw('COUNT(*) as nb, COALESCE(SUM(amount), 0) as montant')
+            ->first();
+
+        return response()->json(['data' => [
+            'rows' => $paiements->all(),
+            'count' => (int) ($totaux?->getAttribute('nb') ?? 0),
+            'total_paid' => round((float) ($totaux?->getAttribute('montant') ?? 0), 2),
+            'truncated' => (int) ($totaux?->getAttribute('nb') ?? 0) > $paiements->count(),
+        ]]);
+    }
+
+    /**
      * Historique de tous les règlements d'un fournisseur.
      * GET /suppliers/{supplierId}/payments
      */
@@ -110,6 +165,7 @@ final class SupplierCreditController extends Controller
                 ] : null,
                 'amount' => (float) $payment->amount,
                 'paid_at' => $payment->paid_at->format('Y-m-d'),
+                'created_at' => $payment->created_at?->format('Y-m-d H:i'),
                 'payment_method' => $payment->paymentMethod?->name,
                 'notes' => $payment->notes,
                 'created_by' => $payment->createdBy?->name,
@@ -137,6 +193,7 @@ final class SupplierCreditController extends Controller
                 'id' => $payment->id,
                 'amount' => (float) $payment->amount,
                 'paid_at' => $payment->paid_at->format('Y-m-d'),
+                'created_at' => $payment->created_at?->format('Y-m-d H:i'),
                 'payment_method' => $payment->paymentMethod?->name,
                 'notes' => $payment->notes,
                 'created_by' => $payment->createdBy?->name,
