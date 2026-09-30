@@ -53,12 +53,59 @@ final class CashBoxService
     }
 
     /**
+     * Mouvements du tiroir d'un lieu sur une période libre (hors fonds de
+     * caisse) : ce qui est entré en espèces, sorti en charges et remis.
+     *
+     * @return array{cash_in: float, cash_expenses: float, remitted: float, remaining: float}
+     */
+    public function soldePeriode(int $warehouseId, Carbon $debut, Carbon $fin): array
+    {
+        $entrees = $this->encaissementsEspeces($warehouseId, $debut, $fin);
+        $charges = $this->chargesEspeces($warehouseId, $debut, $fin);
+        $remises = $this->remises($warehouseId, $debut, $fin);
+
+        return [
+            'cash_in' => round($entrees, 2),
+            'cash_expenses' => round($charges, 2),
+            'remitted' => round($remises, 2),
+            'remaining' => round($entrees - $charges - $remises, 2),
+        ];
+    }
+
+    /**
      * Encaissements en espèces rattachés au lieu.
      *
      * Un règlement suit sa facture ; sans facture, il suit celui qui l'a pris,
      * donc son lieu de rattachement.
      */
     private function encaissementsEspeces(int $warehouseId, Carbon $debut, ?Carbon $fin): float
+    {
+        return $this->reglementsEspeces($warehouseId, $debut, $fin)
+            + $this->ventesComptoir($warehouseId, $debut, $fin);
+    }
+
+    /**
+     * Ventes au client de passage.
+     *
+     * Sans fiche client, la vente est reputee payee comptant a sa validation,
+     * mais aucun reglement n'est enregistre (un reglement exige un client) :
+     * la caisse les ignorait, et le tiroir contenait plus que le solde
+     * affiche. Elles comptent ici, a leur date de validation.
+     */
+    private function ventesComptoir(int $warehouseId, Carbon $debut, ?Carbon $fin): float
+    {
+        return (float) DB::table('sales')
+            ->where('warehouse_id', $warehouseId)
+            ->whereNull('customer_id')
+            ->where('type', 'invoice')
+            ->where('status', 'confirmed')
+            ->where('confirmed_at', '>=', $debut)
+            ->when($fin !== null, fn ($q) => $q->where('confirmed_at', '<=', $fin))
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('payments')->whereColumn('payments.sale_id', 'sales.id'))
+            ->sum('paid_amount');
+    }
+
+    private function reglementsEspeces(int $warehouseId, Carbon $debut, ?Carbon $fin): float
     {
         return (float) DB::table('payments')
             ->join('payment_methods', 'payment_methods.id', '=', 'payments.payment_method_id')
@@ -106,6 +153,9 @@ final class CashBoxService
     {
         return (float) CashRemittance::withoutGlobalScopes()
             ->where('warehouse_id', $warehouseId)
+            // Un transfert refuse n'a jamais quitte le tiroir : la somme
+            // revient au lieu, qui doit la retrouver dans son solde.
+            ->where('status', '!=', CashRemittance::STATUS_REFUSED)
             ->where('created_at', '>=', $debut)
             ->when($fin !== null, fn ($q) => $q->where('created_at', '<=', $fin))
             ->sum('amount');

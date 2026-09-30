@@ -11,6 +11,9 @@ class CashSession {
     this.expectedAmount,
     this.difference,
     required this.status,
+    this.cashIn,
+    this.cashExpenses,
+    this.remitted,
   });
 
   final int id;
@@ -32,6 +35,12 @@ class CashSession {
   /// `open` ou `closed`.
   final String status;
 
+  /// Mouvements de la journée, servis par le serveur pour une session close :
+  /// encaissements en espèces, charges payées de la main à la main, remises.
+  final double? cashIn;
+  final double? cashExpenses;
+  final double? remitted;
+
   bool get isOpen => status == 'open';
 
   /// Encaissements de la session, déduits de l'attendu (connus à la clôture
@@ -50,5 +59,8 @@ class CashSession {
         expectedAmount: (json['expected_amount'] as num?)?.toDouble(),
         difference: (json['difference'] as num?)?.toDouble(),
         status: json['status'] as String? ?? 'open',
+        cashIn: (json['cash_in'] as num?)?.toDouble(),
+        cashExpenses: (json['cash_expenses'] as num?)?.toDouble(),
+        remitted: (json['remitted'] as num?)?.toDouble(),
       );
 }

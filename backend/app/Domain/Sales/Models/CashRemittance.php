@@ -32,6 +32,14 @@ final class CashRemittance extends Model
     /** Confirmée reçue : la somme est sortie du lieu pour de bon. */
     public const STATUS_RECEIVED = 'received';
 
+    /**
+     * Refusée : la direction n'a pas reçu cette somme.
+     *
+     * L'argent revient au solde du lieu, mais la ligne demeure : c'est la
+     * trace du désaccord, et elle doit survivre à sa résolution.
+     */
+    public const STATUS_REFUSED = 'refused';
+
     protected $fillable = [
         'reference',
         'warehouse_id',
@@ -40,9 +48,13 @@ final class CashRemittance extends Model
         'remitted_at',
         'status',
         'note',
+        'proof_path',
         'created_by',
         'received_by',
         'received_at',
+        'refused_by',
+        'refused_at',
+        'refusal_reason',
     ];
 
     /**
@@ -62,6 +74,7 @@ final class CashRemittance extends Model
             'amount' => 'decimal:2',
             'remitted_at' => 'date',
             'received_at' => 'datetime',
+            'refused_at' => 'datetime',
         ];
     }
 
@@ -87,5 +100,13 @@ final class CashRemittance extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function refuser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'refused_by');
     }
 }

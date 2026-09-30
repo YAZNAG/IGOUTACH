@@ -10,6 +10,8 @@ import { StatTile } from '../components/StatTile'
 import { StockByWarehouseChart } from '../components/StockByWarehouseChart'
 import { chartColors } from '../components/chartTheme'
 import { useDashboard } from '../hooks'
+import { DemandesEnAttente } from '@/features/transfers/components/DemandesEnAttente'
+import { CaissesEtTransferts } from '../components/CaissesEtTransferts'
 
 function SkeletonBlock({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-line ${className ?? ''}`} />
@@ -29,8 +31,8 @@ export function DashboardPage() {
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {Array.from({ length: 4 }, (_, i) => (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+          {Array.from({ length: 5 }, (_, i) => (
             <SkeletonBlock key={i} className="h-[92px]" />
           ))}
         </div>
@@ -56,7 +58,17 @@ export function DashboardPage() {
         <p className="text-sm text-muted">Activité consolidée, tous lieux confondus.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* En tete, avant les chiffres : une demande en attente bloque un lieu,
+          elle appelle une action, pas une lecture. Le bloc s'efface quand
+          rien n'attend. */}
+      <DemandesEnAttente compact />
+
+      {/* L'argent des lieux : ce qu'ils detiennent, ce qu'ils annoncent avoir
+          remis. Un transfert non confirme est de l'argent dont personne ne
+          repond : il se traite ici, justificatif a l'appui. */}
+      <CaissesEtTransferts />
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatTile
           label="CA du mois"
           value={data.financial.revenue_month}
@@ -65,13 +77,16 @@ export function DashboardPage() {
           currency
           hint={`${formatNumber(data.financial.sales_month)} vente(s) facturée(s)`}
         />
+        {/* Une seule valorisation. Les deux cartes precedentes — coût moyen
+            et prix d'achat — donnaient deux chiffres pour le même stock, sans
+            dire lequel faisait foi. */}
         <StatTile
           label="Valeur du stock"
           value={data.financial.stock_value}
           icon={Wallet}
           tone="navy"
           currency
-          hint="Valorisée au coût moyen"
+          hint="Valorisée au coût d'achat"
         />
         <StatTile
           label="Encours clients"

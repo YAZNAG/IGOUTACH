@@ -62,6 +62,9 @@ final class CashRemittanceController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'remitted_at' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
+            // Photo du reçu, des billets comptés ou du bordereau : ce que le
+            // responsable montre pour dire « voici ce que j'ai remis ».
+            'proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
         $session = CashSession::withoutGlobalScopes()
@@ -86,8 +89,13 @@ final class CashRemittanceController extends Controller
             ], 422);
         }
 
+        $preuve = $request->hasFile('proof')
+            ? (string) $request->file('proof')->store('cash-remittances', 'public')
+            : null;
+
         $remise = CashRemittance::query()->create([
             'reference' => $numeros->next('cash_remittance'),
+            'proof_path' => $preuve,
             'warehouse_id' => $data['warehouse_id'],
             'cash_session_id' => $session?->id,
             'amount' => $data['amount'],
@@ -126,6 +134,39 @@ final class CashRemittanceController extends Controller
     }
 
     /**
+     * L'administration refuse : elle n'a pas reçu cette somme.
+     *
+     * Le montant revient au solde du lieu et la ligne reste dans l'historique
+     * avec son motif. Effacer le refus reviendrait à effacer le désaccord.
+     */
+    public function refuse(Request $request, CashRemittance $cashRemittance): JsonResponse
+    {
+        if ($cashRemittance->status !== CashRemittance::STATUS_PENDING) {
+            return response()->json([
+                'message' => 'Seul un transfert en attente peut être refusé.',
+            ], 422);
+        }
+
+        /** @var array{reason?: string|null} $data */
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $cashRemittance->update([
+            'status' => CashRemittance::STATUS_REFUSED,
+            'refused_by' => $request->user()?->id,
+            'refused_at' => now(),
+            'refusal_reason' => $data['reason'] ?? null,
+        ]);
+
+        return response()->json([
+            'data' => $this->serialize(
+                $cashRemittance->refresh()->load(['warehouse:id,code,name', 'creator:id,name', 'refuser:id,name']),
+            ),
+        ]);
+    }
+
+    /**
      * Annule une remise déclarée par erreur, tant qu'elle n'est pas confirmée.
      *
      * Une remise confirmée ne s'efface pas : la direction a compté l'argent,
@@ -156,11 +197,18 @@ final class CashRemittanceController extends Controller
             'warehouse_name' => $r->warehouse?->name,
             'amount' => (float) $r->amount,
             'remitted_at' => $r->remitted_at?->format('Y-m-d'),
+            'created_at' => $r->created_at?->format('Y-m-d H:i'),
             'status' => $r->status,
             'note' => $r->note,
             'created_by' => $r->creator?->name,
             'received_by' => $r->receiver?->name,
             'received_at' => $r->received_at?->format('Y-m-d H:i'),
+            // Le justificatif est servi comme celui des charges, depuis le
+            // disque public : l'administration le regarde avant de confirmer.
+            'proof_url' => $r->proof_path !== null ? url('storage/'.$r->proof_path) : null,
+            'refused_by' => $r->refuser?->name,
+            'refused_at' => $r->refused_at?->format('Y-m-d H:i'),
+            'refusal_reason' => $r->refusal_reason,
         ];
     }
 }

@@ -9,6 +9,8 @@ import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/cash_session.dart';
 import '../shared/warehouse_scope.dart';
+import 'cash_remittances_screen.dart';
+import 'cash_transfer_sheet.dart';
 
 /// Caisse : ouverture (fonds initial), session en cours, clôture avec écart
 /// et historique des sessions du lieu.
@@ -32,6 +34,10 @@ class _CashScreenState extends State<CashScreen> {
 
   /// Detail du solde renvoye avec la session : fonds, entrees, sorties.
   Map<String, dynamic>? _solde;
+
+  /// Reste de la derniere journee close : fonds propose au matin suivant.
+  double _resteDeLaVeille = 0;
+  Map<String, dynamic>? _derniereCloture;
 
   /// Remises declarees par ce lieu.
   List<Map<String, dynamic>> _remises = [];
@@ -88,6 +94,9 @@ class _CashScreenState extends State<CashScreen> {
       );
       final currentData = current.data!['data'] as Map<String, dynamic>?;
       final soldeData = current.data!['cash'] as Map<String, dynamic>?;
+      final reste =
+          (current.data!['suggested_opening'] as num?)?.toDouble() ?? 0;
+      final derniere = current.data!['last_closed'] as Map<String, dynamic>?;
 
       // L'historique et les remises dependent de droits distincts : un refus
       // sur l'un ne doit pas priver l'utilisateur de l'autre, ni de sa caisse.
@@ -121,6 +130,8 @@ class _CashScreenState extends State<CashScreen> {
         _current =
             currentData == null ? null : CashSession.fromJson(currentData);
         _solde = soldeData;
+        _resteDeLaVeille = reste;
+        _derniereCloture = derniere;
         _remises = remises;
         _history = data
             .map((e) => CashSession.fromJson(e as Map<String, dynamic>))
@@ -169,12 +180,23 @@ class _CashScreenState extends State<CashScreen> {
 
   // ── Ouverture / clôture ─────────────────────────────────────────────────
 
+  /// Ouvre la journée sur le reste de la veille.
+  ///
+  /// Le montant est proposé, pas imposé : si le tiroir ne contient pas ce que
+  /// la clôture d'hier annonçait, le responsable corrige — et l'écart se lit
+  /// alors dès l'ouverture, au lieu d'apparaître le soir sans explication.
   Future<void> _open() async {
+    final cloture = _derniereCloture;
     final amount = await _askAmount(
       title: 'Ouvrir la caisse',
       label: 'Fonds initial (DH)',
-      helper: 'Montant en caisse au début de la session.',
+      helper: cloture == null
+          ? 'Montant en caisse au début de la journée.'
+          : 'Reste de la journée précédente, clôturée le '
+              '${cloture['closed_at']} : ${formatMoney(_resteDeLaVeille)}. '
+              'Corrigez si le tiroir contient autre chose.',
       action: 'Ouvrir',
+      initial: _resteDeLaVeille > 0 ? _resteDeLaVeille : null,
     );
     if (amount == null || !mounted) return;
 
@@ -209,43 +231,23 @@ class _CashScreenState extends State<CashScreen> {
   /// ce que la caisse contient.
   Future<void> _remettre() async {
     final solde = (_solde?['expected'] as num?)?.toDouble() ?? 0;
-
-    final montant = await _askAmount(
-      title: 'Remettre à l\'administration',
-      label: 'Montant remis (DH)',
-      helper: 'Solde actuel de la caisse : ${formatMoney(solde)}.',
-      action: 'Remettre',
-      initial: solde > 0 ? solde : null,
-    );
-    if (montant == null || !mounted) return;
-
     final messenger = ScaffoldMessenger.of(context);
-    setState(() => _busy = true);
-    try {
-      final res = await _api.dio.post<Map<String, dynamic>>(
-        '/cash-remittances',
-        data: {'warehouse_id': _warehouseId, 'amount': montant},
-      );
-      final reference =
-          (res.data!['data'] as Map<String, dynamic>)['reference'] as String? ?? '';
-      if (!mounted) return;
-      setState(() => _busy = false);
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          'Remise $reference enregistrée. '
-          'Elle reste en attente jusqu\'à confirmation de l\'administration.',
-        ),
-        backgroundColor: AppTheme.success,
-      ));
-      await _load();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
-      messenger.showSnackBar(SnackBar(
-        content: Text(friendlyError(e)),
-        backgroundColor: AppTheme.danger,
-      ));
-    }
+
+    final cree = await TransfertCaisseSheet.ouvrir(
+      context,
+      warehouseId: _warehouseId!,
+      solde: solde,
+    );
+    if (!cree || !mounted) return;
+
+    messenger.showSnackBar(const SnackBar(
+      content: Text(
+        'Transfert déclaré. Il reste en attente jusqu\'à confirmation de '
+        'l\'administration.',
+      ),
+      backgroundColor: AppTheme.success,
+    ));
+    await _load();
   }
 
   /// Annule une remise déclarée par erreur, tant qu'elle n'est pas confirmée.
@@ -444,9 +446,29 @@ class _CashScreenState extends State<CashScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Caisse')),
+      appBar: AppBar(
+        title: const Text('Caisse'),
+        actions: [
+          if (context.watch<AuthProvider>().can('cash.remit') ||
+              context.watch<AuthProvider>().can('cash.remit_receive'))
+            IconButton(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: 'Transferts vers la caisse générale',
+              onPressed: _ouvrirHistoriqueTransferts,
+            ),
+        ],
+      ),
       body: _loadingScope ? const LoadingView() : _buildBody(),
     );
+  }
+
+  Future<void> _ouvrirHistoriqueTransferts() async {
+    await Navigator.of(context).push<void>(MaterialPageRoute(
+      builder: (_) => CashRemittancesScreen(warehouseId: _warehouseId),
+    ));
+    if (!mounted) return;
+    // Une confirmation ou une annulation change le solde : on relit.
+    await _load();
   }
 
   Widget _buildBody() {
@@ -599,7 +621,7 @@ class _CashScreenState extends State<CashScreen> {
               FilledButton.icon(
                 onPressed: _busy || v('expected') <= 0 ? null : _remettre,
                 icon: const Icon(Icons.upload_outlined, size: 18),
-                label: const Text('Remettre à l\'administration'),
+                label: const Text('Transférer à la caisse générale'),
               ),
             ],
           ],
@@ -610,7 +632,16 @@ class _CashScreenState extends State<CashScreen> {
 
   /// Les remises faites par ce lieu, et où elles en sont.
   Widget _blocRemises() {
-    if (_remises.isEmpty) return const SizedBox.shrink();
+    if (_remises.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+        child: OutlinedButton.icon(
+          onPressed: _ouvrirHistoriqueTransferts,
+          icon: const Icon(Icons.swap_horiz, size: 18),
+          label: const Text('Historique des transferts'),
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -630,7 +661,13 @@ class _CashScreenState extends State<CashScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              ..._remises.take(10).map(_ligneRemise),
+              ..._remises.take(5).map(_ligneRemise),
+              const SizedBox(height: 6),
+              OutlinedButton.icon(
+                onPressed: _ouvrirHistoriqueTransferts,
+                icon: const Icon(Icons.swap_horiz, size: 18),
+                label: const Text('Tout l\'historique des transferts'),
+              ),
             ],
           ),
         ),
@@ -640,6 +677,7 @@ class _CashScreenState extends State<CashScreen> {
 
   Widget _ligneRemise(Map<String, dynamic> remise) {
     final confirmee = remise['status'] == 'received';
+    final refusee = remise['status'] == 'refused';
     final montant = (remise['amount'] as num?)?.toDouble() ?? 0;
 
     return Padding(
@@ -661,10 +699,16 @@ class _CashScreenState extends State<CashScreen> {
                 Text(
                   confirmee
                       ? 'Reçue par ${remise['received_by'] ?? "l'administration"}'
-                      : 'En attente de confirmation',
+                      : refusee
+                          ? 'Refusée${remise['refusal_reason'] != null ? ' : ${remise['refusal_reason']}' : ''}'
+                          : 'En attente de confirmation',
                   style: TextStyle(
                     fontSize: 11,
-                    color: confirmee ? AppTheme.success : AppTheme.warning,
+                    color: confirmee
+                        ? AppTheme.success
+                        : refusee
+                            ? AppTheme.danger
+                            : AppTheme.warning,
                   ),
                 ),
               ],
@@ -674,10 +718,10 @@ class _CashScreenState extends State<CashScreen> {
             formatMoney(montant),
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          if (!confirmee)
+          if (!confirmee && !refusee)
             IconButton(
               icon: const Icon(Icons.close, size: 18, color: AppTheme.danger),
-              tooltip: 'Annuler la remise',
+              tooltip: 'Annuler le transfert',
               onPressed: () => _annulerRemise(remise),
             ),
         ],
@@ -711,7 +755,11 @@ class _CashScreenState extends State<CashScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Aucune session ouverte sur ce lieu.',
+                _derniereCloture == null
+                    ? 'Aucune journée ouverte sur ce lieu.'
+                    : 'Dernière journée clôturée le ${_derniereCloture!['closed_at']}, '
+                        'reste en caisse : ${formatMoney(_resteDeLaVeille)}. '
+                        'La nouvelle journée s\'ouvrira sur ce montant.',
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 16),
@@ -865,10 +913,27 @@ class _SessionCard extends StatelessWidget {
               value: formatMoney(session.openingAmount),
             ),
             if (!session.isOpen) ...[
-              _KeyValue(
-                label: 'Encaissements',
-                value: formatMoney(session.collected),
-              ),
+              // Le detail de la journee : d'ou vient l'argent, ou il est parti.
+              if (session.cashIn != null)
+                _KeyValue(
+                  label: 'Encaissements en espèces',
+                  value: '+ ${formatMoney(session.cashIn)}',
+                ),
+              if ((session.cashExpenses ?? 0) > 0)
+                _KeyValue(
+                  label: 'Charges payées en espèces',
+                  value: '− ${formatMoney(session.cashExpenses)}',
+                ),
+              if ((session.remitted ?? 0) > 0)
+                _KeyValue(
+                  label: 'Transféré à la caisse générale',
+                  value: '− ${formatMoney(session.remitted)}',
+                ),
+              if (session.cashIn == null)
+                _KeyValue(
+                  label: 'Encaissements',
+                  value: formatMoney(session.collected),
+                ),
               _KeyValue(
                 label: 'Attendu',
                 value: formatMoney(session.expectedAmount),
