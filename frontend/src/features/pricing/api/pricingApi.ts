@@ -33,7 +33,10 @@ export interface PriceLevel {
 
 export interface ProductPrices {
   product: { id: number; sku: string; name: string }
+  /** Cout d'achat : prix du dernier bon, sinon celui de la fiche. */
   unit_cost: number | null
+  /** « bon » ou « fiche » — d'ou vient le chiffre ci-dessus. */
+  unit_cost_source?: 'bon' | 'fiche' | 'cmup' | null
   levels: PriceLevel[]
 }
 

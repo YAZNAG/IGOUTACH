@@ -30,6 +30,19 @@ final class PurchasePriceController extends Controller
      */
     private function coutUtilise(Product $product): array
     {
+        // Le coût retenu est celui du dernier bon de réception, repris sur la
+        // fiche à chaque entrée. Le coût moyen du stock détenu n'entre plus
+        // dans la décision : il répondait à une autre question.
+        $achat = round((float) ($product->cost_price ?? 0), 2);
+
+        if ($achat > 0) {
+            return [
+                'cost' => $achat,
+                'source' => 'purchase_price',
+                'quantity' => (int) (DB::table('stocks')->where('product_id', $product->id)->sum('quantity')),
+            ];
+        }
+
         $s = DB::table('stocks')
             ->selectRaw('SUM(quantity) as q, SUM(quantity * average_cost) as v')
             ->where('product_id', $product->id)

@@ -149,7 +149,10 @@ final class ProductPriceController extends Controller
     public function index(Request $request, Product $product): JsonResponse
     {
         $canViewCost = $request->user()?->can('product.view_cost_price') ?? false;
-        $unitCost = $this->cost->unitCost($product);
+        // Le tarif se fixe sur ce que l'article coûte à l'achat, pas sur la
+        // moyenne du stock detenu : celle-ci melange des arrivages anciens et
+        // ne correspond a aucun prix qu'on puisse negocier.
+        $unitCost = $this->cost->purchaseCost($product);
         $current = $this->prices->currentFor($product->id)->all();
 
         $levels = PriceType::query()->orderBy('rank')->get()->map(function (PriceType $type) use ($current, $unitCost) {
@@ -175,6 +178,7 @@ final class ProductPriceController extends Controller
             'data' => [
                 'product' => ['id' => $product->id, 'sku' => $product->sku, 'name' => $product->name],
                 'unit_cost' => $canViewCost ? round($unitCost, 2) : null,
+                'unit_cost_source' => $canViewCost ? $this->cost->purchaseCostSource($product) : null,
                 'levels' => $levels,
             ],
         ]);
@@ -310,7 +314,7 @@ final class ProductPriceController extends Controller
         $rows = [];
         $skipped = 0;
         foreach ($products as $product) {
-            $cost = $this->cost->unitCost($product);
+            $cost = $this->cost->purchaseCost($product);
             if ($cost <= 0) {
                 $skipped++;
 

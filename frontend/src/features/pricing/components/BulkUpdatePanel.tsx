@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -66,6 +68,13 @@ export function BulkUpdatePanel({ categories, onClose }: { categories: Category[
     })
   }
 
+  // L'apercu peut compter un millier de lignes : sans filtre, verifier
+  // un article precis avant d'appliquer releve du hasard.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    preview?.rows ?? [],
+    (r) => [r.sku, r.name],
+  )
+
   return (
     <Card>
       <CardHeader title="Mise à jour des tarifs en masse" />
@@ -110,7 +119,21 @@ export function BulkUpdatePanel({ categories, onClose }: { categories: Category[
         ) : null}
 
         {preview ? (
-          <div className="max-h-72 overflow-auto rounded border border-line">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted">
+                {actif
+                  ? `${resultats.length} sur ${preview.rows.length} ligne(s)`
+                  : `${preview.rows.length} ligne(s)`}
+              </span>
+              <SearchInput
+                value={terme}
+                onChange={setTerme}
+                placeholder="Référence ou article…"
+                className="w-56"
+              />
+            </div>
+            <div className="max-h-72 overflow-auto rounded border border-line">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-muted">
@@ -121,7 +144,7 @@ export function BulkUpdatePanel({ categories, onClose }: { categories: Category[
                 </tr>
               </thead>
               <tbody>
-                {preview.rows.map((r) => (
+                {resultats.map((r) => (
                   <tr key={r.product_id} className="border-b border-line last:border-0">
                     <td className="mono px-4 py-2 text-muted">{r.sku}</td>
                     <td className="px-4 py-2 text-ink">{r.name}</td>
@@ -131,6 +154,7 @@ export function BulkUpdatePanel({ categories, onClose }: { categories: Category[
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ) : null}
 

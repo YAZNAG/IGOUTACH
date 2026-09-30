@@ -20,14 +20,21 @@ interface CostRow {
   name: string
   category: string | null
   total_quantity: number
-  /** Prix d'achat saisi sur la fiche article, distinct du CMUP constate. */
+  /** Prix d'achat porte par la fiche article. */
   purchase_price: number | null
+  /** Cout d'achat de l'article : celui de son dernier bon de reception. */
   cmup: number
   stock_value: number
+  /** Prix du dernier bon de reception, s'il en existe un. */
   last_purchase_price: number | null
   last_purchase_at: string | null
+  last_purchase_number: string | null
+  last_purchase_supplier: string | null
+  /** Prix retenu : celui du dernier achat, sinon celui de la fiche. */
+  applied_purchase_price: number | null
   detail_price: number | null
   margin_percent: number | null
+  margin_detail: number | null
   below_cost: boolean
 }
 
@@ -42,7 +49,15 @@ function formatMoney(value: number): string {
 }
 
 /**
- * Coûts des articles : CMUP global (moyenne pondérée de tous les lieux),
+ * Coûts des articles : le coût d'achat de chacun (le prix de son dernier
+ * bon de réception) et ce que le stock détenu représente.
+ *
+ * L'application ne connaît qu'un seul coût : celui de l'achat. La moyenne
+ * pondérée du stock détenu — le CMUP — a disparu des écrans : elle donnait,
+ * pour la même marchandise, un chiffre différent de celui des tarifs, et il
+ * fallait deviner lequel croire.
+ *
+ * Coûts des articles : le coût d'achat de chacun,
  * valeur de stock, dernier prix d'achat et marge du prix détail.
  */
 export function ProductCostsPage() {
@@ -89,7 +104,7 @@ export function ProductCostsPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink">Coûts des articles</h1>
           <p className="text-sm text-muted">
-            CMUP global (moyenne pondérée de tous les lieux), recalculé automatiquement à chaque réception.
+            Le coût d'achat de chaque article — celui de son dernier bon de réception — et ce que le stock détenu représente.
           </p>
         </div>
         <div className="flex gap-2">
@@ -114,7 +129,7 @@ export function ProductCostsPage() {
         </Card>
         <Card>
           <CardBody>
-            <p className="text-xs font-medium text-muted">Valeur totale du stock (au CMUP)</p>
+            <p className="text-xs font-medium text-muted">Valeur totale du stock (au coût d'achat)</p>
             <p className="text-2xl font-semibold text-ink">{formatMoney(totals?.total_value ?? 0)} DH</p>
           </CardBody>
         </Card>
@@ -173,10 +188,8 @@ export function ProductCostsPage() {
                     <th className="px-4 py-3 font-medium">Article</th>
                     <th className="px-4 py-3 font-medium">Catégorie</th>
                     <th className="px-4 py-3 text-right font-medium">Stock total</th>
-                    <th className="px-4 py-3 text-right font-medium">Prix d'achat (DH)</th>
-                    <th className="px-4 py-3 text-right font-medium">CMUP (DH)</th>
+                    <th className="px-4 py-3 text-right font-medium">Coût d'achat (DH)</th>
                     <th className="px-4 py-3 text-right font-medium">Valeur stock</th>
-                    <th className="px-4 py-3 text-right font-medium">Dernier achat</th>
                     <th className="px-4 py-3 text-right font-medium">Prix détail</th>
                     <th className="px-4 py-3 text-right font-medium">Marge</th>
                   </tr>
@@ -190,39 +203,46 @@ export function ProductCostsPage() {
                       <td className="px-4 py-3 text-ink">{row.name}</td>
                       <td className="px-4 py-3 text-muted">{row.category ?? '—'}</td>
                       <td className="tabular px-4 py-3 text-right text-muted">{formatNumber(row.total_quantity)}</td>
-                      <td className="tabular px-4 py-3 text-right text-ink">
-                        {row.purchase_price !== null && row.purchase_price > 0
-                          ? formatMoney(row.purchase_price)
+                      <td className="tabular px-4 py-3 text-right font-semibold text-ink">
+                        {row.applied_purchase_price !== null && row.applied_purchase_price > 0
+                          ? formatMoney(row.applied_purchase_price)
                           : '—'}
+                        {/* D'où vient ce prix : un chiffre sans sa pièce ne se
+                            discute pas avec un fournisseur. */}
+                        <span className="block text-xs font-normal text-faint">
+                          {row.last_purchase_price !== null
+                            ? [
+                                row.last_purchase_number,
+                                row.last_purchase_at
+                                  ? new Date(row.last_purchase_at).toLocaleDateString('fr-FR')
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' · ')
+                            : 'fiche article'}
+                        </span>
                       </td>
-                      <td className="tabular px-4 py-3 text-right font-semibold text-ink">{formatMoney(row.cmup)}</td>
-                      <td className="tabular px-4 py-3 text-right text-ink">{formatMoney(row.stock_value)}</td>
-                      <td className="tabular px-4 py-3 text-right text-muted">
-                        {row.last_purchase_price !== null ? (
-                          <>
-                            {formatMoney(row.last_purchase_price)}
-                            {row.last_purchase_at ? (
-                              <span className="block text-xs text-faint">
-                                {new Date(row.last_purchase_at).toLocaleDateString('fr-FR')}
-                              </span>
-                            ) : null}
-                          </>
-                        ) : (
-                          '—'
-                        )}
+                      <td className="tabular px-4 py-3 text-right text-ink">
+                        {formatMoney(row.stock_value)}
+                        <span className="block text-xs font-normal text-faint">
+                          au coût d'achat
+                        </span>
                       </td>
                       <td className="tabular px-4 py-3 text-right text-muted">
                         {row.detail_price !== null ? formatMoney(row.detail_price) : '—'}
                       </td>
+                      {/* La marge se mesure sur le coût d'achat affiché à
+                          gauche, pas sur le coût moyen : deux chiffres qui ne
+                          se répondent pas rendent la colonne indéchiffrable. */}
                       <td className="px-4 py-3 text-right">
-                        {row.margin_percent === null ? (
+                        {row.margin_detail === null ? (
                           <span className="text-muted">—</span>
-                        ) : row.below_cost ? (
-                          <Badge tone="bad">{row.margin_percent} % — à perte !</Badge>
-                        ) : row.margin_percent < 10 ? (
-                          <Badge tone="warn">{row.margin_percent} %</Badge>
+                        ) : row.margin_detail < 0 ? (
+                          <Badge tone="bad">{row.margin_detail} % — à perte !</Badge>
+                        ) : row.margin_detail < 10 ? (
+                          <Badge tone="warn">{row.margin_detail} %</Badge>
                         ) : (
-                          <Badge tone="ok">{row.margin_percent} %</Badge>
+                          <Badge tone="ok">{row.margin_detail} %</Badge>
                         )}
                       </td>
                     </tr>

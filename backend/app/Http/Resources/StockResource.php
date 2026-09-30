@@ -24,7 +24,13 @@ class StockResource extends JsonResource
             'product_id' => $this->product_id,
             'quantity' => $this->quantity,
             'reserved_quantity' => $this->reserved_quantity,
-            'average_cost' => $this->average_cost,
+            // Le coût d'achat de l'article : un seul coût dans toute
+            // l'application, celui du dernier achat.
+            'average_cost' => $this->whenLoaded(
+                'product',
+                fn () => number_format((float) $this->product->cost_price, 2, '.', ''),
+                $this->average_cost,
+            ),
             'warehouse' => $this->whenLoaded('warehouse', function () {
                 return [
                     'id' => $this->warehouse->id,

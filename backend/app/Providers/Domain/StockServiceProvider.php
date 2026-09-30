@@ -8,7 +8,7 @@ use App\Domain\Stock\Contracts\StockReaderInterface;
 use App\Domain\Stock\Contracts\StockValuationInterface;
 use App\Domain\Stock\Contracts\StockWriterInterface;
 use App\Domain\Stock\Repositories\StockRepository;
-use App\Domain\Stock\Services\AverageCostValuation;
+use App\Domain\Stock\Services\PurchaseCostValuation;
 use App\Support\Documents\DocumentNumberGeneratorInterface;
 use App\Support\Documents\SequentialDocumentNumberGenerator;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +19,11 @@ final class StockServiceProvider extends ServiceProvider
     {
         // Méthode de valorisation : CMUP par défaut. En changer ne touche
         // aucun autre code (Open/Closed + Dependency Inversion).
-        $this->app->bind(StockValuationInterface::class, AverageCostValuation::class);
+        // Le stock est valorisé au coût d'achat. La moyenne pondérée
+        // (AverageCostValuation) reste dans le domaine pour mémoire, mais
+        // plus rien ne l'utilise : elle produisait un second coût que
+        // l'application n'affiche plus nulle part.
+        $this->app->bind(StockValuationInterface::class, PurchaseCostValuation::class);
 
         $this->app->bind(
             DocumentNumberGeneratorInterface::class,

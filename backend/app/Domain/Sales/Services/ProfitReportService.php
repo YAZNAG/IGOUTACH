@@ -233,6 +233,95 @@ final class ProfitReportService
     }
 
     /**
+     * Les charges de la période, au total et par famille.
+     *
+     * Sans elles, la page appelle « bénéfice » ce qui n'est que la marge
+     * brute : le loyer, le carburant et les salaires n'apparaissent nulle
+     * part, et le chiffre affiché se lit comme un gain net qu'il n'est pas.
+     *
+     * @return array{total: float, count: int, by_category: list<array{name: string, amount: float, count: int}>}
+     */
+    public function charges(string $du, string $au): array
+    {
+        $familles = DB::table('expenses as e')
+            ->leftJoin('expense_categories as c', 'c.id', '=', 'e.expense_category_id')
+            // La date de la charge, pas celle de sa saisie : une facture de
+            // juillet enregistrée en août reste une charge de juillet.
+            ->whereBetween('e.expense_date', [$du, $au])
+            ->groupBy('c.name')
+            ->orderByDesc(DB::raw('SUM(e.amount)'))
+            ->get(['c.name', DB::raw('ROUND(SUM(e.amount), 2) as montant'), DB::raw('COUNT(*) as n')]);
+
+        return [
+            'total' => round((float) $familles->sum('montant'), 2),
+            'count' => (int) $familles->sum('n'),
+            'by_category' => $familles->map(fn ($f): array => [
+                'name' => (string) ($f->name ?? 'Sans catégorie'),
+                'amount' => round((float) $f->montant, 2),
+                'count' => (int) $f->n,
+            ])->all(),
+        ];
+    }
+
+    /**
+     * Ce qui a réellement été encaissé sur les factures de la période.
+     *
+     * Le chiffre d'affaires dit ce qui a été vendu ; il ne dit pas ce qui est
+     * rentré. Avec plus du tiers du chiffre à crédit, confondre les deux
+     * conduit à croire disponible un argent qui ne l'est pas.
+     *
+     * @return array{revenue: float, collected: float, credit: float, documents: int}
+     */
+    public function encaissements(string $du, string $au): array
+    {
+        $r = DB::table('sales')
+            ->where('type', 'invoice')->where('status', 'confirmed')
+            ->whereBetween('confirmed_at', [$du.' 00:00:00', $au.' 23:59:59'])
+            ->first([
+                DB::raw('COALESCE(ROUND(SUM(total), 2), 0) as ca'),
+                DB::raw('COALESCE(ROUND(SUM(paid_amount), 2), 0) as encaisse'),
+                DB::raw('COUNT(*) as n'),
+            ]);
+
+        $ca = (float) ($r->ca ?? 0);
+        $encaisse = (float) ($r->encaisse ?? 0);
+
+        return [
+            'revenue' => $ca,
+            'collected' => $encaisse,
+            'credit' => round($ca - $encaisse, 2),
+            'documents' => (int) ($r->n ?? 0),
+        ];
+    }
+
+    /**
+     * L'évolution jour par jour, pour voir la forme de la période.
+     *
+     * Un total dit combien ; il ne dit pas si la tendance monte ou tombe.
+     *
+     * @return list<array{date: string, revenue: float, cost: float, profit: float, documents: int}>
+     */
+    public function serie(string $du, string $au): array
+    {
+        return $this->lignes($du, $au)
+            ->groupByRaw('DATE(sales.confirmed_at)')
+            ->orderByRaw('DATE(sales.confirmed_at)')
+            ->get([
+                DB::raw('DATE(sales.confirmed_at) as jour'),
+                DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                ...$this->mesures(),
+            ])
+            ->map(fn ($r): array => [
+                'date' => (string) $r->jour,
+                'documents' => (int) $r->documents,
+                'revenue' => (float) $r->revenue,
+                'cost' => (float) $r->cost,
+                'profit' => (float) $r->profit,
+            ])
+            ->all();
+    }
+
+    /**
      * Les totaux de la période : chiffre d'affaires, coût, bénéfice.
      *
      * @return array<string, mixed>

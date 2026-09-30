@@ -10,6 +10,7 @@ use App\Domain\Purchasing\Models\PurchaseOrderLine;
 use App\Domain\Purchasing\Models\PurchaseOrderStatus;
 use App\Domain\Stock\Contracts\StockWriterInterface;
 use App\Domain\Stock\DTOs\StockMovementData;
+use App\Support\Stock\MovementInstant;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -112,12 +113,18 @@ final class ReceiveGoodsAction
                     referenceId: $receipt->id,
                     userId: $createdBy,
                     note: "Réception {$receipt->number}",
-                    occurredAt: $receivedAtDate->format('Y-m-d H:i:s'),
+                    // `received_at` est la date metier de la reception ;
+                    // le mouvement, lui, porte l'heure a laquelle il a ete
+                    // ecrit, faute de quoi il se range a minuit et passe
+                    // avant tout ce qui s'est produit dans la journee.
+                    occurredAt: MovementInstant::resolve($receivedAtDate->format('Y-m-d H:i:s')),
                 ));
 
                 $orderLine->update([
                     'received_quantity' => $orderLine->received_quantity + $quantity,
                 ]);
+
+                $this->alignerPrixAchat($orderLine->product_id);
 
                 unset($receiptLine);
             }
@@ -130,6 +137,49 @@ final class ReceiveGoodsAction
 
             return $receipt->refresh();
         });
+    }
+
+    /**
+     * Reporte sur la fiche article le prix de la dernière réception.
+     *
+     * Le prix saisi au bon de réception EST le prix d'achat, que la facture
+     * fournisseur soit réglée ou non : la marchandise a été reçue à ce
+     * prix-là. Sans ce report, `products.cost_price` restait figé sur une
+     * saisie manuelle — nul sur un article jamais renseigné — pendant que le
+     * CMUP, lui, suivait la réalité ; les deux chiffres finissaient par se
+     * contredire sur la fiche comme au tableau de bord.
+     *
+     * On relit la dernière réception en base plutôt que de prendre le prix
+     * de la ligne courante : une réception saisie après coup pour une date
+     * ancienne ne doit pas écraser un achat plus récent.
+     */
+    private function alignerPrixAchat(int $productId): void
+    {
+        $dernier = DB::table('goods_receipt_lines as l')
+            ->join('goods_receipts as r', 'r.id', '=', 'l.goods_receipt_id')
+            ->where('l.product_id', $productId)
+            ->orderByDesc('r.received_at')
+            ->orderByDesc('l.id')
+            ->value('l.unit_price');
+
+        if ($dernier === null) {
+            return;
+        }
+
+        $prix = number_format((float) $dernier, 2, '.', '');
+
+        DB::table('products')->where('id', $productId)->update([
+            'cost_price' => $prix,
+            'updated_at' => now(),
+        ]);
+
+        // Le stock des AUTRES lieux suit le même prix. Sans cela, le dépôt qui
+        // n'a pas reçu garderait l'ancien coût, et la même marchandise vaudrait
+        // deux prix selon l'endroit où elle se trouve.
+        DB::table('stocks')->where('product_id', $productId)->update([
+            'average_cost' => $prix,
+            'updated_at' => now(),
+        ]);
     }
 
     private function applyPayment(GoodsReceipt $receipt, string $paymentStatus, float $amountPaid): void

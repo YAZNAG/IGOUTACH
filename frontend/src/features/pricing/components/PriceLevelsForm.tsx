@@ -49,9 +49,15 @@ export function PriceLevelsForm({ data, isPending, onSubmit, onCancel }: PriceLe
   return (
     <div className="space-y-4">
       {cost !== null ? (
-        <div className="flex items-center gap-2 rounded-lg bg-sky-soft px-4 py-2 text-sm text-navy">
-          <span className="font-medium">CMUP (coût moyen) :</span>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg bg-sky-soft px-4 py-2 text-sm text-navy">
+          <span className="font-medium">Coût d'achat :</span>
           <span className="mono">{formatNumber(cost)} DH</span>
+          {/* D'ou vient ce chiffre : un cout sans origine ne se discute pas. */}
+          <span className="text-xs opacity-70">
+            {data.unit_cost_source === 'bon'
+              ? '— dernier bon de réception'
+              : '— fiche article, aucune réception enregistrée'}
+          </span>
         </div>
       ) : null}
 

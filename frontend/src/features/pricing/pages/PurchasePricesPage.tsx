@@ -21,10 +21,21 @@ interface CostRow {
   category: string | null
   total_quantity: number
   purchase_price: number | null
-  cmup: number
+  /** Prix retenu : celui du dernier bon de réception, sinon celui de la fiche. */
+  applied_purchase_price: number | null
+  last_purchase_price: number | null
+  last_purchase_at: string | null
+  last_purchase_number: string | null
+  last_purchase_supplier: string | null
+  last_purchase_payment_status: 'paid' | 'partial' | 'unpaid' | null
+  purchase_count: number
   detail_price: number | null
-  margin_percent: number | null
-  below_cost: boolean
+  semi_gros_price: number | null
+  gros_price: number | null
+  /** Marges des trois tarifs, exprimées sur le prix d'achat. */
+  margin_detail: number | null
+  margin_semi_gros: number | null
+  margin_gros: number | null
 }
 
 interface CostList {
@@ -59,6 +70,32 @@ function messageErreur(e: unknown, repli: string): string {
     if (r?.data?.message) return r.data.message
   }
   return repli
+}
+
+/**
+ * Un tarif et sa marge sur le prix d'achat.
+ *
+ * La marge est exprimée en pourcentage du prix payé — un article acheté 16 et
+ * vendu 28,80 affiche +80 %. C'est le coefficient manipulé au quotidien, pas
+ * la part du prix de vente. Négative, elle passe en rouge : c'est une vente à
+ * perte, pas une marge faible.
+ */
+function CelluleTarif({ montant, marge }: { montant: number | null; marge: number | null }) {
+  return (
+    <td className="tabular px-4 py-3 text-right">
+      <span className={montant !== null ? 'text-ink' : 'text-muted'}>
+        {montant !== null ? money(montant) : '—'}
+      </span>
+      <span
+        className={cn(
+          'block text-xs font-medium',
+          marge === null ? 'text-faint' : marge < 0 ? 'text-bad' : 'text-ok',
+        )}
+      >
+        {marge === null ? '—' : `${marge >= 0 ? '+' : ''}${marge.toFixed(0)} %`}
+      </span>
+    </td>
+  )
 }
 
 /** Historique des réceptions, déplié sous la ligne de l'article. */
@@ -125,7 +162,7 @@ function HistoriqueAchats({ productId }: { productId: number }) {
  * Prix d'achat des articles : ce qui est déclaré, ce qui est constaté.
  *
  * Le prix d'achat de la fiche est une déclaration ; les réceptions sont des
- * faits, et le coût moyen en découle. Les mettre côte à côte est le seul
+ * faits. Les mettre côte à côte est le seul
  * moyen de voir qu'une fiche est restée sur un prix périmé.
  */
 export function PurchasePricesPage() {
@@ -199,8 +236,8 @@ export function PurchasePricesPage() {
       <div>
         <h1 className="text-xl font-semibold text-ink">Prix d’achat</h1>
         <p className="text-sm text-muted">
-          Le prix déclaré sur la fiche, le coût réellement utilisé, et les réceptions qui le
-          justifient.
+          Le prix du dernier bon de réception, réglé ou non, et ce que rapporte chacun des trois
+          tarifs sur ce prix-là.
         </p>
       </div>
 
@@ -261,22 +298,20 @@ export function PurchasePricesPage() {
                     <th className="px-4 py-3 font-medium">Article</th>
                     <th className="px-4 py-3 text-right font-medium">Stock</th>
                     <th className="px-4 py-3 text-right font-medium">Prix d’achat</th>
-                    <th className="px-4 py-3 text-right font-medium">Coût utilisé</th>
-                    <th className="px-4 py-3 text-right font-medium">Prix de vente</th>
-                    <th className="px-4 py-3 text-right font-medium">Marge</th>
+                    <th className="px-4 py-3 font-medium">Dernier bon</th>
+                    <th className="px-4 py-3 text-right font-medium">Détail</th>
+                    <th className="px-4 py-3 text-right font-medium">Demi-gros</th>
+                    <th className="px-4 py-3 text-right font-medium">Gros</th>
                     <th className="px-4 py-3 font-medium">Achats</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row) => {
-                    // Le cout vient du stock quand il y en a ; sinon c'est le
-                    // prix de la fiche qui sert, et il n'y a rien a comparer.
-                    const coutDuStock = row.total_quantity > 0
-                    const ecart =
-                      coutDuStock &&
-                      row.purchase_price !== null &&
-                      row.purchase_price > 0 &&
-                      Math.abs(row.cmup - row.purchase_price) > 0.005
+                    // Le prix retenu vient du dernier bon quand il existe :
+                    // c'est celui qui vient d'etre debourse. Sans reception,
+                    // la fiche reste la seule source connue, et on le dit.
+                    const recu = row.last_purchase_price !== null
+                    const achat = row.applied_purchase_price
 
                     return (
                       // La cle vit sur le fragment : ce sont lui et non les
@@ -293,8 +328,8 @@ export function PurchasePricesPage() {
                             {formatNumber(row.total_quantity)}
                           </td>
                           <td className="tabular px-4 py-3 text-right">
-                            <span className={row.purchase_price ? 'text-ink' : 'text-muted'}>
-                              {row.purchase_price ? money(row.purchase_price) : '—'}
+                            <span className={cn('font-semibold', achat ? 'text-ink' : 'text-muted')}>
+                              {achat !== null ? money(achat) : '—'}
                             </span>
                             {peutModifier ? (
                               <Button
@@ -307,32 +342,46 @@ export function PurchasePricesPage() {
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
                             ) : null}
-                          </td>
-                          <td className="tabular px-4 py-3 text-right font-semibold text-ink">
-                            {money(row.cmup)}
-                            <span className="block text-xs font-normal text-faint">
-                              {coutDuStock ? 'CMUP' : 'prix d’achat'}
-                            </span>
-                          </td>
-                          <td className="tabular px-4 py-3 text-right text-muted">
-                            {row.detail_price !== null ? money(row.detail_price) : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            {row.margin_percent === null ? (
-                              <span className="text-muted">—</span>
-                            ) : row.below_cost ? (
-                              <Badge tone="bad">à perte</Badge>
-                            ) : (
-                              <span
-                                className={cn(
-                                  'tabular',
-                                  ecart ? 'text-warn' : 'text-ink',
-                                )}
-                              >
-                                {row.margin_percent} %
+                            {recu ? null : (
+                              <span className="block text-xs font-normal text-faint">
+                                fiche article
                               </span>
                             )}
                           </td>
+                          <td className="px-4 py-3">
+                            {recu ? (
+                              <div className="flex items-center gap-2">
+                                <div>
+                                  <span className="mono block text-xs text-muted">
+                                    {row.last_purchase_number ?? '—'}
+                                  </span>
+                                  <span className="block text-xs text-faint">
+                                    {row.last_purchase_at
+                                      ? new Date(row.last_purchase_at).toLocaleDateString('fr-FR')
+                                      : '—'}
+                                    {row.last_purchase_supplier
+                                      ? ` · ${row.last_purchase_supplier}`
+                                      : ''}
+                                  </span>
+                                </div>
+                                {/* Le reglement du fournisseur ne change pas le
+                                    prix d'achat : la marchandise a ete recue a
+                                    ce prix. L'information reste utile au suivi. */}
+                                {row.last_purchase_payment_status === 'paid' ? (
+                                  <Badge tone="ok">payé</Badge>
+                                ) : row.last_purchase_payment_status === 'partial' ? (
+                                  <Badge tone="warn">partiel</Badge>
+                                ) : (
+                                  <Badge tone="warn">non payé</Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-faint">jamais reçu par un bon</span>
+                            )}
+                          </td>
+                          <CelluleTarif montant={row.detail_price} marge={row.margin_detail} />
+                          <CelluleTarif montant={row.semi_gros_price} marge={row.margin_semi_gros} />
+                          <CelluleTarif montant={row.gros_price} marge={row.margin_gros} />
                           <td className="px-4 py-3">
                             <Button
                               variant="ghost"
@@ -406,9 +455,17 @@ export function PurchasePricesPage() {
               </Field>
               <p className="text-xs text-muted">
                 Ancien prix :{' '}
-                {enEdition.purchase_price ? `${money(enEdition.purchase_price)} DH` : 'aucun'} ·
-                Coût utilisé : {money(enEdition.cmup)} DH · Prix de vente :{' '}
+                {enEdition.purchase_price ? `${money(enEdition.purchase_price)} DH` : 'aucun'}
+                {enEdition.last_purchase_number
+                  ? ` · dernier bon ${enEdition.last_purchase_number} à ${money(
+                      enEdition.last_purchase_price ?? 0,
+                    )} DH`
+                  : ' · aucune réception'}{' '}
+                · Détail :{' '}
                 {enEdition.detail_price !== null ? `${money(enEdition.detail_price)} DH` : '—'}
+              </p>
+              <p className="text-xs text-faint">
+                La prochaine réception écrasera cette saisie : c’est le prix du bon qui fait foi.
               </p>
               {/* Le refus vient du serveur, mais l'annoncer avant evite un
                   aller-retour pour une regle que l'on connait deja. */}
