@@ -5,7 +5,7 @@ import 'parse.dart';
 /// Le sens des colonnes dépend du regroupement :
 /// - `warehouse` / `seller` : [documents] = nombre de documents,
 ///   [secondary] = encaissé ;
-/// - `product` : [documents] = quantité vendue, [secondary] = coût (CMUP).
+/// - `product` : [documents] = quantité vendue, [secondary] = coût d'achat.
 class SalesReportRow {
   const SalesReportRow({
     required this.label,

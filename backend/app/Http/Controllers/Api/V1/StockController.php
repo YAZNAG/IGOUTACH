@@ -14,6 +14,8 @@ use App\Domain\Stock\Exceptions\InsufficientStockException;
 use App\Domain\Stock\Models\MovementType;
 use App\Domain\Stock\Models\Stock;
 use App\Domain\Stock\Models\StockMovement;
+use App\Domain\Stock\Services\MovementDocumentResolver;
+use App\Support\Stock\MovementInstant;
 use App\Domain\Warehouses\Models\Warehouse;
 use App\Exports\ArrayExport;
 use App\Http\Controllers\Controller;
@@ -109,7 +111,7 @@ final class StockController extends Controller
         ];
 
         if ($request->user()?->can('product.view_cost_price') ?? false) {
-            $colonnesTriables['value'] = 'COALESCE(SUM(stocks.quantity * stocks.average_cost), 0)';
+            $colonnesTriables['value'] = 'COALESCE(SUM(stocks.quantity * products.cost_price), 0)';
         }
 
         [$colonneTri, $sensTri, $cleTri] = $this->tri($request, $colonnesTriables, 'quantity');
@@ -148,16 +150,15 @@ final class StockController extends Controller
                 'products.name',
                 'products.min_stock',
                 DB::raw('COALESCE(SUM(stocks.quantity), 0) as quantity'),
-                // Coût moyen pondéré : la moyenne simple des lieux fausserait
-                // la valorisation dès que les quantités diffèrent.
-                DB::raw('CASE WHEN COALESCE(SUM(stocks.quantity), 0) > 0
-                              THEN SUM(stocks.quantity * stocks.average_cost) / SUM(stocks.quantity)
-                              ELSE 0 END as average_cost'),
+                // Le coût d'achat de la fiche, tenu à jour par la réception.
+                // Une moyenne du stock détenu donnerait un autre chiffre que
+                // celui des écrans de tarifs, pour la même marchandise.
+                DB::raw('MAX(products.cost_price) as average_cost'),
             )
             ->paginate($this->perPage($request));
 
-        // Le coût moyen EST le prix d'achat : l'exposer à qui n'a pas le droit
-        // de voir les prix d'achat contournerait cette permission.
+        // Exposer le coût d'achat à qui n'a pas le droit de le voir
+        // contournerait cette permission.
         $voitLesCouts = $request->user()?->can('product.view_cost_price') ?? false;
 
         $paginator->through(function (\stdClass $row) use ($voitLesCouts): array {
@@ -193,7 +194,7 @@ final class StockController extends Controller
     /**
      * Journal des mouvements de stock (append-only).
      */
-    public function movements(Request $request): JsonResponse
+    public function movements(Request $request, MovementDocumentResolver $resolver): JsonResponse
     {
         // Le scope de lieu reste actif : sans « stock.view_global », l'utilisateur
         // ne voit QUE les mouvements de son lieu, quel que soit le warehouse_id demande.
@@ -206,9 +207,22 @@ final class StockController extends Controller
         ], 'created_at');
 
         $paginator = StockMovement::query()
-            ->with(['product:id,sku,name', 'movementType:id,name,code,sign'])
+            // Le lieu est une colonne du journal : sans ce chargement,
+            // chaque ligne declencherait sa propre requete.
+            ->with([
+                'product:id,sku,name',
+                'movementType:id,name,code,sign',
+                'warehouse:id,code,name',
+            ])
             ->when($warehouseId > 0, fn ($q) => $q->where('warehouse_id', $warehouseId))
             ->when($request->integer('product_id') > 0, fn ($q) => $q->where('product_id', $request->integer('product_id')))
+            // On cherche un mouvement par l'article : c'est ce qu'on a en
+            // tete, pas l'identifiant interne. La reference et la
+            // designation sont les deux prises possibles.
+            ->when($request->string('search')->isNotEmpty(), function ($q) use ($request): void {
+                $terme = '%'.$request->string('search')->value().'%';
+                $q->whereHas('product', fn ($p) => $p->where('sku', 'like', $terme)->orWhere('name', 'like', $terme));
+            })
             ->when($request->string('type')->isNotEmpty(), fn ($q) => $q->whereHas('movementType', fn ($t) => $t->where('code', $request->string('type')->value())))
             // Un mouvement peut porter une date de recherche : filtrer dessus
             // évite de dérouler des milliers de lignes pour retrouver un jour.
@@ -226,15 +240,26 @@ final class StockController extends Controller
             ->pluck('name', 'id')
             ->all();
 
+        // « #127 » ne designe rien : on remonte le numero du document,
+        // resolu par lots pour ne pas interroger la base ligne par ligne.
+        $documents = $resolver->pour($paginator->items());
+
         $paginator->through(fn (StockMovement $m): array => [
             'id' => $m->id,
-            'created_at' => $m->created_at,
+            // Formate dans le fuseau de l'application : la serialisation
+            // par defaut de Carbon convertit en UTC, et l'ecran, qui lit
+            // les chiffres tels quels, afficherait une heure de moins.
+            'created_at' => $m->created_at?->format('Y-m-d H:i'),
+            'product_id' => $m->product_id,
             'sku' => $m->product?->sku,
             'name' => $m->product?->name,
+            'warehouse_code' => $m->warehouse?->code,
+            'warehouse_name' => $m->warehouse?->name,
             'type' => $m->movementType?->name,
             'type_code' => $m->movementType?->code,
             'quantity' => (int) $m->quantity,
             'balance_after' => (int) $m->balance_after,
+            'document' => $documents[$resolver->cle($m)] ?? null,
             'note' => $m->note,
             'user' => $m->user_id !== null ? ($userNames[$m->user_id] ?? null) : null,
         ]);
@@ -301,9 +326,7 @@ final class StockController extends Controller
                 'products.name',
                 'products.min_stock',
                 DB::raw('COALESCE(SUM(stocks.quantity), 0) as quantity'),
-                DB::raw('CASE WHEN COALESCE(SUM(stocks.quantity), 0) > 0
-                              THEN SUM(stocks.quantity * stocks.average_cost) / SUM(stocks.quantity)
-                              ELSE 0 END as average_cost'),
+                DB::raw('MAX(products.cost_price) as average_cost'),
             ])
             ->map(function (\stdClass $row) use ($voitLesCouts): array {
                 $qty = (int) $row->quantity;
@@ -613,9 +636,10 @@ final class StockController extends Controller
             'lines.*.condition' => ['required', 'in:resellable,defective'],
         ]);
 
-        $occurredAt = isset($data['occurred_at']) && $data['occurred_at'] !== null
-            ? (new \DateTimeImmutable($data['occurred_at']))->format('Y-m-d H:i:s')
-            : null;
+        // Le formulaire ne demande qu'une date : saisie le jour meme, elle
+        // arriverait a minuit et le retour se rangerait avant la vente qu'il
+        // annule.
+        $occurredAt = MovementInstant::resolve($data['occurred_at'] ?? null);
 
         try {
             DB::transaction(function () use ($data, $writer, $request, $occurredAt): void {
@@ -680,9 +704,7 @@ final class StockController extends Controller
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $occurredAt = isset($data['occurred_at']) && $data['occurred_at'] !== null
-            ? (new \DateTimeImmutable($data['occurred_at']))->format('Y-m-d H:i:s')
-            : null;
+        $occurredAt = MovementInstant::resolve($data['occurred_at'] ?? null);
 
         $supplierName = isset($data['supplier_id'])
             ? (string) Supplier::query()->whereKey($data['supplier_id'])->value('name')

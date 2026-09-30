@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { cn, formatNumber } from '@/lib/utils'
 import type { Paginated } from '@/types'
@@ -57,11 +59,20 @@ export function CashPage() {
     enabled: warehouseId > 0,
   })
 
+  const [recherche, setRecherche] = useState('')
+
+  // L'historique ne montre que les vingt dernieres sessions : la recherche
+  // doit interroger le serveur, sinon elle ne verrait pas plus loin.
+  const rechercheRetardee = useDebouncedValue(recherche, 300)
+
   const { data: history } = useQuery<Paginated<Session>>({
-    queryKey: [...KEY, 'history', warehouseId],
+    queryKey: [...KEY, 'history', warehouseId, rechercheRetardee],
     queryFn: async () => {
       const { data: r } = await api.get<Paginated<Session>>('/cash-sessions', {
-        params: { warehouse_id: warehouseId || undefined },
+        params: {
+          warehouse_id: warehouseId || undefined,
+          search: rechercheRetardee || undefined,
+        },
       })
       return r
     },
@@ -144,7 +155,16 @@ export function CashPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Historique des sessions" />
+        <CardHeader
+          title="Historique des sessions"
+          action={
+            <SearchInput
+              value={recherche}
+              onChange={setRecherche}
+              placeholder="Lieu ou responsable…"
+            />
+          }
+        />
         <CardBody className="p-0">
           <table className="w-full text-sm">
             <thead>

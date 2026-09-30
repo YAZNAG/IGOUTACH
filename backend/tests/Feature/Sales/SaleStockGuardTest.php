@@ -23,6 +23,7 @@ function venteProduit(): Product
         'category_id' => Category::factory()->create()->id,
         'unit_id' => Unit::factory()->create()->id,
         'sale_price' => 100,
+        'cost_price' => 1,
     ]);
 }
 

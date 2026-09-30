@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,14 +23,41 @@ class _CreditsScreenState extends State<CreditsScreen> {
   final _api = ApiClient.instance;
 
   List<AgingRow>? _rows;
+  AgingMeta? _meta;
   bool _loading = true;
   String? _error;
   bool _offline = false;
+
+  /// Vrai quand la liste couvre tout le fichier client, pas seulement les
+  /// débiteurs. Un vendeur veut pouvoir vérifier n'importe quel client, même
+  /// à jour, avant de lui vendre à crédit.
+  bool _tousLesClients = false;
+  final _recherche = TextEditingController();
+  Timer? _frappe;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _frappe?.cancel();
+    _recherche.dispose();
+    super.dispose();
+  }
+
+  /// Relance la recherche au repos de frappe, pas à chaque lettre.
+  void _rechercher(String _) {
+    _frappe?.cancel();
+    _frappe = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      // Chercher un nom n'a de sens que sur tout le fichier : rester sur les
+      // seuls débiteurs donnerait « aucun résultat » pour un client à jour.
+      setState(() => _tousLesClients = true);
+      _load();
+    });
   }
 
   Future<void> _load() async {
@@ -37,16 +66,22 @@ class _CreditsScreenState extends State<CreditsScreen> {
       _error = null;
     });
     try {
-      final res =
-          await _api.dio.get<Map<String, dynamic>>('/customers-aging');
+      final res = await _api.dio.get<Map<String, dynamic>>(
+        '/customers-aging',
+        queryParameters: {
+          if (_tousLesClients) 'all': 1,
+          if (_recherche.text.trim().isNotEmpty) 'q': _recherche.text.trim(),
+        },
+      );
       final data = res.data!['data'] as List<dynamic>? ?? [];
       final rows = data
           .map((e) => AgingRow.fromJson(e as Map<String, dynamic>))
-          .toList()
-        ..sort((a, b) => b.totalDue.compareTo(a.totalDue));
+          .toList();
+      final meta = res.data!['meta'] as Map<String, dynamic>?;
       if (!mounted) return;
       setState(() {
         _rows = rows;
+        _meta = meta == null ? null : AgingMeta.fromJson(meta);
         _loading = false;
       });
     } catch (e) {
@@ -94,6 +129,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
                     padding: const EdgeInsets.only(bottom: 24),
                     children: [
                       _buildHeader(),
+                      _buildRecherche(),
                       if ((_rows ?? []).isEmpty)
                         const Padding(
                           padding: EdgeInsets.only(top: 48),
@@ -116,6 +152,58 @@ class _CreditsScreenState extends State<CreditsScreen> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _buildRecherche() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _recherche,
+            onChanged: _rechercher,
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: 'Chercher un client…',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _recherche.text.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: 'Effacer',
+                      onPressed: () {
+                        _recherche.clear();
+                        _load();
+                      },
+                    ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              isDense: true,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _tousLesClients
+                      ? 'Tous les clients — le montant est celui de vos ventes'
+                      : 'Seulement les clients qui doivent',
+                  style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                ),
+              ),
+              Switch(
+                value: _tousLesClients,
+                onChanged: (v) {
+                  setState(() => _tousLesClients = v);
+                  _load();
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -156,6 +244,32 @@ class _CreditsScreenState extends State<CreditsScreen> {
             '$count client${count > 1 ? 's' : ''} avec encours',
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
+
+          // La repartition n'a de sens que pour qui voit plusieurs lieux : un
+          // responsable n'aurait qu'une ligne, egale au total juste au-dessus.
+          if (_meta != null && _meta!.lieuUnique == null && _meta!.parLieu.length > 1) ...[
+            const SizedBox(height: 14),
+            const Divider(color: Colors.white24, height: 1),
+            const SizedBox(height: 12),
+            for (final l in _meta!.parLieu)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l.code,
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ),
+                    Text(
+                      formatMoney(l.due),
+                      style: AppTheme.amountStyle(fontSize: 15, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -207,6 +321,35 @@ class _AgingCard extends StatelessWidget {
                     ),
                 ],
               ),
+              // Le detail par lieu quand la dette vient de plusieurs points
+              // de vente : sans lui, on ne sait pas quelle part nous concerne.
+              if (row.parLieu.length > 1) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final l in row.parLieu)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppTheme.navy.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${l.code} · ${formatMoney(l.due)}',
+                          style: const TextStyle(fontSize: 12, color: AppTheme.navy),
+                        ),
+                      ),
+                  ],
+                ),
+              ] else if (row.parLieu.length == 1) ...[
+                const SizedBox(height: 6),
+                Text(
+                  '${row.parLieu.first.code} · ${row.invoices} facture(s)',
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                ),
+              ],
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,

@@ -88,6 +88,16 @@ final class AuditController extends Controller
             ->when($request->string('module')->isNotEmpty(), fn (Builder $q) => $q->where('module', $request->string('module')->value()))
             ->when($request->integer('user_id') > 0, fn (Builder $q) => $q->where('user_id', $request->integer('user_id')))
             ->when($request->date('from') !== null, fn (Builder $q) => $q->where('created_at', '>=', $request->date('from')))
-            ->when($request->date('to') !== null, fn (Builder $q) => $q->where('created_at', '<=', $request->date('to')?->endOfDay()));
+            ->when($request->date('to') !== null, fn (Builder $q) => $q->where('created_at', '<=', $request->date('to')?->endOfDay()))
+            // La description est le seul champ libre du journal : sans elle,
+            // chercher « suppression du tarif » n'aboutirait jamais.
+            ->when($request->string('search')->isNotEmpty(), function (Builder $q) use ($request): void {
+                $terme = '%'.$request->string('search')->value().'%';
+                $q->where(function (Builder $x) use ($terme): void {
+                    $x->where('description', 'like', $terme)
+                        ->orWhere('action', 'like', $terme)
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $terme));
+                });
+            });
     }
 }

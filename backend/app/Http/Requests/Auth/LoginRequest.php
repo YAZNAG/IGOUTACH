@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
+use App\Support\Auth\IdentifiantConnexion;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,8 +32,10 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Le champ accepte une adresse ou un numéro : la contrainte « email »
+        // rejetterait le second avant même de chercher le compte.
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'max:190'],
             'password' => ['required', 'string'],
         ];
     }
@@ -46,9 +49,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        /** @var string $email */
-        $email = $this->input('email');
-        $user = User::query()->where('email', $email)->first();
+        /** @var string $saisie */
+        $saisie = $this->input('email');
+        $user = IdentifiantConnexion::trouver($saisie);
 
         if ($user !== null && $user->isLocked()) {
             throw ValidationException::withMessages([
@@ -62,7 +65,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // La tentative porte sur l'adresse du compte retrouvé : le gardien
+        // ne sait pas chercher par téléphone, c'est nous qui avons fait la
+        // correspondance juste au-dessus.
+        $identifiants = [
+            'email' => $user?->email ?? $saisie,
+            'password' => (string) $this->input('password'),
+        ];
+
+        if (! Auth::attempt($identifiants, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
             $this->registerFailedAttempt($user);
 
@@ -134,6 +145,12 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
+        // La clé porte sur la saisie normalisée : sans cela, un numéro écrit
+        // de dix façons donnerait dix compteurs, et le verrou ne compterait
+        // plus rien.
+        $saisie = (string) $this->input('email');
+        $cle = IdentifiantConnexion::normaliserTelephone($saisie) ?? $saisie;
+
+        return Str::transliterate(Str::lower($cle).'|'.$this->ip());
     }
 }

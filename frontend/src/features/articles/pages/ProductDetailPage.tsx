@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Card, CardBody } from '@/components/ui/Card'
 import { usePermission } from '@/hooks/usePermission'
-import { useProductDetail, useProductMovements, useProductStock } from '../hooks'
+import { useProductDetail, useProductStock } from '../hooks'
 import { HistoryTab } from '../components/HistoryTab'
 import { MediaTab } from '../components/MediaTab'
 import { MovementsTab } from '../components/MovementsTab'
@@ -25,7 +25,6 @@ export function ProductDetailPage() {
 
   const { data: product, isLoading: productLoading } = useProductDetail(productId)
   const { data: stock } = useProductStock(productId)
-  const { data: movements, isLoading: movementsLoading } = useProductMovements(productId)
 
   // Fetch all products for navigation
   useEffect(() => {
@@ -109,10 +108,7 @@ export function ProductDetailPage() {
         {activeTab === 'overview' && <OverviewTab product={product} stock={stock} />}
         {activeTab === 'stock' && <StockTab stock={stock} />}
         {activeTab === 'movements' && (
-          <MovementsTab
-            movements={movements?.data || []}
-            isLoading={movementsLoading}
-          />
+          <MovementsTab productId={productId} />
         )}
         {activeTab === 'history' && <HistoryTab productId={productId} />}
         {activeTab === 'media' && <MediaTab productId={productId} />}

@@ -438,7 +438,7 @@ class _SaleTile extends StatelessWidget {
                       if (sale.createdAt != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          sale.createdAt!,
+                          formatDateHeure(sale.createdAt),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

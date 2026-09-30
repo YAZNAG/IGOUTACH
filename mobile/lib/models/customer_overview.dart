@@ -82,6 +82,21 @@ class FicheClient {
       );
 }
 
+/// Part de dette née dans un point de vente donné.
+class DuParLieu {
+  const DuParLieu({required this.code, required this.du, required this.factures});
+
+  final String code;
+  final double du;
+  final int factures;
+
+  factory DuParLieu.fromJson(Map<String, dynamic> j) => DuParLieu(
+        code: j['code'] as String? ?? '',
+        du: _d(j['due']),
+        factures: (j['invoices'] as num?)?.toInt() ?? 0,
+      );
+}
+
 class CreditClient {
   const CreditClient({
     required this.encours,
@@ -89,12 +104,23 @@ class CreditClient {
     required this.bloque,
     required this.impayees,
     this.partPlafond,
+    this.lieuCadre,
+    this.parLieu = const [],
   });
 
   final double encours;
   final double plafond;
   final bool bloque;
   final int impayees;
+
+  /// Lieu sur lequel le montant est cadré, `null` pour qui voit tout.
+  /// Non nul, l'écran doit dire d'où vient le chiffre : c'est l'encours des
+  /// ventes de CE point de vente, pas la dette totale du client.
+  final int? lieuCadre;
+
+  /// La dette, point de vente par point de vente. Un responsable n'y trouve
+  /// que sa propre ligne, l'administrateur la répartition entière.
+  final List<DuParLieu> parLieu;
 
   /// Part du plafond consommée. `null` quand aucun plafond n'est fixé :
   /// afficher une jauge sans plafond ne voudrait rien dire.
@@ -108,6 +134,10 @@ class CreditClient {
         bloque: j['is_blocked'] == true,
         impayees: (j['unpaid_count'] as num?)?.toInt() ?? 0,
         partPlafond: j['usage_percent'] == null ? null : _d(j['usage_percent']),
+        lieuCadre: (j['scoped_warehouse_id'] as num?)?.toInt(),
+        parLieu: (j['by_warehouse'] as List<dynamic>? ?? [])
+            .map((e) => DuParLieu.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
 }
 

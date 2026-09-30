@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 import { useProductHistory } from '../hooks'
 import type { HistoryModule } from '../api/articlesApi'
@@ -43,13 +45,29 @@ export function HistoryTab({ productId }: HistoryTabProps) {
     return e.module === filtre
   })
 
+  // Le filtre par module ne repond pas a « ou est passee la facture
+  // VT-1042 » : la recherche libre, si.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(visibles, (e) => [
+    e.reference,
+    e.party,
+    e.label,
+    e.warehouse,
+  ])
+
   return (
     <Card>
       <CardHeader
         title="Historique de l'article"
         hint="Ventes, réceptions, transferts et inventaires, du plus récent au plus ancien."
         action={
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <SearchInput
+              value={terme}
+              onChange={setTerme}
+              placeholder="Référence, tiers, lieu…"
+              className="w-56"
+            />
+            <div className="flex flex-wrap gap-1">
             {FILTRES.map((f) => (
               <button
                 key={f.id}
@@ -62,17 +80,20 @@ export function HistoryTab({ productId }: HistoryTabProps) {
                 {f.label}
               </button>
             ))}
+            </div>
           </div>
         }
       />
       <CardBody className="p-0">
         {isLoading ? (
           <p className="py-10 text-center text-sm text-muted">Chargement…</p>
-        ) : visibles.length === 0 ? (
+        ) : resultats.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted">
-            {entries && entries.length > 0
-              ? 'Aucun mouvement pour ce filtre.'
-              : 'Cet article n’a encore été utilisé dans aucun module.'}
+            {actif
+              ? 'Aucun mouvement ne correspond à cette recherche.'
+              : entries && entries.length > 0
+                ? 'Aucun mouvement pour ce filtre.'
+                : 'Cet article n’a encore été utilisé dans aucun module.'}
           </p>
         ) : (
           <div className="max-h-[520px] overflow-y-auto">
@@ -89,7 +110,7 @@ export function HistoryTab({ productId }: HistoryTabProps) {
                 </tr>
               </thead>
               <tbody>
-                {visibles.map((entry, index) => {
+                {resultats.map((entry, index) => {
                   const meta = MODULES[entry.module]
                   const Icon = meta.icon
 

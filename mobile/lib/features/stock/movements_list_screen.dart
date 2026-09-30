@@ -32,7 +32,7 @@ class MovementsListScreen extends StatefulWidget {
   /// `/stock/entries` ou `/stock/exits`.
   final String basePath;
 
-  /// Sorties : quantités affichées en −rouge et coût libellé « CMUP ».
+  /// Sorties : quantités affichées en −rouge et coût constaté à la sortie.
   final bool isExit;
 
   @override
@@ -498,7 +498,7 @@ class _MovementCard extends StatelessWidget {
                   if ((row.typeName ?? '').isNotEmpty)
                     StatusBadge(label: row.typeName!, color: AppTheme.sky),
                   StatusBadge(
-                    label: '${isExit ? 'CMUP' : 'PU'} '
+                    label: '${isExit ? 'Coût' : 'PU'} '
                         '${formatMoney(row.unitCost)}',
                     color: AppTheme.navy,
                   ),

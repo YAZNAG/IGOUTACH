@@ -1,4 +1,6 @@
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import type { StockDetail } from '../api/articlesApi'
 
 interface StockTabProps {
@@ -7,6 +9,12 @@ interface StockTabProps {
 
 export function StockTab({ stock }: StockTabProps) {
   const maxQuantity = Math.max(...stock.locations.map((l) => l.quantity), 1)
+
+  // Un article present dans quinze lieux se lit mal d'un bloc.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    stock.locations,
+    (loc) => [loc.warehouse_name],
+  )
 
   return (
     <div className="space-y-6">
@@ -38,10 +46,16 @@ export function StockTab({ stock }: StockTabProps) {
       </div>
 
       <Card>
-        <CardHeader title="Détail par lieu" />
+        <CardHeader
+          title="Détail par lieu"
+          hint={actif ? `${resultats.length} sur ${stock.locations.length}` : undefined}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Lieu…" />}
+        />
         <CardBody className="p-0">
-          {stock.locations.length === 0 ? (
-            <p className="p-5 text-sm text-muted">Aucun stock en lieu.</p>
+          {resultats.length === 0 ? (
+            <p className="p-5 text-sm text-muted">
+              {actif ? 'Aucun lieu ne correspond à cette recherche.' : 'Aucun stock en lieu.'}
+            </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -54,7 +68,7 @@ export function StockTab({ stock }: StockTabProps) {
                 </tr>
               </thead>
               <tbody>
-                {stock.locations.map((loc) => (
+                {resultats.map((loc) => (
                   <tr key={loc.id} className="border-b border-line last:border-0">
                     <td className="px-5 py-3 font-medium text-ink">{loc.warehouse_name}</td>
                     <td className="px-5 py-3 text-right">

@@ -15,6 +15,7 @@ use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Services\ProductInsightsService;
 use App\Domain\Stock\Models\Stock;
 use App\Domain\Stock\Models\StockMovement;
+use App\Domain\Stock\Services\MovementDocumentResolver;
 use App\Exports\ArrayExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
@@ -126,17 +127,9 @@ final class ProductController extends Controller
         $donnees = $request->validated();
 
         // Vendre en dessous du cout ne se decide pas par inadvertance. Le
-        // cout de reference est le CMUP quand il y a du stock, sinon le prix
-        // d'achat — la meme regle que partout ailleurs dans l'application.
-        $stock = DB::table('stocks')
-            ->selectRaw('SUM(quantity) as q, SUM(quantity * average_cost) as v')
-            ->where('product_id', $product->id)
-            ->first();
-
-        $quantite = (int) ($stock->q ?? 0);
-        $cout = $quantite > 0
-            ? round((float) ($stock->v ?? 0) / $quantite, 2)
-            : round((float) ($donnees['cost_price'] ?? $product->cost_price ?? 0), 2);
+        // cout de reference est le prix d'achat — celui du dernier bon, tenu
+        // a jour par la reception — comme partout ailleurs dans l'application.
+        $cout = round((float) ($donnees['cost_price'] ?? $product->cost_price ?? 0), 2);
 
         $vente = round((float) $donnees['sale_price'], 2);
 
@@ -280,14 +273,15 @@ final class ProductController extends Controller
             'quantity' => (int) $s->quantity,
             'reserved' => (int) $s->reserved_quantity,
             'available' => (int) $s->quantity - (int) $s->reserved_quantity,
+            // Valorisé au coût d'achat de l'article, comme partout ailleurs.
             'valuation' => $voitLesCouts
-                ? number_format((float) $s->quantity * (float) $s->average_cost, 2, '.', '')
+                ? number_format((float) $s->quantity * (float) $product->cost_price, 2, '.', '')
                 : null,
         ])->values()->all();
 
         $total = (int) $stocks->sum('quantity');
         $reserve = (int) $stocks->sum('reserved_quantity');
-        $valeur = $stocks->sum(fn (Stock $s): float => (float) $s->quantity * (float) $s->average_cost);
+        $valeur = $stocks->sum(fn (Stock $s): float => (float) $s->quantity * (float) $product->cost_price);
 
         return response()->json(['data' => [
             'product_id' => $product->id,
@@ -317,7 +311,7 @@ final class ProductController extends Controller
      * Mouvements de stock du produit avec filtres.
      * GET /products/{id}/movements?warehouse_id=&type=&date_from=&page=
      */
-    public function movements(Request $request, Product $product): JsonResponse
+    public function movements(Request $request, Product $product, MovementDocumentResolver $resolver): JsonResponse
     {
         $paginator = StockMovement::query()
             // Le lieu et l'auteur sont affichés sur chaque ligne : sans ce
@@ -331,6 +325,41 @@ final class ProductController extends Controller
             ->orderByDesc('id')
             ->paginate(min(100, max(1, $request->integer('per_page', 20))));
 
+        // Le recapitulatif porte sur TOUS les mouvements de l'article, pas
+        // sur la page affichee : additionner les vingt lignes visibles
+        // donnerait un solde faux des que l'historique depasse une page.
+        $recap = StockMovement::query()
+            ->leftJoin('warehouses', 'warehouses.id', '=', 'stock_movements.warehouse_id')
+            ->where('stock_movements.product_id', $product->id)
+            ->groupBy('warehouses.id', 'warehouses.code', 'warehouses.name')
+            ->orderBy('warehouses.code')
+            ->get([
+                DB::raw('warehouses.code as code'),
+                DB::raw('warehouses.name as name'),
+                DB::raw('COUNT(*) as mouvements'),
+                DB::raw('COALESCE(SUM(CASE WHEN stock_movements.quantity > 0 THEN stock_movements.quantity ELSE 0 END), 0) as entrees'),
+                DB::raw('COALESCE(SUM(CASE WHEN stock_movements.quantity < 0 THEN -stock_movements.quantity ELSE 0 END), 0) as sorties'),
+                DB::raw('COALESCE(SUM(stock_movements.quantity), 0) as solde'),
+                DB::raw('MAX(stock_movements.created_at) as dernier'),
+            ])
+            ->map(fn ($r): array => [
+                'warehouse_code' => $r->code,
+                'warehouse_name' => $r->name,
+                'movements' => (int) $r->mouvements,
+                'entries' => (int) $r->entrees,
+                'exits' => (int) $r->sorties,
+                'balance' => (int) $r->solde,
+                'last_movement' => $r->dernier,
+            ])
+            ->all();
+
+        // « #127 » ne designe rien pour qui lit une fiche article : on
+        // remonte le numero du document, resolu par lots.
+        $documents = $resolver->pour($paginator->items());
+        foreach ($paginator->items() as $mouvement) {
+            $mouvement->setAttribute('document', $documents[$resolver->cle($mouvement)] ?? null);
+        }
+
         return response()->json([
             'data' => StockMovementResource::collection($paginator->items()),
             'meta' => [
@@ -338,6 +367,7 @@ final class ProductController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
+                'summary' => $recap,
             ],
         ]);
     }

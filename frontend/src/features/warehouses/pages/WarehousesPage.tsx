@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { usePermission } from '@/hooks/usePermission'
 import { WarehouseForm } from '../components/WarehouseForm'
 import { useCreateWarehouse, useUpdateWarehouse, useWarehouses, useWarehouseTypes } from '../hooks'
@@ -24,6 +26,12 @@ export function WarehousesPage() {
   const [panelOpen, setPanelOpen] = useState(false)
 
   const warehouses = warehousesQuery.data?.data ?? []
+
+  // Les lieux tiennent sur une page : le filtre les voit tous.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    warehouses,
+    (warehouse) => [warehouse.code, warehouse.name],
+  )
   const types = typesQuery.data ?? []
   const isPending = createMutation.isPending || updateMutation.isPending
 
@@ -89,7 +97,11 @@ export function WarehousesPage() {
       ) : null}
 
       <Card>
-        <CardHeader title="Liste des lieux" hint={`${warehouses.length} lieu(x)`} />
+        <CardHeader
+          title="Liste des lieux"
+          hint={actif ? `${resultats.length} sur ${warehouses.length}` : `${warehouses.length} lieu(x)`}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Code ou nom…" />}
+        />
         <CardBody className="p-0">
           {warehousesQuery.isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -106,14 +118,14 @@ export function WarehousesPage() {
                 </tr>
               </thead>
               <tbody>
-                {warehouses.length === 0 ? (
+                {resultats.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-5 py-8 text-center text-muted">
-                      Aucun lieu enregistré.
+                      {actif ? 'Aucun lieu ne correspond à cette recherche.' : 'Aucun lieu enregistré.'}
                     </td>
                   </tr>
                 ) : (
-                  warehouses.map((warehouse) => (
+                  resultats.map((warehouse) => (
                     <tr key={warehouse.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{warehouse.code}</td>
                       <td className="px-5 py-3 font-medium text-ink">{warehouse.name}</td>

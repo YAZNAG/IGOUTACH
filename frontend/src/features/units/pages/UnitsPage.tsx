@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -25,6 +27,13 @@ export function UnitsPage() {
   const canManage = can('unit.manage')
 
   const { data: units = [], isLoading } = useUnits()
+
+  // Recherche sur des lignes deja toutes chargees : rien
+  // n'echappe au filtre, contrairement a une liste paginee.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    units,
+    (unit) => [unit.code, unit.name],
+  )
   const createMutation = useCreateUnit()
   const updateMutation = useUpdateUnit()
   const deleteMutation = useDeleteUnit()
@@ -136,7 +145,11 @@ export function UnitsPage() {
       ) : null}
 
       <Card>
-        <CardHeader title="Liste des unités" hint={`${units.length} unité(s)`} />
+        <CardHeader
+          title="Liste des unités"
+          hint={actif ? `${resultats.length} sur ${units.length}` : `${units.length} unité(s)`}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Code ou nom…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -153,14 +166,14 @@ export function UnitsPage() {
                 </tr>
               </thead>
               <tbody>
-                {units.length === 0 ? (
+                {resultats.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-5 py-8 text-center text-muted">
-                      Aucune unité.
+                      {actif ? 'Aucune unité ne correspond à cette recherche.' : 'Aucune unité.'}
                     </td>
                   </tr>
                 ) : (
-                  units.map((unit) => (
+                  resultats.map((unit) => (
                     <tr key={unit.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{unit.code}</td>
                       <td className="px-5 py-3 text-ink">{unit.name}</td>

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Category, Paginated, Product } from '@/types'
 import {
   bulkDeleteArticles,
@@ -19,8 +19,8 @@ import {
   deleteProductImage,
   type ArticleFilters,
   type ArticleInput,
-  type Movement,
   type MovementFilters,
+  type MovementsPage,
   type ProductDetail,
   type ProductHistoryEntry,
   type ProductImage,
@@ -105,10 +105,13 @@ export function useProductStock(id: number) {
 }
 
 export function useProductMovements(id: number, filters?: MovementFilters) {
-  return useQuery<Paginated<Movement>>({
+  return useQuery<MovementsPage>({
     queryKey: [...MOVEMENTS_KEY, id, filters],
     queryFn: () => fetchProductMovements(id, filters),
     enabled: !!id,
+    // La pagination ne doit pas vider le tableau a chaque page : le contenu
+    // precedent reste affiche pendant le chargement du suivant.
+    placeholderData: keepPreviousData,
   })
 }
 

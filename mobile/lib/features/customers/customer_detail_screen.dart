@@ -118,7 +118,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       children: [
                         _CarteCredit(credit: d!.credit),
                         const SizedBox(height: 12),
-                        _CarteStats(stats: d.stats),
+                        _CarteStats(stats: d.stats, credit: d.credit),
                         const SizedBox(height: 12),
                         _CarteIdentite(fiche: d.fiche),
                         const SizedBox(height: 12),
@@ -161,7 +161,13 @@ class _CarteCredit extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('Encours', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+              // Le libellé porte la portée du montant : « Encours » tout court
+              // laisserait croire à la dette totale du client, alors qu'un
+              // responsable ne voit que celle née de ses propres ventes.
+              Text(
+                credit.lieuCadre != null ? 'Encours sur vos ventes' : 'Encours',
+                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+              ),
               const Spacer(),
               if (credit.bloque)
                 const StatusBadge(label: 'Bloqué', color: AppTheme.danger)
@@ -208,6 +214,32 @@ class _CarteCredit extends StatelessWidget {
               style: const TextStyle(fontSize: 11.5, color: AppTheme.warning),
             ),
           ],
+
+          // La répartition n'a de sens que pour qui voit plusieurs lieux : un
+          // responsable n'aurait qu'une ligne, égale au total juste au-dessus.
+          if (credit.lieuCadre == null && credit.parLieu.length > 1) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppTheme.border),
+            const SizedBox(height: 10),
+            for (final l in credit.parLieu)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${l.code} · ${l.factures} facture${l.factures > 1 ? 's' : ''}',
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                      ),
+                    ),
+                    Text(
+                      formatMoney(l.du),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -217,20 +249,29 @@ class _CarteCredit extends StatelessWidget {
 // ── Statistiques ───────────────────────────────────────────────────────────
 
 class _CarteStats extends StatelessWidget {
-  const _CarteStats({required this.stats});
+  const _CarteStats({required this.stats, required this.credit});
 
   final StatsClient stats;
+
+  /// Sert seulement à savoir si les chiffres sont cadrés sur un lieu : les
+  /// libeller « son activité » sans le dire ferait croire à un cumul complet.
+  final CreditClient credit;
 
   @override
   Widget build(BuildContext context) {
     return _Carte(
-      titre: 'Son activité',
+      titre: credit.lieuCadre != null ? 'Son activité chez vous' : 'Son activité',
       enfant: Column(
         children: [
           Row(
             children: [
               Expanded(child: _Mini('Achats', formatMoney(stats.totalAchete))),
-              Expanded(child: _Mini('Règlements', formatMoney(stats.totalRegle))),
+              Expanded(
+                child: _Mini(
+                  credit.lieuCadre != null ? 'Réglé (vos ventes)' : 'Règlements',
+                  formatMoney(stats.totalRegle),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),

@@ -166,7 +166,9 @@ final class WarehouseController extends Controller
 
         $inStock = DB::table('stocks')->where('warehouse_id', $warehouse->id)->where('quantity', '>', 0);
 
-        $value = (float) (clone $inStock)->sum(DB::raw('quantity * average_cost'));
+        $value = (float) (clone $inStock)
+            ->join('products', 'products.id', '=', 'stocks.product_id')
+            ->sum(DB::raw('stocks.quantity * products.cost_price'));
         $references = (clone $inStock)->count();
 
         $belowThreshold = DB::table('stocks')

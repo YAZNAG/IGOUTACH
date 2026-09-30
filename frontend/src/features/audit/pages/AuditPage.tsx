@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { usePermission } from '@/hooks/usePermission'
 import { downloadFile } from '@/lib/download'
 import { useAuditFilterOptions, useAuditLogs } from '../hooks'
@@ -20,7 +22,15 @@ export function AuditPage() {
   const can = usePermission()
   const canExport = can('audit.export')
   const [filters, setFilters] = useState<AuditFilters>({ page: 1, per_page: 50 })
-  const { data, isLoading } = useAuditLogs(filters)
+  const [recherche, setRecherche] = useState('')
+
+  // Le journal est pagine par cinquantaines : la recherche doit descendre au
+  // serveur, sinon elle ne verrait que la page ouverte.
+  const rechercheRetardee = useDebouncedValue(recherche, 300)
+  const { data, isLoading } = useAuditLogs({
+    ...filters,
+    search: rechercheRetardee || undefined,
+  })
   const { data: options } = useAuditFilterOptions()
 
   const logs = data?.data ?? []
@@ -32,6 +42,7 @@ export function AuditPage() {
 
   function exportXlsx() {
     downloadFile('/audit/export', 'journal-audit.xlsx', {
+      search: rechercheRetardee || undefined,
       action: filters.action,
       module: filters.module,
       from: filters.from,
@@ -55,7 +66,20 @@ export function AuditPage() {
       </div>
 
       <Card>
-        <CardHeader title="Filtres" />
+        <CardHeader
+          title="Filtres"
+          action={
+            <SearchInput
+              value={recherche}
+              onChange={(v) => {
+                setRecherche(v)
+                setFilters((prev) => ({ ...prev, page: 1 }))
+              }}
+              placeholder="Description, action, auteur…"
+              className="w-72"
+            />
+          }
+        />
         <CardBody>
           <div className="grid gap-4 sm:grid-cols-4">
             <Field label="Action" htmlFor="f-action">

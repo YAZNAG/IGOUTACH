@@ -1,7 +1,7 @@
 /// Ligne du journal des entrées (GET /stock/entries) ou des sorties
 /// (GET /stock/exits). Les deux contrôleurs renvoient la même forme ;
 /// pour les sorties la quantité est déjà en valeur absolue et le coût
-/// unitaire correspond au CMUP de sortie.
+/// unitaire est celui constaté au moment de la sortie.
 class StockMovementRow {
   const StockMovementRow({
     required this.id,

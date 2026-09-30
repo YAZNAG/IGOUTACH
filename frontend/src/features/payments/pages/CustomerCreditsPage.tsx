@@ -8,24 +8,38 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { chequeDraftComplet, chequeDraftVide } from '@/features/cheques/components/ChequeDraftFields'
 import {
   CustomerChequePanel,
   type CustomerChequeValue,
 } from '@/features/cheques/components/CustomerChequePanel'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { usePermission } from '@/hooks/usePermission'
+import { HistoriqueReglements } from '../components/HistoriqueReglements'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 interface AgingRow {
   customer_id: number
   customer: string
+  customer_code: string | null
   bucket_0_30: number
   bucket_31_60: number
   bucket_61_90: number
   bucket_over_90: number
   total_due: number
+  invoices: number
+  /** Ce que le client doit, lieu par lieu. */
+  by_warehouse: { warehouse_id: number | null; code: string; name: string | null; due: number; invoices: number }[]
+}
+
+interface AgingMeta {
+  /** Renseigné quand l'utilisateur ne voit qu'un seul lieu. */
+  scoped_warehouse_id: number | null
+  total_due: number
+  by_warehouse: { code: string; due: number }[]
 }
 
 interface LedgerEntry {
@@ -112,13 +126,23 @@ export function CustomerCreditsPage() {
   const [aConfirmer, setAConfirmer] = useState<LedgerEntry | null>(null)
   const [erreurSuppression, setErreurSuppression] = useState<string | null>(null)
 
-  const { data: rows = [], isLoading } = useQuery<AgingRow[]>({
+  const { data: aging, isLoading } = useQuery<{ data: AgingRow[]; meta: AgingMeta }>({
     queryKey: ['customers-aging'],
     queryFn: async () => {
-      const { data } = await api.get<{ data: AgingRow[] }>('/customers-aging')
-      return data.data
+      const { data } = await api.get<{ data: AgingRow[]; meta: AgingMeta }>('/customers-aging')
+      return data
     },
   })
+
+  const rows = aging?.data ?? []
+  const meta = aging?.meta
+  // Un responsable ne voit qu'un lieu : lui montrer une colonne « Lieu » qui
+  // repete toujours la meme valeur serait du bruit.
+  const vueParLieu = meta?.scoped_warehouse_id === null
+
+  // La balance agee arrive entiere : le filtre porte sur tous les clients
+  // en creance, pas sur un extrait.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(rows, (r) => [r.customer])
 
   const { data: statement } = useQuery<Statement>({
     queryKey: ['customer-statement', selected?.customer_id],
@@ -500,19 +524,82 @@ export function CustomerCreditsPage() {
         </Card>
       ) : null}
 
+      {/* Le meme client peut devoir a plusieurs points de vente : c'est la
+          repartition, pas le total, qui dit a qui reclamer quoi. */}
+      {vueParLieu && (meta?.by_warehouse.length ?? 0) > 0 ? (
+        <Card>
+          <CardHeader
+            title="Crédit par lieu"
+            hint={`${money(meta?.total_due ?? 0)} DH au total`}
+          />
+          <CardBody className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line text-left text-muted">
+                    <th className="px-5 py-3 font-medium">Lieu</th>
+                    <th className="px-5 py-3 text-right font-medium">Reste dû</th>
+                    <th className="px-5 py-3 text-right font-medium">Part</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {meta?.by_warehouse.map((l) => (
+                    <tr key={l.code} className="border-b border-line last:border-0">
+                      <td className="px-5 py-3 text-ink">{l.code}</td>
+                      <td className="tabular px-5 py-3 text-right font-semibold text-bad">
+                        {money(l.due)} DH
+                      </td>
+                      <td className="tabular px-5 py-3 text-right text-faint">
+                        {(meta?.total_due ?? 0) > 0
+                          ? `${Math.round((l.due / (meta?.total_due ?? 1)) * 100)} %`
+                          : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-line bg-sky-soft/30">
+                    <td className="px-5 py-3 font-semibold text-ink">Total</td>
+                    <td className="tabular px-5 py-3 text-right font-semibold text-ink">
+                      {money(meta?.total_due ?? 0)} DH
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
       <Card>
-        <CardHeader title="Créances par ancienneté" hint={rows.length > 0 ? `${rows.length} client(s)` : undefined} />
+        <CardHeader
+          title="Créances par ancienneté"
+          hint={
+            actif
+              ? `${resultats.length} sur ${rows.length}`
+              : rows.length > 0
+                ? `${rows.length} client(s)`
+                : undefined
+          }
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Client…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
-          ) : rows.length === 0 ? (
-            <p className="p-8 text-center text-sm text-muted">Aucune créance en cours — tout est réglé. ✓</p>
+          ) : resultats.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted">
+              {actif
+                ? 'Aucun client ne correspond à cette recherche.'
+                : 'Aucune créance en cours — tout est réglé. ✓'}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
                     <th className="px-5 py-3 font-medium">Client</th>
+                    {vueParLieu ? <th className="px-5 py-3 font-medium">Lieu</th> : null}
                     <th className="px-5 py-3 text-right font-medium">0 – 30 j</th>
                     <th className="px-5 py-3 text-right font-medium">31 – 60 j</th>
                     <th className="px-5 py-3 text-right font-medium">61 – 90 j</th>
@@ -522,13 +609,26 @@ export function CustomerCreditsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
+                  {resultats.map((r) => (
                     <tr key={r.customer_id} className="border-b border-line last:border-0">
                       <td className="px-5 py-3">
                         <Link to={`/clients/${r.customer_id}`} className="text-ink hover:text-sky hover:underline">
                           {r.customer}
                         </Link>
+                        <span className="ml-2 text-xs text-faint">
+                          {r.invoices} facture(s)
+                        </span>
                       </td>
+                      {vueParLieu ? (
+                        <td className="px-5 py-3">
+                          {r.by_warehouse.map((l) => (
+                            <span key={l.code} className="mr-3 whitespace-nowrap text-xs">
+                              <span className="text-muted">{l.code}</span>{' '}
+                              <span className="tabular font-medium text-ink">{money(l.due)}</span>
+                            </span>
+                          ))}
+                        </td>
+                      ) : null}
                       <td className="tabular px-5 py-3 text-right text-muted">{money(r.bucket_0_30)}</td>
                       <td className="tabular px-5 py-3 text-right text-muted">{money(r.bucket_31_60)}</td>
                       <td className="tabular px-5 py-3 text-right text-warn">{money(r.bucket_61_90)}</td>
@@ -550,6 +650,8 @@ export function CustomerCreditsPage() {
           )}
         </CardBody>
       </Card>
+
+      <HistoriqueReglements />
 
       {erreurSuppression ? (
         <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{erreurSuppression}</p>

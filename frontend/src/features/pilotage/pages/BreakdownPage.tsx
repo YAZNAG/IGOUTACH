@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Card, CardBody } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { ChartCard } from '@/features/dashboard/components/ChartCard'
@@ -70,8 +72,16 @@ function TableauDetail({
 }) {
   const montreLaMarge = lignes.some((l) => l.profit !== undefined)
 
+  // Un decoupage par article compte des centaines de lignes : sans filtre,
+  // le tableau ne sert qu'a faire defiler.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(lignes, (l) => [l.name])
+
   return (
-    <table className="w-full text-sm">
+    <>
+      <div className="mb-3 flex justify-end">
+        <SearchInput value={terme} onChange={setTerme} placeholder={`Filtrer par ${colonneLibelle.toLowerCase()}…`} />
+      </div>
+      <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-line text-left text-muted">
           <th className="py-2 pr-4 font-medium">{colonneLibelle}</th>
@@ -85,14 +95,14 @@ function TableauDetail({
         </tr>
       </thead>
       <tbody>
-        {lignes.length === 0 ? (
+        {resultats.length === 0 ? (
           <tr>
             <td colSpan={montreLaMarge ? 4 : 2} className="py-6 text-center text-muted">
-              Aucune activité sur la période.
+              {actif ? 'Aucune ligne ne correspond à cette recherche.' : 'Aucune activité sur la période.'}
             </td>
           </tr>
         ) : (
-          lignes.map((l) => (
+          resultats.map((l) => (
             <tr key={l.name} className="border-b border-line last:border-0">
               <td className="py-2 pr-4 text-ink">{l.name}</td>
               <td
@@ -125,7 +135,8 @@ function TableauDetail({
           ))
         )}
       </tbody>
-    </table>
+      </table>
+    </>
   )
 }
 

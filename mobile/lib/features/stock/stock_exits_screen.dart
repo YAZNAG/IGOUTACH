@@ -5,7 +5,7 @@ import 'movements_list_screen.dart';
 /// Sorties de stock du lieu de l'utilisateur (GET /stock/exits).
 ///
 /// Ventes, transferts expédiés et régularisations négatives : quantités
-/// affichées en −rouge et valorisées au CMUP de sortie.
+/// affichées en −rouge et valorisées au coût constaté à la sortie.
 class StockExitsScreen extends StatelessWidget {
   const StockExitsScreen({super.key});
 

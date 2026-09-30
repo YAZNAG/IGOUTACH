@@ -15,7 +15,7 @@ import {
 import { useCreateCheque } from '@/features/cheques/hooks'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
-import { cn, formatNumber } from '@/lib/utils'
+import { cn, formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import type { Paginated } from '@/types'
 
 interface PaymentRow {
@@ -27,6 +27,7 @@ interface PaymentRow {
   cheque_status: string | null
   cheque_reference: string | null
   received_at: string
+  created_at: string | null
 }
 
 interface AgingRow {
@@ -158,13 +159,14 @@ function PaymentsTab() {
                   <th className="px-5 py-3 font-medium">Client</th>
                   <th className="px-5 py-3 font-medium">Mode</th>
                   <th className="px-5 py-3 text-right font-medium">Montant (DH)</th>
-                  <th className="px-5 py-3 font-medium">Date</th>
+                  <th className="px-5 py-3 font-medium">Date du règlement</th>
+                  <th className="px-5 py-3 font-medium">Saisi le</th>
                   <th className="px-5 py-3 font-medium">Chèque</th>
                 </tr>
               </thead>
               <tbody>
                 {payments.length === 0 ? (
-                  <tr><td colSpan={6} className="px-5 py-8 text-center text-muted">Aucun encaissement.</td></tr>
+                  <tr><td colSpan={7} className="px-5 py-8 text-center text-muted">Aucun encaissement.</td></tr>
                 ) : (
                   payments.map((p) => (
                     <tr key={p.id} className="border-b border-line last:border-0">
@@ -172,7 +174,8 @@ function PaymentsTab() {
                       <td className="px-5 py-3 text-ink">{p.customer}</td>
                       <td className="px-5 py-3 text-muted">{p.method ?? '—'}</td>
                       <td className="tabular px-5 py-3 text-right font-medium text-ok">{formatNumber(p.amount)}</td>
-                      <td className="px-5 py-3 text-muted">{p.received_at}</td>
+                      <td className="px-5 py-3 text-muted">{formatDate(p.received_at)}</td>
+                      <td className="px-5 py-3 text-faint">{formatDateHeure(p.created_at)}</td>
                       <td className="px-5 py-3">
                         {p.cheque_status !== null ? (
                           <div className="flex items-center gap-2">

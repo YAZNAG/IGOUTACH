@@ -111,7 +111,11 @@ export function GeneralSettingsPage() {
       return (
         <Field key={key} label={meta.label} htmlFor={`s-${key}`}>
           <Select id={`s-${key}`} value={String(value)} disabled={!canManage} onChange={(e) => setValue(key, e.target.value)}>
-            <option value="cmup">CMUP (coût moyen pondéré)</option>
+            {/* Le mecanisme de stock tient toujours une moyenne ponderee en
+                interne — c'est elle qui fait voyager la valeur d'un lieu a
+                l'autre. Elle ne s'affiche plus nulle part : l'application ne
+                montre que le cout d'achat. */}
+            <option value="cmup">Coût d'achat (prix du dernier achat)</option>
           </Select>
         </Field>
       )

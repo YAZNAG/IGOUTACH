@@ -1,4 +1,4 @@
-# Génère les deux APK IGOUTECH liés au serveur de production.
+﻿# Génère les deux APK IGOUTECH liés au serveur de production.
 #
 #   .\build-apk.ps1                      → serveur https://igoutech.optizaworks.com
 #   .\build-apk.ps1 -ApiUrl "http://192.168.1.10:8001/api/v1"   → serveur local

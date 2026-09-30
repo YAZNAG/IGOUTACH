@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth_provider.dart';
 import '../../core/theme.dart';
+import '../cash/cash_remittances_screen.dart';
 import '../cash/cash_screen.dart';
 import '../expenses/expenses_screen.dart';
 import '../inventory/inventories_screen.dart';
 import '../pricing/pricing_screen.dart';
+import '../pricing/purchase_prices_screen.dart';
 import '../stock/customer_return_screen.dart';
 import '../stock/movements_list_screen.dart';
 import '../transfers/transfer_requests_screen.dart';
@@ -123,6 +125,13 @@ class PlusScreen extends StatelessWidget {
         page: () => const CashScreen(),
       ),
       _Entree(
+        icone: Icons.swap_horiz,
+        titre: 'Transferts de caisse',
+        sousTitre: 'Sommes remises à la caisse générale, et leur confirmation',
+        permission: 'cash.remit',
+        page: () => const CashRemittancesScreen(),
+      ),
+      _Entree(
         icone: Icons.account_balance_wallet_outlined,
         titre: 'Crédits clients',
         sousTitre: 'Encours par client, et encaissement',
@@ -150,6 +159,14 @@ class PlusScreen extends StatelessWidget {
         permission: 'price.view',
         lecture: true,
         page: () => const PricingScreen(),
+      ),
+      _Entree(
+        icone: Icons.local_offer_outlined,
+        titre: "Prix d'achat",
+        sousTitre: 'Dernier prix payé par article',
+        permission: 'product.view_cost_price',
+        lecture: true,
+        page: () => const PurchasePricesScreen(),
       ),
     ];
 
@@ -356,3 +373,4 @@ class _NoteReserve extends StatelessWidget {
     );
   }
 }
+

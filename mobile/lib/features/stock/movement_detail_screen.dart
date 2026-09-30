@@ -172,7 +172,7 @@ class _MovementDetailScreenState extends State<MovementDetailScreen> {
                   ].where((s) => s.isNotEmpty).join(' — '),
                 ),
                 _Row(
-                  label: widget.isExit ? 'CMUP' : 'Prix unitaire',
+                  label: widget.isExit ? 'Coût unitaire' : 'Prix unitaire',
                   value: formatMoney(row.unitCost),
                 ),
                 _Row(label: 'Valeur', value: formatMoney(row.lineValue)),

@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useRevokeSession, useSessions } from '../hooks'
 import type { ActiveSession } from '../api/sessionsApi'
@@ -18,6 +20,12 @@ function shortAgent(agent: string | null): string {
 
 export function SessionsPage() {
   const { data: sessions = [], isLoading } = useSessions()
+
+  // Toutes les sessions actives sont chargees d'un coup.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    sessions,
+    (s) => [s.user_name, s.ip_address, s.user_agent],
+  )
   const revokeMutation = useRevokeSession()
   const [toRevoke, setToRevoke] = useState<ActiveSession | null>(null)
 
@@ -29,7 +37,11 @@ export function SessionsPage() {
       </div>
 
       <Card>
-        <CardHeader title="Sessions" hint={String(sessions.length)} />
+        <CardHeader
+          title="Sessions"
+          hint={actif ? `${resultats.length} sur ${sessions.length}` : String(sessions.length)}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Utilisateur, IP, appareil…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -45,10 +57,12 @@ export function SessionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {sessions.length === 0 ? (
-                  <tr><td colSpan={5} className="px-5 py-8 text-center text-muted">Aucune session active.</td></tr>
+                {resultats.length === 0 ? (
+                  <tr><td colSpan={5} className="px-5 py-8 text-center text-muted">
+                    {actif ? 'Aucune session ne correspond à cette recherche.' : 'Aucune session active.'}
+                  </td></tr>
                 ) : (
-                  sessions.map((s) => (
+                  resultats.map((s) => (
                     <tr key={s.id} className="border-b border-line last:border-0">
                       <td className="px-5 py-3 text-ink">
                         <span className="inline-flex items-center gap-2">

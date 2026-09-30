@@ -15,6 +15,8 @@ export interface AuditLog {
 }
 
 export interface AuditFilters {
+  /** Texte libre : description, action, ou nom de l'auteur. */
+  search?: string
   action?: string
   module?: string
   from?: string

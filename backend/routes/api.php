@@ -244,6 +244,7 @@ Route::prefix('v1')->group(function () {
         Route::get('transfers/{transfer}/pdf', [TransferController::class, 'pdf'])->middleware('can:stock.view');
         Route::post('transfers/{transfer}/receive', [TransferController::class, 'receive'])->middleware('can:transfer.receive');
         // Un lieu demande, la direction accorde : la demande ne deplace rien.
+        Route::get('transfer-requests/sources', [TransferController::class, 'requestSources'])->middleware('can:transfer.request');
         Route::post('transfer-requests', [TransferController::class, 'request'])->middleware('can:transfer.request');
         Route::post('transfers/{transfer}/approve', [TransferController::class, 'approve'])->middleware('can:transfer.approve');
         Route::post('transfers/{transfer}/refuse', [TransferController::class, 'refuse'])->middleware('can:transfer.approve');
@@ -266,12 +267,22 @@ Route::prefix('v1')->group(function () {
 
         // Crédits fournisseurs : reste à payer + règlements (total ou partiel)
         Route::get('supplier-credits', [SupplierCreditController::class, 'index'])->middleware('can:receipt.view');
+        Route::get('supplier-payments', [SupplierCreditController::class, 'paymentsJournal'])->middleware('can:receipt.view');
         Route::get('suppliers/{supplierId}/payments', [SupplierCreditController::class, 'supplierPayments'])->whereNumber('supplierId')->middleware('can:receipt.view');
         Route::get('goods-receipts/{goodsReceipt}/payments', [SupplierCreditController::class, 'payments'])->middleware('can:receipt.view');
         Route::post('goods-receipts/{goodsReceipt}/pay', [SupplierCreditController::class, 'pay'])->middleware('can:receipt.pay');
 
         // Ventes — devis & factures
         Route::get('sales', [SaleController::class, 'index'])->middleware('can:sale.create');
+        Route::get('sales/journal', [SaleController::class, 'journal'])->middleware('can:sale.create');
+        // Les exports sont declares AVANT « sales/{sale} » : sinon « export »
+        // serait pris pour un identifiant de vente et la route ne repondrait
+        // jamais.
+        Route::get('sales/export', [SaleController::class, 'export'])->middleware('can:sale.create');
+        Route::get('sales/summary', [SaleController::class, 'summary'])->middleware('can:sale.create');
+        // Le detail ligne par ligne montre le prix d'achat : il suit la
+        // permission qui garde les couts, pas celle des ventes.
+        Route::get('sales/lines/export', [SaleController::class, 'linesExport'])->middleware('can:product.view_cost_price');
         Route::post('sales', [SaleController::class, 'store'])->middleware('can:sale.create');
         Route::get('sales/price', [SaleController::class, 'price'])->middleware('can:sale.create');
         Route::get('sales/{sale}', [SaleController::class, 'show'])->middleware('can:sale.create');
@@ -334,6 +345,7 @@ Route::prefix('v1')->group(function () {
         // Caisse — sessions
         Route::get('cash-sessions', [CashSessionController::class, 'index'])->middleware('can:cash.manage');
         Route::get('cash-sessions/current', [CashSessionController::class, 'current'])->middleware('can:payment.create');
+        Route::get('cash-sessions/overview', [CashSessionController::class, 'overview'])->middleware('can:stock.view_global');
         Route::post('cash-sessions/open', [CashSessionController::class, 'open'])->middleware('can:cash.open');
         Route::post('cash-sessions/{cashSession}/close', [CashSessionController::class, 'close'])->middleware('can:cash.manage');
 
@@ -344,6 +356,7 @@ Route::prefix('v1')->group(function () {
         Route::post('cash-remittances', [CashRemittanceController::class, 'store'])->middleware('can:cash.remit');
         Route::delete('cash-remittances/{cashRemittance}', [CashRemittanceController::class, 'destroy'])->middleware('can:cash.remit');
         Route::post('cash-remittances/{cashRemittance}/receive', [CashRemittanceController::class, 'receive'])->middleware('can:cash.remit_receive');
+        Route::post('cash-remittances/{cashRemittance}/refuse', [CashRemittanceController::class, 'refuse'])->middleware('can:cash.remit_receive');
 
         // Charges
         Route::get('expense-categories', [ExpenseController::class, 'categories'])->middleware('can:expense.create');
@@ -353,6 +366,7 @@ Route::prefix('v1')->group(function () {
         Route::put('expense-categories/{expenseCategory}', [ExpenseController::class, 'updateCategory'])->middleware('can:expense.approve');
         Route::delete('expense-categories/{expenseCategory}', [ExpenseController::class, 'destroyCategory'])->middleware('can:expense.approve');
         Route::get('expenses', [ExpenseController::class, 'index'])->middleware('can:expense.create');
+        Route::get('expenses/export', [ExpenseController::class, 'export'])->middleware('can:expense.create');
         Route::post('expenses', [ExpenseController::class, 'store'])->middleware('can:expense.create');
         Route::patch('expenses/{expense}/decide', [ExpenseController::class, 'decide'])->middleware('can:expense.approve');
         // Règlement d'une charge restée au crédit. Droit distinct de la

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth_provider.dart';
@@ -6,8 +6,10 @@ import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../models/warehouse.dart';
 import '../alerts/alerts_screen.dart';
+import '../cash/cash_remittances_screen.dart';
 import '../cash/cash_screen.dart';
 import '../catalog/catalog_screen.dart';
+import '../pricing/purchase_prices_screen.dart';
 import '../credits/credits_screen.dart';
 import '../customers/customers_screen.dart';
 import '../expenses/expenses_screen.dart';
@@ -226,11 +228,25 @@ class _HomeShellState extends State<HomeShell> {
           builder: (_) => const PricingScreen(),
         ),
         _Module(
+          title: "Prix d'achat",
+          subtitle: 'Dernier prix payé, par article',
+          icon: Icons.local_offer_rounded,
+          permission: 'product.view_cost_price',
+          builder: (_) => const PurchasePricesScreen(),
+        ),
+        _Module(
           title: 'Caisse',
           subtitle: 'Fonds, solde et remises',
           icon: Icons.savings_rounded,
           permission: 'payment.create',
           builder: (_) => const CashScreen(),
+        ),
+        _Module(
+          title: 'Transferts de caisse',
+          subtitle: 'Vers la caisse générale, et leur confirmation',
+          icon: Icons.swap_horiz_rounded,
+          permission: 'cash.remit',
+          builder: (_) => const CashRemittancesScreen(),
         ),
         _Module(
           title: 'Alertes',
@@ -636,3 +652,4 @@ class _ModuleCard extends StatelessWidget {
     );
   }
 }
+

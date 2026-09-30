@@ -25,11 +25,25 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   final _api = ApiClient.instance;
   final _formKey = GlobalKey<FormState>();
 
+  /// Pour remonter vers le champ fautif : le libelle et le montant sont en
+  /// haut du formulaire, le bouton en bas. Sans cela, un champ refuse restait
+  /// hors de l'ecran et le bouton semblait ne rien faire.
+  final _defilement = ScrollController();
+
   final _label = TextEditingController();
   final _amount = TextEditingController();
 
   List<ExpenseCategory> _categories = [];
   int? _categoryId;
+
+  /// Valeur reservee au choix « Autre » : elle ne peut correspondre a aucune
+  /// categorie reelle, dont les identifiants sont positifs.
+  static const int _autre = -1;
+
+  /// Nom saisi quand la depense ne rentre dans aucune famille existante.
+  /// Sans cette porte de sortie, une depense inhabituelle finit rangee sous
+  /// une famille approchante et le suivi par type perd son sens.
+  final _nouveauType = TextEditingController();
 
   /// Modes de règlement proposés quand la charge est payée sur-le-champ.
   List<({int id, String name})> _modes = [];
@@ -67,6 +81,8 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   void dispose() {
     _label.dispose();
     _amount.dispose();
+    _nouveauType.dispose();
+    _defilement.dispose();
     super.dispose();
   }
 
@@ -146,9 +162,21 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
 
   Future<void> _submit() async {
     setState(() => _submitted = true);
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      setState(() => _error =
+          'Complétez les champs signalés en rouge : type, montant et description.');
+      if (_defilement.hasClients) {
+        _defilement.animateTo(0,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
+      return;
+    }
     if (_categoryId == null) {
       setState(() => _error = 'Sélectionnez une catégorie.');
+      return;
+    }
+    if (_categoryId == _autre && _nouveauType.text.trim().isEmpty) {
+      setState(() => _error = 'Nommez le type de charge.');
       return;
     }
     // Une charge déclarée payée sans mode de règlement ne se rapproche
@@ -167,7 +195,12 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       await _api.dio.post<Map<String, dynamic>>(
         '/expenses',
         data: {
-          'expense_category_id': _categoryId,
+          // Un type nomme a la main rejoint le referentiel cote serveur :
+          // le suivant qui engage la meme depense le trouvera dans la liste.
+          if (_categoryId == _autre)
+            'category_name': _nouveauType.text.trim()
+          else
+            'expense_category_id': _categoryId,
           'warehouse_id': ?_scope?.selectedId,
           'label': _label.text.trim(),
           'amount': double.parse(_amount.text.trim().replaceAll(',', '.')),
@@ -186,6 +219,10 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
         _saving = false;
         _error = friendlyError(e);
       });
+      if (_defilement.hasClients) {
+        _defilement.animateTo(_defilement.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
     }
   }
 
@@ -216,7 +253,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 loading: _saving,
                 summaryLabel: 'Montant',
                 summaryValue: formatMoney(_parsedAmount ?? 0),
-                onPressed: _categories.isEmpty ? null : _submit,
+                onPressed: _submit,
               ),
       ),
     );
@@ -231,34 +268,46 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
           ? AutovalidateMode.onUserInteraction
           : AutovalidateMode.disabled,
       child: ListView(
+        controller: _defilement,
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
         children: [
-          if (_categories.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 16),
-              child: ErrorBox(
-                message: 'Aucune catégorie de charge n\'est définie. '
-                    'Demandez à un responsable d\'en créer une.',
-              ),
-            )
-          else
-            DropdownButtonFormField<int>(
+          DropdownButtonFormField<int>(
               initialValue: _categoryId,
               isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Catégorie *',
                 prefixIcon: Icon(Icons.category_outlined),
               ),
-              items: _categories
-                  .map(
-                    (c) => DropdownMenuItem(
-                      value: c.id,
-                      child: Text(c.name, overflow: TextOverflow.ellipsis),
-                    ),
-                  )
-                  .toList(),
+              items: [
+                ..._categories.map(
+                  (c) => DropdownMenuItem(
+                    value: c.id,
+                    child: Text(c.name, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+                const DropdownMenuItem(
+                  value: _autre,
+                  child: Text('Autre — à nommer'),
+                ),
+              ],
               onChanged: (value) => setState(() => _categoryId = value),
             ),
+          if (_categoryId == _autre) ...[
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _nouveauType,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: 'Nom du type de charge *',
+                hintText: 'Frais de stationnement, amende…',
+                prefixIcon: Icon(Icons.edit_outlined),
+              ),
+              validator: (v) => (v ?? '').trim().isEmpty
+                  ? 'Nommez le type de charge.'
+                  : null,
+            ),
+          ],
           const SizedBox(height: 18),
           TextFormField(
             controller: _amount,

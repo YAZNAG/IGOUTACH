@@ -21,6 +21,7 @@ it('vend à un client de passage : sans fiche, payé comptant, aucun crédit', f
     $product = Product::factory()->create([
         'category_id' => Category::factory()->create()->id,
         'unit_id' => Unit::factory()->create()->id,
+        'cost_price' => 10,
     ]);
 
     Stock::withoutGlobalScopes()->create([
@@ -53,4 +54,11 @@ it('vend à un client de passage : sans fiche, payé comptant, aucun crédit', f
 
     // Aucune écriture de crédit client.
     expect(CustomerLedgerEntry::count())->toBe(0);
+
+    // L'argent est dans le tiroir : la caisse doit le compter, bien qu'aucun
+    // reglement ne soit enregistre (regression du 17/09/2026, 72 DH manquants).
+    $caisse = app(\App\Domain\Sales\Services\CashBoxService::class)
+        ->solde($warehouse->id, null, now()->startOfDay());
+    expect($caisse['cash_in'])->toEqual(75.0)
+        ->and($caisse['expected'])->toEqual(75.0);
 });

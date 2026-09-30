@@ -69,6 +69,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   bool _enregistrement = false;
 
   String _reference = '';
+  String? _creeLe;
+  String? _confirmeLe;
   String _statut = 'draft';
   String _type = 'invoice';
   String? _client;
@@ -106,6 +108,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       if (!mounted) return;
       setState(() {
         _reference = d['reference'] as String? ?? '';
+        _creeLe = d['created_at'] as String?;
+        _confirmeLe = d['confirmed_at'] as String?;
         _statut = d['status'] as String? ?? 'draft';
         _type = d['type'] as String? ?? 'invoice';
         final client = d['customer'] as Map<String, dynamic>?;
@@ -378,6 +382,18 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     ),
                   ],
                 ),
+                // Creation et confirmation sont deux moments distincts :
+                // un bon saisi le lundi peut n'etre confirme que le jeudi.
+                const SizedBox(height: 4),
+                Text(
+                  'Créée le ${formatDateHeure(_creeLe)}',
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                ),
+                if (_confirmeLe != null)
+                  Text(
+                    'Confirmée le ${formatDateHeure(_confirmeLe)}',
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                  ),
                 const SizedBox(height: 8),
                 AmountText(formatMoney(_brouillon ? _totalLocal : _total), fontSize: 22),
                 if (!_brouillon && !_devis && _paye > 0) ...[

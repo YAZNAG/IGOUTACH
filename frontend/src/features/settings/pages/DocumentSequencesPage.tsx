@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { Input } from '@/components/ui/Input'
 import { usePermission } from '@/hooks/usePermission'
 import { useDocumentSequences, useUpdateDocumentSequence } from '../hooks'
@@ -18,6 +20,13 @@ export function DocumentSequencesPage() {
   const can = usePermission()
   const canManage = can('settings.manage')
   const { data: sequences = [], isLoading } = useDocumentSequences()
+
+  // Le libelle affiche vient de KEY_LABELS : chercher « facture »
+  // doit trouver la ligne, pas seulement la cle technique.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    sequences,
+    (s) => [KEY_LABELS[s.key] ?? s.key, s.prefix],
+  )
   const updateMutation = useUpdateDocumentSequence()
 
   const [drafts, setDrafts] = useState<Record<number, { prefix: string; current: number }>>({})
@@ -36,7 +45,11 @@ export function DocumentSequencesPage() {
       </div>
 
       <Card>
-        <CardHeader title="Séquences" />
+        <CardHeader
+          title="Séquences"
+          hint={actif ? `${resultats.length} sur ${sequences.length}` : undefined}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Document ou préfixe…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -51,7 +64,14 @@ export function DocumentSequencesPage() {
                 </tr>
               </thead>
               <tbody>
-                {sequences.map((s) => {
+                {resultats.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-8 text-center text-muted">
+                      {actif ? 'Aucune séquence ne correspond à cette recherche.' : 'Aucune séquence.'}
+                    </td>
+                  </tr>
+                ) : null}
+                {resultats.map((s) => {
                   const draft = drafts[s.id] ?? { prefix: s.prefix, current: s.current }
                   return (
                     <tr key={s.id} className="border-b border-line last:border-0">

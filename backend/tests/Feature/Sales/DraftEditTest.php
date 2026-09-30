@@ -22,6 +22,9 @@ function editProduit(string $nom): Product
 {
     return Product::factory()->create([
         'name' => $nom,
+        // Prix d'achat fixe : un cout aleatoire depassait parfois le prix de
+        // vente des tests, que la regle du prix plancher refuse.
+        'cost_price' => 1,
         'category_id' => Category::factory()->create()->id,
         'unit_id' => Unit::factory()->create()->id,
     ]);

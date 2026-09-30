@@ -94,20 +94,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 36),
                     TextFormField(
                       controller: _emailController,
+                      // Le clavier reste celui du texte : il porte le « @ »
+                      // et les chiffres, alors que le clavier numerique
+                      // interdirait de taper une adresse.
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
                       autofillHints: const [AutofillHints.username],
                       textInputAction: TextInputAction.next,
                       style: const TextStyle(fontSize: 16),
                       decoration: const InputDecoration(
-                        labelText: 'Adresse e-mail',
-                        hintText: 'nom@entreprise.ma',
-                        prefixIcon: Icon(Icons.mail_outline),
+                        labelText: 'E-mail ou telephone',
+                        hintText: 'nom@entreprise.ma ou 06 12 34 56 78',
+                        prefixIcon: Icon(Icons.person_outline),
                       ),
                       validator: (value) {
                         final v = value?.trim() ?? '';
-                        if (v.isEmpty) return 'L\'adresse e-mail est requise.';
-                        if (!v.contains('@')) return 'Adresse e-mail invalide.';
+                        if (v.isEmpty) {
+                          return 'Saisissez votre e-mail ou votre numero.';
+                        }
+                        if (v.contains('@')) return null;
+
+                        // Un numero doit porter assez de chiffres pour
+                        // designer une ligne ; en dessous, c'est une faute
+                        // de frappe qu'il vaut mieux signaler tout de suite.
+                        final chiffres = v.replaceAll(RegExp(r'\D'), '');
+                        if (chiffres.length < 9) {
+                          return 'E-mail ou numero de telephone invalide.';
+                        }
                         return null;
                       },
                     ),

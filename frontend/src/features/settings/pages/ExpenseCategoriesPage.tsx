@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -53,6 +55,13 @@ export function ExpenseCategoriesPage() {
       return data.data
     },
   })
+
+  // Le referentiel est charge en entier, inactifs compris : le filtre
+  // porte donc bien sur toute la liste.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    types,
+    (t) => [t.name],
+  )
 
   function apresSucces() {
     qc.invalidateQueries({ queryKey: CLE })
@@ -163,7 +172,11 @@ export function ExpenseCategoriesPage() {
       ) : null}
 
       <Card>
-        <CardHeader title="Liste" hint={`${types.length} type(s)`} />
+        <CardHeader
+          title="Liste"
+          hint={actif ? `${resultats.length} sur ${types.length}` : `${types.length} type(s)`}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Libellé…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -177,14 +190,14 @@ export function ExpenseCategoriesPage() {
                 </tr>
               </thead>
               <tbody>
-                {types.length === 0 ? (
+                {resultats.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="px-5 py-8 text-center text-muted">
-                      Aucun type de charge.
+                      {actif ? 'Aucun type ne correspond à cette recherche.' : 'Aucun type de charge.'}
                     </td>
                   </tr>
                 ) : (
-                  types.map((t) => (
+                  resultats.map((t) => (
                     <tr key={t.id} className="border-b border-line last:border-0">
                       <td className="px-5 py-3 text-ink">{t.name}</td>
                       <td className="px-5 py-3">

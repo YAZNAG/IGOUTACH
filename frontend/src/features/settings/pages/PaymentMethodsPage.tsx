@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -30,6 +32,13 @@ export function PaymentMethodsPage() {
   const can = usePermission()
   const canManage = can('payment_method.manage')
   const { data: methods = [], isLoading } = usePaymentMethods()
+
+  // Recherche sur des lignes deja toutes chargees : rien
+  // n'echappe au filtre, contrairement a une liste paginee.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    methods,
+    (m) => [m.code, m.name, m.type],
+  )
   const createMutation = useCreatePaymentMethod()
   const updateMutation = useUpdatePaymentMethod()
   const deleteMutation = useDeletePaymentMethod()
@@ -103,7 +112,11 @@ export function PaymentMethodsPage() {
       ) : null}
 
       <Card>
-        <CardHeader title="Liste" hint={String(methods.length)} />
+        <CardHeader
+          title="Liste"
+          hint={actif ? `${resultats.length} sur ${methods.length}` : String(methods.length)}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Code, nom ou type…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -119,10 +132,12 @@ export function PaymentMethodsPage() {
                 </tr>
               </thead>
               <tbody>
-                {methods.length === 0 ? (
-                  <tr><td colSpan={5} className="px-5 py-8 text-center text-muted">Aucun mode de paiement.</td></tr>
+                {resultats.length === 0 ? (
+                  <tr><td colSpan={5} className="px-5 py-8 text-center text-muted">
+                    {actif ? 'Aucun mode ne correspond à cette recherche.' : 'Aucun mode de paiement.'}
+                  </td></tr>
                 ) : (
-                  methods.map((m) => (
+                  resultats.map((m) => (
                     <tr key={m.id} className="border-b border-line last:border-0">
                       <td className="mono px-5 py-3 text-muted">{m.code}</td>
                       <td className="px-5 py-3 text-ink">{m.name}</td>

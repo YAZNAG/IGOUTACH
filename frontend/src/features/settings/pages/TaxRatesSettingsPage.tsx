@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -25,6 +27,12 @@ export function TaxRatesSettingsPage() {
   const canManage = can('tax_rate.manage')
 
   const { data: rates = [], isLoading } = useTaxRates()
+
+  // La liste est chargee en entier : le filtre voit tout.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    rates,
+    (rate) => [rate.label, rate.rate],
+  )
   const createMutation = useCreateTaxRate()
   const updateMutation = useUpdateTaxRate()
   const deleteMutation = useDeleteTaxRate()
@@ -67,14 +75,17 @@ export function TaxRatesSettingsPage() {
       <Card>
         <CardHeader
           title="Taux de TVA"
-          hint={`${rates.length} taux`}
+          hint={actif ? `${resultats.length} sur ${rates.length}` : `${rates.length} taux`}
           action={
-            canManage && !panelOpen ? (
-              <Button size="sm" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
-                Nouveau taux
-              </Button>
-            ) : undefined
+            <div className="flex items-center gap-2">
+              <SearchInput value={terme} onChange={setTerme} placeholder="Libellé ou taux…" className="w-52" />
+              {canManage && !panelOpen ? (
+                <Button size="sm" onClick={openCreate}>
+                  <Plus className="h-4 w-4" />
+                  Nouveau taux
+                </Button>
+              ) : null}
+            </div>
           }
         />
         <CardBody className={panelOpen ? '' : 'p-0'}>
@@ -143,7 +154,14 @@ export function TaxRatesSettingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {rates.map((rate) => (
+                {resultats.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-8 text-center text-muted">
+                      {actif ? 'Aucun taux ne correspond à cette recherche.' : 'Aucun taux de TVA.'}
+                    </td>
+                  </tr>
+                ) : null}
+                {resultats.map((rate) => (
                   <tr key={rate.id} className="border-b border-line last:border-0">
                     <td className="tabular px-5 py-3 font-medium text-ink">{rate.rate}%</td>
                     <td className="px-5 py-3 text-muted">{rate.label}</td>

@@ -74,9 +74,25 @@ export interface LedgerEntry {
   note: string | null
 }
 
+/** Part de la dette nee dans un point de vente donne. */
+export interface DuParLieu {
+  warehouse_id: number | null
+  code: string
+  name?: string | null
+  due: number
+  invoices: number
+}
+
 export interface CustomerStatement {
   customer: { id: number; code: string; name: string }
+  /** Reste du sur les factures non soldees : le montant qui se reclame. */
   balance: number
+  /** Solde du grand-livre. Il s'ecarte du precedent quand un reglement n'a
+   *  ete impute a aucune facture — l'ecart signale une imputation a faire. */
+  ledger_balance?: number
+  /** Lieu sur lequel le releve est cadre, null pour qui voit tout. */
+  scoped_warehouse_id: number | null
+  by_warehouse?: DuParLieu[]
   credit_limit: number
   is_blocked: boolean
   entries: LedgerEntry[]

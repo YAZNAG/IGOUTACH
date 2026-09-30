@@ -3,10 +3,13 @@ import { Coins, Download, Percent, TrendingUp, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { ChartCard } from '@/features/dashboard/components/ChartCard'
+import { RevenueProfitChart } from '@/features/dashboard/components/RevenueProfitChart'
 import { RankedBarChart } from '@/features/dashboard/components/RankedBarChart'
 import { StatTile } from '@/features/dashboard/components/StatTile'
 import { chartColors } from '@/features/dashboard/components/chartTheme'
@@ -70,6 +73,62 @@ interface ProfitPayload {
   by_warehouse: ProfitRow[]
   by_customer: ProfitRow[]
   by_supplier: ProfitRow[]
+  /** Charges de la période : ce que la marge brute ne dit pas. */
+  expenses: { total: number; count: number; by_category: { name: string; amount: number; count: number }[] }
+  /** Marge brute moins charges. Absent sans la permission sur les coûts. */
+  net_result?: number
+  cash: { revenue: number; collected: number; credit: number; documents: number }
+  series: { date: string; documents: number; revenue: number; cost?: number; profit?: number }[]
+  previous: {
+    from: string
+    to: string
+    revenue: number
+    documents: number
+    expenses: number
+    cost?: number
+    profit?: number
+    net_result?: number
+  }
+}
+
+/** Variation entre deux périodes, en pourcentage. */
+function variation(actuel: number, precedent: number): number | null {
+  // Partir de zéro n'a pas de pourcentage : afficher « +100 % » ou « ∞ »
+  // laisserait croire à une progression mesurable.
+  if (Math.abs(precedent) < 0.005) return null
+  return Math.round(((actuel - precedent) / Math.abs(precedent)) * 1000) / 10
+}
+
+/** Libellé d'écart, prêt à poser sous un indicateur. */
+function ecart(actuel: number, precedent: number): string {
+  const v = variation(actuel, precedent)
+  if (v === null) {
+    return precedent === 0 && actuel === 0 ? 'inchangé' : 'période précédente à zéro'
+  }
+  return `${v > 0 ? '+' : ''}${v} % vs période précédente`
+}
+
+/** Bornes des raccourcis de période, au format des champs date. */
+function periodes(): { cle: string; libelle: string; du: string; au: string }[] {
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const aujourdhui = new Date()
+  const ilYA = (n: number) => {
+    const d = new Date()
+    d.setDate(d.getDate() - n)
+    return d
+  }
+  const debutMois = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), 1)
+  const debutMoisDernier = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth() - 1, 1)
+  const finMoisDernier = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), 0)
+
+  return [
+    { cle: 'mois', libelle: 'Ce mois', du: iso(debutMois), au: iso(aujourdhui) },
+    { cle: 'mois-1', libelle: 'Mois dernier', du: iso(debutMoisDernier), au: iso(finMoisDernier) },
+    { cle: '7j', libelle: '7 derniers jours', du: iso(ilYA(6)), au: iso(aujourdhui) },
+    { cle: '30j', libelle: '30 derniers jours', du: iso(ilYA(29)), au: iso(aujourdhui) },
+    { cle: 'annee', libelle: 'Cette année', du: `${aujourdhui.getFullYear()}-01-01`, au: iso(aujourdhui) },
+  ]
 }
 
 function premierDuMois(): string {
@@ -182,7 +241,9 @@ export function ReportsPage() {
   const { data: profit } = useQuery<ProfitPayload>({
     queryKey: ['report-profit', from, to],
     queryFn: async () => {
-      const { data } = await api.get<{ data: ProfitPayload }>('/reports/profit', {
+      // `/reports/profit` n'a jamais existe : la page appelait une route
+      // absente, et tout le haut de l'ecran restait vide sans message.
+      const { data } = await api.get<{ data: ProfitPayload }>('/reports/breakdown', {
         params: { from, to },
       })
       return data.data
@@ -241,6 +302,7 @@ export function ReportsPage() {
 
   const groupLabel = group === 'warehouse' ? 'Lieu' : group === 'seller' ? 'Vendeur' : 'Article'
   const totaux = profit?.totals
+  const precedent = profit?.previous
   const dormantTotal = (dormant?.rows ?? []).reduce((s, r) => s + r.immobilized_value, 0)
 
   const vues = {
@@ -264,6 +326,12 @@ export function ReportsPage() {
     },
   }[vue]
 
+  // Les deux tableaux du bas ne montrent que vingt lignes : y chercher un
+  // article etait impossible. Le filtre porte sur tout le rapport, la
+  // troncature ne s'applique qu'ensuite.
+  const marges = useRechercheLocale(margins?.rows ?? [], (r) => [r.sku, r.name])
+  const dormants = useRechercheLocale(dormant?.rows ?? [], (r) => [r.sku, r.name])
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -282,7 +350,34 @@ export function ReportsPage() {
       {/* La période commande toute la page : elle vit en haut, pas enfouie
           dans la première carte. */}
       <Card>
-        <CardBody className="grid gap-4 sm:grid-cols-3">
+        <CardBody className="space-y-4">
+          {/* Choisir deux dates a la main pour « ce mois » est une corvee
+              repetee a chaque visite. */}
+          <div className="flex flex-wrap gap-2">
+            {periodes().map((p) => {
+              const actif = from === p.du && to === p.au
+              return (
+                <button
+                  key={p.cle}
+                  type="button"
+                  onClick={() => {
+                    setFrom(p.du)
+                    setTo(p.au)
+                  }}
+                  className={cn(
+                    'rounded-lg border px-3 py-1.5 text-sm transition-colors',
+                    actif
+                      ? 'border-brand bg-brand text-white'
+                      : 'border-line text-muted hover:bg-bg hover:text-ink',
+                  )}
+                >
+                  {p.libelle}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Du" htmlFor="rep-from">
             <Input id="rep-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           </Field>
@@ -300,6 +395,7 @@ export function ReportsPage() {
               <option value="product">Article (top 100)</option>
             </Select>
           </Field>
+          </div>
         </CardBody>
       </Card>
 
@@ -310,32 +406,210 @@ export function ReportsPage() {
           value={totaux?.revenue ?? 0}
           icon={TrendingUp}
           currency
-          hint={`${formatNumber(totaux?.documents ?? 0)} facture(s)`}
+          hint={
+            precedent
+              ? ecart(totaux?.revenue ?? 0, precedent.revenue)
+              : `${formatNumber(totaux?.documents ?? 0)} facture(s)`
+          }
         />
         <StatTile
-          label="Coût des marchandises"
-          value={totaux?.cost ?? 0}
-          icon={Wallet}
-          tone="navy"
-          currency
-          hint="Au prix d'achat de l'article"
-        />
-        <StatTile
-          label="Bénéfice"
+          label="Marge brute"
           value={totaux?.profit ?? 0}
           icon={Coins}
           tone={(totaux?.profit ?? 0) >= 0 ? 'ok' : 'bad'}
           currency
-          hint="Chiffre d'affaires moins coût"
+          hint={
+            precedent?.profit !== undefined
+              ? ecart(totaux?.profit ?? 0, precedent.profit)
+              : 'Chiffre d\'affaires moins coût des marchandises'
+          }
         />
         <StatTile
-          label="Taux de marge"
-          value={totaux?.margin_percent ?? 0}
+          label="Charges"
+          value={profit?.expenses.total ?? 0}
+          icon={Wallet}
+          tone="warn"
+          currency
+          hint={
+            precedent
+              ? ecart(profit?.expenses.total ?? 0, precedent.expenses)
+              : `${formatNumber(profit?.expenses.count ?? 0)} charge(s)`
+          }
+        />
+        {/* Le chiffre qu'on vient chercher : ce qui reste une fois tout paye. */}
+        <StatTile
+          label="Résultat net"
+          value={profit?.net_result ?? 0}
           icon={Percent}
-          tone="sky"
-          hint="Part du chiffre d'affaires qui reste"
+          tone={(profit?.net_result ?? 0) >= 0 ? 'ok' : 'bad'}
+          currency
+          hint={
+            precedent?.net_result !== undefined
+              ? ecart(profit?.net_result ?? 0, precedent.net_result)
+              : 'Marge brute moins charges'
+          }
         />
       </div>
+
+      {/* Le compte de résultat, en une colonne qui se lit de haut en bas.
+          Les quatre tuiles donnent les chiffres ; celui-ci montre comment on
+          passe de l'un à l'autre — c'est la question « où part l'argent ». */}
+      {profit ? (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-1">
+            <CardHeader title="Compte de résultat" hint="Du chiffre d'affaires à ce qui reste." />
+            <CardBody className="p-0">
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr className="border-b border-line">
+                    <td className="px-5 py-3 text-ink">Chiffre d'affaires</td>
+                    <td className="tabular px-5 py-3 text-right font-medium text-ink">
+                      {formatCurrency(totaux?.revenue ?? 0)}
+                    </td>
+                  </tr>
+                  {totaux?.cost !== undefined ? (
+                    <tr className="border-b border-line">
+                      <td className="px-5 py-3 text-muted">− Coût des marchandises</td>
+                      <td className="tabular px-5 py-3 text-right text-muted">
+                        −{formatCurrency(totaux.cost)}
+                      </td>
+                    </tr>
+                  ) : null}
+                  <tr className="border-b border-line bg-sky-soft/30">
+                    <td className="px-5 py-3 font-medium text-ink">= Marge brute</td>
+                    <td className="tabular px-5 py-3 text-right font-semibold text-ink">
+                      {formatCurrency(totaux?.profit ?? 0)}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-line">
+                    <td className="px-5 py-3 text-muted">
+                      − Charges
+                      <span className="ml-2 text-xs text-faint">
+                        {formatNumber(profit.expenses.count)} écriture(s)
+                      </span>
+                    </td>
+                    <td className="tabular px-5 py-3 text-right text-warn">
+                      −{formatCurrency(profit.expenses.total)}
+                    </td>
+                  </tr>
+                  <tr className="border-t-2 border-line bg-bg">
+                    <td className="px-5 py-4 font-semibold text-ink">= Résultat net</td>
+                    <td
+                      className={cn(
+                        'tabular px-5 py-4 text-right text-lg font-semibold',
+                        (profit.net_result ?? 0) >= 0 ? 'text-ok' : 'text-bad',
+                      )}
+                    >
+                      {formatCurrency(profit.net_result ?? 0)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Charges par famille"
+              hint={
+                profit.expenses.total > 0
+                  ? `${formatCurrency(profit.expenses.total)} sur la période`
+                  : undefined
+              }
+            />
+            <CardBody className="p-0">
+              {profit.expenses.by_category.length === 0 ? (
+                <p className="p-8 text-center text-sm text-muted">
+                  Aucune charge enregistrée sur la période.
+                </p>
+              ) : (
+                <table className="w-full text-sm">
+                  <tbody>
+                    {profit.expenses.by_category.map((c) => (
+                      <tr key={c.name} className="border-b border-line last:border-0">
+                        <td className="px-5 py-3 text-ink">
+                          {c.name}
+                          <span className="ml-2 text-xs text-faint">{c.count}</span>
+                        </td>
+                        <td className="tabular px-5 py-3 text-right text-muted">
+                          {formatCurrency(c.amount)}
+                        </td>
+                        <td className="w-20 px-5 py-3 text-right text-xs text-faint">
+                          {profit.expenses.total > 0
+                            ? `${Math.round((c.amount / profit.expenses.total) * 100)} %`
+                            : ''}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardBody>
+          </Card>
+
+          {/* Vendu n'est pas encaisse : avec plus du tiers du chiffre a
+              credit, confondre les deux fait croire disponible un argent qui
+              ne l'est pas. */}
+          <Card>
+            <CardHeader title="Encaissé et crédit" hint="Sur les factures de la période." />
+            <CardBody className="space-y-4">
+              <div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted">Encaissé</span>
+                  <span className="tabular font-semibold text-ok">
+                    {formatCurrency(profit.cash.collected)}
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted">Resté à crédit</span>
+                  <span className="tabular font-semibold text-bad">
+                    {formatCurrency(profit.cash.credit)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-3 overflow-hidden rounded-full bg-line">
+                <div
+                  className="h-full bg-ok"
+                  style={{
+                    width: `${
+                      profit.cash.revenue > 0
+                        ? Math.round((profit.cash.collected / profit.cash.revenue) * 100)
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+
+              <p className="text-sm text-muted">
+                {profit.cash.revenue > 0
+                  ? `${Math.round((profit.cash.collected / profit.cash.revenue) * 100)} % du chiffre d'affaires est rentré, sur ${formatNumber(profit.cash.documents)} facture(s).`
+                  : 'Aucune facture sur la période.'}
+              </p>
+            </CardBody>
+          </Card>
+        </div>
+      ) : null}
+
+      {/* L'évolution : un total dit combien, pas si la tendance monte. */}
+      <ChartCard
+        title="Évolution sur la période"
+        hint="Chaque journée, décomposée en coût et marge."
+        isEmpty={(profit?.series ?? []).length === 0}
+        emptyLabel="Aucune vente confirmée sur la période."
+      >
+        <RevenueProfitChart
+          data={(profit?.series ?? []).map((j) => ({
+            month: j.date,
+            label: j.date.slice(8, 10) + '/' + j.date.slice(5, 7),
+            revenue: j.revenue,
+            cost: j.cost ?? 0,
+            profit: j.profit ?? 0,
+            count: j.documents,
+          }))}
+          countLabel="facture"
+        />
+      </ChartCard>
 
       {/* Un bénéfice calculé sur des coûts absents se lit comme acquis alors
           qu'il ne l'est pas. Le dire ici, pas en note de bas de page. */}
@@ -407,7 +681,7 @@ export function ReportsPage() {
         >
           <RankedBarChart
             color={chartColors.purchases}
-            valueLabel="Valeur au coût moyen"
+            valueLabel="Valeur au prix d'achat"
             rows={(valuation?.warehouses ?? []).map((w) => ({
               name: w.code,
               value: w.value,
@@ -419,7 +693,18 @@ export function ReportsPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader title="Marges par article" hint="Les 20 premiers de la période." />
+          <CardHeader
+            title="Marges par article"
+            hint={marges.actif ? `${marges.resultats.length} trouvé(s)` : 'Les 20 premiers de la période.'}
+            action={
+              <SearchInput
+                value={marges.terme}
+                onChange={marges.setTerme}
+                placeholder="Article…"
+                className="w-44"
+              />
+            }
+          />
           <CardBody className="p-0">
             <div className="max-h-[360px] overflow-auto">
               <table className="w-full text-sm">
@@ -432,14 +717,16 @@ export function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(margins?.rows ?? []).length === 0 ? (
+                  {marges.resultats.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="px-5 py-6 text-center text-muted">
-                        Aucune vente sur la période.
+                        {marges.actif
+                          ? 'Aucun article ne correspond à cette recherche.'
+                          : 'Aucune vente sur la période.'}
                       </td>
                     </tr>
                   ) : (
-                    (margins?.rows ?? []).slice(0, 20).map((r) => (
+                    marges.resultats.slice(0, 20).map((r) => (
                       <tr key={r.sku} className="border-b border-line last:border-0">
                         <td className="px-5 py-3 text-ink">
                           <span className="mono text-muted">{r.sku}</span> {r.name}
@@ -469,6 +756,14 @@ export function ReportsPage() {
           <CardHeader
             title="Articles dormants"
             hint={`Sans sortie depuis 90 jours — ${formatCurrency(dormantTotal)} immobilisés`}
+            action={
+              <SearchInput
+                value={dormants.terme}
+                onChange={dormants.setTerme}
+                placeholder="Article…"
+                className="w-44"
+              />
+            }
           />
           <CardBody className="p-0">
             <div className="max-h-[360px] overflow-auto">
@@ -481,14 +776,16 @@ export function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(dormant?.rows ?? []).length === 0 ? (
+                  {dormants.resultats.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="px-5 py-6 text-center text-muted">
-                        Aucun article dormant.
+                        {dormants.actif
+                          ? 'Aucun article ne correspond à cette recherche.'
+                          : 'Aucun article dormant.'}
                       </td>
                     </tr>
                   ) : (
-                    (dormant?.rows ?? []).slice(0, 20).map((r) => (
+                    dormants.resultats.slice(0, 20).map((r) => (
                       <tr key={r.sku} className="border-b border-line last:border-0">
                         <td className="px-5 py-3 text-ink">
                           <span className="mono text-muted">{r.sku}</span> {r.name}

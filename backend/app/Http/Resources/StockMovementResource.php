@@ -28,8 +28,16 @@ class StockMovementResource extends JsonResource
             'balance_after' => $this->balance_after,
             'reference_type' => $this->reference_type,
             'reference_id' => $this->reference_id,
+            // Numero lisible du document d'origine, pose par l'appelant quand
+            // il a resolu les references. Absent, l'ecran retombe sur
+            // reference_type / reference_id.
+            'document' => $this->resource->getAttribute('document'),
             'note' => $this->note,
-            'created_at' => $this->created_at,
+            // Formate dans le fuseau de l'application (Africa/Casablanca).
+            // La serialisation par defaut de Carbon convertit en UTC : un
+            // mouvement de 19:28 partait a 18:28Z, et l'ecran, qui lit les
+            // chiffres tels quels, affichait une heure de moins.
+            'created_at' => $this->created_at?->format('Y-m-d H:i'),
             'movement_type' => $this->whenLoaded('movementType', function () {
                 return [
                     'id' => $this->movementType->id,

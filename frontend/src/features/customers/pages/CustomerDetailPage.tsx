@@ -4,8 +4,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { EntityActivityCard } from '@/features/dashboard/components/EntityActivityCard'
 import { api } from '@/lib/api'
+import { formatDateHeure } from '@/lib/utils'
 import {
   fetchCustomer,
   fetchCustomerStatement,
@@ -44,6 +47,7 @@ const PAY_STATUS: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad' }>
 
 const LEDGER_TYPES: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad' | 'sky' | 'neutral' }> = {
   sale: { label: 'Vente à crédit', tone: 'warn' },
+  invoice: { label: 'Facture', tone: 'warn' },
   payment: { label: 'Règlement', tone: 'ok' },
   refund: { label: 'Remboursement', tone: 'sky' },
   adjustment: { label: 'Ajustement', tone: 'neutral' },
@@ -81,6 +85,19 @@ export function CustomerDetailPage() {
     enabled: customerId > 0,
   })
 
+  // Les deux recherches sont declarees AVANT tout retour anticipe : un hook
+  // place apres le « if (isLoading) » n'est pas appele au premier rendu, et
+  // React refuse le rendu suivant ou il l'est. La page tombait sur un acces
+  // direct a l'URL, quand aucune donnee n'etait encore en cache.
+  const releve = useRechercheLocale(statement?.entries ?? [], (e) => [e.type, e.note, e.date])
+  const ventes = useRechercheLocale(sales?.data ?? [], (s) => [
+    s.reference,
+    s.warehouse,
+    s.status,
+    s.payment_status,
+    s.created_at,
+  ])
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-3">
@@ -102,13 +119,32 @@ export function CustomerDetailPage() {
           <h1 className="text-xl font-semibold text-ink">Client introuvable</h1>
         </div>
         <p className="rounded border border-line bg-bad-bg px-4 py-3 text-sm text-bad">
-          Ce client n'existe pas ou a été créé par un autre utilisateur.
+          Ce client n'existe pas, ou vous n'avez pas le droit de le consulter.
         </p>
       </div>
     )
   }
 
-  const overLimit = customer.balance > customer.credit_limit
+  // L'encours qui fait foi est celui des factures non soldees, servi par le
+  // releve. La fiche client porte le meme montant, mais le releve donne en
+  // plus sa ventilation par lieu.
+  const encours = statement?.balance ?? customer.balance
+  const parLieu = statement?.by_warehouse ?? []
+  const cadreSurUnLieu = statement != null && statement.scoped_warehouse_id !== null
+  const plafond = customer.credit_limit
+  const sansPlafond = plafond <= 0
+  const horsPlafond = !sansPlafond && encours > plafond
+  const disponible = Math.max(plafond - encours, 0)
+
+  // Le grand-livre s'ecarte du du sur factures des qu'un reglement n'a ete
+  // impute a aucune facture. L'ecart est un signal, pas un detail : il se dit.
+  const soldeComptable = statement?.ledger_balance
+  const ecartComptable =
+    soldeComptable !== undefined && Math.abs(soldeComptable - encours) >= 0.01
+
+  const impayees = (sales?.data ?? []).filter(
+    (s) => s.status === 'confirmed' && s.payment_status !== 'paid',
+  ).length
 
   return (
     <div className="space-y-6">
@@ -118,7 +154,7 @@ export function CustomerDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-semibold text-ink">
               <span className="mono text-muted">{customer.code}</span> · {customer.name}
             </h1>
@@ -132,7 +168,9 @@ export function CustomerDetailPage() {
             )}
           </div>
           <p className="text-sm text-muted">
-            {[customer.contact_name, customer.phone, customer.email, customer.city].filter(Boolean).join(' · ') || '—'}
+            {[customer.contact_name, customer.phone, customer.email, customer.city]
+              .filter(Boolean)
+              .join(' · ') || '—'}
           </p>
         </div>
       </div>
@@ -141,34 +179,111 @@ export function CustomerDetailPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardBody>
-            <p className="text-xs font-medium text-muted">Plafond de crédit</p>
-            <p className="text-2xl font-semibold text-ink">{formatMoney(customer.credit_limit)} DH</p>
+            <p className="text-xs font-medium text-muted">
+              {cadreSurUnLieu ? 'Encours sur vos ventes' : 'Encours (factures non soldées)'}
+            </p>
+            <p
+              className={`text-2xl font-semibold ${
+                horsPlafond ? 'text-bad' : encours > 0 ? 'text-warn' : 'text-ok'
+              }`}
+            >
+              {formatMoney(encours)} DH
+            </p>
+            {horsPlafond ? <p className="text-xs text-bad">Plafond dépassé</p> : null}
+            {ecartComptable ? (
+              <p className="mt-1 text-xs text-muted">
+                Solde comptable : {formatMoney(soldeComptable!)} DH — l'écart vient de règlements
+                non imputés à une facture.
+              </p>
+            ) : null}
           </CardBody>
         </Card>
+
         <Card>
           <CardBody>
-            <p className="text-xs font-medium text-muted">Encours (crédit utilisé)</p>
-            <p className={`text-2xl font-semibold ${overLimit ? 'text-bad' : customer.balance > 0 ? 'text-warn' : 'text-ok'}`}>
-              {formatMoney(customer.balance)} DH
-            </p>
-            {overLimit ? <p className="text-xs text-bad">Plafond dépassé</p> : null}
+            <p className="text-xs font-medium text-muted">Plafond de crédit</p>
+            {sansPlafond ? (
+              <>
+                <p className="text-2xl font-semibold text-muted">—</p>
+                <p className="text-xs text-warn">Aucun plafond fixé</p>
+              </>
+            ) : (
+              <p className="text-2xl font-semibold text-ink">{formatMoney(plafond)} DH</p>
+            )}
           </CardBody>
         </Card>
+
         <Card>
           <CardBody>
             <p className="text-xs font-medium text-muted">Crédit disponible</p>
-            <p className={`text-2xl font-semibold ${customer.available_credit <= 0 ? 'text-bad' : 'text-ink'}`}>
-              {formatMoney(customer.available_credit)} DH
-            </p>
+            {sansPlafond ? (
+              <>
+                <p className="text-2xl font-semibold text-muted">—</p>
+                <p className="text-xs text-muted">Sans plafond, rien à décompter.</p>
+              </>
+            ) : (
+              <p
+                className={`text-2xl font-semibold ${disponible <= 0 ? 'text-bad' : 'text-ink'}`}
+              >
+                {formatMoney(disponible)} DH
+              </p>
+            )}
           </CardBody>
         </Card>
+
         <Card>
           <CardBody>
             <p className="text-xs font-medium text-muted">Documents de vente</p>
             <p className="text-2xl font-semibold text-ink">{sales?.meta.total ?? 0}</p>
+            {impayees > 0 ? (
+              <p className="text-xs text-warn">
+                dont {impayees} non soldé{impayees > 1 ? 's' : ''}
+              </p>
+            ) : null}
           </CardBody>
         </Card>
       </div>
+
+      {/* La dette, point de vente par point de vente. Sans cette ventilation,
+          un encours global ne dit pas qui doit relancer le client. */}
+      {parLieu.length > 1 ? (
+        <Card>
+          <CardHeader title="Où la créance a été laissée" />
+          <CardBody className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line text-left text-muted">
+                    <th className="px-5 py-3 font-medium">Lieu</th>
+                    <th className="px-5 py-3 text-right font-medium">Factures</th>
+                    <th className="px-5 py-3 text-right font-medium">Reste dû</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {parLieu.map((l) => (
+                    <tr key={l.code} className="border-b border-line last:border-0">
+                      <td className="mono px-5 py-3 text-ink">{l.code}</td>
+                      <td className="tabular px-5 py-3 text-right text-muted">{l.invoices}</td>
+                      <td className="tabular px-5 py-3 text-right font-medium text-warn">
+                        {formatMoney(l.due)} DH
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-bg">
+                    <td className="px-5 py-3 font-medium text-ink">Total</td>
+                    <td className="tabular px-5 py-3 text-right text-muted">
+                      {parLieu.reduce((n, l) => n + l.invoices, 0)}
+                    </td>
+                    <td className="tabular px-5 py-3 text-right font-semibold text-ink">
+                      {formatMoney(parLieu.reduce((n, l) => n + l.due, 0))} DH
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
 
       {/* Informations */}
       <Card>
@@ -177,7 +292,9 @@ export function CustomerDetailPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div>
               <p className="text-xs font-medium text-muted">Adresse</p>
-              <p className="text-sm text-ink">{[customer.address, customer.city].filter(Boolean).join(', ') || '—'}</p>
+              <p className="text-sm text-ink">
+                {[customer.address, customer.city].filter(Boolean).join(', ') || '—'}
+              </p>
             </div>
             <div>
               <p className="text-xs font-medium text-muted">ICE</p>
@@ -188,8 +305,16 @@ export function CustomerDetailPage() {
               <p className="text-sm text-ink">{customer.price_type ?? 'Détail (défaut)'}</p>
             </div>
             <div>
+              <p className="text-xs font-medium text-muted">Lieu de rattachement</p>
+              <p className="mono text-sm text-ink">{customer.warehouse ?? '—'}</p>
+            </div>
+            <div>
               <p className="text-xs font-medium text-muted">Créé par</p>
               <p className="text-sm text-ink">{customer.created_by ?? '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">Vendeur attitré</p>
+              <p className="text-sm text-ink">{customer.seller ?? '—'}</p>
             </div>
           </div>
           {customer.notes ? (
@@ -212,39 +337,85 @@ export function CustomerDetailPage() {
 
       {/* Historique des sorties (ventes) */}
       <Card>
-        <CardHeader title="Historique des sorties (ventes)" hint={sales ? `${sales.meta.total} document(s)` : undefined} />
+        <CardHeader
+          title="Historique des sorties (ventes)"
+          hint={
+            sales
+              ? ventes.actif
+                ? `${ventes.resultats.length} sur ${sales.meta.total} document(s)`
+                : `${sales.meta.total} document(s)`
+              : undefined
+          }
+          action={
+            <SearchInput
+              value={ventes.terme}
+              onChange={ventes.setTerme}
+              placeholder="Référence, lieu, statut…"
+            />
+          }
+        />
         <CardBody className="p-0">
-          {(sales?.data ?? []).length === 0 ? (
-            <p className="p-5 text-center text-sm text-muted">Aucune vente pour ce client.</p>
+          {ventes.resultats.length === 0 ? (
+            <p className="p-5 text-center text-sm text-muted">
+              {ventes.actif
+                ? 'Aucune vente ne correspond à cette recherche.'
+                : 'Aucune vente pour ce client.'}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
                     <th className="px-5 py-3 font-medium">Référence</th>
-                    <th className="px-5 py-3 font-medium">Date</th>
+                    <th className="px-5 py-3 font-medium">Date et heure</th>
                     <th className="px-5 py-3 font-medium">Type</th>
                     <th className="px-5 py-3 font-medium">Lieu</th>
                     <th className="px-5 py-3 font-medium">Statut</th>
                     <th className="px-5 py-3 text-right font-medium">Total</th>
                     <th className="px-5 py-3 text-right font-medium">Payé</th>
+                    <th className="px-5 py-3 text-right font-medium">Reste</th>
                     <th className="px-5 py-3 font-medium">Règlement</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(sales?.data ?? []).map((s) => {
+                  {ventes.resultats.map((s) => {
                     const status = SALE_STATUS[s.status] ?? { label: s.status, tone: 'neutral' as const }
-                    const pay = PAY_STATUS[s.payment_status] ?? { label: s.payment_status, tone: 'warn' as const }
+                    const pay = PAY_STATUS[s.payment_status] ?? {
+                      label: s.payment_status,
+                      tone: 'warn' as const,
+                    }
+                    // Une vente annulee ne doit rien : afficher son reste
+                    // laisserait croire a une creance a recouvrer.
+                    const reste =
+                      s.status === 'cancelled' ? 0 : Math.max(s.total - s.paid_amount, 0)
+
                     return (
                       <tr key={s.id} className="border-b border-line last:border-0">
                         <td className="mono px-5 py-3 font-medium text-ink">{s.reference}</td>
-                        <td className="px-5 py-3 text-muted">{s.created_at ?? '—'}</td>
-                        <td className="px-5 py-3 text-muted">{s.type === 'invoice' ? 'Facture' : s.type === 'ticket' ? 'Ticket' : s.type}</td>
-                        <td className="px-5 py-3 text-muted">{s.warehouse ?? '—'}</td>
-                        <td className="px-5 py-3"><Badge tone={status.tone}>{status.label}</Badge></td>
-                        <td className="tabular px-5 py-3 text-right font-medium text-ink">{formatMoney(s.total)} DH</td>
-                        <td className="tabular px-5 py-3 text-right text-muted">{formatMoney(s.paid_amount)} DH</td>
-                        <td className="px-5 py-3"><Badge tone={pay.tone}>{pay.label}</Badge></td>
+                        <td className="px-5 py-3 text-muted">{formatDateHeure(s.created_at)}</td>
+                        <td className="px-5 py-3 text-muted">
+                          {s.type === 'invoice' ? 'Facture' : s.type === 'ticket' ? 'Ticket' : s.type}
+                        </td>
+                        <td className="mono px-5 py-3 text-muted">{s.warehouse ?? '—'}</td>
+                        <td className="px-5 py-3">
+                          <Badge tone={status.tone}>{status.label}</Badge>
+                        </td>
+                        <td className="tabular px-5 py-3 text-right font-medium text-ink">
+                          {formatMoney(s.total)} DH
+                        </td>
+                        <td className="tabular px-5 py-3 text-right text-muted">
+                          {formatMoney(s.paid_amount)} DH
+                        </td>
+                        <td
+                          className={`tabular px-5 py-3 text-right font-medium ${
+                            reste > 0 ? 'text-warn' : 'text-muted'
+                          }`}
+                        >
+                          {reste > 0 ? `${formatMoney(reste)} DH` : '—'}
+                        </td>
+                        <td className="px-5 py-3">
+                          <Badge tone={pay.tone}>{pay.label}</Badge>
+                        </td>
                       </tr>
                     )
                   })}
@@ -259,31 +430,50 @@ export function CustomerDetailPage() {
       <Card>
         <CardHeader
           title="Relevé de compte — crédits et règlements"
-          hint={statement ? `Encours actuel : ${formatMoney(statement.balance)} DH` : undefined}
+          hint={
+            statement
+              ? cadreSurUnLieu
+                ? `Vos ventes · encours ${formatMoney(encours)} DH`
+                : `Encours actuel : ${formatMoney(encours)} DH`
+              : undefined
+          }
+          action={
+            <SearchInput
+              value={releve.terme}
+              onChange={releve.setTerme}
+              placeholder="Opération, note, date…"
+            />
+          }
         />
         <CardBody className="p-0">
-          {(statement?.entries ?? []).length === 0 ? (
-            <p className="p-5 text-center text-sm text-muted">Aucune écriture — ce client n'a pas d'historique de crédit.</p>
+          {releve.resultats.length === 0 ? (
+            <p className="p-5 text-center text-sm text-muted">
+              {releve.actif
+                ? 'Aucune écriture ne correspond à cette recherche.'
+                : "Aucune écriture — ce client n'a pas d'historique de crédit."}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
-                    <th className="px-5 py-3 font-medium">Date</th>
+                    <th className="px-5 py-3 font-medium">Date et heure</th>
                     <th className="px-5 py-3 font-medium">Opération</th>
-                    <th className="px-5 py-3 font-medium">Note</th>
+                    <th className="px-5 py-3 font-medium">Document</th>
                     <th className="px-5 py-3 text-right font-medium">Montant</th>
                     <th className="px-5 py-3 text-right font-medium">Encours après</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(statement?.entries ?? []).map((e, i) => {
+                  {releve.resultats.map((e, i) => {
                     const type = LEDGER_TYPES[e.type] ?? { label: e.type, tone: 'neutral' as const }
                     return (
                       <tr key={i} className="border-b border-line last:border-0">
-                        <td className="px-5 py-3 text-muted">{e.date ?? '—'}</td>
-                        <td className="px-5 py-3"><Badge tone={type.tone}>{type.label}</Badge></td>
-                        <td className="px-5 py-3 text-muted">{e.note ?? ''}</td>
+                        <td className="px-5 py-3 text-muted">{formatDateHeure(e.date)}</td>
+                        <td className="px-5 py-3">
+                          <Badge tone={type.tone}>{type.label}</Badge>
+                        </td>
+                        <td className="mono px-5 py-3 text-muted">{e.note ?? '—'}</td>
                         <td
                           className={`tabular px-5 py-3 text-right font-medium ${
                             e.amount > 0 ? 'text-warn' : 'text-ok'
@@ -292,7 +482,9 @@ export function CustomerDetailPage() {
                           {e.amount > 0 ? '+' : ''}
                           {formatMoney(e.amount)} DH
                         </td>
-                        <td className="tabular px-5 py-3 text-right text-ink">{formatMoney(e.balance_after)} DH</td>
+                        <td className="tabular px-5 py-3 text-right text-ink">
+                          {formatMoney(e.balance_after)} DH
+                        </td>
                       </tr>
                     )
                   })}
@@ -304,7 +496,11 @@ export function CustomerDetailPage() {
       </Card>
 
       <p className="text-xs text-faint">
-        Les règlements clients s'enregistrent depuis <Link to="/reglements" className="text-sky hover:underline">Règlements</Link>.
+        Les règlements clients s'enregistrent depuis{' '}
+        <Link to="/reglements" className="text-sky hover:underline">
+          Règlements
+        </Link>
+        .
       </p>
     </div>
   )

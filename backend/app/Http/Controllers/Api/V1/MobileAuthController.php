@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Support\Auth\IdentifiantConnexion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,17 +23,27 @@ final class MobileAuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        /** @var array{email: string, password: string, device_name: string} $data */
+        // « identifiant » est le champ courant ; « email » reste accepté pour
+        // les versions déjà installées, qui l'envoient encore sous ce nom.
+        // La règle « email » a disparu : le champ peut désormais porter un
+        // numéro de téléphone.
         $data = $request->validate([
-            'email' => ['required', 'email'],
+            'identifiant' => ['required_without:email', 'string', 'max:190'],
+            'email' => ['required_without:identifiant', 'string', 'max:190'],
             'password' => ['required', 'string'],
             'device_name' => ['required', 'string', 'max:100'],
         ]);
 
-        /** @var User|null $user */
-        $user = User::query()->where('email', $data['email'])->first();
+        $saisie = (string) ($data['identifiant'] ?? $data['email'] ?? '');
 
-        if ($user === null || ! Hash::check($data['password'], $user->password)) {
+        $user = IdentifiantConnexion::trouver($saisie);
+
+        // Le hachage est calculé même sans compte trouvé : sans cela, une
+        // réponse instantanée signalerait « ce numéro n'existe pas » et
+        // permettrait d'énumérer les comptes.
+        $empreinte = $user?->password ?? '$2y$12$'.str_repeat('0', 53);
+
+        if (! Hash::check($data['password'], $empreinte) || $user === null) {
             return response()->json(['message' => 'Identifiants incorrects.'], 422);
         }
 

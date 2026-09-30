@@ -138,6 +138,37 @@ export interface Movement {
    * le premier cas rencontre.
    */
   user: { id: number; name: string } | null
+  /** Solde du lieu juste apres ce mouvement. */
+  balance_after: number
+  /**
+   * Document d'origine, deja traduit en numero lisible par le serveur.
+   *
+   * `reference_type` melange des noms de classe et des chaines courtes :
+   * l'ecran ne doit pas avoir a connaitre cette convention.
+   */
+  document: { label: string; kind: string | null; id: number | null } | null
+}
+
+/** Recapitulatif par magasin, calcule sur TOUS les mouvements. */
+export interface MovementSummaryRow {
+  warehouse_code: string | null
+  warehouse_name: string | null
+  movements: number
+  entries: number
+  exits: number
+  balance: number
+  last_movement: string | null
+}
+
+export interface MovementsPage {
+  data: Movement[]
+  meta: {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+    summary: MovementSummaryRow[]
+  }
 }
 
 export interface PriceInfo {
@@ -163,13 +194,15 @@ export interface MovementFilters {
   date_from?: string
   date_to?: string
   limit?: number
+  page?: number
+  per_page?: number
 }
 
 export async function fetchProductMovements(
   id: number,
   filters?: MovementFilters,
-): Promise<Paginated<Movement>> {
-  const { data } = await api.get<Paginated<Movement>>(`/products/${id}/movements`, { params: filters })
+): Promise<MovementsPage> {
+  const { data } = await api.get<MovementsPage>(`/products/${id}/movements`, { params: filters })
   return data
 }
 

@@ -3,6 +3,8 @@ import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { api } from '@/lib/api'
 
 interface AlertRow {
@@ -34,7 +36,11 @@ export function AlertsPage() {
     },
     refetchInterval: 60_000,
   })
-
+  // Le tableau de surveillance tient a l'ecran : filtre local.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    alerts,
+    (alert) => [alert.label],
+  )
   const active = alerts.filter((a) => a.count > 0)
 
   return (
@@ -50,6 +56,7 @@ export function AlertsPage() {
         <CardHeader
           title="État de surveillance"
           hint={isLoading ? 'Chargement…' : `${active.length} alerte${active.length > 1 ? 's' : ''} active${active.length > 1 ? 's' : ''}`}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Contrôle…" />}
         />
         <CardBody className="p-0">
           <table className="w-full text-sm">
@@ -62,7 +69,14 @@ export function AlertsPage() {
               </tr>
             </thead>
             <tbody>
-              {alerts.map((alert) => (
+              {resultats.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-8 text-center text-muted">
+                    {actif ? 'Aucun contrôle ne correspond à cette recherche.' : 'Aucun contrôle.'}
+                  </td>
+                </tr>
+              ) : null}
+              {resultats.map((alert) => (
                 <tr key={alert.key} className="border-b border-line last:border-0">
                   <td className="px-5 py-3 text-ink">
                     <span className="flex items-center gap-2">

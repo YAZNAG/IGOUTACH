@@ -3,6 +3,8 @@ import { useRef, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -25,6 +27,13 @@ export function BrandsPage() {
   const canManage = can('brand.manage')
 
   const { data: brands = [], isLoading } = useBrands()
+
+  // Recherche sur des lignes deja toutes chargees : rien
+  // n'echappe au filtre, contrairement a une liste paginee.
+  const { terme, setTerme, resultats, actif } = useRechercheLocale(
+    brands,
+    (brand) => [brand.name, brand.code],
+  )
   const createMutation = useCreateBrand()
   const updateMutation = useUpdateBrand()
   const deleteMutation = useDeleteBrand()
@@ -143,7 +152,11 @@ export function BrandsPage() {
       ) : null}
 
       <Card>
-        <CardHeader title="Liste des marques" hint={`${brands.length} marque(s)`} />
+        <CardHeader
+          title="Liste des marques"
+          hint={actif ? `${resultats.length} sur ${brands.length}` : `${brands.length} marque(s)`}
+          action={<SearchInput value={terme} onChange={setTerme} placeholder="Nom ou code…" />}
+        />
         <CardBody className="p-0">
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
@@ -160,14 +173,14 @@ export function BrandsPage() {
                 </tr>
               </thead>
               <tbody>
-                {brands.length === 0 ? (
+                {resultats.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-5 py-8 text-center text-muted">
-                      Aucune marque.
+                      {actif ? 'Aucune marque ne correspond à cette recherche.' : 'Aucune marque.'}
                     </td>
                   </tr>
                 ) : (
-                  brands.map((brand) => (
+                  resultats.map((brand) => (
                     <tr key={brand.id} className="border-b border-line last:border-0">
                       <td className="px-5 py-3">
                         {brand.logo_url ? (

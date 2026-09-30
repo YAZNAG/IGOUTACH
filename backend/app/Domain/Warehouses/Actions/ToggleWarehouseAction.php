@@ -22,7 +22,9 @@ final class ToggleWarehouseAction
             $references = (clone $stock)->count();
 
             if ($references > 0) {
-                $value = (float) (clone $stock)->sum(DB::raw('quantity * average_cost'));
+                $value = (float) (clone $stock)
+                    ->join('products', 'products.id', '=', 'stocks.product_id')
+                    ->sum(DB::raw('stocks.quantity * products.cost_price'));
                 throw WarehouseInUseException::stockNotEmpty($references, $value);
             }
         }
