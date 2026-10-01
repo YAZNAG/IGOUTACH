@@ -11,7 +11,6 @@ import { StockByWarehouseChart } from '../components/StockByWarehouseChart'
 import { chartColors } from '../components/chartTheme'
 import { useDashboard } from '../hooks'
 import { DemandesEnAttente } from '@/features/transfers/components/DemandesEnAttente'
-import { CaissesEtTransferts } from '../components/CaissesEtTransferts'
 
 function SkeletonBlock({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-line ${className ?? ''}`} />
@@ -62,11 +61,6 @@ export function DashboardPage() {
           elle appelle une action, pas une lecture. Le bloc s'efface quand
           rien n'attend. */}
       <DemandesEnAttente compact />
-
-      {/* L'argent des lieux : ce qu'ils detiennent, ce qu'ils annoncent avoir
-          remis. Un transfert non confirme est de l'argent dont personne ne
-          repond : il se traite ici, justificatif a l'appui. */}
-      <CaissesEtTransferts />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatTile

@@ -5,7 +5,7 @@ import { ArticlesPage, ProductDetailPage } from '@/features/articles'
 import { AuditPage } from '@/features/audit'
 import { LoginPage } from '@/features/auth'
 import { BrandsPage } from '@/features/brands'
-import { CashPage } from '@/features/cash'
+import { CaissesLieuxPage, CashPage } from '@/features/cash'
 import { CategoriesPage } from '@/features/categories'
 import { CustomerDetailPage, CustomersPage } from '@/features/customers'
 import { ExpensesPage, RecurringExpensesPage } from '@/features/expenses'
@@ -96,6 +96,7 @@ export const router = createBrowserRouter([
           { path: '/reglements', element: <PaymentsPage /> },
           { path: '/credits-clients', element: <CustomerCreditsPage /> },
           { path: '/caisse', element: <CashPage /> },
+          { path: '/caisses', element: <CaissesLieuxPage /> },
           { path: '/categories', element: <CategoriesPage /> },
           { path: '/articles', element: <ArticlesPage /> },
           { path: '/articles/:id', element: <ProductDetailPage /> },

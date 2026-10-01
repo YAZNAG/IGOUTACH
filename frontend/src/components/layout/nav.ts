@@ -99,6 +99,9 @@ export const navGroups: NavGroup[] = [
     title: 'Trésorerie',
     items: [
       { label: 'Règlements', to: '/reglements', icon: Receipt, permission: 'payment.view' },
+      // Reserve a la direction : la page montre les tiroirs de tous les lieux,
+      // et c'est elle qui confirme ou refuse les transferts.
+      { label: 'Caisses et transferts', to: '/caisses', icon: PiggyBank, permission: 'stock.view_global' },
       { label: 'Charges', to: '/charges', icon: Wallet, permission: 'expense.create' },
       { label: 'Charges fixes', to: '/charges-fixes', icon: CalendarClock, permission: 'expense.create' },
     ],
