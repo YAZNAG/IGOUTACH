@@ -43,7 +43,7 @@ it('incrémente le stock et journalise un mouvement', function () {
         ->and((float) $stock->average_cost)->toBe(100.0);
 });
 
-it('calcule le coût moyen pondéré (CMUP) sur plusieurs entrées', function () {
+it('retient le dernier prix d\'achat, pas une moyenne', function () {
     $in = app(StockInAction::class);
 
     $in->execute(new StockMovementData($this->warehouse->id, $this->product->id, 10, MovementType::IN, 100));
@@ -54,9 +54,11 @@ it('calcule le coût moyen pondéré (CMUP) sur plusieurs entrées', function ()
         ->where('product_id', $this->product->id)
         ->first();
 
-    // (10*100 + 10*200) / 20 = 150
+    // Le coût moyen pondéré donnait 150 — un chiffre que le commerçant ne
+    // reconnaissait sur aucune facture. C'est le dernier prix payé qui fait
+    // foi : 200, celui de la dernière entrée.
     expect($stock->quantity)->toBe(20)
-        ->and((float) $stock->average_cost)->toBe(150.0);
+        ->and((float) $stock->average_cost)->toBe(200.0);
 });
 
 it('décrémente le stock au coût moyen courant', function () {
@@ -82,6 +84,27 @@ it('refuse une sortie supérieure au stock disponible', function () {
         new StockMovementData($this->warehouse->id, $this->product->id, 10, MovementType::OUT),
     );
 })->throws(InsufficientStockException::class);
+
+it('nomme l\'article et le lieu quand le stock manque', function () {
+    app(StockInAction::class)->execute(
+        new StockMovementData($this->warehouse->id, $this->product->id, 3, MovementType::IN, 100),
+    );
+
+    // Le message portait les identifiants — « l'article 334 dans le lieu 4 » —
+    // et le vendeur ne savait pas de quelle ligne de son bon on lui parlait.
+    try {
+        app(StockOutAction::class)->execute(
+            new StockMovementData($this->warehouse->id, $this->product->id, 10, MovementType::OUT),
+        );
+        test()->fail('Une sortie supérieure au stock aurait dû être refusée.');
+    } catch (InsufficientStockException $e) {
+        expect($e->getMessage())
+            ->toContain($this->product->name)
+            ->toContain($this->warehouse->code)
+            ->toContain('3 disponible(s), 10 demandé(s)')
+            ->not->toContain('#'.$this->product->id);
+    }
+});
 
 it('conserve un historique append-only des mouvements', function () {
     $in = app(StockInAction::class);

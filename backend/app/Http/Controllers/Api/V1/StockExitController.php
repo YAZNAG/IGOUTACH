@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Sales\Models\Sale;
 use App\Domain\Stock\Models\StockMovement;
 use App\Exports\ArrayExport;
+use App\Domain\Stock\Services\MovementDocumentResolver;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\Export\HtmlTable;
@@ -62,15 +63,20 @@ final class StockExitController extends Controller
      * @param  array<int, string>  $userNames
      * @return array<string, mixed>
      */
-    private function toRow(StockMovement $movement, array $saleReferences, array $userNames): array
+    private function toRow(StockMovement $movement, array $saleReferences, array $userNames, array $documents = []): array
     {
+        // Le numero du document d'origine, resolu par lots. A defaut, la ligne
+        // affichait « Transfer #8 » : un numero interne que personne ne lit sur
+        // un bon.
+        $numero = $documents[((string) $movement->reference_type).'|'.((string) $movement->reference_id)]['label'] ?? null;
+
         $source = null;
         $isSale = in_array($movement->reference_type, [Sale::class, 'sale'], true);
         if ($isSale && $movement->reference_id !== null) {
             $source = [
                 'type' => 'sale',
                 'id' => (int) $movement->reference_id,
-                'label' => $saleReferences[(int) $movement->reference_id] ?? "Vente #{$movement->reference_id}",
+                'label' => $saleReferences[(int) $movement->reference_id] ?? $numero ?? "Vente #{$movement->reference_id}",
             ];
         } elseif ($movement->reference_type !== null) {
             $shortType = str_contains((string) $movement->reference_type, '\\')
@@ -79,7 +85,8 @@ final class StockExitController extends Controller
             $source = [
                 'type' => $shortType,
                 'id' => $movement->reference_id !== null ? (int) $movement->reference_id : null,
-                'label' => str_replace('_', ' ', ucfirst($shortType)).($movement->reference_id !== null ? " #{$movement->reference_id}" : ''),
+                'label' => $numero
+                    ?? str_replace('_', ' ', ucfirst($shortType)).($movement->reference_id !== null ? " #{$movement->reference_id}" : ''),
             ];
         }
 
@@ -133,7 +140,11 @@ final class StockExitController extends Controller
         $saleReferences = $saleIds === [] ? [] : Sale::whereIn('id', array_unique($saleIds))->pluck('reference', 'id')->all();
         $userNames = $userIds === [] ? [] : User::whereIn('id', array_unique($userIds))->pluck('name', 'id')->all();
 
-        return [$saleReferences, $userNames];
+        // Transferts, receptions, inventaires : leur numero se lit comme celui
+        // d'une vente, et c'est ce que porte le papier.
+        $documents = app(MovementDocumentResolver::class)->pour(collect($movements));
+
+        return [$saleReferences, $userNames, $documents];
     }
 
     /**
@@ -151,10 +162,10 @@ final class StockExitController extends Controller
         $perPage = in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20;
         $paginator = $query->orderByDesc('created_at')->orderByDesc('id')->paginate($perPage);
 
-        [$saleReferences, $userNames] = $this->labels($paginator->items());
+        [$saleReferences, $userNames, $documents] = $this->labels($paginator->items());
 
         $rows = array_map(
-            fn (StockMovement $m): array => $this->toRow($m, $saleReferences, $userNames),
+            fn (StockMovement $m): array => $this->toRow($m, $saleReferences, $userNames, $documents),
             $paginator->items(),
         );
 
@@ -189,9 +200,9 @@ final class StockExitController extends Controller
                 'warehouse:id,code,name',
             ])->findOrFail($movement);
 
-        [$saleReferences, $userNames] = $this->labels([$found]);
+        [$saleReferences, $userNames, $documents] = $this->labels([$found]);
 
-        return response()->json(['data' => $this->toRow($found, $saleReferences, $userNames)]);
+        return response()->json(['data' => $this->toRow($found, $saleReferences, $userNames, $documents)]);
     }
 
     /**
@@ -201,12 +212,12 @@ final class StockExitController extends Controller
     {
         $movements = $this->baseQuery($request)->orderByDesc('created_at')->orderByDesc('id')->get();
 
-        [$saleReferences, $userNames] = $this->labels($movements);
+        [$saleReferences, $userNames, $documents] = $this->labels($movements);
 
         $headings = ['Date', 'N°', 'Type', 'Document', 'Lieu', 'Référence', 'Désignation', 'Qté', 'CMUP (DH)', 'Valeur (DH)', 'Solde après', 'Auteur'];
 
-        $rows = $movements->map(function (StockMovement $m) use ($saleReferences, $userNames): array {
-            $row = $this->toRow($m, $saleReferences, $userNames);
+        $rows = $movements->map(function (StockMovement $m) use ($saleReferences, $userNames, $documents): array {
+            $row = $this->toRow($m, $saleReferences, $userNames, $documents);
 
             return [
                 $row['date'],
@@ -237,3 +248,4 @@ final class StockExitController extends Controller
         return Excel::download(new ArrayExport($headings, $rows), $filename.'.xlsx');
     }
 }
+

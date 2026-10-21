@@ -29,15 +29,20 @@ final class ReceivePurchaseOrderLineAction
             $allReceived = true;
 
             foreach ($quantitiesByLineId as $lineId => $receivedQty) {
-                $line = PurchaseOrderLine::findOrFail($lineId);
+                $line = PurchaseOrderLine::with('product:id,sku,name')->findOrFail($lineId);
+
+                // Les messages nommaient la ligne par son identifiant — « la
+                // ligne 57 » —, un numero absent du bon papier. Celui qui
+                // receptionne cherche un article, pas une ligne de base.
+                $article = $this->nommer($line);
 
                 if ($line->purchase_order_id !== $order->id) {
-                    throw new RuntimeException("La ligne {$lineId} n'appartient pas à ce bon.");
+                    throw new RuntimeException("{$article} n'appartient pas à ce bon de commande.");
                 }
 
                 if ($receivedQty > $line->quantity) {
                     throw new RuntimeException(
-                        "Impossible de recevoir {$receivedQty} articles pour la ligne {$lineId} (max: {$line->quantity})."
+                        "Impossible de recevoir {$receivedQty} unite(s) de {$article} : le bon n'en commande que {$line->quantity}."
                     );
                 }
 
@@ -66,5 +71,20 @@ final class ReceivePurchaseOrderLineAction
 
             return $order->refresh();
         });
+    }
+
+    /**
+     * Nom de l'article d'une ligne, sa référence à défaut, son numéro en
+     * dernier recours : mieux vaut un numéro qu'un message amputé.
+     */
+    private function nommer(PurchaseOrderLine $line): string
+    {
+        $libelle = trim((string) ($line->product?->name ?? ''));
+
+        if ($libelle === '') {
+            $libelle = trim((string) ($line->product?->sku ?? ''));
+        }
+
+        return $libelle !== '' ? '« '.$libelle.' »' : "la ligne #{$line->id}";
     }
 }

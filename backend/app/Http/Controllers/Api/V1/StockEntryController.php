@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Purchasing\Models\GoodsReceipt;
 use App\Domain\Stock\Models\StockMovement;
 use App\Exports\ArrayExport;
+use App\Domain\Stock\Services\MovementDocumentResolver;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\Export\HtmlTable;
@@ -76,20 +77,26 @@ final class StockEntryController extends Controller
      * @param  array<int, string>  $userNames
      * @return array<string, mixed>
      */
-    private function toRow(StockMovement $movement, array $receiptNumbers, array $userNames): array
+    private function toRow(StockMovement $movement, array $receiptNumbers, array $userNames, array $documents = []): array
     {
+        // Le numero du document d'origine : un transfert entrant s'annoncait
+        // « Transfer #8 », alors que le bon qui accompagne la marchandise
+        // porte « TRN-000160 ».
+        $numero = $documents[((string) $movement->reference_type).'|'.((string) $movement->reference_id)]['label'] ?? null;
+
         $source = null;
         if ($movement->reference_type === 'goods_receipt' && $movement->reference_id !== null) {
             $source = [
                 'type' => 'goods_receipt',
                 'id' => (int) $movement->reference_id,
-                'label' => $receiptNumbers[(int) $movement->reference_id] ?? "BR #{$movement->reference_id}",
+                'label' => $receiptNumbers[(int) $movement->reference_id] ?? $numero ?? "BR #{$movement->reference_id}",
             ];
         } elseif ($movement->reference_type !== null) {
             $source = [
                 'type' => $movement->reference_type,
                 'id' => $movement->reference_id !== null ? (int) $movement->reference_id : null,
-                'label' => str_replace('_', ' ', ucfirst((string) $movement->reference_type)).($movement->reference_id !== null ? " #{$movement->reference_id}" : ''),
+                'label' => $numero
+                    ?? str_replace('_', ' ', ucfirst((string) $movement->reference_type)).($movement->reference_id !== null ? " #{$movement->reference_id}" : ''),
             ];
         }
 
@@ -143,7 +150,10 @@ final class StockEntryController extends Controller
         $receiptNumbers = $receiptIds === [] ? [] : GoodsReceipt::whereIn('id', array_unique($receiptIds))->pluck('number', 'id')->all();
         $userNames = $userIds === [] ? [] : User::whereIn('id', array_unique($userIds))->pluck('name', 'id')->all();
 
-        return [$receiptNumbers, $userNames];
+        // Transferts entrants et inventaires portent aussi un numero lisible.
+        $documents = app(MovementDocumentResolver::class)->pour(collect($movements));
+
+        return [$receiptNumbers, $userNames, $documents];
     }
 
     /**
@@ -162,10 +172,10 @@ final class StockEntryController extends Controller
         $perPage = in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20;
         $paginator = $query->orderByDesc('created_at')->orderByDesc('id')->paginate($perPage);
 
-        [$receiptNumbers, $userNames] = $this->labels($paginator->items());
+        [$receiptNumbers, $userNames, $documents] = $this->labels($paginator->items());
 
         $rows = array_map(
-            fn (StockMovement $m): array => $this->toRow($m, $receiptNumbers, $userNames),
+            fn (StockMovement $m): array => $this->toRow($m, $receiptNumbers, $userNames, $documents),
             $paginator->items(),
         );
 
@@ -198,9 +208,9 @@ final class StockEntryController extends Controller
             'warehouse:id,code,name',
         ])->findOrFail($movement);
 
-        [$receiptNumbers, $userNames] = $this->labels([$found]);
+        [$receiptNumbers, $userNames, $documents] = $this->labels([$found]);
 
-        return response()->json(['data' => $this->toRow($found, $receiptNumbers, $userNames)]);
+        return response()->json(['data' => $this->toRow($found, $receiptNumbers, $userNames, $documents)]);
     }
 
     /**
@@ -224,12 +234,12 @@ final class StockEntryController extends Controller
     {
         $movements = $this->baseQuery($request)->orderByDesc('created_at')->orderByDesc('id')->get();
 
-        [$receiptNumbers, $userNames] = $this->labels($movements);
+        [$receiptNumbers, $userNames, $documents] = $this->labels($movements);
 
         $headings = ['Date', 'N°', 'Type', 'Document', 'Lieu', 'Référence', 'Désignation', 'Qté', 'PU (DH)', 'Valeur (DH)', 'Solde après', 'Auteur'];
 
-        $rows = $movements->map(function (StockMovement $m) use ($receiptNumbers, $userNames): array {
-            $row = $this->toRow($m, $receiptNumbers, $userNames);
+        $rows = $movements->map(function (StockMovement $m) use ($receiptNumbers, $userNames, $documents): array {
+            $row = $this->toRow($m, $receiptNumbers, $userNames, $documents);
 
             return [
                 $row['date'],
