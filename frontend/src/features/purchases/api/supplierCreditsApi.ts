@@ -30,6 +30,8 @@ export interface SupplierCredits {
 
 export interface SupplierCreditFilters {
   supplier_id?: number
+  /** Nom (ou code) du fournisseur, recherché côté serveur. */
+  supplier_search?: string
   search?: string
 }
 

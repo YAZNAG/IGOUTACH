@@ -37,6 +37,13 @@ final class SupplierCreditController extends Controller
             ->selectSub($totalSub, 'total_amount')
             ->whereRaw('(SELECT COALESCE(SUM(quantity * unit_price), 0) FROM goods_receipt_lines WHERE goods_receipt_id = goods_receipts.id) - amount_paid > 0.005')
             ->when($request->integer('supplier_id') > 0, fn ($q) => $q->where('supplier_id', $request->integer('supplier_id')))
+            // Recherche par nom de fournisseur : une liste deroulante obligeait
+            // a retrouver le bon parmi des dizaines, alors qu'on sait toujours
+            // son nom, au moins en partie.
+            ->when($request->string('supplier_search')->isNotEmpty(), function ($q) use ($request): void {
+                $terme = '%'.$request->string('supplier_search')->value().'%';
+                $q->whereHas('supplier', fn ($s) => $s->where('name', 'like', $terme)->orWhere('code', 'like', $terme));
+            })
             ->when($request->string('search')->isNotEmpty(), fn ($q) => $q->where('number', 'like', '%'.$request->string('search')->value().'%'))
             ->orderBy('received_at');
 

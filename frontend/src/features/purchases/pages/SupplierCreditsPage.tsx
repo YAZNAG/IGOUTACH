@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import { useSupplierOptions } from '@/features/access/hooks'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { usePermission } from '@/hooks/usePermission'
 import { cn, formatDate } from '@/lib/utils'
 import {
@@ -36,14 +37,18 @@ export function SupplierCreditsPage() {
   const can = usePermission()
   const canPay = can('receipt.pay')
 
-  const [supplierId, setSupplierId] = useState(0)
+  const [fournisseur, setFournisseur] = useState('')
   const [search, setSearch] = useState('')
 
+  // La recherche part au serveur : filtrer les lignes affichées laisserait
+  // croire qu'un fournisseur n'a aucun crédit alors qu'il est plus bas.
+  const fournisseurRetarde = useDebouncedValue(fournisseur, 300)
+  const numeroRetarde = useDebouncedValue(search, 300)
+
   const { data: credits, isLoading } = useSupplierCredits({
-    supplier_id: supplierId || undefined,
-    search: search || undefined,
+    supplier_search: fournisseurRetarde || undefined,
+    search: numeroRetarde || undefined,
   })
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: methods = [] } = usePaymentMethods()
 
   // Règlement en cours de saisie.
@@ -242,13 +247,16 @@ export function SupplierCreditsPage() {
         <CardHeader title="Filtres" />
         <CardBody>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {/* Une liste deroulante obligeait a retrouver le fournisseur parmi
+                des dizaines ; on connait toujours son nom, au moins en partie. */}
             <Field label="Fournisseur" htmlFor="credit-supplier">
-              <Select id="credit-supplier" value={supplierId} onChange={(e) => setSupplierId(Number(e.target.value))}>
-                <option value={0}>Tous</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>{s.code} · {s.name}</option>
-                ))}
-              </Select>
+              <SearchInput
+                id="credit-supplier"
+                value={fournisseur}
+                onChange={setFournisseur}
+                placeholder="Nom du fournisseur…"
+                className="w-full"
+              />
             </Field>
             <Field label="N° de réception" htmlFor="credit-search">
               <Input
