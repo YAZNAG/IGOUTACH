@@ -312,6 +312,7 @@ Route::prefix('v1')->group(function () {
         // Règlements — encaissements, chèques, balance âgée, relevé
         Route::get('payments', [PaymentController::class, 'index'])->middleware('can:payment.view');
         Route::post('payments', [PaymentController::class, 'store'])->middleware('can:payment.create');
+        Route::get('payments/{payment}/pdf', [PaymentController::class, 'receipt'])->middleware('can:payment.view');
         Route::patch('payments/{payment}/cheque', [PaymentController::class, 'chequeStatus'])->middleware('can:payment.create');
         Route::get('customers-aging', [PaymentController::class, 'aging'])->middleware('can:credit.view');
 

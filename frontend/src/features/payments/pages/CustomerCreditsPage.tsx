@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { HandCoins, Trash2, X } from 'lucide-react'
+import { FileDown, HandCoins, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
+import { SectionPliante } from '@/components/ui/SectionPliante'
 import { Select } from '@/components/ui/Select'
 import { chequeDraftComplet, chequeDraftVide } from '@/features/cheques/components/ChequeDraftFields'
 import {
@@ -19,6 +20,7 @@ import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { usePermission } from '@/hooks/usePermission'
 import { HistoriqueReglements } from '../components/HistoriqueReglements'
 import { api, ensureCsrfCookie } from '@/lib/api'
+import { openPdf } from '@/lib/download'
 import { cn } from '@/lib/utils'
 
 interface AgingRow {
@@ -51,6 +53,8 @@ interface LedgerEntry {
   amount: number
   balance_after: number
   note: string | null
+  /** Règlement d'origine, quand la ligne en vient : son bon est imprimable. */
+  payment_id?: number | null
 }
 
 interface Statement {
@@ -109,6 +113,9 @@ export function CustomerCreditsPage() {
   const [receivedAt, setReceivedAt] = useState(() => new Date().toISOString().slice(0, 10))
   const [note, setNote] = useState('')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  /** Dernier règlement enregistré, dont le bon reste téléchargeable. */
+  const [dernierBon, setDernierBon] = useState<{ id: number; reference: string } | null>(null)
   const [cheque, setCheque] = useState<CustomerChequeValue>({
     draft: chequeDraftVide(),
     autreSignataire: false,
@@ -188,7 +195,7 @@ export function CustomerCreditsPage() {
         .map(([id, montant]) => ({ sale_id: Number(id), amount: Number(montant) }))
         .filter((v) => Number.isFinite(v.amount) && v.amount > 0)
 
-      await api.post('/payments', {
+      const { data: creation } = await api.post<{ data: { id: number; reference: string } }>('/payments', {
         customer_id: selected?.customer_id,
         amount: Number(amount),
         payment_method_id: methodId,
@@ -213,9 +220,14 @@ export function CustomerCreditsPage() {
             }
           : {}),
       })
+
+      return creation.data
     },
-    onSuccess: () => {
+    onSuccess: (paiement) => {
       setSuccessMessage(`Encaissement de ${money(Number(amount))} DH enregistré pour ${selected?.customer}.`)
+      // Le bon de règlement est la preuve remise au client : il doit être à
+      // portée de clic tout de suite, pas à retrouver dans un relevé.
+      setDernierBon(paiement)
       setSelected(null)
       setNote('')
       setParFacture({})
@@ -261,6 +273,19 @@ export function CustomerCreditsPage() {
     collect.reset()
   }
 
+  /**
+   * Ouvre le bon de règlement, prêt à imprimer ou à enregistrer.
+   *
+   * Le document est servi par le serveur : il porte l'en-tête de la société,
+   * le montant en lettres et les factures soldées — ce qu'un reçu manuscrit
+   * ne garantit pas.
+   */
+  function telechargerBon(bon: { id: number; reference: string }) {
+    openPdf(`/payments/${bon.id}/pdf`, `${bon.reference}.pdf`).catch(() => {
+      window.alert("Le bon de règlement n'a pas pu être généré. Réessayez dans un instant.")
+    })
+  }
+
   const amountValue = Number(amount)
   const invalidAmount = selected !== null && (!Number.isFinite(amountValue) || amountValue <= 0)
 
@@ -283,12 +308,27 @@ export function CustomerCreditsPage() {
       </div>
 
       {successMessage ? (
-        <p className="flex items-center justify-between rounded border border-line bg-ok-bg px-3 py-2 text-sm text-ok">
-          {successMessage}
-          <button type="button" onClick={() => setSuccessMessage(null)} aria-label="Fermer">
-            <X className="h-4 w-4" />
-          </button>
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded border border-line bg-ok-bg px-3 py-2 text-sm text-ok">
+          <span>{successMessage}</span>
+          <span className="flex items-center gap-2">
+            {dernierBon ? (
+              <Button variant="outline" size="sm" onClick={() => telechargerBon(dernierBon)}>
+                <FileDown className="h-4 w-4" />
+                Bon de règlement {dernierBon.reference}
+              </Button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                setSuccessMessage(null)
+                setDernierBon(null)
+              }}
+              aria-label="Fermer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </span>
+        </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -312,14 +352,32 @@ export function CustomerCreditsPage() {
         </Card>
       </div>
 
-      {/* Encaissement */}
+      {/* Encaissement : une fenêtre au centre, et non un bloc inséré dans la
+          page. Le formulaire poussait la liste vers le bas et obligeait à
+          défiler pour retrouver le bouton. */}
       {selected ? (
-        <Card>
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Encaisser ${selected.customer}`}
+          onClick={(e) => {
+            // Un clic hors de la fenêtre ferme, comme partout ailleurs ; un
+            // clic dedans ne doit rien déclencher.
+            if (e.target === e.currentTarget) setSelected(null)
+          }}
+        >
+        <Card className="my-auto w-full max-w-4xl shadow-xl">
           <CardHeader
             title={`Encaisser — ${selected.customer}`}
             hint={`Encours : ${money(selected.total_due)} DH`}
+            action={
+              <Button variant="ghost" size="sm" onClick={() => setSelected(null)} aria-label="Fermer">
+                <X className="h-4 w-4" />
+              </Button>
+            }
           />
-          <CardBody className="space-y-4">
+          <CardBody className="max-h-[80vh] space-y-4 overflow-y-auto">
             {collect.isError ? (
               <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
                 {errorMessage(collect.error, 'Encaissement impossible.')}
@@ -498,6 +556,24 @@ export function CustomerCreditsPage() {
                             </td>
                             <td className="tabular px-4 py-2 text-right text-ink">{money(e.balance_after)}</td>
                             <td className="px-4 py-2 text-right">
+                              {/* Un règlement a son bon : il se retrouve ici,
+                                  des mois après, sans refaire l'opération. */}
+                              {e.payment_id ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  aria-label={`Bon de règlement ${e.note ?? ''}`}
+                                  title="Télécharger le bon de règlement"
+                                  onClick={() =>
+                                    telechargerBon({
+                                      id: e.payment_id as number,
+                                      reference: e.note ?? `reglement-${e.payment_id}`,
+                                    })
+                                  }
+                                >
+                                  <FileDown className="h-4 w-4 text-sky" />
+                                </Button>
+                              ) : null}
                               {/* Une écriture issue d'une facture ou d'un
                                   règlement se défait par son document : le
                                   bouton n'apparaît pas, il serait refusé. */}
@@ -522,17 +598,18 @@ export function CustomerCreditsPage() {
             ) : null}
           </CardBody>
         </Card>
+        </div>
       ) : null}
 
       {/* Le meme client peut devoir a plusieurs points de vente : c'est la
           repartition, pas le total, qui dit a qui reclamer quoi. */}
       {vueParLieu && (meta?.by_warehouse.length ?? 0) > 0 ? (
-        <Card>
-          <CardHeader
-            title="Crédit par lieu"
-            hint={`${money(meta?.total_due ?? 0)} DH au total`}
-          />
-          <CardBody className="p-0">
+        <SectionPliante
+          titre="Crédit par lieu"
+          cle="credits-par-lieu"
+          hint={`${money(meta?.total_due ?? 0)} DH au total`}
+          bodyClassName="p-0"
+        >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -568,23 +645,22 @@ export function CustomerCreditsPage() {
                 </tfoot>
               </table>
             </div>
-          </CardBody>
-        </Card>
+        </SectionPliante>
       ) : null}
 
-      <Card>
-        <CardHeader
-          title="Créances par ancienneté"
-          hint={
-            actif
-              ? `${resultats.length} sur ${rows.length}`
-              : rows.length > 0
-                ? `${rows.length} client(s)`
-                : undefined
-          }
-          action={<SearchInput value={terme} onChange={setTerme} placeholder="Client…" />}
-        />
-        <CardBody className="p-0">
+      <SectionPliante
+        titre="Créances par ancienneté"
+        cle="creances-par-anciennete"
+        bodyClassName="p-0"
+        hint={
+          actif
+            ? `${resultats.length} sur ${rows.length}`
+            : rows.length > 0
+              ? `${rows.length} client(s)`
+              : undefined
+        }
+        action={<SearchInput value={terme} onChange={setTerme} placeholder="Client…" />}
+      >
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>
           ) : resultats.length === 0 ? (
@@ -648,8 +724,7 @@ export function CustomerCreditsPage() {
               </table>
             </div>
           )}
-        </CardBody>
-      </Card>
+      </SectionPliante>
 
       <HistoriqueReglements />
 

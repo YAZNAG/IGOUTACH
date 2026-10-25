@@ -1,15 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
-import { Receipt } from 'lucide-react'
+import { FileDown, Receipt } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { SectionPliante } from '@/components/ui/SectionPliante'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { api } from '@/lib/api'
+import { openPdf } from '@/lib/download'
 import { formatDate, formatDateHeure } from '@/lib/utils'
 
 interface PaymentRow {
@@ -111,16 +112,16 @@ export function HistoriqueReglements() {
   }
 
   return (
-    <Card>
-      <CardHeader
-        title="Historique des règlements"
-        hint={
-          meta
-            ? `${meta.total} règlement(s) — ${money(meta.total_amount)} DH encaissés sur la période`
-            : undefined
-        }
-      />
-      <CardBody className="space-y-4">
+    <SectionPliante
+      titre="Historique des règlements"
+      cle="historique-reglements"
+      bodyClassName="space-y-4"
+      hint={
+        meta
+          ? `${meta.total} règlement(s) — ${money(meta.total_amount)} DH encaissés sur la période`
+          : undefined
+      }
+    >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Field label="Du" htmlFor="hr-from">
             <Input
@@ -188,6 +189,7 @@ export function HistoriqueReglements() {
                     <th className="px-4 py-2 font-medium">Méthode</th>
                     <th className="px-4 py-2 text-right font-medium">Montant</th>
                     <th className="px-4 py-2 font-medium">Justificatif</th>
+                    <th className="px-4 py-2 font-medium">Bon</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -226,6 +228,22 @@ export function HistoriqueReglements() {
                           <span className="text-faint">—</span>
                         )}
                       </td>
+                      <td className="px-4 py-2">
+                        {/* Le bon porte le détail que la ligne ne tient pas :
+                            factures soldées, reste dû, montant en lettres. */}
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-sky hover:underline"
+                          onClick={() =>
+                            openPdf(`/payments/${r.id}/pdf`, `${r.reference ?? `reglement-${r.id}`}.pdf`).catch(
+                              () => window.alert("Le bon de règlement n'a pas pu être généré."),
+                            )
+                          }
+                        >
+                          <FileDown className="h-4 w-4" />
+                          Bon
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -259,7 +277,6 @@ export function HistoriqueReglements() {
             ) : null}
           </>
         )}
-      </CardBody>
-    </Card>
+    </SectionPliante>
   )
 }

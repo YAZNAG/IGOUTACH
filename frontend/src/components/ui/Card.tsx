@@ -11,7 +11,8 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 interface CardHeaderProps {
-  title: string
+  /** Texte, ou bouton de pliage quand la section s'ouvre et se ferme. */
+  title: ReactNode
   hint?: string
   action?: ReactNode
 }

@@ -11,10 +11,14 @@ use App\Domain\Payments\Actions\DeclareChequeAction;
 use App\Domain\Payments\Models\Cheque;
 use App\Domain\Sales\Actions\RecordPaymentAction;
 use App\Domain\Sales\Models\Payment;
+use App\Domain\Sales\Models\PaymentAllocation;
 use App\Domain\Sales\Models\Sale;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -303,6 +307,75 @@ final class PaymentController extends Controller
     }
 
     /**
+     * Bon de règlement : la preuve remise au client.
+     *
+     * Un encaissement laissait une ligne dans un écran, rien dans la main du
+     * client. Le document porte ce qui se discute ensuite : la somme reçue,
+     * les factures qu'elle solde, et ce qui reste dû après.
+     */
+    public function receipt(Request $request, Payment $payment): Response
+    {
+        $payment->load(['customer:id,code,name,phone,address,city,balance', 'method:id,name']);
+
+        $affectations = PaymentAllocation::query()
+            ->where('payment_id', $payment->id)
+            ->with('sale:id,reference,total,paid_amount,confirmed_at,created_at')
+            ->get()
+            ->map(fn (PaymentAllocation $a): array => [
+                'reference' => $a->sale?->reference ?? '—',
+                'date' => ($a->sale?->confirmed_at ?? $a->sale?->created_at)?->format('d/m/Y') ?? '—',
+                'total' => round((float) ($a->sale?->total ?? 0), 2),
+                'paye' => round((float) $a->amount, 2),
+                // Ce qui reste sur la facture aujourd'hui : c'est l'etat que
+                // le client verifiera, pas celui d'avant le versement.
+                'reste' => round(max((float) ($a->sale?->total ?? 0) - (float) ($a->sale?->paid_amount ?? 0), 0), 2),
+            ])
+            ->all();
+
+        // L'encours du compte est tenu a jour : le solde d'avant se retrouve en
+        // y rajoutant ce versement.
+        $soldeApres = round((float) ($payment->customer?->balance ?? 0), 2);
+        $soldeAvant = round($soldeApres + (float) $payment->amount, 2);
+
+        $pdf = Pdf::loadView('pdf.payment-receipt', [
+            'payment' => $payment,
+            'affectations' => $affectations,
+            'soldeAvant' => $soldeAvant,
+            'soldeApres' => $soldeApres,
+            'enLettres' => $this->enLettres((float) $payment->amount),
+            'encaissePar' => User::query()->whereKey($payment->user_id)->value('name'),
+        ])->setPaper('a4');
+
+        return $pdf->download("{$payment->reference}.pdf");
+    }
+
+    /**
+     * Montant en toutes lettres, quand l'extension intl est présente.
+     *
+     * Un bon de caisse se lit aussi en lettres : c'est ce qui empêche qu'un
+     * chiffre soit retouché après coup. Sans l'extension, on s'abstient
+     * plutôt que d'écrire un montant approximatif.
+     */
+    private function enLettres(float $montant): ?string
+    {
+        if (! class_exists(\NumberFormatter::class)) {
+            return null;
+        }
+
+        $formateur = new \NumberFormatter('fr', \NumberFormatter::SPELLOUT);
+        $entier = (int) floor($montant);
+        $centimes = (int) round(($montant - $entier) * 100);
+
+        $texte = $formateur->format($entier).' dirham'.($entier > 1 ? 's' : '');
+
+        if ($centimes > 0) {
+            $texte .= ' et '.$formateur->format($centimes).' centime'.($centimes > 1 ? 's' : '');
+        }
+
+        return $texte;
+    }
+
+    /**
      * Cycle du chèque : received → deposited → cleared | bounced.
      */
     public function chequeStatus(Request $request, Payment $payment): JsonResponse
@@ -526,13 +599,17 @@ final class PaymentController extends Controller
                     ->join('payments as p', 'p.id', '=', 'a.payment_id')
                     ->where('a.sale_id', $vente->id)
                     ->orderBy('p.received_at')
-                    ->get(['p.reference', 'a.amount', 'p.received_at', 'p.created_at']) as $r) {
+                    ->get(['p.id', 'p.reference', 'a.amount', 'p.received_at', 'p.created_at']) as $r) {
                     $lignes->push([
                         'date' => (string) $r->created_at,
                         'type' => 'payment',
                         'amount' => -1 * (float) $r->amount,
                         'note' => (string) $r->reference,
                         'from_document' => true,
+                        // Le reglement a un bon imprimable : l'ecran le propose
+                        // depuis le releve, sans faire chercher la ligne
+                        // ailleurs.
+                        'payment_id' => (int) $r->id,
                     ]);
                 }
             }
@@ -576,6 +653,9 @@ final class PaymentController extends Controller
                 // Une écriture adossée à un document ne se supprime pas seule :
                 // l'interface n'a pas à proposer un bouton qui sera refusé.
                 'from_document' => $e->reference_type !== null,
+                // Le bon de règlement s'imprime depuis le relevé : encore
+                // faut-il savoir de quel encaissement vient la ligne.
+                'payment_id' => $e->reference_type === Payment::class ? (int) $e->reference_id : null,
             ]);
 
         return response()->json(['data' => [
