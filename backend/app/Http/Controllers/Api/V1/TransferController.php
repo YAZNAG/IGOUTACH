@@ -67,6 +67,15 @@ final class TransferController extends Controller
                 $id = $request->integer('warehouse_id');
                 $q->where(fn ($sub) => $sub->where('from_warehouse_id', $id)->orWhere('to_warehouse_id', $id));
             })
+            // Le sens du mouvement : « ce qui part de DCHIERA » n'est pas « ce
+            // qui arrive a DCHIERA ». Les deux ensemble repondent a « ce que
+            // DCHIERA a envoye a VEH / H-1 », la question qu'on pose vraiment.
+            ->when($request->integer('from_warehouse_id') > 0, fn ($q) => $q->where('from_warehouse_id', $request->integer('from_warehouse_id')))
+            ->when($request->integer('to_warehouse_id') > 0, fn ($q) => $q->where('to_warehouse_id', $request->integer('to_warehouse_id')))
+            // La periode porte sur la creation du bon : c'est la date qu'il
+            // affiche et celle dont on se souvient.
+            ->when($request->string('date_from')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '>=', $request->string('date_from')->value()))
+            ->when($request->string('date_to')->isNotEmpty(), fn ($q) => $q->whereDate('created_at', '<=', $request->string('date_to')->value()))
             // Cloisonnement : sans vue multi-lieux, on ne voit que les
             // transferts qui partent de son lieu ou qui lui sont destines.
             // Le modele ne porte pas de scope global : un transfert a deux

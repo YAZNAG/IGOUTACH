@@ -157,15 +157,44 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
 
   const [recherche, setRecherche] = useState('')
 
+  // Les filtres de la liste. « De DCHIERA vers VEH / H-1 » est la question
+  // courante : elle demande les deux sens, pas un lieu unique.
+  const [depuis, setDepuis] = useState(0)
+  const [vers, setVers] = useState(0)
+  const [statut, setStatut] = useState('')
+  const [du, setDu] = useState('')
+  const [au, setAu] = useState('')
+
+  const { data: lieux = [] } = useWarehouseOptions()
+
   // La liste est paginee : filtrer les vingt lignes affichees laisserait
   // croire qu'un transfert n'existe pas parce qu'il est page 3.
   const rechercheRetardee = useDebouncedValue(recherche, 300)
 
+  const filtres = {
+    search: rechercheRetardee || undefined,
+    from_warehouse_id: depuis || undefined,
+    to_warehouse_id: vers || undefined,
+    status: statut || undefined,
+    date_from: du || undefined,
+    date_to: au || undefined,
+  }
+
+  const filtreActif =
+    depuis > 0 || vers > 0 || statut !== '' || du !== '' || au !== '' || recherche !== ''
+
+  /** Change un filtre et revient en page 1 : la page 3 d'un autre filtre
+   *  serait souvent vide, ce qui se lit comme « aucun resultat ». */
+  function appliquer(action: () => void) {
+    action()
+    setPage(1)
+  }
+
   const { data, isLoading } = useQuery<Paginated<TransferRow>>({
-    queryKey: [...KEY, page, rechercheRetardee],
+    queryKey: [...KEY, page, filtres],
     queryFn: async () => {
       const { data: r } = await api.get<Paginated<TransferRow>>('/transfers', {
-        params: { page, search: rechercheRetardee || undefined },
+        params: { page, ...filtres },
       })
       return r
     },
@@ -193,20 +222,116 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
 
       <DemandesEnAttente />
 
+      {/* Filtres : le sens du mouvement d'abord, puis l'etat et la periode. */}
+      <Card>
+        <CardBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <Field label="Recherche" htmlFor="tr-recherche">
+            <SearchInput
+              id="tr-recherche"
+              value={recherche}
+              onChange={(v) => appliquer(() => setRecherche(v))}
+              placeholder="Référence ou article…"
+              className="w-full"
+            />
+          </Field>
+
+          <Field label="Depuis le lieu" htmlFor="tr-depuis">
+            <Select
+              id="tr-depuis"
+              value={depuis}
+              onChange={(e) => appliquer(() => setDepuis(Number(e.target.value)))}
+            >
+              <option value={0}>Tous les lieux</option>
+              {lieux.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.code} · {w.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="Vers le lieu" htmlFor="tr-vers">
+            <Select
+              id="tr-vers"
+              value={vers}
+              onChange={(e) => appliquer(() => setVers(Number(e.target.value)))}
+            >
+              <option value={0}>Tous les lieux</option>
+              {lieux.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.code} · {w.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="État" htmlFor="tr-statut">
+            <Select
+              id="tr-statut"
+              value={statut}
+              onChange={(e) => appliquer(() => setStatut(e.target.value))}
+            >
+              <option value="">Tous les états</option>
+              <option value="requested">Demandé</option>
+              <option value="in_transit">En transit</option>
+              <option value="received">Reçu</option>
+              <option value="refused">Refusé</option>
+              <option value="cancelled">Annulé</option>
+            </Select>
+          </Field>
+
+          <Field label="Du" htmlFor="tr-du">
+            <Input
+              id="tr-du"
+              type="date"
+              value={du}
+              onChange={(e) => appliquer(() => setDu(e.target.value))}
+            />
+          </Field>
+
+          <Field label="Au" htmlFor="tr-au">
+            <Input
+              id="tr-au"
+              type="date"
+              value={au}
+              onChange={(e) => appliquer(() => setAu(e.target.value))}
+            />
+          </Field>
+
+          <div className="flex items-end xl:col-span-6">
+            <Button
+              variant="ghost"
+              disabled={!filtreActif}
+              onClick={() =>
+                appliquer(() => {
+                  setRecherche('')
+                  setDepuis(0)
+                  setVers(0)
+                  setStatut('')
+                  setDu('')
+                  setAu('')
+                })
+              }
+            >
+              Effacer les filtres
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
       <Card>
         <CardHeader
           title="Historique"
-          hint={meta ? `${meta.total}` : undefined}
-          action={
-            <SearchInput
-              value={recherche}
-              onChange={(v) => {
-                setRecherche(v)
-                setPage(1)
-              }}
-              placeholder="Référence, lieu ou article…"
-              className="w-72"
-            />
+          hint={
+            meta
+              ? `${meta.total} transfert(s)${
+                  depuis > 0 || vers > 0
+                    ? ` · ${lieux.find((w) => w.id === depuis)?.code ?? 'tous'} → ${
+                        lieux.find((w) => w.id === vers)?.code ?? 'tous'
+                      }`
+                    : ''
+                }`
+              : undefined
           }
         />
         <CardBody className="p-0">
