@@ -71,11 +71,11 @@ final class RecordPaymentAction
 
             // Ventilation explicite : le versement solde plusieurs factures,
             // chacune pour la part indiquee. A defaut, on retombe sur la
-            // facture unique historique.
+            // facture unique historique, puis sur l'imputation automatique.
             $ventilations = $data['allocations'] ?? (
                 isset($data['sale_id'])
                     ? [['sale_id' => (int) $data['sale_id'], 'amount' => $data['amount']]]
-                    : []
+                    : $this->imputerAuxPlusAnciennes((int) $data['customer_id'], (float) $data['amount'])
             );
 
             foreach ($ventilations as $part) {
@@ -115,5 +115,51 @@ final class RecordPaymentAction
 
             return $payment;
         });
+    }
+
+    /**
+     * Impute un versement non ventilé aux factures les plus anciennes.
+     *
+     * Sans cela, le règlement ne touchait que le grand-livre : les factures
+     * restaient « impayées » à l'écran, et la même somme était réclamée une
+     * seconde fois. C'est arrivé — 1 108 DH encaissés le 22/10 sans
+     * affectation, puis de nouveau le 25/10 sur les mêmes factures.
+     *
+     * L'ordre est celui de l'ancienneté : c'est la règle usuelle, et celle
+     * que le bouton « Répartir automatiquement » applique déjà à l'écran. Un
+     * reliquat non imputé reste en avoir sur le compte.
+     *
+     * @return list<array{sale_id: int, amount: float}>
+     */
+    private function imputerAuxPlusAnciennes(int $customerId, float $montant): array
+    {
+        $reste = round($montant, 2);
+        $parts = [];
+
+        $factures = Sale::query()
+            ->where('customer_id', $customerId)
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->whereRaw('paid_amount < total')
+            ->orderBy('confirmed_at')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($factures as $facture) {
+            if ($reste <= 0.001) {
+                break;
+            }
+
+            $du = round((float) $facture->total - (float) $facture->paid_amount, 2);
+            if ($du <= 0.001) {
+                continue;
+            }
+
+            $part = min($du, $reste);
+            $parts[] = ['sale_id' => (int) $facture->id, 'amount' => $part];
+            $reste = round($reste - $part, 2);
+        }
+
+        return $parts;
     }
 }

@@ -332,16 +332,32 @@ final class PaymentController extends Controller
             ])
             ->all();
 
-        // L'encours du compte est tenu a jour : le solde d'avant se retrouve en
-        // y rajoutant ce versement.
-        $soldeApres = round((float) ($payment->customer?->balance ?? 0), 2);
-        $soldeAvant = round($soldeApres + (float) $payment->amount, 2);
+        // Ce qui se reclame, c'est le du sur factures, pas le solde du
+        // grand-livre : celui-ci passe negatif des qu'un versement depasse les
+        // factures, et le bon annoncait alors « reste du : -1 028 DH ».
+        $resteApres = round((float) Sale::query()
+            ->where('customer_id', $payment->customer_id)
+            ->where('type', Sale::TYPE_INVOICE)
+            ->where('status', Sale::STATUS_CONFIRMED)
+            ->selectRaw('COALESCE(SUM(total - paid_amount), 0) as du')
+            ->value('du'), 2);
+
+        // Avant ce versement, les factures qu'il a soldees devaient encore
+        // leur part : le reste d'avant s'en deduit.
+        $impute = round(array_sum(array_column($affectations, 'paye')), 2);
+        $resteAvant = round($resteApres + $impute, 2);
+
+        // Part non imputee : elle reste en avoir, et doit se lire comme telle
+        // plutot que de creuser un « du » negatif.
+        $avoir = round(max((float) $payment->amount - $impute, 0), 2);
 
         $pdf = Pdf::loadView('pdf.payment-receipt', [
             'payment' => $payment,
             'affectations' => $affectations,
-            'soldeAvant' => $soldeAvant,
-            'soldeApres' => $soldeApres,
+            'resteAvant' => $resteAvant,
+            'resteApres' => $resteApres,
+            'impute' => $impute,
+            'avoir' => $avoir,
             'enLettres' => $this->enLettres((float) $payment->amount),
             'encaissePar' => User::query()->whereKey($payment->user_id)->value('name'),
         ])->setPaper('a4');

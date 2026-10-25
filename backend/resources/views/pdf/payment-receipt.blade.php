@@ -97,18 +97,27 @@
         </div>
     @endif
 
+    {{-- Le compte se lit sur les factures, pas sur le grand-livre : celui-ci
+         passe sous zéro dès qu'un versement dépasse ce qui est facturé, et le
+         bon annonçait alors un « reste dû » négatif. --}}
     <table class="solde">
         <tr>
-            <td class="k">Encours du compte avant ce règlement</td>
-            <td class="v">{{ number_format($soldeAvant, 2, ',', ' ') }} DH</td>
+            <td class="k">Reste dû avant ce règlement</td>
+            <td class="v">{{ number_format($resteAvant, 2, ',', ' ') }} DH</td>
         </tr>
         <tr>
-            <td class="k">Montant réglé</td>
-            <td class="v">− {{ number_format((float) $payment->amount, 2, ',', ' ') }} DH</td>
+            <td class="k">Imputé aux factures ci-dessus</td>
+            <td class="v">− {{ number_format($impute, 2, ',', ' ') }} DH</td>
         </tr>
+        @if ($avoir > 0)
+        <tr>
+            <td class="k">Versé en plus, porté en avoir sur le compte</td>
+            <td class="v">{{ number_format($avoir, 2, ',', ' ') }} DH</td>
+        </tr>
+        @endif
         <tr class="fin">
             <td class="k" style="color: #FFFFFF;">RESTE DÛ APRÈS CE RÈGLEMENT</td>
-            <td class="v">{{ number_format($soldeApres, 2, ',', ' ') }} DH</td>
+            <td class="v">{{ number_format($resteApres, 2, ',', ' ') }} DH</td>
         </tr>
     </table>
 
