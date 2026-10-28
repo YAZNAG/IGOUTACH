@@ -74,7 +74,9 @@
         <tr>
             <td>
                 <table class="totals">
-                    @php($tva = (float) $receipt->tax_amount)
+                    @php
+                        $tva = (float) $receipt->tax_amount;
+                    @endphp
                     {{-- Réception dans un lieu soumis à TVA : le bon se lit
                          comme la facture du fournisseur, base puis taxe. --}}
                     @if ($tva > 0)

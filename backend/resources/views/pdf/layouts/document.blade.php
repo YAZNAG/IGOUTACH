@@ -269,7 +269,9 @@
          l'envers. L'image `public/images/doua.png` est composée une fois pour
          toutes avec une police arabe et la mise en forme adéquate ; la
          modifier suppose de la recomposer, pas d'éditer ce gabarit. --}}
-    @php($doua = public_path('images/doua.png'))
+    @php
+        $doua = public_path('images/doua.png');
+    @endphp
     @if (file_exists($doua))
         <div class="doua">
             <img src="{{ $doua }}" alt="اللهم بارك لنا في تجارتنا">
