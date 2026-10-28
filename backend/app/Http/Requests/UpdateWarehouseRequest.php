@@ -33,6 +33,10 @@ class UpdateWarehouseRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:30'],
             'is_active' => ['boolean'],
+            // TVA du lieu : 0 ailleurs, 20 pour un depot qui facture avec TVA.
+            'vat_rate' => ['sometimes', 'numeric', 'between:0,100'],
+            // Prix saisis tout compris : la TVA s'extrait au lieu de s'ajouter.
+            'prices_include_vat' => ['sometimes', 'boolean'],
         ];
     }
 }

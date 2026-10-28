@@ -10,6 +10,7 @@ use App\Domain\Purchasing\Models\PurchaseOrderLine;
 use App\Domain\Purchasing\Models\PurchaseOrderStatus;
 use App\Domain\Stock\Contracts\StockWriterInterface;
 use App\Domain\Stock\DTOs\StockMovementData;
+use App\Domain\Tax\Services\TaxeDuLieu;
 use App\Support\Stock\MovementInstant;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -129,10 +130,21 @@ final class ReceiveGoodsAction
                 unset($receiptLine);
             }
 
-            // 3. Paiement fournisseur : payé / partiel (reste en crédit) / non payé.
+            // 3. TVA du lieu, figée sur le bon comme sur la facture du
+            //    fournisseur. Les prix des lignes restent hors taxe : c'est
+            //    eux qui font le coût de la marchandise, et la TVA sur achat
+            //    se récupère — l'inclure gonflerait les marges à l'envers.
+            $receipt->load('lines');
+            $taxe = app(TaxeDuLieu::class)->decomposer($receipt->totalAmount(), (int) $order->warehouse_id);
+            $receipt->update([
+                'tax_rate' => $taxe['rate'],
+                'tax_amount' => $taxe['tva'],
+            ]);
+
+            // 4. Paiement fournisseur : payé / partiel (reste en crédit) / non payé.
             $this->applyPayment($receipt, $paymentStatus, $amountPaid);
 
-            // 4. Statut du bon de commande (partially_received / received)
+            // 5. Statut du bon de commande (partially_received / received)
             $this->syncOrderStatus($order);
 
             return $receipt->refresh();
@@ -185,7 +197,9 @@ final class ReceiveGoodsAction
     private function applyPayment(GoodsReceipt $receipt, string $paymentStatus, float $amountPaid): void
     {
         $receipt->load('lines');
-        $total = $receipt->totalAmount();
+        // C'est le TTC qui se règle au fournisseur : le hors taxe ne fait que
+        // le coût de la marchandise.
+        $total = $receipt->totalTtc();
 
         switch ($paymentStatus) {
             case GoodsReceipt::PAYMENT_PAID:

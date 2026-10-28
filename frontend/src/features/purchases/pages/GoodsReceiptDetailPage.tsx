@@ -188,6 +188,26 @@ export function GoodsReceiptDetailPage() {
               <p className="text-xs font-medium text-muted">Montant total HT</p>
               <p className="text-lg font-semibold text-ink">{formatMoney(totalAmount)} DH</p>
             </div>
+            {/* Réception dans un lieu soumis à TVA : c'est le TTC qui se règle
+                au fournisseur, le HT ne fait que le coût de la marchandise. */}
+            {Number(receipt.tax_amount ?? 0) > 0 ? (
+              <>
+                <div>
+                  <p className="text-xs font-medium text-muted">
+                    TVA ({formatNumber(Number(receipt.tax_rate ?? 0))} %)
+                  </p>
+                  <p className="text-lg font-semibold text-ink">
+                    {formatMoney(Number(receipt.tax_amount))} DH
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted">Montant total TTC</p>
+                  <p className="text-lg font-semibold text-ink">
+                    {formatMoney(Number(receipt.total_ttc ?? totalAmount))} DH
+                  </p>
+                </div>
+              </>
+            ) : null}
             <div>
               <p className="text-xs font-medium text-muted">Règlement</p>
               <div className="mt-1">

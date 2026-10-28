@@ -30,6 +30,10 @@ class WarehouseResource extends JsonResource
             'city' => $this->city,
             'phone' => $this->phone,
             'is_active' => $this->is_active,
+            // TVA du lieu : l'écran de vente annonce HT, TVA et TTC dès qu'elle
+            // n'est pas nulle, et ne change rien ailleurs.
+            'vat_rate' => round((float) $this->vat_rate, 2),
+            'prices_include_vat' => (bool) $this->prices_include_vat,
             'created_at' => $this->created_at,
         ];
     }

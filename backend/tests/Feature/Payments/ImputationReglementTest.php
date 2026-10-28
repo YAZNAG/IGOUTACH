@@ -17,7 +17,7 @@ use App\Domain\Warehouses\Models\Warehouse;
  * « impayées » : HOUSSIN JR a réglé 1 108 DH le 22/10 sans affectation, et la
  * même somme lui a été réclamée le 25/10 sur les mêmes factures.
  */
-function factureDue(Customer $client, Warehouse $lieu, float $montant, string $quand): Sale
+function factureDueAImputer(Customer $client, Warehouse $lieu, float $montant, string $quand): Sale
 {
     return Sale::query()->create([
         'reference' => 'VTE-'.uniqid(),
@@ -39,8 +39,8 @@ it('impute un reglement non ventile aux factures les plus anciennes', function (
     $client = Customer::factory()->create(['balance' => 0]);
     $mode = modeEspeces();
 
-    $ancienne = factureDue($client, $lieu, 300, '2026-10-01 10:00');
-    $recente = factureDue($client, $lieu, 200, '2026-10-05 10:00');
+    $ancienne = factureDueAImputer($client, $lieu, 300, '2026-10-01 10:00');
+    $recente = factureDueAImputer($client, $lieu, 200, '2026-10-05 10:00');
 
     app(RecordPaymentAction::class)->execute([
         'customer_id' => $client->id,
@@ -63,7 +63,7 @@ it('laisse en avoir ce qui depasse les factures dues', function (): void {
     $client = Customer::factory()->create(['balance' => 0]);
     $mode = modeEspeces();
 
-    $facture = factureDue($client, $lieu, 150, '2026-10-01 10:00');
+    $facture = factureDueAImputer($client, $lieu, 150, '2026-10-01 10:00');
 
     app(RecordPaymentAction::class)->execute([
         'customer_id' => $client->id,
@@ -88,8 +88,8 @@ it('respecte une ventilation explicite', function (): void {
     $client = Customer::factory()->create(['balance' => 0]);
     $mode = modeEspeces();
 
-    $ancienne = factureDue($client, $lieu, 300, '2026-10-01 10:00');
-    $recente = factureDue($client, $lieu, 200, '2026-10-05 10:00');
+    $ancienne = factureDueAImputer($client, $lieu, 300, '2026-10-01 10:00');
+    $recente = factureDueAImputer($client, $lieu, 200, '2026-10-05 10:00');
 
     // Le caissier choisit de solder la récente d'abord : l'imputation
     // automatique ne doit pas lui passer dessus.
@@ -111,7 +111,7 @@ it('sert un bon de reglement lisible, sans reste du negatif', function (): void 
     $user = grantUser(['payment.view', 'payment.create', 'credit.view']);
     $mode = modeEspeces();
 
-    factureDue($client, $lieu, 100, '2026-10-01 10:00');
+    factureDueAImputer($client, $lieu, 100, '2026-10-01 10:00');
 
     // Versement supérieur aux factures : c'est le cas qui faisait annoncer
     // « reste dû : -1 028 DH ».

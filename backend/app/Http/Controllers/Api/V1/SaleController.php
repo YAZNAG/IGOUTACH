@@ -14,6 +14,7 @@ use App\Domain\Sales\Actions\CancelSaleAction;
 use App\Domain\Sales\Actions\ConfirmSaleAction;
 use App\Domain\Sales\Models\Sale;
 use App\Domain\Stock\Exceptions\InsufficientStockException;
+use App\Domain\Tax\Services\TaxeDuLieu;
 use App\Http\Controllers\Controller;
 use App\Exports\ArrayExport;
 use App\Support\Documents\DocumentNumberGeneratorInterface;
@@ -827,7 +828,12 @@ final class SaleController extends Controller
                     $cost,
                 );
 
-                $total = round($subtotal * (1 - $discount / 100), 2);
+                // La TVA du lieu s'applique apres la remise : elle porte sur ce
+                // que le client paie, pas sur le prix affiche avant rabais.
+                $taxe = app(TaxeDuLieu::class)->decomposer(
+                    round($subtotal * (1 - $discount / 100), 2),
+                    (int) $data['warehouse_id'],
+                );
 
                 $sale = Sale::query()->create([
                     'reference' => $numbers->next('sale'),
@@ -838,7 +844,11 @@ final class SaleController extends Controller
                     'user_id' => $request->user()?->id,
                     'subtotal' => round($subtotal, 2),
                     'discount_percent' => $discount,
-                    'total' => $total,
+                    // « total » reste ce que le client doit : TTC des qu'un
+                    // lieu facture la TVA, inchange partout ailleurs.
+                    'total' => $taxe['ttc'],
+                    'tax_rate' => $taxe['rate'],
+                    'tax_amount' => $taxe['tva'],
                     'note' => $data['note'] ?? null,
                 ]);
 
@@ -943,11 +953,19 @@ final class SaleController extends Controller
                     $sale->lines()->create($line);
                 }
 
+                // Le lieu du brouillon decide du taux, comme a la creation.
+                $taxe = app(TaxeDuLieu::class)->decomposer(
+                    round($subtotal * (1 - $discount / 100), 2),
+                    (int) $sale->warehouse_id,
+                );
+
                 $sale->update([
                     'customer_id' => $clientId,
                     'subtotal' => round($subtotal, 2),
                     'discount_percent' => $discount,
-                    'total' => round($subtotal * (1 - $discount / 100), 2),
+                    'total' => $taxe['ttc'],
+                    'tax_rate' => $taxe['rate'],
+                    'tax_amount' => $taxe['tva'],
                     'note' => array_key_exists('note', $data) ? $data['note'] : $sale->note,
                 ]);
             });
@@ -1047,6 +1065,11 @@ final class SaleController extends Controller
             'warehouse' => $sale->warehouse?->code,
             'subtotal' => (float) $sale->subtotal,
             'discount_percent' => (float) $sale->discount_percent,
+            // Les trois montants : l'ecran affiche HT, TVA et TTC des qu'un
+            // lieu facture la taxe, et le seul total ailleurs.
+            'tax_rate' => (float) $sale->tax_rate,
+            'tax_amount' => (float) $sale->tax_amount,
+            'total_ht' => round((float) $sale->total - (float) $sale->tax_amount, 2),
             'total' => (float) $sale->total,
             'paid_amount' => (float) $sale->paid_amount,
             'payment_status' => $sale->payment_status,
@@ -1124,6 +1147,9 @@ final class SaleController extends Controller
                 'subtotal' => $sale->subtotal,
                 'discount_percent' => $sale->discount_percent,
                 'total' => $sale->total,
+                // La facture reprend la TVA du devis : le lieu n'a pas change.
+                'tax_rate' => $sale->tax_rate,
+                'tax_amount' => $sale->tax_amount,
                 'note' => trim('Issu du devis '.$sale->reference.'. '.($sale->note ?? '')),
             ]);
 

@@ -46,12 +46,18 @@ class Warehouse extends Model
         'city',
         'phone',
         'is_active',
+        // Un lieu peut facturer avec TVA : le taux vit ici, et il décide pour
+        // toutes les ventes et réceptions qui s'y rattachent.
+        'vat_rate',
+        'prices_include_vat',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'vat_rate' => 'decimal:2',
+            'prices_include_vat' => 'boolean',
         ];
     }
 

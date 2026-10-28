@@ -73,6 +73,10 @@ interface SaleDetail {
   warehouse: string | null
   subtotal: number
   discount_percent: number
+  /** TVA du lieu : 0 partout ailleurs. */
+  tax_rate?: number
+  tax_amount?: number
+  total_ht?: number
   total: number
   paid_amount: number
   payment_status: string
@@ -1572,7 +1576,15 @@ export function SaleDetailView({ id, onBack }: { id: number; onBack: () => void 
         <Card>
           <CardHeader
             title="Lignes"
-            hint={`Sous-total ${formatNumber(sale?.subtotal ?? 0)} DH · remise ${sale?.discount_percent ?? 0}% · total ${formatNumber(sale?.total ?? 0)} DH`}
+            // Un lieu soumis a TVA annonce les trois montants ; ailleurs, le
+            // libelle ne change pas d'un mot.
+            hint={
+              (sale?.tax_amount ?? 0) > 0
+                ? `Sous-total ${formatNumber(sale?.subtotal ?? 0)} DH · remise ${sale?.discount_percent ?? 0}%` +
+                  ` · HT ${formatNumber(sale?.total_ht ?? 0)} DH · TVA ${sale?.tax_rate ?? 0}% ${formatNumber(sale?.tax_amount ?? 0)} DH` +
+                  ` · TTC ${formatNumber(sale?.total ?? 0)} DH`
+                : `Sous-total ${formatNumber(sale?.subtotal ?? 0)} DH · remise ${sale?.discount_percent ?? 0}% · total ${formatNumber(sale?.total ?? 0)} DH`
+            }
           />
           <CardBody className="p-0">
             <table className="w-full text-sm">

@@ -44,6 +44,9 @@ final class GoodsReceipt extends Model
         'warehouse_id',
         'received_at',
         'invoice_number',
+        // TVA du lieu, figée à la réception comme sur la facture du fournisseur.
+        'tax_rate',
+        'tax_amount',
         'payment_status',
         'amount_paid',
         'notes',
@@ -58,6 +61,8 @@ final class GoodsReceipt extends Model
         return [
             'received_at' => 'datetime',
             'amount_paid' => 'decimal:2',
+            'tax_rate' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
         ];
     }
 
@@ -73,11 +78,23 @@ final class GoodsReceipt extends Model
     }
 
     /**
+     * Montant dû au fournisseur, TVA comprise.
+     *
+     * Le hors taxe sert au coût de la marchandise ; c'est le TTC qui se
+     * règle, et donc lui qui fait le crédit fournisseur. Hors d'un lieu
+     * soumis à TVA, les deux se confondent.
+     */
+    public function totalTtc(): float
+    {
+        return round($this->totalAmount() + (float) $this->tax_amount, 2);
+    }
+
+    /**
      * Reste à payer au fournisseur (crédit fournisseur).
      */
     public function remainingAmount(): float
     {
-        return round(max(0, $this->totalAmount() - (float) $this->amount_paid), 2);
+        return round(max(0, $this->totalTtc() - (float) $this->amount_paid), 2);
     }
 
     /**

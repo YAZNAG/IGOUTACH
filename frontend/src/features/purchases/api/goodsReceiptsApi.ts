@@ -12,6 +12,10 @@ export interface GoodsReceiptSummary {
   lines_count: number
   total_quantity: number
   total_amount: number
+  /** TVA du lieu : 0 hors d'un depot soumis a TVA. */
+  tax_rate?: number
+  tax_amount?: number
+  total_ttc?: number
   payment_status: PaymentStatus
   amount_paid: number
   remaining_amount: number

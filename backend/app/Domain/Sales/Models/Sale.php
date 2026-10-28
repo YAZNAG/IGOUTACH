@@ -55,6 +55,10 @@ final class Sale extends Model
         'subtotal',
         'discount_percent',
         'total',
+        // TVA du lieu, figée au moment du document : un changement de taux ne
+        // doit pas réécrire les factures déjà émises.
+        'tax_rate',
+        'tax_amount',
         'paid_amount',
         'payment_status',
         'confirmed_at',

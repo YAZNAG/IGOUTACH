@@ -16,6 +16,9 @@ const schema = z.object({
   phone: z.string().optional(),
   parent_id: z.string().optional(),
   is_active: z.boolean(),
+  // Saisi en texte par le formulaire, converti a l'envoi.
+  vat_rate: z.string().optional(),
+  prices_include_vat: z.boolean(),
 })
 
 type FormValues = z.input<typeof schema>
@@ -52,6 +55,8 @@ export function WarehouseForm({
       phone: initial?.phone ?? '',
       parent_id: initial?.parent_id ? String(initial.parent_id) : '',
       is_active: initial?.is_active ?? true,
+      vat_rate: initial?.vat_rate != null ? String(initial.vat_rate) : '0',
+      prices_include_vat: initial?.prices_include_vat ?? false,
     },
   })
 
@@ -65,6 +70,8 @@ export function WarehouseForm({
       phone: values.phone?.trim() ? values.phone : null,
       parent_id: values.parent_id ? Number(values.parent_id) : null,
       is_active: values.is_active,
+      vat_rate: Number(values.vat_rate ?? 0) || 0,
+      prices_include_vat: values.prices_include_vat,
     })
   })
 
@@ -112,7 +119,24 @@ export function WarehouseForm({
             <Input id="address" {...register('address')} />
           </Field>
         </div>
+
+        {/* La TVA se porte par le lieu : un dépôt déclaré à 20 % facture ses
+            ventes et ses réceptions avec TVA, les autres restent hors taxe. */}
+        <Field label="TVA du lieu (%)" htmlFor="vat_rate" error={errors.vat_rate?.message}>
+          <Input id="vat_rate" type="number" min={0} max={100} step={0.01} {...register('vat_rate')} />
+          <p className="text-xs text-muted">
+            0 = pas de TVA. 20 = toutes les ventes et réceptions de ce lieu sont taxées.
+          </p>
+        </Field>
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-ink">
+        <input type="checkbox" {...register('prices_include_vat')} className="h-4 w-4 accent-sky" />
+        Les prix de ce lieu sont saisis TVA comprise
+      </label>
+      <p className="-mt-2 text-xs text-muted">
+        Décoché : vous saisissez 100, le client paie 120. Coché : vous saisissez 120, dont 20 de TVA.
+      </p>
 
       <label className="flex items-center gap-2 text-sm text-ink">
         <input type="checkbox" {...register('is_active')} className="h-4 w-4 accent-sky" />

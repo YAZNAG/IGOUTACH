@@ -74,10 +74,28 @@
         <tr>
             <td>
                 <table class="totals">
-                    <tr class="grand">
-                        <td class="k">TOTAL</td>
-                        <td class="v">{{ number_format($totalAmount, 2, ',', ' ') }} DH</td>
-                    </tr>
+                    @php($tva = (float) $receipt->tax_amount)
+                    {{-- Réception dans un lieu soumis à TVA : le bon se lit
+                         comme la facture du fournisseur, base puis taxe. --}}
+                    @if ($tva > 0)
+                        <tr>
+                            <td class="k">Total HT</td>
+                            <td class="v">{{ number_format($totalAmount, 2, ',', ' ') }} DH</td>
+                        </tr>
+                        <tr>
+                            <td class="k">TVA ({{ number_format((float) $receipt->tax_rate, 0, ',', ' ') }} %)</td>
+                            <td class="v">{{ number_format($tva, 2, ',', ' ') }} DH</td>
+                        </tr>
+                        <tr class="grand">
+                            <td class="k">TOTAL TTC</td>
+                            <td class="v">{{ number_format($totalAmount + $tva, 2, ',', ' ') }} DH</td>
+                        </tr>
+                    @else
+                        <tr class="grand">
+                            <td class="k">TOTAL</td>
+                            <td class="v">{{ number_format($totalAmount, 2, ',', ' ') }} DH</td>
+                        </tr>
+                    @endif
                 </table>
             </td>
         </tr>

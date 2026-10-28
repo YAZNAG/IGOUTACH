@@ -58,10 +58,20 @@ final class GoodsReceiptDetailResource extends JsonResource
                 'position' => $line->position,
             ])->all(),
             'total_quantity' => (int) $lines->sum('quantity'),
+            // « total_amount » reste le hors taxe des lignes ; le TTC s'y
+            // ajoute, et c'est lui qui se règle au fournisseur.
             'total_amount' => round($lines->sum(fn (GoodsReceiptLine $line): float => $line->lineTotal()), 2),
+            'tax_rate' => round((float) $this->tax_rate, 2),
+            'tax_amount' => round((float) $this->tax_amount, 2),
+            'total_ttc' => round($lines->sum(fn (GoodsReceiptLine $line): float => $line->lineTotal()) + (float) $this->tax_amount, 2),
             'payment_status' => $this->payment_status,
             'amount_paid' => round((float) $this->amount_paid, 2),
-            'remaining_amount' => round(max(0, $lines->sum(fn (GoodsReceiptLine $line): float => $line->lineTotal()) - (float) $this->amount_paid), 2),
+            'remaining_amount' => round(max(
+                0,
+                $lines->sum(fn (GoodsReceiptLine $line): float => $line->lineTotal())
+                    + (float) $this->tax_amount
+                    - (float) $this->amount_paid,
+            ), 2),
             'created_by' => [
                 'id' => $this->createdBy?->id,
                 'name' => $this->createdBy?->name,

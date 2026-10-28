@@ -27,15 +27,18 @@ final class SupplierCreditController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // Ce qui se doit au fournisseur, c'est le TTC : les lignes sont hors
+        // taxe, la TVA du lieu est posee sur l'en-tete du bon. L'omettre
+        // laissait un reliquat impaye sur un bon pourtant solde.
         $totalSub = DB::table('goods_receipt_lines')
-            ->selectRaw('COALESCE(SUM(quantity * unit_price), 0)')
+            ->selectRaw('COALESCE(SUM(quantity * unit_price), 0) + COALESCE(goods_receipts.tax_amount, 0)')
             ->whereColumn('goods_receipt_id', 'goods_receipts.id');
 
         $query = GoodsReceipt::query()
             ->with(['supplier:id,code,name', 'warehouse:id,code,name', 'purchaseOrder:id,number'])
             ->select('goods_receipts.*')
             ->selectSub($totalSub, 'total_amount')
-            ->whereRaw('(SELECT COALESCE(SUM(quantity * unit_price), 0) FROM goods_receipt_lines WHERE goods_receipt_id = goods_receipts.id) - amount_paid > 0.005')
+            ->whereRaw('(SELECT COALESCE(SUM(quantity * unit_price), 0) FROM goods_receipt_lines WHERE goods_receipt_id = goods_receipts.id) + COALESCE(tax_amount, 0) - amount_paid > 0.005')
             ->when($request->integer('supplier_id') > 0, fn ($q) => $q->where('supplier_id', $request->integer('supplier_id')))
             // Recherche par nom de fournisseur : une liste deroulante obligeait
             // a retrouver le bon parmi des dizaines, alors qu'on sait toujours

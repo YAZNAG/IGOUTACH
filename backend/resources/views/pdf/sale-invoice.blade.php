@@ -89,16 +89,42 @@
                         <td class="k">Sous-total</td>
                         <td class="v">{{ number_format((float) $sale->subtotal, 2, ',', ' ') }} DH</td>
                     </tr>
+                    @php
+                        $tva = (float) $sale->tax_amount;
+                        $ht = round((float) $sale->total - $tva, 2);
+                        // Sans TVA, la remise se lit sur le total : avec, elle
+                        // se lit sur le hors taxe, sans quoi le rabais semble
+                        // porter sur une somme qui inclut la taxe.
+                        $remise = round((float) $sale->subtotal - $ht, 2);
+                    @endphp
                     @if ((float) $sale->discount_percent > 0)
                         <tr>
                             <td class="k">Remise ({{ number_format((float) $sale->discount_percent, 1, ',', ' ') }} %)</td>
-                            <td class="v">-{{ number_format((float) $sale->subtotal - (float) $sale->total, 2, ',', ' ') }} DH</td>
+                            <td class="v">-{{ number_format($remise, 2, ',', ' ') }} DH</td>
                         </tr>
                     @endif
-                    <tr class="grand">
-                        <td class="k">TOTAL</td>
-                        <td class="v">{{ number_format((float) $sale->total, 2, ',', ' ') }} DH</td>
-                    </tr>
+                    {{-- Un lieu soumis à TVA facture en trois lignes : la base,
+                         la taxe, puis ce que le client paie. Les autres lieux
+                         gardent leur unique total. --}}
+                    @if ($tva > 0)
+                        <tr>
+                            <td class="k">Total HT</td>
+                            <td class="v">{{ number_format($ht, 2, ',', ' ') }} DH</td>
+                        </tr>
+                        <tr>
+                            <td class="k">TVA ({{ number_format((float) $sale->tax_rate, 0, ',', ' ') }} %)</td>
+                            <td class="v">{{ number_format($tva, 2, ',', ' ') }} DH</td>
+                        </tr>
+                        <tr class="grand">
+                            <td class="k">TOTAL TTC</td>
+                            <td class="v">{{ number_format((float) $sale->total, 2, ',', ' ') }} DH</td>
+                        </tr>
+                    @else
+                        <tr class="grand">
+                            <td class="k">TOTAL</td>
+                            <td class="v">{{ number_format((float) $sale->total, 2, ',', ' ') }} DH</td>
+                        </tr>
+                    @endif
                     @if ((float) $sale->paid_amount > 0)
                         <tr>
                             <td class="k">Payé</td>

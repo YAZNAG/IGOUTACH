@@ -19,6 +19,10 @@ export interface Warehouse {
   city: string | null
   phone: string | null
   is_active: boolean
+  /** TVA facturée par ce lieu. 0 = hors taxe, comme avant. */
+  vat_rate: number
+  /** Prix saisis TVA comprise : la taxe s'extrait au lieu de s'ajouter. */
+  prices_include_vat: boolean
 }
 
 export interface WarehouseInput {
@@ -30,4 +34,6 @@ export interface WarehouseInput {
   city: string | null
   phone: string | null
   is_active: boolean
+  vat_rate: number
+  prices_include_vat: boolean
 }
