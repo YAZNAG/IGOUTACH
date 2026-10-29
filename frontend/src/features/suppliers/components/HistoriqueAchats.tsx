@@ -7,11 +7,10 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
-import { Select } from '@/components/ui/Select'
-import { useSupplierOptions } from '@/features/access/hooks'
 import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { api } from '@/lib/api'
 import { formatDate, formatDateHeure } from '@/lib/utils'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 
 interface ReceiptRow {
   id: number
@@ -69,7 +68,6 @@ export function HistoriqueAchats() {
   const [supplierId, setSupplierId] = useState(0)
   const [page, setPage] = useState(1)
 
-  const { data: suppliers = [] } = useSupplierOptions()
 
   const { data, isLoading, isError } = useQuery<ReceiptsPage>({
     queryKey: ['goods-receipts-journal', dateFrom, dateTo, supplierId, page],
@@ -139,18 +137,12 @@ export function HistoriqueAchats() {
             />
           </Field>
           <Field label="Fournisseur" htmlFor="ha-supplier">
-            <Select
+            <SupplierCombobox
               id="ha-supplier"
               value={supplierId}
-              onChange={(e) => filtrer(() => setSupplierId(Number(e.target.value)))}
-            >
-              <option value={0}>Tous les fournisseurs</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+              onChange={(id) => filtrer(() => setSupplierId(id))}
+              placeholder="Tous les fournisseurs"
+            />
           </Field>
         </div>
 

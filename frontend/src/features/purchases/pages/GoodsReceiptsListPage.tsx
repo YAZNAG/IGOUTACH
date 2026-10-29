@@ -7,7 +7,8 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { useSupplierOptions, useWarehouseOptions } from '@/features/access/hooks'
+import { useWarehouseOptions } from '@/features/access/hooks'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { downloadFile } from '@/lib/download'
 import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import { useGoodsReceipts } from '../hooks'
@@ -38,7 +39,6 @@ export function GoodsReceiptsListPage() {
   }
 
   const { data: list, isLoading } = useGoodsReceipts(filters)
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const receipts = list?.data ?? []
@@ -102,21 +102,15 @@ export function GoodsReceiptsListPage() {
               />
             </Field>
             <Field label="Fournisseur" htmlFor="gr-supplier">
-              <Select
+              <SupplierCombobox
                 id="gr-supplier"
-                value={supplierId || ''}
-                onChange={(e) => {
-                  setSupplierId(Number(e.target.value))
+                value={supplierId}
+                onChange={(id) => {
+                  setSupplierId(id)
                   setPage(1)
                 }}
-              >
-                <option value="">Tous</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.code} · {s.name}
-                  </option>
-                ))}
-              </Select>
+                placeholder="Tous les fournisseurs"
+              />
             </Field>
             <Field label="Lieu" htmlFor="gr-warehouse">
               <Select

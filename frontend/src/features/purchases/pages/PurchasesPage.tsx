@@ -8,6 +8,7 @@ import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { formatNumber } from '@/lib/utils'
@@ -41,12 +42,6 @@ interface PoDetail {
     remaining: number
     unit_price: number
   }[]
-}
-
-interface SupplierOption {
-  id: number
-  code: string
-  name: string
 }
 
 interface ProductOption {
@@ -206,17 +201,6 @@ function PoList({ onOpen }: { onOpen: (id: number) => void }) {
   )
 }
 
-function useSupplierOptions() {
-  return useQuery<SupplierOption[]>({
-    queryKey: ['supplier-options'],
-    queryFn: async () => {
-      const { data: r } = await api.get<Paginated<SupplierOption>>('/suppliers', { params: { per_page: 100 } })
-      return r.data
-    },
-    staleTime: 5 * 60_000,
-  })
-}
-
 function ProductPicker({ onPick, exclude }: { onPick: (p: ProductOption) => void; exclude: number[] }) {
   const [search, setSearch] = useState('')
 
@@ -257,7 +241,6 @@ function ProductPicker({ onPick, exclude }: { onPick: (p: ProductOption) => void
 
 function CreatePoPanel({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const [supplierId, setSupplierId] = useState(0)
@@ -289,10 +272,7 @@ function CreatePoPanel({ onClose }: { onClose: () => void }) {
       <CardBody className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Fournisseur" htmlFor="po-supplier">
-            <Select id="po-supplier" value={supplierId || ''} onChange={(e) => setSupplierId(Number(e.target.value))}>
-              <option value="" disabled>Choisir…</option>
-              {suppliers.map((s) => <option key={s.id} value={s.id}>{s.code} · {s.name}</option>)}
-            </Select>
+            <SupplierCombobox id="po-supplier" value={supplierId} onChange={setSupplierId} placeholder="Choisir…" allowEmpty={false} />
           </Field>
           <Field label="Lieu de réception" htmlFor="po-warehouse">
             <Select id="po-warehouse" value={warehouseId || ''} onChange={(e) => setWarehouseId(Number(e.target.value))}>
@@ -410,7 +390,6 @@ function ReplenishmentPanel() {
 
 function SupplierReturnPanel({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const [supplierId, setSupplierId] = useState(0)
@@ -440,10 +419,7 @@ function SupplierReturnPanel({ onClose }: { onClose: () => void }) {
       <CardBody className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Fournisseur" htmlFor="ret-supplier">
-            <Select id="ret-supplier" value={supplierId || ''} onChange={(e) => setSupplierId(Number(e.target.value))}>
-              <option value="" disabled>Choisir…</option>
-              {suppliers.map((s) => <option key={s.id} value={s.id}>{s.code} · {s.name}</option>)}
-            </Select>
+            <SupplierCombobox id="ret-supplier" value={supplierId} onChange={setSupplierId} placeholder="Choisir…" allowEmpty={false} />
           </Field>
           <Field label="Lieu" htmlFor="ret-warehouse">
             <Select id="ret-warehouse" value={warehouseId || ''} onChange={(e) => setWarehouseId(Number(e.target.value))}>

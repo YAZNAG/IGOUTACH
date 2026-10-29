@@ -9,7 +9,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { useSupplierOptions, useWarehouseOptions } from '@/features/access/hooks'
+import { useWarehouseOptions } from '@/features/access/hooks'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import { useCancelPurchaseOrder, usePurchaseOrders, useSendPurchaseOrder } from '../hooks'
@@ -50,7 +51,6 @@ export function PurchaseOrdersListPage() {
   }
 
   const { data: list, isLoading } = usePurchaseOrders(filters)
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const orders = list?.data ?? []
@@ -132,21 +132,15 @@ export function PurchaseOrdersListPage() {
               />
             </Field>
             <Field label="Fournisseur" htmlFor="po-supplier">
-              <Select
+              <SupplierCombobox
                 id="po-supplier"
-                value={supplierId || ''}
-                onChange={(e) => {
-                  setSupplierId(Number(e.target.value))
+                value={supplierId}
+                onChange={(id) => {
+                  setSupplierId(id)
                   setPage(1)
                 }}
-              >
-                <option value="">Tous</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.code} · {s.name}
-                  </option>
-                ))}
-              </Select>
+                placeholder="Tous les fournisseurs"
+              />
             </Field>
             <Field label="Lieu" htmlFor="po-warehouse">
               <Select

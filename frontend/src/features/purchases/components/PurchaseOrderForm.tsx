@@ -7,7 +7,8 @@ import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import { useSupplierOptions, useWarehouseOptions } from '@/features/access/hooks'
+import { useWarehouseOptions } from '@/features/access/hooks'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { formatNumber } from '@/lib/utils'
 import type { CreatePurchaseOrderInput, ProductOption } from '../api/purchaseOrdersApi'
@@ -56,7 +57,6 @@ export function PurchaseOrderForm({
   const [searchValue, setSearchValue] = useState('')
   const [suggestionsOpen, setSuggestionsOpen] = useState(false)
 
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: warehouses = [] } = useWarehouseOptions()
 
   const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0)
@@ -123,21 +123,13 @@ export function PurchaseOrderForm({
         <CardBody className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Fournisseur *" htmlFor="supplier">
-              <Select
+              <SupplierCombobox
                 id="supplier"
-                value={supplierId || ''}
-                onChange={(e) => setSupplierId(Number(e.target.value))}
-                required
-              >
-                <option value="" disabled>
-                  Choisir…
-                </option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.code} · {s.name}
-                  </option>
-                ))}
-              </Select>
+                value={supplierId}
+                onChange={setSupplierId}
+                placeholder="Choisir…"
+                allowEmpty={false}
+              />
             </Field>
             <Field label="Lieu de réception *" htmlFor="warehouse">
               <Select

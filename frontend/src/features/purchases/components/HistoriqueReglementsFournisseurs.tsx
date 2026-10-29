@@ -5,11 +5,11 @@ import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
-import { useSupplierOptions } from '@/features/access/hooks'
 import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { api } from '@/lib/api'
 import { usePaymentMethods } from '../hooks'
 import { formatDate, formatDateHeure } from '@/lib/utils'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 
 interface SupplierPaymentRow {
   id: number
@@ -55,7 +55,6 @@ export function HistoriqueReglementsFournisseurs() {
   const [supplierId, setSupplierId] = useState(0)
   const [methodId, setMethodId] = useState(0)
 
-  const { data: suppliers = [] } = useSupplierOptions()
   const { data: methods = [] } = usePaymentMethods()
 
   const { data, isLoading, isError } = useQuery<Journal>({
@@ -102,18 +101,12 @@ export function HistoriqueReglementsFournisseurs() {
             <Input id="hrf-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           </Field>
           <Field label="Fournisseur" htmlFor="hrf-supplier">
-            <Select
+            <SupplierCombobox
               id="hrf-supplier"
               value={supplierId}
-              onChange={(e) => setSupplierId(Number(e.target.value))}
-            >
-              <option value={0}>Tous les fournisseurs</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+              onChange={setSupplierId}
+              placeholder="Tous les fournisseurs"
+            />
           </Field>
           <Field label="Recherche" htmlFor="hrf-recherche">
             <SearchInput

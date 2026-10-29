@@ -6,7 +6,8 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { useSupplierOptions, useWarehouseOptions } from '@/features/access/hooks'
+import { useWarehouseOptions } from '@/features/access/hooks'
+import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { formatNumber } from '@/lib/utils'
@@ -52,7 +53,6 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
   const canDo = can(isCustomer ? 'stock.entry' : 'stock.issue')
 
   const { data: warehouses = [] } = useWarehouseOptions()
-  const { data: suppliers = [] } = useSupplierOptions()
 
   const [warehouseId, setWarehouseId] = useState(0)
   const [supplierId, setSupplierId] = useState(0)
@@ -193,12 +193,12 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
             {!isCustomer ? (
               <>
                 <Field label="Fournisseur" htmlFor="ret-supplier">
-                  <Select id="ret-supplier" value={supplierId || ''} onChange={(e) => setSupplierId(Number(e.target.value))}>
-                    <option value="">— Non précisé —</option>
-                    {suppliers.map((s) => (
-                      <option key={s.id} value={s.id}>{s.code} · {s.name}</option>
-                    ))}
-                  </Select>
+                  <SupplierCombobox
+                    id="ret-supplier"
+                    value={supplierId}
+                    onChange={setSupplierId}
+                    placeholder="— Non précisé —"
+                  />
                 </Field>
                 <Field label="Motif du renvoi *" htmlFor="ret-reason">
                   <Input
