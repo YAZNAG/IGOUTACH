@@ -7,6 +7,8 @@ export interface ComboboxOption {
   label: string
   /** Complément affiché en retrait et cherché lui aussi : un code, une ville. */
   hint?: string
+  /** Avertissement court à côté du nom : « Bloqué », « Inactif ». */
+  badge?: string
 }
 
 interface ComboboxProps {
@@ -21,6 +23,15 @@ interface ComboboxProps {
   allowEmpty?: boolean
   disabled?: boolean
   className?: string
+  /**
+   * Reçoit le texte tapé. Pour une liste trop longue pour être chargée
+   * entière : l'appelant interroge le serveur et renvoie des `options`
+   * déjà filtrées, qu'on ne refiltre pas (le serveur cherche aussi sur des
+   * champs absents du libellé, comme un téléphone).
+   */
+  onSearch?: (texte: string) => void
+  /** Vrai pendant qu'une recherche serveur est en cours. */
+  chargement?: boolean
 }
 
 /** Minuscules sans accents : « société » trouve « SOCIÉTÉ » et « societe ». */
@@ -54,6 +65,8 @@ export function Combobox({
   allowEmpty = true,
   disabled = false,
   className,
+  onSearch,
+  chargement = false,
 }: ComboboxProps) {
   const idInterne = useId()
   const idListe = `${id ?? idInterne}-liste`
@@ -71,13 +84,15 @@ export function Combobox({
   const affichage = ouvert ? texte : (choisi?.label ?? '')
 
   const filtrees = useMemo(() => {
+    // Options venues du serveur : déjà filtrées, on les montre telles quelles.
+    if (onSearch) return options
     const mots = normaliser(texte).split(/\s+/).filter(Boolean)
     if (mots.length === 0) return options
     return options.filter((o) => {
       const cible = normaliser(`${o.label} ${o.hint ?? ''}`)
       return mots.every((m) => cible.includes(m))
     })
-  }, [options, texte])
+  }, [options, texte, onSearch])
 
   useEffect(() => {
     setSurligne(0)
@@ -99,6 +114,7 @@ export function Combobox({
   function ouvrir() {
     if (disabled) return
     setTexte('')
+    onSearch?.('')
     setOuvert(true)
   }
 
@@ -166,6 +182,7 @@ export function Combobox({
         onChange={(e) => {
           if (!ouvert) setOuvert(true)
           setTexte(e.target.value)
+          onSearch?.(e.target.value)
         }}
         onKeyDown={clavier}
         className={cn(
@@ -196,7 +213,9 @@ export function Combobox({
           className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded border border-line bg-card py-1 shadow-lg"
         >
           {filtrees.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-muted">Aucun résultat pour « {texte} »</li>
+            <li className="px-3 py-2 text-sm text-muted">
+              {chargement ? 'Recherche…' : texte ? `Aucun résultat pour « ${texte} »` : 'Aucun choix disponible'}
+            </li>
           ) : (
             filtrees.map((o, i) => (
               <li
@@ -216,7 +235,14 @@ export function Combobox({
                   o.id === value ? 'font-medium' : '',
                 )}
               >
-                <span className="truncate">{o.label}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate">{o.label}</span>
+                  {o.badge ? (
+                    <span className="shrink-0 rounded bg-bad-bg px-1.5 py-0.5 text-xs font-medium text-bad">
+                      {o.badge}
+                    </span>
+                  ) : null}
+                </span>
                 {o.hint ? <span className="mono shrink-0 text-xs text-faint">{o.hint}</span> : null}
               </li>
             ))

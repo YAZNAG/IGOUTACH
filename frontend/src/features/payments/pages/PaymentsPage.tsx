@@ -13,6 +13,7 @@ import {
   type CustomerChequeValue,
 } from '@/features/cheques/components/CustomerChequePanel'
 import { useCreateCheque } from '@/features/cheques/hooks'
+import { CustomerCombobox, type CustomerChoice } from '@/features/customers/components/CustomerCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { cn, formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
@@ -38,13 +39,6 @@ interface AgingRow {
   bucket_61_90: number
   bucket_over_90: number
   total_due: number
-}
-
-interface CustomerOption {
-  id: number
-  code: string
-  name: string
-  balance: number
 }
 
 interface MethodOption {
@@ -222,8 +216,9 @@ function PaymentsTab() {
 
 function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
-  const [search, setSearch] = useState('')
   const [customerId, setCustomerId] = useState(0)
+  // Le client choisi, entier : l'ecran montre son encours et nomme le cheque.
+  const [selected, setSelected] = useState<CustomerChoice | null>(null)
   const [amount, setAmount] = useState('')
   const [methodId, setMethodId] = useState(0)
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
@@ -242,14 +237,6 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
    */
   const [justificatif, setJustificatif] = useState<File | null>(null)
 
-  const { data: customers = [] } = useQuery<CustomerOption[]>({
-    queryKey: ['payment-customer-search', search],
-    queryFn: async () => {
-      const { data: r } = await api.get<Paginated<CustomerOption>>('/customers', { params: { q: search || undefined, per_page: 20 } })
-      return r.data
-    },
-  })
-
   const { data: methods = [] } = useQuery<MethodOption[]>({
     queryKey: ['payment-method-options'],
     queryFn: async () => {
@@ -259,7 +246,6 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
     staleTime: 5 * 60_000,
   })
 
-  const selected = customers.find((c) => c.id === customerId)
   const method = methods.find((m) => m.id === methodId)
   // Le code fait foi : « inclut ch » dans le libellé attrapait d'autres modes.
   const codeMode = (method?.code ?? '').toUpperCase()
@@ -356,30 +342,12 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
       <CardBody className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-4">
           <Field label="Client" htmlFor="pay-customer">
-            <div className="space-y-1">
-              <Input
-                id="pay-customer"
-                placeholder="Rechercher…"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setCustomerId(0) }}
-              />
-              {customerId === 0 && customers.length > 0 ? (
-                <ul className="max-h-32 overflow-auto rounded border border-line">
-                  {customers.map((c) => (
-                    <li key={c.id}>
-                      <button
-                        type="button"
-                        onClick={() => { setCustomerId(c.id); setSearch(`${c.code} · ${c.name}`) }}
-                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface-2"
-                      >
-                        <span className="mono text-muted">{c.code}</span>
-                        <span className="text-ink">{c.name}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
+            <CustomerCombobox
+              id="pay-customer"
+              value={customerId}
+              onChange={(id, client) => { setCustomerId(id); setSelected(client) }}
+              allowEmpty={false}
+            />
           </Field>
           <Field label="Montant (DH)" htmlFor="pay-amount">
             <Input id="pay-amount" type="number" min={0.01} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />

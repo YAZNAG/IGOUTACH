@@ -12,6 +12,7 @@ import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { useCategories } from '@/features/categories/hooks'
+import { CustomerCombobox, type CustomerChoice } from '@/features/customers/components/CustomerCombobox'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
@@ -102,13 +103,6 @@ interface EditLine {
   name: string | null
   quantity: number
   unit_price: number
-}
-
-interface CustomerOption {
-  id: number
-  code: string
-  name: string
-  is_blocked: boolean
 }
 
 interface ProductOption {
@@ -755,24 +749,12 @@ export function CreateSalePanel({
   const [warehouseId, setWarehouseId] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [lines, setLines] = useState<DraftLine[]>([])
-  const [customerSearch, setCustomerSearch] = useState('')
+  // Le client choisi, entier : l'ecran avertit s'il est bloque.
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerChoice | null>(null)
   const [productSearch, setProductSearch] = useState('')
 
-  // Recherches retardées : une requête au repos de frappe, pas par caractère.
-  const debouncedCustomerSearch = useDebouncedValue(customerSearch, 250)
+  // Recherche retardée : une requête au repos de frappe, pas par caractère.
   const debouncedProductSearch = useDebouncedValue(productSearch, 250)
-
-  const { data: customers = [] } = useQuery<CustomerOption[]>({
-    queryKey: ['sale-customer-search', debouncedCustomerSearch],
-    queryFn: async () => {
-      const { data: r } = await api.get<Paginated<CustomerOption>>('/customers', {
-        params: { q: debouncedCustomerSearch || undefined, per_page: 20 },
-      })
-      return r.data
-    },
-    placeholderData: keepPreviousData,
-    staleTime: 30_000,
-  })
 
   const { data: products = [] } = useQuery<ProductOption[]>({
     queryKey: ['sale-product-search', debouncedProductSearch, warehouseId],
@@ -927,8 +909,6 @@ export function CreateSalePanel({
 
   const subtotal = lines.reduce((sum, l) => sum + l.quantity * l.unit_price, 0)
   const total = subtotal * (1 - discount / 100)
-  const selectedCustomer = customers.find((c) => c.id === customerId)
-
   return (
     <Card>
       <CardHeader
@@ -946,35 +926,17 @@ export function CreateSalePanel({
                   checked={walkIn}
                   onChange={(e) => {
                     setWalkIn(e.target.checked)
-                    if (e.target.checked) { setCustomerId(0); setCustomerSearch('') }
+                    if (e.target.checked) { setCustomerId(0); setSelectedCustomer(null) }
                   }}
                 />
                 Client de passage (comptoir, sans crédit)
               </label>
-              <Input
+              <CustomerCombobox
                 id="sale-customer"
-                placeholder="Rechercher…"
-                value={customerSearch}
+                value={customerId}
                 disabled={walkIn}
-                onChange={(e) => { setCustomerSearch(e.target.value); setCustomerId(0) }}
+                onChange={(id, client) => { setCustomerId(id); setSelectedCustomer(client) }}
               />
-              {!walkIn && customerId === 0 && customers.length > 0 ? (
-                <ul className="max-h-32 overflow-auto rounded border border-line">
-                  {customers.map((c) => (
-                    <li key={c.id}>
-                      <button
-                        type="button"
-                        onClick={() => { setCustomerId(c.id); setCustomerSearch(`${c.code} · ${c.name}`) }}
-                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-bg"
-                      >
-                        <span className="mono text-muted">{c.code}</span>
-                        <span className="text-ink">{c.name}</span>
-                        {c.is_blocked ? <Badge tone="bad">Bloqué</Badge> : null}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
             </div>
           </Field>
           <Field label="Lieu" htmlFor="sale-warehouse">
