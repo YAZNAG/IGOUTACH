@@ -128,6 +128,12 @@ final class CustomerController extends Controller
         if ($lieu > 0) {
             $data['warehouse_id'] = $lieu;
         } elseif (empty($data['warehouse_id'])) {
+            // Direction rattachee a un lieu (vue globale, mais un lieu sur sa
+            // fiche) : ce lieu est le sien par defaut, sans avoir a le dire.
+            $data['warehouse_id'] = $request->user()?->getAttribute('warehouse_id');
+        }
+
+        if (empty($data['warehouse_id'])) {
             return response()->json([
                 'message' => 'Choisissez le lieu du client : chaque fiche client appartient à un lieu.',
                 'errors' => ['warehouse_id' => ['Le lieu est obligatoire.']],

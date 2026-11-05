@@ -6,12 +6,15 @@ import '../../core/api_client.dart';
 import '../../core/auth_provider.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../shared/warehouse_scope.dart';
 
 /// Création d'un client (POST /customers).
 ///
 /// Le code client (CL-0001) est généré par le serveur : il n'est pas envoyé.
-/// Le créateur est enregistré côté serveur (`created_by`), ce qui détermine
-/// la visibilité du client pour les utilisateurs sans `customer.view_all`.
+///
+/// Le fichier client est séparé par lieu : la fiche va dans le lieu de
+/// l'utilisateur, détecté depuis son profil, sans rien lui demander. Seul un
+/// administrateur sans lieu choisit celui de la fiche.
 class CreateCustomerScreen extends StatefulWidget {
   const CreateCustomerScreen({super.key});
 
@@ -34,6 +37,9 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
   bool _saving = false;
   String? _error;
 
+  /// Lieu de la fiche : imposé par le profil, ou choisi par un admin global.
+  WarehouseScope? _scope;
+
   /// La validation ne se déclenche à la volée qu'après une première
   /// tentative : on ne souligne pas en rouge un champ jamais touché.
   bool _submitted = false;
@@ -48,6 +54,19 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         _ice,
         _creditLimit,
       ].any((c) => c.text.trim().isNotEmpty);
+
+  @override
+  void initState() {
+    super.initState();
+    _chargerLieu();
+  }
+
+  Future<void> _chargerLieu() async {
+    final lieuUtilisateur = context.read<AuthProvider>().user?.warehouseId;
+    final scope = await WarehouseScope.load(lieuUtilisateur);
+    if (!mounted) return;
+    setState(() => _scope = scope);
+  }
 
   @override
   void dispose() {
@@ -91,6 +110,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
         '/customers',
         data: {
           'name': _name.text.trim(),
+          'warehouse_id': ?_scope?.selectedId,
           'phone': ?_trimmedOrNull(_phone),
           'email': ?_trimmedOrNull(_email),
           'city': ?_trimmedOrNull(_city),
@@ -115,6 +135,7 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
     if (!context.watch<AuthProvider>().can('customer.create')) {
       return const NotAllowedView();
     }
+    final scope = _scope;
 
     return PopScope(
       canPop: false,
@@ -129,6 +150,37 @@ class _CreateCustomerScreenState extends State<CreateCustomerScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
             children: [
+              // Le lieu d'abord : c'est lui qui dit où la fiche vivra.
+              if (scope != null &&
+                  scope.canChoose &&
+                  scope.warehouses.isNotEmpty) ...[
+                DropdownButtonFormField<int>(
+                  initialValue: scope.selectedId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Lieu de la fiche *',
+                    prefixIcon: Icon(Icons.warehouse_outlined),
+                  ),
+                  items: scope.warehouses
+                      .map(
+                        (w) => DropdownMenuItem(
+                          value: w.id,
+                          child: Text(w.label, overflow: TextOverflow.ellipsis),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) => setState(
+                    () => _scope = scope.copyWith(selectedId: value),
+                  ),
+                ),
+                const SizedBox(height: 18),
+              ] else if (scope?.selectedLabel != null) ...[
+                InfoBanner(
+                  icon: Icons.warehouse_outlined,
+                  message: 'Lieu de la fiche : ${scope!.selectedLabel}',
+                ),
+                const SizedBox(height: 18),
+              ],
               TextFormField(
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
