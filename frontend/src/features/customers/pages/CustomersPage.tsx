@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Ban, CircleCheck, CreditCard, Eye, Plus, Trash2 } from 'lucide-react'
+import { Ban, CircleCheck, Copy, CreditCard, Eye, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -16,6 +16,7 @@ import { api } from '@/lib/api'
 import { formatNumber } from '@/lib/utils'
 import type { Customer, CustomerInput } from '../api/customersApi'
 import {
+  useCopyCustomer,
   useCreateCustomer,
   useCustomers,
   useDeleteCustomer,
@@ -41,13 +42,18 @@ export function CustomersPage() {
   const canUpdate = can('customer.update')
   const canDelete = can('customer.delete')
   const canCredit = can('customer.set_credit_limit')
+  // Le fichier client est séparé par lieu. Un responsable ne voit que son
+  // lieu, le serveur s'en charge ; la direction voit tout et peut filtrer.
+  const vueGlobale = can('customer.view_all') || can('stock.view_global')
 
   const [search, setSearch] = useState('')
+  const [lieuFiltre, setLieuFiltre] = useState(0)
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<SortState>({ sort: 'name', direction: 'asc' })
 
   const { data, isLoading } = useCustomers({
     q: search || undefined,
+    warehouse_id: vueGlobale && lieuFiltre > 0 ? lieuFiltre : undefined,
     page,
     per_page: 20,
     sort: sort.sort,
@@ -58,6 +64,7 @@ export function CustomersPage() {
   const deleteMutation = useDeleteCustomer()
   const creditMutation = useSetCreditLimit()
   const blockMutation = useToggleBlock()
+  const copyMutation = useCopyCustomer()
 
   const [panelOpen, setPanelOpen] = useState(false)
   const [editing, setEditing] = useState<Customer | null>(null)
@@ -88,6 +95,9 @@ export function CustomersPage() {
   const [deleting, setDeleting] = useState<Customer | null>(null)
   const [creditFor, setCreditFor] = useState<Customer | null>(null)
   const [creditValue, setCreditValue] = useState(0)
+  /** Fiche à recopier dans un autre lieu, et le lieu choisi. */
+  const [copyFor, setCopyFor] = useState<Customer | null>(null)
+  const [copyTo, setCopyTo] = useState(0)
 
   const customers = data?.data ?? []
   const meta = data?.meta
@@ -144,12 +154,23 @@ export function CustomersPage() {
     creditMutation.reset()
   }
 
+  function openCopy(c: Customer) {
+    setCopyFor(c)
+    setCopyTo(0)
+    copyMutation.reset()
+  }
+
+  const lieuxPourCopie = warehouses.filter((w) => w.id !== copyFor?.warehouse_id)
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-ink">Clients</h1>
-          <p className="text-sm text-muted">Répertoire clients, plafonds de crédit et encours.</p>
+          <p className="text-sm text-muted">
+            Répertoire clients, plafonds de crédit et encours. Chaque fiche appartient à un lieu : un même client
+            présent dans deux lieux y a deux fiches, avec un crédit séparé.
+          </p>
         </div>
         {canCreate && !panelOpen ? (
           <Button onClick={openCreate}>
@@ -172,6 +193,25 @@ export function CustomersPage() {
               <Field label="Nom / Raison sociale *" htmlFor="name">
                 <Input id="name" value={form.name} onChange={(e) => set('name', e.target.value)} required />
               </Field>
+              {/* Le lieu de la fiche. Un responsable n'a pas à le choisir : sa
+                  fiche va dans son lieu, le serveur l'impose. La direction le
+                  choisit à la création ; ensuite il ne bouge plus dès que la
+                  fiche a des ventes. */}
+              {vueGlobale ? (
+                <Field label={editing ? 'Lieu de la fiche' : 'Lieu de la fiche *'} htmlFor="cust-warehouse">
+                  <Select
+                    id="cust-warehouse"
+                    value={form.warehouse_id ?? ''}
+                    required={!editing}
+                    onChange={(e) => set('warehouse_id', e.target.value ? Number(e.target.value) : null)}
+                  >
+                    <option value="">{editing ? '— Sans lieu —' : '— Choisir le lieu —'}</option>
+                    {warehouses.map((w) => (
+                      <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
+                    ))}
+                  </Select>
+                </Field>
+              ) : null}
               {!editing ? (
                 <Field label="Plafond de crédit (DH)" htmlFor="credit-limit">
                   <Input
@@ -227,18 +267,6 @@ export function CustomersPage() {
                       </Select>
                     </Field>
                   ) : null}
-                  <Field label="Lieu de rattachement" htmlFor="cust-warehouse">
-                    <Select
-                      id="cust-warehouse"
-                      value={form.warehouse_id ?? ''}
-                      onChange={(e) => set('warehouse_id', e.target.value ? Number(e.target.value) : null)}
-                    >
-                      <option value="">— Aucun —</option>
-                      {warehouses.map((w) => (
-                        <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
-                      ))}
-                    </Select>
-                  </Field>
                 </>
               ) : null}
               <div className="flex items-center gap-6 self-end pb-2">
@@ -289,15 +317,33 @@ export function CustomersPage() {
           title="Liste des clients"
           hint={meta ? `${meta.total}` : undefined}
           action={
-            <Input
-              placeholder="Rechercher nom / code / tél…"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setPage(1)
-              }}
-              className="w-64"
-            />
+            <div className="flex items-center gap-2">
+              {vueGlobale ? (
+                <Select
+                  aria-label="Filtrer par lieu"
+                  value={lieuFiltre || ''}
+                  onChange={(e) => {
+                    setLieuFiltre(Number(e.target.value))
+                    setPage(1)
+                  }}
+                  className="w-52"
+                >
+                  <option value="">Tous les lieux</option>
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
+                  ))}
+                </Select>
+              ) : null}
+              <Input
+                placeholder="Rechercher nom / code / tél…"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(1)
+                }}
+                className="w-64"
+              />
+            </div>
           }
         />
         <CardBody className="p-0">
@@ -309,6 +355,7 @@ export function CustomersPage() {
                 <tr className="border-b border-line text-left text-muted">
                   <SortableTh field="code" current={sort} onSort={setSort}>Code</SortableTh>
                   <SortableTh field="name" current={sort} onSort={setSort}>Nom</SortableTh>
+                  {vueGlobale ? <th className="px-5 py-3 font-medium">Lieu</th> : null}
                   <SortableTh field="city" current={sort} onSort={setSort}>Ville</SortableTh>
                   <SortableTh field="credit_limit" current={sort} onSort={setSort} className="text-right" align="right">
                     Plafond
@@ -323,7 +370,7 @@ export function CustomersPage() {
               <tbody>
                 {customers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-muted">
+                    <td colSpan={vueGlobale ? 8 : 7} className="px-5 py-8 text-center text-muted">
                       Aucun client.
                     </td>
                   </tr>
@@ -335,6 +382,15 @@ export function CustomersPage() {
                         {c.name}
                         {c.is_company ? <Badge tone="neutral" className="ml-2">Ese</Badge> : null}
                       </td>
+                      {vueGlobale ? (
+                        <td className="px-5 py-3">
+                          {c.warehouse ? (
+                            <span className="mono text-xs text-ink" title={c.warehouse_name ?? undefined}>{c.warehouse}</span>
+                          ) : (
+                            <Badge tone="warn">Sans lieu</Badge>
+                          )}
+                        </td>
+                      ) : null}
                       <td className="px-5 py-3 text-muted">{c.city ?? '—'}</td>
                       <td className="tabular px-5 py-3 text-right text-muted">{formatNumber(c.credit_limit)}</td>
                       <td className="tabular px-5 py-3 text-right">
@@ -371,6 +427,16 @@ export function CustomersPage() {
                               title={c.is_blocked ? 'Débloquer' : 'Bloquer'}
                             >
                               {c.is_blocked ? <CircleCheck className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                            </Button>
+                          ) : null}
+                          {canCreate && warehouses.length > 1 ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openCopy(c)}
+                              title="Créer sa fiche dans un autre lieu"
+                            >
+                              <Copy className="h-4 w-4" />
                             </Button>
                           ) : null}
                           {canUpdate ? (
@@ -462,6 +528,58 @@ export function CustomersPage() {
                 }
               >
                 Enregistrer
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Même client, autre lieu : une seconde fiche, crédit à zéro. */}
+      {copyFor ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={() => setCopyFor(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-lg border border-line bg-card p-5 shadow-[var(--shadow-pop)]"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-semibold text-ink">Fiche dans un autre lieu — {copyFor.name}</h2>
+            <p className="mt-1 text-sm text-muted">
+              Fiche actuelle : {copyFor.warehouse ?? 'sans lieu'}. La nouvelle fiche reprend l'identité du client ;
+              son crédit, ses ventes et ses règlements seront ceux du nouveau lieu, séparés.
+            </p>
+            {copyMutation.isError ? (
+              <p className="mt-3 rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
+                {errorMessage(copyMutation.error, 'Copie impossible.')}
+              </p>
+            ) : null}
+            <div className="mt-4">
+              <Field label="Lieu de la nouvelle fiche" htmlFor="copy-warehouse">
+                <Select id="copy-warehouse" value={copyTo || ''} onChange={(e) => setCopyTo(Number(e.target.value))}>
+                  <option value="">— Choisir —</option>
+                  {lieuxPourCopie.map((w) => (
+                    <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setCopyFor(null)}>
+                Annuler
+              </Button>
+              <Button
+                disabled={copyMutation.isPending || copyTo === 0}
+                onClick={() =>
+                  copyMutation.mutate(
+                    { id: copyFor.id, warehouseId: copyTo },
+                    { onSuccess: () => setCopyFor(null) },
+                  )
+                }
+              >
+                Créer la fiche
               </Button>
             </div>
           </div>

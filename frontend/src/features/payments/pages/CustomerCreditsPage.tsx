@@ -16,6 +16,7 @@ import {
   CustomerChequePanel,
   type CustomerChequeValue,
 } from '@/features/cheques/components/CustomerChequePanel'
+import { useWarehouseOptions } from '@/features/access/hooks'
 import { useRechercheLocale } from '@/hooks/useRechercheLocale'
 import { usePermission } from '@/hooks/usePermission'
 import { HistoriqueReglements } from '../components/HistoriqueReglements'
@@ -133,10 +134,17 @@ export function CustomerCreditsPage() {
   const [aConfirmer, setAConfirmer] = useState<LedgerEntry | null>(null)
   const [erreurSuppression, setErreurSuppression] = useState<string | null>(null)
 
+  // La direction peut se limiter a un lieu : les fiches clients sont
+  // separees par lieu, les creances aussi.
+  const [lieuFiltre, setLieuFiltre] = useState(0)
+  const { data: lieux = [] } = useWarehouseOptions()
+
   const { data: aging, isLoading } = useQuery<{ data: AgingRow[]; meta: AgingMeta }>({
-    queryKey: ['customers-aging'],
+    queryKey: ['customers-aging', lieuFiltre],
     queryFn: async () => {
-      const { data } = await api.get<{ data: AgingRow[]; meta: AgingMeta }>('/customers-aging')
+      const { data } = await api.get<{ data: AgingRow[]; meta: AgingMeta }>('/customers-aging', {
+        params: { warehouse_id: lieuFiltre || undefined },
+      })
       return data
     },
   })
@@ -659,7 +667,24 @@ export function CustomerCreditsPage() {
               ? `${rows.length} client(s)`
               : undefined
         }
-        action={<SearchInput value={terme} onChange={setTerme} placeholder="Client…" />}
+        action={
+          <div className="flex items-center gap-2">
+            {vueParLieu ? (
+              <Select
+                aria-label="Filtrer par lieu"
+                value={lieuFiltre || ''}
+                onChange={(e) => setLieuFiltre(Number(e.target.value))}
+                className="w-52"
+              >
+                <option value="">Tous les lieux</option>
+                {lieux.map((w) => (
+                  <option key={w.id} value={w.id}>{w.code} · {w.name}</option>
+                ))}
+              </Select>
+            ) : null}
+            <SearchInput value={terme} onChange={setTerme} placeholder="Client…" />
+          </div>
+        }
       >
           {isLoading ? (
             <p className="p-5 text-sm text-muted">Chargement…</p>

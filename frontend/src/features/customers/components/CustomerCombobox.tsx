@@ -12,6 +12,9 @@ export interface CustomerChoice {
   phone?: string | null
   balance: number
   is_blocked: boolean
+  /** Code du lieu de la fiche. */
+  warehouse?: string | null
+  warehouse_id?: number | null
 }
 
 interface CustomerComboboxProps {
@@ -24,6 +27,12 @@ interface CustomerComboboxProps {
   allowEmpty?: boolean
   disabled?: boolean
   className?: string
+  /**
+   * Ne propose que les fiches de ce lieu. Le fichier client est séparé par
+   * lieu : une vente ou un encaissement ne concerne que les clients du lieu
+   * où ils se font. 0 ou absent : tout ce que l'utilisateur peut voir.
+   */
+  warehouseId?: number
 }
 
 /**
@@ -42,6 +51,7 @@ export function CustomerCombobox({
   allowEmpty = true,
   disabled,
   className,
+  warehouseId = 0,
 }: CustomerComboboxProps) {
   const [texte, setTexte] = useState('')
   const [choisi, setChoisi] = useState<CustomerChoice | null>(null)
@@ -50,10 +60,10 @@ export function CustomerCombobox({
   const recherche = useDebouncedValue(texte, 250)
 
   const { data: trouves = [], isFetching } = useQuery<CustomerChoice[]>({
-    queryKey: ['customer-combobox', recherche],
+    queryKey: ['customer-combobox', recherche, warehouseId],
     queryFn: async () => {
       const { data } = await api.get<Paginated<CustomerChoice>>('/customers', {
-        params: { q: recherche || undefined, per_page: 30 },
+        params: { q: recherche || undefined, per_page: 30, warehouse_id: warehouseId || undefined },
       })
       return data.data
     },
@@ -63,10 +73,13 @@ export function CustomerCombobox({
   })
 
   const options = useMemo(() => {
+    // Le lieu accompagne le code : deux fiches au même nom, dans deux lieux,
+    // se distinguent d'un coup d'œil.
+    const indice = (c: CustomerChoice) => (c.warehouse ? `${c.code} · ${c.warehouse}` : c.code)
     const liste = trouves.map((c) => ({
       id: c.id,
       label: c.name,
-      hint: c.code,
+      hint: indice(c),
       badge: c.is_blocked ? 'Bloqué' : undefined,
     }))
     // Le choix courant doit rester présentable même hors des résultats.
@@ -74,7 +87,7 @@ export function CustomerCombobox({
       liste.unshift({
         id: choisi.id,
         label: choisi.name,
-        hint: choisi.code,
+        hint: indice(choisi),
         badge: choisi.is_blocked ? 'Bloqué' : undefined,
       })
     }

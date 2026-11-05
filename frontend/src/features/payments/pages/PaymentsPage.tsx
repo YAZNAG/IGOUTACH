@@ -13,6 +13,7 @@ import {
   type CustomerChequeValue,
 } from '@/features/cheques/components/CustomerChequePanel'
 import { useCreateCheque } from '@/features/cheques/hooks'
+import { useWarehouseOptions } from '@/features/access/hooks'
 import { CustomerCombobox, type CustomerChoice } from '@/features/customers/components/CustomerCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
@@ -216,6 +217,13 @@ function PaymentsTab() {
 
 function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient()
+  const can = usePermission()
+  // Le fichier client est separe par lieu. Un responsable ne voit que les
+  // siens ; la direction choisit d'abord le lieu, pour ne pas confondre deux
+  // fiches au meme nom.
+  const vueGlobale = can('customer.view_all') || can('stock.view_global')
+  const { data: lieux = [] } = useWarehouseOptions()
+  const [lieuId, setLieuId] = useState(0)
   const [customerId, setCustomerId] = useState(0)
   // Le client choisi, entier : l'ecran montre son encours et nomme le cheque.
   const [selected, setSelected] = useState<CustomerChoice | null>(null)
@@ -341,10 +349,27 @@ function CreatePaymentPanel({ onClose }: { onClose: () => void }) {
       <CardHeader title="Nouvel encaissement" hint={selected ? `Encours actuel : ${formatNumber(selected.balance)} DH` : undefined} />
       <CardBody className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-4">
+          {vueGlobale ? (
+            <Field label="Lieu" htmlFor="pay-warehouse">
+              <Select
+                id="pay-warehouse"
+                value={lieuId || ''}
+                onChange={(e) => {
+                  setLieuId(Number(e.target.value))
+                  setCustomerId(0)
+                  setSelected(null)
+                }}
+              >
+                <option value="">Tous les lieux</option>
+                {lieux.map((w) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+              </Select>
+            </Field>
+          ) : null}
           <Field label="Client" htmlFor="pay-customer">
             <CustomerCombobox
               id="pay-customer"
               value={customerId}
+              warehouseId={lieuId}
               onChange={(id, client) => { setCustomerId(id); setSelected(client) }}
               allowEmpty={false}
             />

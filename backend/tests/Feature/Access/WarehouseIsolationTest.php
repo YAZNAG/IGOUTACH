@@ -107,9 +107,9 @@ it('voit la vente rattachée à son client même saisie par un autre', function 
 });
 
 it('ne voit que les crédits de ses propres clients', function (): void {
-    $mineCustomer = Customer::factory()->create(['name' => 'Client à moi', 'created_by' => $this->manager->id]);
-    $otherUser = grantUser(['customer.create']);
-    $otherCustomer = Customer::factory()->create(['name' => 'Client des autres', 'created_by' => $otherUser->id]);
+    $mineCustomer = Customer::factory()->create(['name' => 'Client à moi', 'warehouse_id' => $this->mine->id]);
+    $otherUser = grantUser(['customer.create'], ['warehouse_id' => $this->other->id]);
+    $otherCustomer = Customer::factory()->create(['name' => 'Client des autres', 'warehouse_id' => $this->other->id]);
 
     isoSale($this->mine->id, $mineCustomer->id, 'VT-CREDIT-MINE', $this->manager->id);
     isoSale($this->other->id, $otherCustomer->id, 'VT-CREDIT-OTHER', $otherUser->id);
@@ -120,9 +120,8 @@ it('ne voit que les crédits de ses propres clients', function (): void {
     expect($names)->toContain('Client à moi')->and($names)->not->toContain('Client des autres');
 });
 
-it('refuse le relevé d\'un client créé par quelqu\'un d\'autre', function (): void {
-    $otherUser = grantUser(['customer.create']);
-    $foreign = Customer::factory()->create(['created_by' => $otherUser->id]);
+it('refuse le relevé d\'un client d\'un autre lieu', function (): void {
+    $foreign = Customer::factory()->create(['warehouse_id' => $this->other->id]);
 
     $this->actingAs($this->manager)
         ->getJson("/api/v1/customers/{$foreign->id}/statement")

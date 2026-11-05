@@ -29,7 +29,7 @@ function lieuTva(float $taux, bool $prixTtc = false): Warehouse
     ]);
 }
 
-function articleEnStock(Warehouse $lieu, int $quantite = 50, float $cout = 10): Product
+function articleTaxeEnStock(Warehouse $lieu, int $quantite = 50, float $cout = 10): Product
 {
     $produit = Product::factory()->create([
         'category_id' => Category::factory()->create()->id,
@@ -51,7 +51,7 @@ function articleEnStock(Warehouse $lieu, int $quantite = 50, float $cout = 10): 
 it('ajoute la TVA du lieu a une vente', function (): void {
     $lieu = lieuTva(20);
     $user = grantUser(['sale.create'], ['warehouse_id' => $lieu->id]);
-    $produit = articleEnStock($lieu);
+    $produit = articleTaxeEnStock($lieu);
 
     $vente = test()->actingAs($user)->postJson('/api/v1/sales', [
         'type' => 'invoice',
@@ -75,7 +75,7 @@ it('ajoute la TVA du lieu a une vente', function (): void {
 it('laisse les autres lieux hors taxe', function (): void {
     $lieu = lieuTva(0);
     $user = grantUser(['sale.create'], ['warehouse_id' => $lieu->id]);
-    $produit = articleEnStock($lieu);
+    $produit = articleTaxeEnStock($lieu);
 
     $vente = test()->actingAs($user)->postJson('/api/v1/sales', [
         'type' => 'invoice',
@@ -90,7 +90,7 @@ it('laisse les autres lieux hors taxe', function (): void {
 it('extrait la TVA quand les prix sont saisis tout compris', function (): void {
     $lieu = lieuTva(20, prixTtc: true);
     $user = grantUser(['sale.create'], ['warehouse_id' => $lieu->id]);
-    $produit = articleEnStock($lieu);
+    $produit = articleTaxeEnStock($lieu);
 
     $vente = test()->actingAs($user)->postJson('/api/v1/sales', [
         'type' => 'invoice',
@@ -110,7 +110,7 @@ it('extrait la TVA quand les prix sont saisis tout compris', function (): void {
 it('applique la TVA apres la remise', function (): void {
     $lieu = lieuTva(20);
     $user = grantUser(['sale.create', 'sale.discount'], ['warehouse_id' => $lieu->id]);
-    $produit = articleEnStock($lieu);
+    $produit = articleTaxeEnStock($lieu);
 
     $vente = test()->actingAs($user)->postJson('/api/v1/sales', [
         'type' => 'invoice',

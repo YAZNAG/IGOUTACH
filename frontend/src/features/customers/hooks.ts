@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Paginated } from '@/types'
 import {
+  copyCustomerToWarehouse,
   createCustomer,
   deleteCustomer,
   fetchCustomers,
@@ -49,6 +50,14 @@ export function useSetCreditLimit() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, creditLimit }: { id: number; creditLimit: number }) => setCreditLimit(id, creditLimit),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useCopyCustomer() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, warehouseId }: { id: number; warehouseId: number }) => copyCustomerToWarehouse(id, warehouseId),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

@@ -42,7 +42,8 @@ function ventilationContexte(): array
         'average_cost' => '10.00',
     ]);
 
-    return [$user, Customer::factory()->create(), $lieu, $produit];
+    // La fiche client appartient au lieu : c'est la regle du fichier separe.
+    return [$user, Customer::factory()->create(['warehouse_id' => $lieu->id]), $lieu, $produit];
 }
 
 /** Crée une facture confirmée du montant voulu, donc entièrement due. */

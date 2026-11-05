@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use App\Domain\Customers\Models\Customer;
+use App\Domain\Warehouses\Models\Warehouse;
 
-it('crée un client avec code auto-généré et plafond de crédit', function (): void {
-    // Le plafond saisi dès la création exige la permission dédiée
-    // « customer.set_credit_limit » (cf. CustomerTest).
-    $user = grantUser(['customer.create', 'customer.view', 'customer.set_credit_limit']);
+/**
+ * Le fichier client est separe par lieu : chaque fiche appartient a un lieu,
+ * un responsable ne voit que celles de son lieu, la direction voit tout.
+ */
+it('crée un client avec code auto-généré et plafond de crédit, rattaché au lieu du responsable', function (): void {
+    $lieu = Warehouse::factory()->create();
+    $user = grantUser(['customer.create', 'customer.view', 'customer.set_credit_limit'], ['warehouse_id' => $lieu->id]);
 
     $response = $this->actingAs($user)->postJson('/api/v1/customers', [
         'name' => 'Client Test',
@@ -16,20 +20,47 @@ it('crée un client avec code auto-généré et plafond de crédit', function ()
     ])->assertCreated();
 
     expect($response->json('data.code'))->toStartWith('CL-')
-        ->and((float) $response->json('data.credit_limit'))->toBe(5000.0);
+        ->and((float) $response->json('data.credit_limit'))->toBe(5000.0)
+        ->and($response->json('data.warehouse_id'))->toBe($lieu->id);
 
     $this->assertDatabaseHas('customers', [
         'name' => 'Client Test',
         'created_by' => $user->id,
+        'warehouse_id' => $lieu->id,
     ]);
 });
 
-it('sans view_all, chacun ne voit que ses propres clients', function (): void {
-    $userA = grantUser(['customer.create', 'customer.view']);
-    $userB = grantUser(['customer.create', 'customer.view']);
+it('un responsable ne peut pas créer une fiche dans un autre lieu que le sien', function (): void {
+    $mien = Warehouse::factory()->create();
+    $autre = Warehouse::factory()->create();
+    $user = grantUser(['customer.create'], ['warehouse_id' => $mien->id]);
 
-    Customer::factory()->create(['name' => 'Client de A', 'created_by' => $userA->id]);
-    Customer::factory()->create(['name' => 'Client de B', 'created_by' => $userB->id]);
+    // Le lieu envoye est ignore : la fiche va dans le lieu du responsable.
+    $this->actingAs($user)->postJson('/api/v1/customers', [
+        'name' => 'Client glisse',
+        'warehouse_id' => $autre->id,
+    ])->assertCreated()->assertJsonPath('data.warehouse_id', $mien->id);
+});
+
+it('la direction doit choisir le lieu de la fiche', function (): void {
+    $admin = grantUser(['customer.create', 'customer.view_all']);
+
+    $this->actingAs($admin)->postJson('/api/v1/customers', ['name' => 'Sans lieu'])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['warehouse_id']);
+
+    $lieu = Warehouse::factory()->create();
+    $this->actingAs($admin)->postJson('/api/v1/customers', ['name' => 'Avec lieu', 'warehouse_id' => $lieu->id])
+        ->assertCreated()->assertJsonPath('data.warehouse_id', $lieu->id);
+});
+
+it('sans vue globale, chacun ne voit que les clients de son lieu', function (): void {
+    $lieuA = Warehouse::factory()->create();
+    $lieuB = Warehouse::factory()->create();
+    $userA = grantUser(['customer.view'], ['warehouse_id' => $lieuA->id]);
+
+    Customer::factory()->create(['name' => 'Client de A', 'warehouse_id' => $lieuA->id]);
+    Customer::factory()->create(['name' => 'Client de B', 'warehouse_id' => $lieuB->id]);
 
     $response = $this->actingAs($userA)->getJson('/api/v1/customers')->assertOk();
 
@@ -38,29 +69,35 @@ it('sans view_all, chacun ne voit que ses propres clients', function (): void {
         ->and($names)->not->toContain('Client de B');
 });
 
-it('avec customer.view_all, on voit tous les clients', function (): void {
+it('avec customer.view_all, on voit tous les clients et on peut filtrer par lieu', function (): void {
+    $lieuA = Warehouse::factory()->create();
+    $lieuB = Warehouse::factory()->create();
     $admin = grantUser(['customer.view', 'customer.view_all']);
-    $other = grantUser(['customer.create']);
 
-    Customer::factory()->create(['name' => 'Client de X', 'created_by' => $other->id]);
+    Customer::factory()->create(['name' => 'Client de A', 'warehouse_id' => $lieuA->id]);
+    Customer::factory()->create(['name' => 'Client de B', 'warehouse_id' => $lieuB->id]);
 
-    $response = $this->actingAs($admin)->getJson('/api/v1/customers')->assertOk();
+    $tous = collect($this->actingAs($admin)->getJson('/api/v1/customers')->assertOk()->json('data'))->pluck('name');
+    expect($tous)->toContain('Client de A')->and($tous)->toContain('Client de B');
 
-    expect(collect($response->json('data'))->pluck('name'))->toContain('Client de X');
+    $seulementB = collect($this->actingAs($admin)->getJson("/api/v1/customers?warehouse_id={$lieuB->id}")->assertOk()->json('data'))->pluck('name');
+    expect($seulementB)->toContain('Client de B')->and($seulementB)->not->toContain('Client de A');
 });
 
-it('refuse le détail d\'un client créé par un autre utilisateur', function (): void {
-    $userA = grantUser(['customer.view']);
-    $userB = grantUser(['customer.create']);
+it('refuse le détail d\'un client d\'un autre lieu', function (): void {
+    $mien = Warehouse::factory()->create();
+    $autre = Warehouse::factory()->create();
+    $user = grantUser(['customer.view'], ['warehouse_id' => $mien->id]);
 
-    $customer = Customer::factory()->create(['created_by' => $userB->id]);
+    $customer = Customer::factory()->create(['warehouse_id' => $autre->id]);
 
-    $this->actingAs($userA)->getJson("/api/v1/customers/{$customer->id}")->assertForbidden();
+    $this->actingAs($user)->getJson("/api/v1/customers/{$customer->id}")->assertForbidden();
 });
 
-it('autorise le détail de son propre client', function (): void {
-    $user = grantUser(['customer.view']);
-    $customer = Customer::factory()->create(['created_by' => $user->id]);
+it('autorise le détail d\'un client de son lieu', function (): void {
+    $mien = Warehouse::factory()->create();
+    $user = grantUser(['customer.view'], ['warehouse_id' => $mien->id]);
+    $customer = Customer::factory()->create(['warehouse_id' => $mien->id]);
 
     $this->actingAs($user)->getJson("/api/v1/customers/{$customer->id}")->assertOk();
 });

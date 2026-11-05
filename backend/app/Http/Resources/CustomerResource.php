@@ -35,6 +35,7 @@ final class CustomerResource extends JsonResource
             'price_type' => $this->whenLoaded('priceType', fn () => $this->priceType?->name),
             'seller' => $this->whenLoaded('seller', fn () => $this->seller?->name),
             'warehouse' => $this->whenLoaded('warehouse', fn () => $this->warehouse?->code),
+            'warehouse_name' => $this->whenLoaded('warehouse', fn () => $this->warehouse?->name),
             'credit_limit' => (float) $this->credit_limit,
             'balance' => (float) $this->balance,
             'available_credit' => $this->availableCredit(),

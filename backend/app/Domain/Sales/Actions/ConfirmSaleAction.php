@@ -42,6 +42,13 @@ final class ConfirmSaleAction
 
             if ($sale->type === Sale::TYPE_INVOICE) {
                 if ($customer !== null) {
+                    // Garde-fou : la fiche doit etre du lieu de la vente (le
+                    // fichier client est separe par lieu). La saisie le
+                    // verifie deja ; ici on protege la dette elle-meme.
+                    if ($customer->warehouse_id !== null && (int) $customer->warehouse_id !== (int) $sale->warehouse_id) {
+                        throw new RuntimeException('Ce client appartient à un autre lieu que celui de la vente.');
+                    }
+
                     if ($customer->is_blocked) {
                         throw new RuntimeException('Client bloqué : encours au-dessus du plafond. Déblocage requis.');
                     }

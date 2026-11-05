@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Customers\Models\Customer;
+use App\Domain\Warehouses\Models\Warehouse;
 use App\Domain\Pricing\Contracts\MarginCalculatorInterface;
 use App\Domain\Pricing\Contracts\PriceResolverInterface;
 use App\Domain\Pricing\Exceptions\NoPriceDefinedException;
@@ -63,6 +64,49 @@ final class SaleController extends Controller
                     Customer::query()->select('id')->where('created_by', $userId),
                 );
         });
+    }
+
+    /**
+     * Le client d'une vente doit etre une fiche du lieu de la vente.
+     *
+     * Le fichier client est separe par lieu : vendre a la fiche d'un autre
+     * lieu y porterait la dette, chez un responsable qui n'a rien vendu. Une
+     * fiche encore sans lieu (ancienne, ou creee par la direction sans le
+     * preciser) se rattache au lieu de sa premiere vente.
+     *
+     * @return string|null  message d'erreur, ou null si le client convient
+     */
+    private function verifierClientDuLieu(?int $customerId, int $warehouseId): ?string
+    {
+        if ($customerId === null) {
+            return null;
+        }
+
+        $client = Customer::query()->with('warehouse:id,code')->find($customerId);
+
+        if ($client === null) {
+            return null;
+        }
+
+        if ($client->warehouse_id === null) {
+            $client->update(['warehouse_id' => $warehouseId]);
+
+            return null;
+        }
+
+        if ((int) $client->warehouse_id === $warehouseId) {
+            return null;
+        }
+
+        $lieuVente = Warehouse::withoutGlobalScopes()->whereKey($warehouseId)->value('code') ?? '#'.$warehouseId;
+
+        return sprintf(
+            'Le client %s (%s) appartient au lieu %s : choisissez un client de %s, ou créez-y sa fiche.',
+            $client->name,
+            $client->code,
+            $client->warehouse?->code ?? '#'.$client->warehouse_id,
+            $lieuVente,
+        );
     }
 
     /**
@@ -224,10 +268,11 @@ final class SaleController extends Controller
             ->selectRaw('COUNT(*) as nb, COALESCE(SUM(amount),0) as total')
             ->first();
 
-        // Encours actuel des clients ayant achete dans ce lieu : il vit sur la
-        // fiche client, sans date.
+        // Encours actuel des clients du lieu : chaque fiche appartient a un
+        // lieu, son solde est donc tout entier celui de ce lieu.
         $encours = (float) DB::table('customers')
-            ->whereIn('id', DB::table('sales')->select('customer_id')->where('warehouse_id', $lieu)->whereNotNull('customer_id'))
+            ->where('warehouse_id', $lieu)
+            ->whereNull('deleted_at')
             ->where('balance', '>', 0)
             ->sum('balance');
 
@@ -794,6 +839,14 @@ final class SaleController extends Controller
             return response()->json(['message' => 'Remise supérieure à 10 % : autorisation requise.'], 422);
         }
 
+        $mauvaisLieu = $this->verifierClientDuLieu(
+            isset($data['customer_id']) ? (int) $data['customer_id'] : null,
+            (int) $data['warehouse_id'],
+        );
+        if ($mauvaisLieu !== null) {
+            return response()->json(['message' => $mauvaisLieu, 'errors' => ['customer_id' => [$mauvaisLieu]]], 422);
+        }
+
         $canBelowFloor = $request->user()?->can('sale.sell_below_floor') ?? false;
 
         // Une facture sort du stock : refuser tout de suite ce qui ne pourra
@@ -912,6 +965,11 @@ final class SaleController extends Controller
         // document d'un dépôt à l'autre, avec un numéro déjà attribué.
         $clientId = array_key_exists('customer_id', $data) ? $data['customer_id'] : $sale->customer_id;
         $discount = (float) ($data['discount_percent'] ?? $sale->discount_percent);
+
+        $mauvaisLieu = $this->verifierClientDuLieu($clientId !== null ? (int) $clientId : null, (int) $sale->warehouse_id);
+        if ($mauvaisLieu !== null) {
+            return response()->json(['message' => $mauvaisLieu, 'errors' => ['customer_id' => [$mauvaisLieu]]], 422);
+        }
 
         if ($discount > 10 && ! ($request->user()?->can('sale.discount_over_limit') ?? false)) {
             return response()->json(['message' => 'Remise supérieure à 10 % : autorisation requise.'], 422);

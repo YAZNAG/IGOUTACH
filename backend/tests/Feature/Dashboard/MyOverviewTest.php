@@ -99,11 +99,13 @@ it('compte le stock, les ruptures et le sous-seuil de son lieu', function (): vo
         ->and($s['out_of_stock'])->toBe(1);
 });
 
-it('rapporte l\'encours des clients ayant achete dans ce lieu', function (): void {
+it('rapporte l\'encours des clients du lieu', function (): void {
     $user = grantUser(['stock.view'], ['warehouse_id' => $this->mien->id]);
 
-    $mien = Customer::factory()->create(['balance' => 2000, 'credit_limit' => 1000]);
-    $ailleurs = Customer::factory()->create(['balance' => 5000, 'credit_limit' => 0]);
+    // Le fichier client est separe par lieu : l'encours du lieu est celui
+    // de ses fiches, pas de ceux qui y ont un jour achete.
+    $mien = Customer::factory()->create(['balance' => 2000, 'credit_limit' => 1000, 'warehouse_id' => $this->mien->id]);
+    $ailleurs = Customer::factory()->create(['balance' => 5000, 'credit_limit' => 0, 'warehouse_id' => $this->autre->id]);
 
     apercuVente($this->mien->id, 100, 0, $mien->id);
     apercuVente($this->autre->id, 100, 0, $ailleurs->id);

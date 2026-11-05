@@ -13,7 +13,7 @@ it('refuse la création d\'un client sans la permission', function () {
 });
 
 it('crée un client avec customer.create', function () {
-    $user = grantUser(['customer.create']);
+    $user = grantUser(['customer.create'], ['warehouse_id' => \App\Domain\Warehouses\Models\Warehouse::factory()->create()->id]);
 
     $this->actingAs($user)->postJson('/api/v1/customers', [
         'code' => 'C-100',
@@ -35,9 +35,10 @@ it('refuse un code client en double', function () {
 });
 
 it('liste les clients avec customer.view', function () {
-    $user = grantUser(['customer.view']);
-    // Sans « customer.view_all », on ne voit que ses propres clients.
-    Customer::factory()->count(3)->create(['created_by' => $user->id]);
+    $lieu = \App\Domain\Warehouses\Models\Warehouse::factory()->create();
+    $user = grantUser(['customer.view'], ['warehouse_id' => $lieu->id]);
+    // Sans « customer.view_all », on ne voit que les clients de son lieu.
+    Customer::factory()->count(3)->create(['warehouse_id' => $lieu->id]);
 
     $this->actingAs($user)
         ->getJson('/api/v1/customers')
@@ -46,7 +47,7 @@ it('liste les clients avec customer.view', function () {
 });
 
 it('ne définit pas le plafond via la création (permission séparée)', function () {
-    $user = grantUser(['customer.create']);
+    $user = grantUser(['customer.create'], ['warehouse_id' => \App\Domain\Warehouses\Models\Warehouse::factory()->create()->id]);
 
     $this->actingAs($user)->postJson('/api/v1/customers', [
         'code' => 'C-200',

@@ -134,13 +134,11 @@ final class MyOverviewController extends Controller
      */
     private function creances(?int $lieu): array
     {
-        // L'encours vit sur la fiche client, sans rattachement à un lieu :
-        // on le rapporte aux clients ayant acheté ici.
+        // Chaque fiche client appartient a un lieu : l'encours du lieu est la
+        // somme des soldes de ses fiches.
         $clients = DB::table('customers')->select('customers.id', 'customers.balance', 'customers.credit_limit')
-            ->when($lieu !== null, fn ($q) => $q->whereIn(
-                'customers.id',
-                DB::table('sales')->select('customer_id')->where('warehouse_id', $lieu)->whereNotNull('customer_id'),
-            ))
+            ->whereNull('customers.deleted_at')
+            ->when($lieu !== null, fn ($q) => $q->where('customers.warehouse_id', $lieu))
             ->where('customers.balance', '>', 0)
             ->get();
 

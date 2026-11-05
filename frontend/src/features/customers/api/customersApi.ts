@@ -23,7 +23,9 @@ export interface Customer {
   is_active: boolean
   price_type?: string | null
   seller?: string | null
+  /** Code du lieu de la fiche : chaque client appartient à un lieu. */
   warehouse?: string | null
+  warehouse_name?: string | null
   created_by?: string | null
 }
 
@@ -48,6 +50,8 @@ export interface CustomerInput {
 
 export interface CustomerFilters {
   q?: string
+  /** Direction seulement : restreint à un lieu. Un responsable y est déjà. */
+  warehouse_id?: number
   is_active?: boolean
   is_blocked?: boolean
   page?: number
@@ -129,5 +133,15 @@ export async function setCreditLimit(id: number, creditLimit: number): Promise<C
 export async function toggleBlock(id: number): Promise<Customer> {
   await ensureCsrfCookie()
   const { data } = await api.patch<{ data: Customer }>(`/customers/${id}/block`)
+  return data.data
+}
+
+/**
+ * La même personne, cliente dans un autre lieu : une seconde fiche, avec
+ * l'identité recopiée et un crédit qui repart de zéro.
+ */
+export async function copyCustomerToWarehouse(id: number, warehouseId: number): Promise<Customer> {
+  await ensureCsrfCookie()
+  const { data } = await api.post<{ data: Customer }>(`/customers/${id}/copy`, { warehouse_id: warehouseId })
   return data.data
 }

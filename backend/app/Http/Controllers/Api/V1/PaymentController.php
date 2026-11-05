@@ -40,13 +40,28 @@ final class PaymentController extends Controller
     }
 
     /**
-     * Clients visibles par l'utilisateur : ceux qu'il a créés.
+     * Clients visibles par l'utilisateur : les fiches de son lieu.
      *
      * @return \Illuminate\Database\Eloquent\Builder<Customer>
      */
     private function visibleCustomerIds(Request $request)
     {
-        return Customer::query()->select('id')->where('created_by', $request->user()?->id);
+        $lieu = (int) ($request->user()?->getAttribute('warehouse_id') ?? 0);
+
+        // Sans lieu ni vue globale : aucun client, plutot que tous.
+        return Customer::query()->select('id')->where('warehouse_id', $lieu > 0 ? $lieu : -1);
+    }
+
+    /**
+     * Hors direction, on n'encaisse et ne consulte que les clients de son lieu.
+     */
+    private function assertClientDuLieu(Request $request, Customer $customer): void
+    {
+        $lieu = $this->lieuDeLUtilisateur($request);
+
+        if ($lieu > 0 && (int) $customer->warehouse_id !== $lieu) {
+            abort(403, 'Ce client appartient à un autre lieu.');
+        }
     }
 
     /**
@@ -165,6 +180,8 @@ final class PaymentController extends Controller
      */
     public function openInvoices(Request $request, Customer $customer): JsonResponse
     {
+        $this->assertClientDuLieu($request, $customer);
+
         // Un responsable n'encaisse que sur les factures de son lieu : lui
         // proposer celles d'un autre point de vente l'amenerait a solder une
         // dette qui ne le concerne pas, et a crediter la mauvaise caisse.
@@ -260,6 +277,10 @@ final class PaymentController extends Controller
                 Cheque::ORIGIN_THIRD_PARTY,
             ]),
         ]);
+
+        // Le reglement credite la fiche du client : elle doit etre du lieu de
+        // celui qui encaisse, sinon la dette d'un autre lieu baisserait ici.
+        $this->assertClientDuLieu($request, Customer::query()->findOrFail((int) $data['customer_id']));
 
         if (isset($data['allocations'])) {
             $erreur = $this->verifierVentilations($data);
@@ -427,15 +448,17 @@ final class PaymentController extends Controller
         $tous = $request->boolean('all');
         $recherche = $request->string('q')->value();
 
+        // La direction peut se limiter a un lieu ; un responsable y est deja.
+        $lieuFiltre = $lieu > 0 ? $lieu : $request->integer('warehouse_id');
+
         $rows = Sale::query()
             ->with(['customer:id,code,name', 'warehouse:id,code,name'])
             ->where('type', Sale::TYPE_INVOICE)
             ->where('status', Sale::STATUS_CONFIRMED)
             ->where('payment_status', '!=', 'paid')
-            // Cloisonnement par lieu : un responsable voit tous les clients,
-            // mais seulement ce qu'ils doivent sur SES ventes. Le meme client
-            // peut devoir ailleurs sans que cela le regarde.
-            ->when($lieu > 0, fn ($q) => $q->where('warehouse_id', $lieu))
+            // Cloisonnement par lieu : les fiches sont separees par lieu, et
+            // les ventes d'une fiche sont toutes dans son lieu.
+            ->when($lieuFiltre > 0, fn ($q) => $q->where('warehouse_id', $lieuFiltre))
             ->get()
             ->groupBy('customer_id')
             ->map(function ($sales) {
@@ -495,6 +518,7 @@ final class PaymentController extends Controller
 
             $autres = Customer::query()
                 ->whereNotIn('id', $dejaLa === [] ? [0] : $dejaLa)
+                ->when($lieuFiltre > 0, fn ($q) => $q->where('warehouse_id', $lieuFiltre))
                 ->when($recherche !== '', fn ($q) => $q->where(
                     fn ($sub) => $sub->where('name', 'like', "%{$recherche}%")
                         ->orWhere('code', 'like', "%{$recherche}%")
@@ -559,11 +583,11 @@ final class PaymentController extends Controller
      */
     public function statement(Request $request, Customer $customer): JsonResponse
     {
-        // Tout le monde peut consulter n'importe quel client : c'est le
-        // montant, pas la fiche, qui se cloisonne. Le releve d'un responsable
-        // est reconstruit sur ses seules factures, avec son propre cumul —
-        // filtrer les lignes en gardant le solde global afficherait une
-        // colonne qui ne s'enchaine plus.
+        // La fiche appartient a un lieu : seul ce lieu (ou la direction) la
+        // consulte. Le releve d'un responsable est reconstruit sur ses
+        // factures, avec son propre cumul.
+        $this->assertClientDuLieu($request, $customer);
+
         $lieu = $this->lieuDeLUtilisateur($request);
 
         // Le du du client, ventile par lieu : la reponse a « combien me

@@ -10,10 +10,12 @@ use App\Http\Requests\SetCreditLimitRequest;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
+use App\Rules\WarehouseAccessible;
 use App\Support\Query\Sortable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Sale;
 use Illuminate\Support\Facades\DB;
 
@@ -41,35 +43,49 @@ final class CustomerController extends Controller
     }
 
     /**
-     * Reste dû par client sur les factures d'un lieu.
-     *
-     * @param  list<int>  $clients
-     * @return array<int, float>
+     * Prochain code CL-0001, CL-0002… apres le dernier attribue.
      */
-    private function dusParClient(int $lieu, array $clients): array
+    private function prochainCode(): string
     {
-        if ($clients === []) {
-            return [];
+        $last = Customer::withTrashed()->where('code', 'like', 'CL-%')->orderByDesc('id')->value('code');
+        $next = $last !== null ? ((int) substr((string) $last, 3)) + 1 : 1;
+
+        return 'CL-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * La fiche du meme nom, si elle existe deja dans ce lieu.
+     *
+     * Le fichier est separe par lieu : un meme acheteur a une fiche par lieu
+     * ou il achete. Mais DANS un lieu, deux fiches au meme nom ne sont qu'un
+     * doublon, avec deux dettes a reconcilier a la main.
+     */
+    private function homonymeDansLeLieu(string $nom, ?int $warehouseId, ?int $saufId = null): ?Customer
+    {
+        if ($warehouseId === null) {
+            return null;
         }
 
-        return \Illuminate\Support\Facades\DB::table('sales')
-            ->where('type', 'invoice')->where('status', 'confirmed')
-            ->where('warehouse_id', $lieu)
-            ->whereIn('customer_id', $clients)
-            ->whereRaw('paid_amount < total')
-            ->groupBy('customer_id')
-            ->pluck(\Illuminate\Support\Facades\DB::raw('ROUND(SUM(total - paid_amount), 2)'), 'customer_id')
-            ->map(fn ($v): float => (float) $v)
-            ->all();
+        return Customer::query()
+            ->where('warehouse_id', $warehouseId)
+            ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($nom))])
+            ->when($saufId !== null, fn ($q) => $q->where('id', '!=', $saufId))
+            ->first();
     }
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        // Le fichier client est commun : un responsable qui ne voit pas un
-        // client le recree en double, et le meme acheteur finit avec deux
-        // fiches et deux dettes. C'est le MONTANT qui se cloisonne, pas la
-        // fiche — voir « lieuDeLUtilisateur » plus bas.
+        // Le fichier client est separe par lieu : chaque fiche appartient a
+        // un lieu, avec son credit, ses ventes et ses reglements. Un meme
+        // acheteur present dans deux lieux y a deux fiches, independantes.
+        // Un responsable ne voit que les fiches de son lieu ; la direction
+        // voit tout et peut restreindre a un lieu.
+        $lieu = $this->lieuDeLUtilisateur($request);
+
         $query = Customer::query()
+            ->with('warehouse:id,code,name')
+            ->when($lieu > 0, fn ($q) => $q->where('warehouse_id', $lieu))
+            ->when($lieu === 0 && $request->integer('warehouse_id') > 0, fn ($q) => $q->where('warehouse_id', $request->integer('warehouse_id')))
             ->when($request->string('q')->isNotEmpty(), function ($q) use ($request) {
                 $term = $request->string('q')->value();
                 $q->where(fn ($sub) => $sub->where('name', 'like', "%{$term}%")
@@ -87,20 +103,7 @@ final class CustomerController extends Controller
             'credit_limit' => 'credit_limit',
         ], 'name');
 
-        $page = $query->paginate($this->perPage($request));
-
-        // Sans vue globale, le solde affiche est celui du lieu : montrer le
-        // solde global reviendrait a exposer la dette contractee ailleurs.
-        $lieu = $this->lieuDeLUtilisateur($request);
-        if ($lieu > 0) {
-            $dus = $this->dusParClient($lieu, collect($page->items())->pluck('id')->all());
-
-            foreach ($page->items() as $client) {
-                $client->setAttribute('balance', $dus[$client->id] ?? 0.0);
-            }
-        }
-
-        return CustomerResource::collection($page);
+        return CustomerResource::collection($query->paginate($this->perPage($request)));
     }
 
     public function store(StoreCustomerRequest $request): JsonResponse
@@ -115,31 +118,99 @@ final class CustomerController extends Controller
 
         // Code auto-généré (CL-0001) si non fourni : le formulaire reste simple.
         if (! isset($data['code']) || $data['code'] === '') {
-            $last = Customer::withTrashed()->where('code', 'like', 'CL-%')->orderByDesc('id')->value('code');
-            $next = $last !== null ? ((int) substr((string) $last, 3)) + 1 : 1;
-            $data['code'] = 'CL-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+            $data['code'] = $this->prochainCode();
+        }
+
+        // Le lieu de la fiche : celui du responsable, sans discussion. La
+        // direction, qui n'a pas de lieu, doit le choisir : une fiche sans
+        // lieu n'apparaitrait chez aucun responsable.
+        $lieu = $this->lieuDeLUtilisateur($request);
+        if ($lieu > 0) {
+            $data['warehouse_id'] = $lieu;
+        } elseif (empty($data['warehouse_id'])) {
+            return response()->json([
+                'message' => 'Choisissez le lieu du client : chaque fiche client appartient à un lieu.',
+                'errors' => ['warehouse_id' => ['Le lieu est obligatoire.']],
+            ], 422);
+        }
+
+        $double = $this->homonymeDansLeLieu($data['name'], (int) $data['warehouse_id']);
+        if ($double !== null) {
+            return response()->json([
+                'message' => sprintf('Ce client existe déjà dans ce lieu sous le code %s.', $double->code),
+                'errors' => ['name' => ['Client déjà présent dans ce lieu.']],
+                'existing_id' => $double->id,
+            ], 422);
         }
 
         $data['created_by'] = $request->user()?->id;
 
         $customer = Customer::query()->create($data);
 
-        return CustomerResource::make($customer)->response()->setStatusCode(201);
+        return CustomerResource::make($customer->load('warehouse:id,code,name'))->response()->setStatusCode(201);
+    }
+
+    /**
+     * La meme personne, cliente dans un autre lieu : une seconde fiche.
+     *
+     * POST /customers/{customer}/copy  { warehouse_id }
+     *
+     * L'identite est recopiee (nom, telephone, adresse, ICE…), rien d'autre :
+     * le credit repart de zero, les ventes et reglements de l'autre lieu
+     * restent la-bas. C'est le principe du fichier separe.
+     */
+    public function copierVersLieu(Request $request, Customer $customer): JsonResponse
+    {
+        $this->assertCanSee($request, $customer);
+
+        /** @var array{warehouse_id: int} $data */
+        $data = $request->validate([
+            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id', new WarehouseAccessible],
+        ]);
+
+        $cible = (int) $data['warehouse_id'];
+
+        if ($cible === (int) $customer->warehouse_id) {
+            return response()->json(['message' => 'Ce client est déjà rattaché à ce lieu.'], 422);
+        }
+
+        $double = $this->homonymeDansLeLieu($customer->name, $cible);
+        if ($double !== null) {
+            return response()->json([
+                'message' => sprintf('%s a déjà une fiche dans ce lieu : %s.', $customer->name, $double->code),
+                'existing_id' => $double->id,
+            ], 422);
+        }
+
+        $copie = Customer::query()->create([
+            'code' => $this->prochainCode(),
+            'name' => $customer->name,
+            'is_company' => $customer->is_company,
+            'contact_name' => $customer->contact_name,
+            'phone' => $customer->phone,
+            'email' => $customer->email,
+            'address' => $customer->address,
+            'city' => $customer->city,
+            'ice' => $customer->ice,
+            'price_type_id' => $customer->price_type_id,
+            'warehouse_id' => $cible,
+            // Le plafond suit la fiche seulement pour qui a le droit d'en fixer un.
+            'credit_limit' => ($request->user()?->can('customer.set_credit_limit') ?? false) ? $customer->credit_limit : 0,
+            'balance' => 0,
+            'is_blocked' => false,
+            'notes' => $customer->notes,
+            'is_active' => true,
+            'created_by' => $request->user()?->id,
+        ]);
+
+        return CustomerResource::make($copie->load('warehouse:id,code,name'))->response()->setStatusCode(201);
     }
 
     public function show(Request $request, Customer $customer): CustomerResource
     {
         $this->assertCanSee($request, $customer);
 
-        // Même règle que la liste : sans vue globale, le solde affiché est
-        // celui du lieu. Laisser le solde global ici rouvrait par la fiche la
-        // porte que la liste venait de fermer.
-        $lieu = $this->lieuDeLUtilisateur($request);
-        if ($lieu > 0) {
-            $customer->setAttribute('balance', $this->dusParClient($lieu, [$customer->id])[$customer->id] ?? 0.0);
-        }
-
-        return CustomerResource::make($customer->load(['priceType:id,name', 'seller:id,name', 'warehouse:id,code', 'createdBy:id,name']));
+        return CustomerResource::make($customer->load(['priceType:id,name', 'seller:id,name', 'warehouse:id,code,name', 'createdBy:id,name']));
     }
 
     /**
@@ -286,28 +357,60 @@ final class CustomerController extends Controller
     }
 
     /**
-     * La fiche client est consultable par tous ceux qui ont « customer.view ».
-     *
-     * Le cloisonnement porte desormais sur le MONTANT, pas sur la fiche : un
-     * responsable voit le client, et ne voit de sa dette que la part nee de
-     * ses propres ventes. Refuser la fiche entiere le poussait a recreer le
-     * client en double, et le meme acheteur se retrouvait avec deux comptes.
+     * Une fiche appartient a un lieu : hors de la direction, on ne consulte,
+     * ne modifie et n'encaisse que les clients de son propre lieu.
      */
     private function assertCanSee(Request $request, Customer $customer): void
     {
-        // Aucune restriction : conserve comme point d'accroche si une regle
-        // de visibilite devait revenir.
+        $lieu = $this->lieuDeLUtilisateur($request);
+
+        if ($lieu > 0 && (int) $customer->warehouse_id !== $lieu) {
+            abort(403, 'Ce client appartient à un autre lieu.');
+        }
     }
 
-    public function update(UpdateCustomerRequest $request, Customer $customer): CustomerResource
+    public function update(UpdateCustomerRequest $request, Customer $customer): CustomerResource|JsonResponse
     {
-        $customer->update($request->validated());
+        $this->assertCanSee($request, $customer);
 
-        return CustomerResource::make($customer->refresh());
+        $data = $request->validated();
+
+        // Le lieu d'une fiche ne se change pas en passant : un responsable
+        // n'y touche pas, et la direction ne deplace que des fiches sans
+        // historique — sinon ses ventes resteraient dans l'ancien lieu.
+        $lieu = $this->lieuDeLUtilisateur($request);
+        if ($lieu > 0) {
+            unset($data['warehouse_id']);
+        } elseif (array_key_exists('warehouse_id', $data)
+            && (int) $data['warehouse_id'] !== (int) $customer->warehouse_id
+            && (Sale::query()->where('customer_id', $customer->id)->exists()
+                || Payment::query()->where('customer_id', $customer->id)->exists())) {
+            return response()->json([
+                'message' => 'Ce client a déjà des ventes ou des règlements dans son lieu : créez plutôt sa fiche dans l’autre lieu.',
+                'errors' => ['warehouse_id' => ['Lieu non modifiable.']],
+            ], 422);
+        }
+
+        $cibleLieu = array_key_exists('warehouse_id', $data)
+            ? ($data['warehouse_id'] !== null ? (int) $data['warehouse_id'] : null)
+            : $customer->warehouse_id;
+        $double = $this->homonymeDansLeLieu($data['name'], $cibleLieu, $customer->id);
+        if ($double !== null) {
+            return response()->json([
+                'message' => sprintf('Un autre client porte déjà ce nom dans ce lieu : %s.', $double->code),
+                'errors' => ['name' => ['Client déjà présent dans ce lieu.']],
+            ], 422);
+        }
+
+        $customer->update($data);
+
+        return CustomerResource::make($customer->refresh()->load('warehouse:id,code,name'));
     }
 
-    public function destroy(Customer $customer): JsonResponse
+    public function destroy(Request $request, Customer $customer): JsonResponse
     {
+        $this->assertCanSee($request, $customer);
+
         $customer->delete();
 
         return response()->json(['message' => 'Client supprimé.']);
@@ -318,6 +421,8 @@ final class CustomerController extends Controller
      */
     public function setCreditLimit(SetCreditLimitRequest $request, Customer $customer): CustomerResource
     {
+        $this->assertCanSee($request, $customer);
+
         /** @var array{credit_limit: int|float} $data */
         $data = $request->validated();
         $customer->update(['credit_limit' => $data['credit_limit']]);
@@ -328,8 +433,10 @@ final class CustomerController extends Controller
     /**
      * Bloque / débloque un client (permission dédiée).
      */
-    public function toggleBlock(Customer $customer): CustomerResource
+    public function toggleBlock(Request $request, Customer $customer): CustomerResource
     {
+        $this->assertCanSee($request, $customer);
+
         $customer->update(['is_blocked' => ! $customer->is_blocked]);
 
         return CustomerResource::make($customer->refresh());

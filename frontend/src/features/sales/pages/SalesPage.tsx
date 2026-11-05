@@ -931,16 +931,29 @@ export function CreateSalePanel({
                 />
                 Client de passage (comptoir, sans crédit)
               </label>
+              {/* Les fiches sont separees par lieu : on ne propose que les
+                  clients du lieu de la vente, et changer de lieu vide le
+                  choix. */}
               <CustomerCombobox
                 id="sale-customer"
                 value={customerId}
-                disabled={walkIn}
+                disabled={walkIn || !warehouseId}
+                warehouseId={warehouseId}
+                placeholder={warehouseId ? 'Nom, code ou téléphone du client…' : 'Choisissez d’abord le lieu'}
                 onChange={(id, client) => { setCustomerId(id); setSelectedCustomer(client) }}
               />
             </div>
           </Field>
           <Field label="Lieu" htmlFor="sale-warehouse">
-            <Select id="sale-warehouse" value={warehouseId || ''} onChange={(e) => setWarehouseId(Number(e.target.value))}>
+            <Select
+              id="sale-warehouse"
+              value={warehouseId || ''}
+              onChange={(e) => {
+                setWarehouseId(Number(e.target.value))
+                setCustomerId(0)
+                setSelectedCustomer(null)
+              }}
+            >
               <option value="" disabled>Choisir…</option>
               {warehouses.map((w) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
             </Select>
