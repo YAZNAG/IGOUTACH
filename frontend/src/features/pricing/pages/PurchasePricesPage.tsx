@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, Pencil } from 'lucide-react'
+import { ChevronDown, ChevronRight, FileDown, Pencil, Table2 } from 'lucide-react'
 import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -9,8 +9,10 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { paginationInfo, SortableTh, type SortState } from '@/components/ui/SortableTh'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
+import { downloadFile } from '@/lib/download'
 import { cn, formatNumber } from '@/lib/utils'
 import { usePricingCategories } from '../hooks'
 
@@ -40,8 +42,18 @@ interface CostRow {
 
 interface CostList {
   data: CostRow[]
-  meta: { current_page: number; last_page: number; total: number }
+  meta: { current_page: number; last_page: number; per_page: number; total: number }
 }
+
+/** Filtre sur le prix d'achat : tous, sans aucun prix, jamais reçu par un bon, avec prix. */
+type FiltrePrix = '' | 'sans' | 'sans_bon' | 'avec'
+
+const FILTRES_PRIX: { valeur: FiltrePrix; libelle: string }[] = [
+  { valeur: '', libelle: 'Tous les articles' },
+  { valeur: 'sans', libelle: 'Sans aucun prix d’achat' },
+  { valeur: 'sans_bon', libelle: 'Jamais reçus par un bon (prix de la fiche)' },
+  { valeur: 'avec', libelle: 'Avec un prix d’achat' },
+]
 
 interface PurchaseLine {
   reference: string
@@ -171,9 +183,13 @@ export function PurchasePricesPage() {
   const qc = useQueryClient()
 
   const [page, setPage] = useState(1)
+  const [parPage, setParPage] = useState(50)
   const [recherche, setRecherche] = useState('')
   const [categorie, setCategorie] = useState('')
+  const [filtrePrix, setFiltrePrix] = useState<FiltrePrix>('')
+  const [tri, setTri] = useState<SortState>({ sort: 'name', direction: 'asc' })
   const [deplie, setDeplie] = useState<number | null>(null)
+  const [exportEnCours, setExportEnCours] = useState<'xlsx' | 'pdf' | null>(null)
 
   const [enEdition, setEnEdition] = useState<CostRow | null>(null)
   const [saisie, setSaisie] = useState('')
@@ -182,20 +198,34 @@ export function PurchasePricesPage() {
 
   const { data: categories = [] } = usePricingCategories()
 
+  // Les memes filtres servent a la liste et aux exports : le fichier
+  // telecharge est ce que l'ecran montre.
+  const filtres = {
+    search: recherche || undefined,
+    category_id: categorie || undefined,
+    prix_achat: filtrePrix || undefined,
+    sort: tri.sort,
+    direction: tri.direction,
+  }
+
   const { data, isLoading } = useQuery<CostList>({
-    queryKey: ['purchase-prices', page, recherche, categorie],
+    queryKey: ['purchase-prices', page, parPage, filtres],
     queryFn: async () => {
       const { data: r } = await api.get<CostList>('/product-costs', {
-        params: {
-          page,
-          per_page: 50,
-          search: recherche || undefined,
-          category_id: categorie || undefined,
-        },
+        params: { page, per_page: parPage, ...filtres },
       })
       return r
     },
   })
+
+  async function exporter(format: 'xlsx' | 'pdf') {
+    setExportEnCours(format)
+    try {
+      await downloadFile('/product-costs/export', `IGOUTECH_prix-achat.${format}`, { ...filtres, format })
+    } finally {
+      setExportEnCours(null)
+    }
+  }
 
   const enregistrer = useMutation({
     mutationFn: async ({ id, prix }: { id: number; prix: number }) => {
@@ -249,7 +279,7 @@ export function PurchasePricesPage() {
       ) : null}
 
       <Card>
-        <CardBody className="grid gap-4 sm:grid-cols-3">
+        <CardBody className="grid gap-4 sm:grid-cols-4">
           <Field label="Rechercher" htmlFor="pa-q">
             <Input
               id="pa-q"
@@ -278,6 +308,41 @@ export function PurchasePricesPage() {
               ))}
             </Select>
           </Field>
+          {/* Les articles sans prix d'achat sont ceux dont les marges ne
+              veulent rien dire : les isoler est le premier pas pour les
+              renseigner. */}
+          <Field label="Prix d’achat" htmlFor="pa-prix">
+            <Select
+              id="pa-prix"
+              value={filtrePrix}
+              onChange={(e) => {
+                setFiltrePrix(e.target.value as FiltrePrix)
+                setPage(1)
+              }}
+            >
+              {FILTRES_PRIX.map((f) => (
+                <option key={f.valeur} value={f.valeur}>
+                  {f.libelle}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Lignes par page" htmlFor="pa-par-page">
+            <Select
+              id="pa-par-page"
+              value={parPage}
+              onChange={(e) => {
+                setParPage(Number(e.target.value))
+                setPage(1)
+              }}
+            >
+              {[20, 50, 100].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </CardBody>
       </Card>
 
@@ -285,6 +350,28 @@ export function PurchasePricesPage() {
         <CardHeader
           title="Articles"
           hint={meta ? `${formatNumber(meta.total)} article(s)` : undefined}
+          action={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={exportEnCours !== null}
+                onClick={() => exporter('xlsx')}
+              >
+                <Table2 className="h-4 w-4" />
+                {exportEnCours === 'xlsx' ? 'Export…' : 'Excel'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={exportEnCours !== null}
+                onClick={() => exporter('pdf')}
+              >
+                <FileDown className="h-4 w-4" />
+                {exportEnCours === 'pdf' ? 'Export…' : 'PDF'}
+              </Button>
+            </div>
+          }
         />
         <CardBody className="p-0">
           {isLoading ? (
@@ -294,18 +381,25 @@ export function PurchasePricesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-muted">
-                    <th className="px-4 py-3 font-medium">Référence</th>
-                    <th className="px-4 py-3 font-medium">Article</th>
-                    <th className="px-4 py-3 text-right font-medium">Stock</th>
-                    <th className="px-4 py-3 text-right font-medium">Prix d’achat</th>
-                    <th className="px-4 py-3 font-medium">Dernier bon</th>
-                    <th className="px-4 py-3 text-right font-medium">Détail</th>
-                    <th className="px-4 py-3 text-right font-medium">Demi-gros</th>
-                    <th className="px-4 py-3 text-right font-medium">Gros</th>
-                    <th className="px-4 py-3 font-medium">Achats</th>
+                    <SortableTh field="sku" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4">Référence</SortableTh>
+                    <SortableTh field="name" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4">Article</SortableTh>
+                    <SortableTh field="total_quantity" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4 text-right" align="right">Stock</SortableTh>
+                    <SortableTh field="purchase_price" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4 text-right" align="right">Prix d’achat</SortableTh>
+                    <SortableTh field="last_purchase_at" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4">Dernier bon</SortableTh>
+                    <SortableTh field="detail_price" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4 text-right" align="right">Détail</SortableTh>
+                    <SortableTh field="semi_gros_price" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4 text-right" align="right">Demi-gros</SortableTh>
+                    <SortableTh field="gros_price" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4 text-right" align="right">Gros</SortableTh>
+                    <SortableTh field="purchase_count" current={tri} onSort={(t) => { setTri(t); setPage(1) }} className="px-4">Achats</SortableTh>
                   </tr>
                 </thead>
                 <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-8 text-center text-muted">
+                        Aucun article ne correspond à ces filtres.
+                      </td>
+                    </tr>
+                  ) : null}
                   {rows.map((row) => {
                     // Le prix retenu vient du dernier bon quand il existe :
                     // c'est celui qui vient d'etre debourse. Sans reception,
@@ -328,9 +422,11 @@ export function PurchasePricesPage() {
                             {formatNumber(row.total_quantity)}
                           </td>
                           <td className="tabular px-4 py-3 text-right">
-                            <span className={cn('font-semibold', achat ? 'text-ink' : 'text-muted')}>
-                              {achat !== null ? money(achat) : '—'}
-                            </span>
+                            {achat === null ? (
+                              <Badge tone="bad">Aucun prix</Badge>
+                            ) : (
+                              <span className="font-semibold text-ink">{money(achat)}</span>
+                            )}
                             {peutModifier ? (
                               <Button
                                 variant="ghost"
@@ -342,7 +438,7 @@ export function PurchasePricesPage() {
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
                             ) : null}
-                            {recu ? null : (
+                            {recu || achat === null ? null : (
                               <span className="block text-xs font-normal text-faint">
                                 fiche article
                               </span>
@@ -399,7 +495,7 @@ export function PurchasePricesPage() {
                         </tr>
                         {deplie === row.id ? (
                           <tr className="border-b border-line bg-bg">
-                            <td colSpan={8} className="p-0">
+                            <td colSpan={9} className="p-0">
                               <HistoriqueAchats productId={row.id} />
                             </td>
                           </tr>
@@ -414,21 +510,27 @@ export function PurchasePricesPage() {
         </CardBody>
       </Card>
 
-      {meta && meta.last_page > 1 ? (
-        <div className="flex items-center justify-between">
-          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            Précédent
-          </Button>
-          <span className="text-sm text-muted">
-            Page {meta.current_page} sur {meta.last_page}
-          </span>
-          <Button
-            variant="outline"
-            disabled={page >= meta.last_page}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Suivant
-          </Button>
+      {meta ? (
+        <div className="flex items-center justify-between text-sm text-muted">
+          <span>{paginationInfo(meta)}</span>
+          {meta.last_page > 1 ? (
+            <div className="flex items-center gap-2">
+              <span>
+                Page {meta.current_page} / {meta.last_page}
+              </span>
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                Précédent
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= meta.last_page}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Suivant
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

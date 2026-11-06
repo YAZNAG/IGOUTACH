@@ -145,7 +145,41 @@ final class ProductCostController extends Controller
                 $term = $request->string('search')->value();
                 $q->where(fn (Builder $sub) => $sub->where('products.name', 'like', "%{$term}%")->orWhere('products.sku', 'like', "%{$term}%"));
             })
-            ->when($request->integer('category_id') > 0, fn (Builder $q) => $q->where('category_id', $request->integer('category_id')));
+            ->when($request->integer('category_id') > 0, fn (Builder $q) => $q->where('category_id', $request->integer('category_id')))
+            ->tap(fn (Builder $q) => $this->filtrerSurLePrixDAchat($q, $request, 'products'));
+    }
+
+    /**
+     * Filtre « prix d'achat » :
+     *  - `sans`     : aucun prix connu — jamais reçu par un bon ET fiche sans
+     *                 prix (nul ou zéro). Ce sont les articles dont on ne sait
+     *                 pas ce qu'ils coûtent, donc dont les marges ne veulent
+     *                 rien dire ;
+     *  - `sans_bon` : jamais reçu par un bon de réception — le prix affiché
+     *                 est celui de la fiche, une déclaration, pas un achat ;
+     *  - `avec`     : un prix connu, par un bon ou par la fiche.
+     *
+     * @param  Builder<Product>|\Illuminate\Database\Query\Builder  $q
+     */
+    private function filtrerSurLePrixDAchat($q, Request $request, string $table): void
+    {
+        $choix = $request->string('prix_achat')->value();
+
+        if ($choix === '') {
+            return;
+        }
+
+        $recu = fn ($sub) => $sub->selectRaw('1')
+            ->from('goods_receipt_lines')
+            ->whereColumn('goods_receipt_lines.product_id', "{$table}.id");
+
+        match ($choix) {
+            'sans' => $q->whereNotExists($recu)
+                ->where(fn ($w) => $w->whereNull("{$table}.cost_price")->orWhere("{$table}.cost_price", '<=', 0)),
+            'sans_bon' => $q->whereNotExists($recu),
+            'avec' => $q->where(fn ($w) => $w->whereExists($recu)->orWhere("{$table}.cost_price", '>', 0)),
+            default => null,
+        };
     }
 
     /**
@@ -244,17 +278,32 @@ final class ProductCostController extends Controller
                 $q->where(fn ($sub) => $sub->where('products.name', 'like', "%{$term}%")->orWhere('products.sku', 'like', "%{$term}%"));
             })
             ->when($request->integer('category_id') > 0, fn ($q) => $q->where('products.category_id', $request->integer('category_id')))
+            ->tap(fn ($q) => $this->filtrerSurLePrixDAchat($q, $request, 'products'))
             ->selectRaw('COALESCE(SUM(stocks.quantity), 0) as total_quantity, COALESCE(SUM(stocks.quantity * products.cost_price), 0) as total_value')
             ->first();
 
         $sort = $request->string('sort')->value();
         $direction = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
-        $query->orderBy(match ($sort) {
-            'sku' => 'sku',
-            'stock_value' => 'stock_value',
-            'total_quantity' => 'total_quantity',
-            default => 'name',
-        }, $direction);
+        // Chaque colonne de l'ecran se trie. Les alias des sous-requetes sont
+        // triables tels quels ; le prix d'achat retenu est celui du dernier
+        // bon, a defaut celui de la fiche — meme regle qu'a l'affichage.
+        match ($sort) {
+            'purchase_price' => $query->orderByRaw("COALESCE(last_purchase_price, products.cost_price) {$direction}"),
+            'last_purchase_at' => $query->orderByRaw("last_purchase_at IS NULL, last_purchase_at {$direction}"),
+            default => $query->orderBy(match ($sort) {
+                'sku' => 'sku',
+                'stock_value' => 'stock_value',
+                'total_quantity' => 'total_quantity',
+                'detail_price' => 'detail_price',
+                'semi_gros_price' => 'semi_gros_price',
+                'gros_price' => 'gros_price',
+                'purchase_count' => 'purchase_count',
+                default => 'name',
+            }, $direction),
+        };
+        // Un second critere stable : deux articles egaux sur la colonne triee
+        // ne changent pas d'ordre d'une page a l'autre.
+        $query->orderBy('products.id');
 
         $perPage = in_array($request->integer('per_page', 20), [20, 50, 100], true) ? $request->integer('per_page', 20) : 20;
         $paginator = $query->paginate($perPage);
