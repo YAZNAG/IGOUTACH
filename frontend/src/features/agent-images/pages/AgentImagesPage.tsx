@@ -36,6 +36,8 @@ interface Proposal {
 
 interface Overview {
   configured: boolean
+  /** Moteur en service : « google » ou « claude ». */
+  engine: 'google' | 'claude' | null
   counts: { sans_image: number; en_attente: number; validees: number; rejetees: number }
   max_per_run: number
   next_products: { id: number; sku: string; name: string }[]
@@ -97,7 +99,7 @@ export function AgentImagesPage() {
     mutationFn: async () => {
       await ensureCsrfCookie()
       const { data } = await api.post<{ data: { proposees: number; sans_resultat: number; erreurs: string[] } }>('/agent-images/run', {
-        limit: limite,
+        limit: limiteEffective,
         product_ids: choisis.length > 0 ? choisis : undefined,
       })
       return data.data
@@ -166,6 +168,9 @@ export function AgentImagesPage() {
 
   const configure = apercu?.configured ?? true
   const liste = propositions?.data ?? []
+  const maxParLancement = apercu?.max_per_run ?? 25
+  const tailles = [3, 5, 10, 15, 20, 25].filter((n) => n <= maxParLancement)
+  const limiteEffective = Math.min(limite, maxParLancement)
 
   return (
     <div className="space-y-6">
@@ -211,12 +216,21 @@ export function AgentImagesPage() {
       </div>
 
       <Card>
-        <CardHeader title="Lancer l’agent" hint={apercu ? `${apercu.max_per_run} articles au plus par lancement` : undefined} />
+        <CardHeader
+          title="Lancer l’agent"
+          hint={
+            apercu
+              ? `${apercu.max_per_run} articles au plus par lancement · moteur : ${
+                  apercu.engine === 'claude' ? 'Claude (recherche web)' : apercu.engine === 'google' ? 'Google Images' : 'aucun'
+                }`
+              : undefined
+          }
+        />
         <CardBody className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-[180px_1fr_auto]">
             <Field label="Nombre d’articles" htmlFor="ai-limite">
-              <Select id="ai-limite" value={limite} onChange={(e) => setLimite(Number(e.target.value))} disabled={choisis.length > 0}>
-                {[5, 10, 15, 20, 25].map((n) => (
+              <Select id="ai-limite" value={limiteEffective} onChange={(e) => setLimite(Number(e.target.value))} disabled={choisis.length > 0}>
+                {tailles.map((n) => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </Select>
@@ -229,7 +243,11 @@ export function AgentImagesPage() {
             <div className="sm:pt-6">
               <Button onClick={() => lancer.mutate()} disabled={!configure || lancer.isPending || (apercu?.counts.sans_image ?? 0) === 0}>
                 <Play className="h-4 w-4" />
-                {lancer.isPending ? 'Recherche en cours…' : 'Lancer l’agent'}
+                {lancer.isPending
+                  ? apercu?.engine === 'claude'
+                    ? 'Recherche en cours (environ une minute par article)…'
+                    : 'Recherche en cours…'
+                  : 'Lancer l’agent'}
               </Button>
             </div>
           </div>

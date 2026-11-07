@@ -20,7 +20,7 @@ use Throwable;
  * ensuite une à une avant de la proposer.
  *
  * Plus lent et plus coûteux qu'un moteur d'images (vingt à soixante
- * secondes par article) : cinq articles au plus par lancement.
+ * secondes par article) : trois articles au plus par lancement.
  *
  * Non finale : les tests la remplacent par un double.
  */
@@ -46,7 +46,8 @@ TXT;
 
     public function maxParLancement(): int
     {
-        return 5;
+        // Trois recherches d'une minute tiennent dans la limite d'une requete web.
+        return 3;
     }
 
     public function modele(): string

@@ -130,7 +130,7 @@ it('se rabat sur Claude quand Google n\'est pas configuré, et ne garde que de v
     $this->mock(\App\Domain\Catalog\Services\RechercheImagesClaude::class, function ($m): void {
         $m->shouldReceive('disponible')->andReturn(true);
         $m->shouldReceive('nom')->andReturn('claude');
-        $m->shouldReceive('maxParLancement')->andReturn(5);
+        $m->shouldReceive('maxParLancement')->andReturn(3);
         $m->shouldReceive('chercher')->once()->andReturn([
             ['url' => 'https://cdn.exemple.ma/parabole.jpg', 'thumbnail' => 'https://cdn.exemple.ma/parabole.jpg', 'title' => 'Parabole 70 cm', 'source' => 'cdn.exemple.ma', 'width' => null, 'height' => null],
             ['url' => 'https://www.exemple.ma/produit/parabole', 'thumbnail' => 'https://www.exemple.ma/produit/parabole', 'title' => 'Page', 'source' => 'www.exemple.ma', 'width' => null, 'height' => null],
@@ -146,7 +146,7 @@ it('se rabat sur Claude quand Google n\'est pas configuré, et ne garde que de v
     $apercu = $this->actingAs($admin)->getJson('/api/v1/agent-images/overview')->assertOk();
     expect($apercu->json('data.configured'))->toBeTrue()
         ->and($apercu->json('data.engine'))->toBe('claude')
-        ->and($apercu->json('data.max_per_run'))->toBe(5);
+        ->and($apercu->json('data.max_per_run'))->toBe(3);
 
     $this->actingAs($admin)->postJson('/api/v1/agent-images/run', ['product_ids' => [$article->id]])
         ->assertOk()->assertJsonPath('data.proposees', 1);
