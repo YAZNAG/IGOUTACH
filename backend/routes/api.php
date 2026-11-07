@@ -405,6 +405,10 @@ Route::prefix('v1')->group(function () {
         // Assistant IA de la direction : questions appuyees sur les chiffres.
         Route::get('assistant/modules', [AssistantController::class, 'modules'])->middleware('can:stock.view_global');
         Route::post('assistant/ask', [AssistantController::class, 'ask'])->middleware('can:stock.view_global');
+        Route::get('assistant/conversations', [AssistantController::class, 'conversations'])->middleware('can:stock.view_global');
+        Route::delete('assistant/conversations', [AssistantController::class, 'destroyAll'])->middleware('can:stock.view_global');
+        Route::get('assistant/conversations/{conversation}', [AssistantController::class, 'conversation'])->middleware('can:stock.view_global');
+        Route::delete('assistant/conversations/{conversation}', [AssistantController::class, 'destroyConversation'])->middleware('can:stock.view_global');
 
         // Pilotage — alertes consolidées & rapports
         // Journaux PDF sur une periode. Cloisonnes par lieu comme le reste.

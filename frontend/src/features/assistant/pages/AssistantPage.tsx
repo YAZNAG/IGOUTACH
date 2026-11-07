@@ -1,12 +1,13 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { Bot, Eraser, Send, Sparkles, User } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Bot, History, MessageSquarePlus, Send, Sparkles, Trash2, User } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { api, ensureCsrfCookie } from '@/lib/api'
-import { cn } from '@/lib/utils'
+import { cn, formatDateHeure } from '@/lib/utils'
 
 interface Module {
   id: string
@@ -19,11 +20,24 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   /** Renseigné sur les réponses : le modèle qui a répondu et l'heure. */
-  model?: string
-  at?: string
+  model?: string | null
+  at?: string | null
+}
+
+interface ConversationResume {
+  id: number
+  module: string
+  title: string
+  messages_count: number
+  updated_at: string | null
+}
+
+interface ConversationDetail extends Omit<ConversationResume, 'messages_count'> {
+  messages: (Message & { id: number })[]
 }
 
 interface Reponse {
+  conversation_id: number
   module: string
   question: string
   answer: string
@@ -31,6 +45,8 @@ interface Reponse {
   context_lines: number
   generated_at: string
 }
+
+const CONVERSATIONS = ['assistant-conversations'] as const
 
 function messageErreur(e: unknown, repli: string): string {
   if (e && typeof e === 'object' && 'response' in e) {
@@ -45,14 +61,18 @@ function messageErreur(e: unknown, repli: string): string {
  *
  * On choisit un module (achats, ventes, crédits, caisses, vue d'ensemble) :
  * le serveur joint à chaque question les chiffres du moment pour ce module,
- * et le modèle répond dessus. La conversation reste dans l'onglet ; changer
- * de module la vide, les chiffres n'étant plus les mêmes.
+ * et le modèle répond dessus. Les conversations sont conservées sur le
+ * serveur, par utilisateur : on les rouvre depuis l'historique, on les
+ * supprime une par une ou toutes.
  */
 export function AssistantPage() {
+  const qc = useQueryClient()
   const [moduleId, setModuleId] = useState('achats')
+  const [conversationId, setConversationId] = useState<number | null>(null)
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [erreur, setErreur] = useState<string | null>(null)
+  const [aSupprimer, setASupprimer] = useState<ConversationResume | 'tout' | null>(null)
   const finDeListe = useRef<HTMLDivElement>(null)
   const champ = useRef<HTMLTextAreaElement>(null)
 
@@ -65,8 +85,17 @@ export function AssistantPage() {
     staleTime: 10 * 60_000,
   })
 
+  const { data: historique = [] } = useQuery<ConversationResume[]>({
+    queryKey: CONVERSATIONS,
+    queryFn: async () => {
+      const { data } = await api.get<{ data: ConversationResume[] }>('/assistant/conversations')
+      return data.data
+    },
+  })
+
   const moduleActif = modules?.data.find((m) => m.id === moduleId) ?? modules?.data[0]
   const configure = modules?.meta.configured ?? true
+  const libelleModule = (id: string) => modules?.data.find((m) => m.id === id)?.label ?? id
 
   const demander = useMutation({
     mutationFn: async (texte: string) => {
@@ -74,8 +103,7 @@ export function AssistantPage() {
       const { data } = await api.post<{ data: Reponse }>('/assistant/ask', {
         module: moduleId,
         question: texte,
-        // Les six derniers échanges suffisent au fil de la conversation.
-        history: messages.slice(-6).map((m) => ({ role: m.role, content: m.content })),
+        conversation_id: conversationId,
       })
       return data.data
     },
@@ -85,13 +113,44 @@ export function AssistantPage() {
       setQuestion('')
     },
     onSuccess: (r) => {
+      setConversationId(r.conversation_id)
       setMessages((prev) => [...prev, { role: 'assistant', content: r.answer, model: r.model, at: r.generated_at }])
+      qc.invalidateQueries({ queryKey: CONVERSATIONS })
     },
     onError: (e) => {
       setErreur(messageErreur(e, 'L’assistant n’a pas pu répondre.'))
       // La question reste dans le champ : on la renvoie sans la retaper.
       setMessages((prev) => prev.slice(0, -1))
     },
+  })
+
+  const ouvrir = useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.get<{ data: ConversationDetail }>(`/assistant/conversations/${id}`)
+      return data.data
+    },
+    onSuccess: (c) => {
+      setConversationId(c.id)
+      setModuleId(c.module)
+      setMessages(c.messages.map((m) => ({ role: m.role, content: m.content, model: m.model, at: m.at })))
+      setErreur(null)
+    },
+    onError: (e) => setErreur(messageErreur(e, 'Conversation introuvable.')),
+  })
+
+  const supprimer = useMutation({
+    mutationFn: async (cible: ConversationResume | 'tout') => {
+      await ensureCsrfCookie()
+      await api.delete(cible === 'tout' ? '/assistant/conversations' : `/assistant/conversations/${cible.id}`)
+      return cible
+    },
+    onSuccess: (cible) => {
+      // La conversation ouverte disparaît avec elle : on repart à vide.
+      if (cible === 'tout' || cible.id === conversationId) nouvelleConversation()
+      setASupprimer(null)
+      qc.invalidateQueries({ queryKey: CONVERSATIONS })
+    },
+    onError: (e) => setErreur(messageErreur(e, 'Suppression impossible.')),
   })
 
   useEffect(() => {
@@ -104,12 +163,18 @@ export function AssistantPage() {
     demander.mutate(t)
   }
 
-  function changerDeModule(id: string) {
-    if (id === moduleId) return
-    setModuleId(id)
+  function nouvelleConversation() {
+    setConversationId(null)
     setMessages([])
     setErreur(null)
     champ.current?.focus()
+  }
+
+  function changerDeModule(id: string) {
+    if (id === moduleId) return
+    setModuleId(id)
+    // Les chiffres joints ne sont plus les mêmes : nouveau fil.
+    nouvelleConversation()
   }
 
   return (
@@ -131,34 +196,87 @@ export function AssistantPage() {
         </p>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <Card>
-          <CardHeader title="Module" hint={modules?.meta.model} />
-          <CardBody className="space-y-1 p-2">
-            {(modules?.data ?? []).map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => changerDeModule(m.id)}
-                className={cn(
-                  'w-full rounded px-3 py-2 text-left transition-colors',
-                  m.id === moduleActif?.id ? 'bg-sky-soft text-navy' : 'hover:bg-surface-2 text-ink',
-                )}
-              >
-                <span className="block text-sm font-medium">{m.label}</span>
-                <span className="block text-xs text-muted">{m.description}</span>
-              </button>
-            ))}
-          </CardBody>
-        </Card>
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader title="Module" hint={modules?.meta.model} />
+            <CardBody className="space-y-1 p-2">
+              {(modules?.data ?? []).map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => changerDeModule(m.id)}
+                  className={cn(
+                    'w-full rounded px-3 py-2 text-left transition-colors',
+                    m.id === moduleActif?.id ? 'bg-sky-soft text-navy' : 'hover:bg-surface-2 text-ink',
+                  )}
+                >
+                  <span className="block text-sm font-medium">{m.label}</span>
+                  <span className="block text-xs text-muted">{m.description}</span>
+                </button>
+              ))}
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Historique"
+              hint={historique.length > 0 ? `${historique.length}` : undefined}
+              action={
+                historique.length > 0 ? (
+                  <Button variant="ghost" size="sm" className="text-bad" onClick={() => setASupprimer('tout')}>
+                    <Trash2 className="h-4 w-4" />
+                    Tout supprimer
+                  </Button>
+                ) : undefined
+              }
+            />
+            <CardBody className="max-h-[420px] space-y-1 overflow-y-auto p-2">
+              {historique.length === 0 ? (
+                <p className="px-3 py-2 text-sm text-muted">Aucune conversation enregistrée.</p>
+              ) : (
+                historique.map((c) => (
+                  <div
+                    key={c.id}
+                    className={cn(
+                      'group flex items-start gap-2 rounded px-3 py-2 transition-colors',
+                      c.id === conversationId ? 'bg-sky-soft' : 'hover:bg-surface-2',
+                    )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => ouvrir.mutate(c.id)}
+                      className="min-w-0 flex-1 text-left"
+                      title={c.title}
+                    >
+                      <span className="block truncate text-sm text-ink">{c.title}</span>
+                      <span className="block text-xs text-muted">
+                        {libelleModule(c.module)} · {c.updated_at ? formatDateHeure(c.updated_at) : ''}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setASupprimer(c)}
+                      aria-label={`Supprimer la conversation ${c.title}`}
+                      className="shrink-0 rounded p-1 text-faint opacity-0 transition-opacity hover:text-bad group-hover:opacity-100 focus-visible:opacity-100"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </CardBody>
+          </Card>
+        </div>
 
         <Card className="flex min-h-[560px] flex-col">
           <CardHeader
             title={moduleActif?.label ?? 'Conversation'}
+            hint={conversationId !== null ? 'Conversation enregistrée' : undefined}
             action={
               messages.length > 0 ? (
-                <Button variant="ghost" size="sm" onClick={() => setMessages([])}>
-                  <Eraser className="h-4 w-4" />
+                <Button variant="ghost" size="sm" onClick={nouvelleConversation}>
+                  <MessageSquarePlus className="h-4 w-4" />
                   Nouvelle conversation
                 </Button>
               ) : undefined
@@ -166,7 +284,7 @@ export function AssistantPage() {
           />
           <CardBody className="flex flex-1 flex-col gap-4">
             <div className="flex-1 space-y-4 overflow-y-auto">
-              {messages.length === 0 ? (
+              {messages.length === 0 && !ouvrir.isPending ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted">Pour commencer, une de ces questions, ou la vôtre :</p>
                   <div className="flex flex-wrap gap-2">
@@ -182,8 +300,16 @@ export function AssistantPage() {
                       </button>
                     ))}
                   </div>
+                  {historique.length > 0 ? (
+                    <p className="flex items-center gap-1 text-xs text-faint">
+                      <History className="h-3.5 w-3.5" />
+                      Vos conversations précédentes sont dans l’historique, à gauche.
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
+
+              {ouvrir.isPending ? <p className="text-sm text-muted">Ouverture de la conversation…</p> : null}
 
               {messages.map((m, i) => (
                 <div key={i} className={cn('flex gap-3', m.role === 'user' ? 'justify-end' : 'justify-start')}>
@@ -207,7 +333,8 @@ export function AssistantPage() {
                     )}
                     {m.at ? (
                       <p className="mt-2 text-xs text-faint">
-                        {m.model} · {new Date(m.at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        {m.model ? `${m.model} · ` : ''}
+                        {formatDateHeure(m.at)}
                       </p>
                     ) : null}
                   </div>
@@ -224,7 +351,7 @@ export function AssistantPage() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-soft text-navy">
                     <Bot className="h-4 w-4" />
                   </span>
-                  L’assistant lit les chiffres et prépare sa réponse…
+                  L’assistant lit les chiffres et prépare sa réponse… (jusqu’à une minute)
                 </div>
               ) : null}
               <div ref={finDeListe} />
@@ -265,6 +392,30 @@ export function AssistantPage() {
           </CardBody>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={aSupprimer !== null}
+        title={aSupprimer === 'tout' ? 'Supprimer tout l’historique' : 'Supprimer la conversation'}
+        message={
+          aSupprimer === 'tout' ? (
+            <>Toutes vos conversations avec l’assistant seront effacées. Cette action est définitive.</>
+          ) : (
+            <>
+              Supprimer <strong>{aSupprimer?.title}</strong> ? Cette action est définitive.
+            </>
+          )
+        }
+        confirmLabel="Supprimer"
+        isPending={supprimer.isPending}
+        error={supprimer.isError ? messageErreur(supprimer.error, 'Suppression impossible.') : null}
+        onConfirm={() => {
+          if (aSupprimer !== null) supprimer.mutate(aSupprimer)
+        }}
+        onCancel={() => {
+          setASupprimer(null)
+          supprimer.reset()
+        }}
+      />
     </div>
   )
 }
