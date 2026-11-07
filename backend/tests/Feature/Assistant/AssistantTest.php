@@ -81,9 +81,9 @@ it('envoie Ã  Gemini le contexte des achats avec le taux de vente et la quantitÃ
             && $r->hasHeader('x-goog-api-key', 'cle-de-test')
             && count($corps['contents']) === 3
             && $corps['contents'][1]['role'] === 'model'
-            && str_contains($dernier, '"ref": "CAB-1"')
-            && str_contains($dernier, '"couverture_jours": 5')
-            && str_contains($dernier, '"qte_suggeree_45j": 40')
+            && str_contains($dernier, '"ref":"CAB-1"')
+            && str_contains($dernier, '"couverture_jours":5')
+            && str_contains($dernier, '"qte_suggeree_45j":40')
             && str_contains($dernier, 'Que dois-je commander ?');
     });
 });

@@ -103,11 +103,21 @@ final class ContexteAssistant
         $texte = "Date du jour : ".now()->format('d/m/Y')."\n\n";
         $lignes = 0;
 
-        foreach ($blocs as $titre => $contenu) {
-            $texte .= "## {$titre}\n";
-            $texte .= is_string($contenu) ? $contenu : json_encode($contenu, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            $texte .= "\n\n";
-            $lignes += is_array($contenu) ? count($contenu) : substr_count($contenu, "\n");
+        // Les flottants s'ecrivent court (28.94, pas 28.940000000000001) :
+        // la precision de serialisation du serveur n'est pas toujours -1.
+        $precision = ini_get('serialize_precision');
+        ini_set('serialize_precision', '-1');
+
+        try {
+            foreach ($blocs as $titre => $contenu) {
+                $texte .= "## {$titre}\n";
+                // JSON compact : lisible par le modele, deux fois moins long.
+                $texte .= is_string($contenu) ? $contenu : (string) json_encode($contenu, JSON_UNESCAPED_UNICODE);
+                $texte .= "\n\n";
+                $lignes += is_array($contenu) ? count($contenu) : substr_count($contenu, "\n");
+            }
+        } finally {
+            ini_set('serialize_precision', (string) $precision);
         }
 
         return ['texte' => $texte, 'lignes' => $lignes];
