@@ -38,6 +38,13 @@ return [
         'cx' => env('GOOGLE_CSE_CX'),
     ],
 
+    // Agent images, moteur de repli : Claude cherche sur le web et releve les
+    // images des pages produit. Cle dans .env.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+    ],
+
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),

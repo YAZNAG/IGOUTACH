@@ -6,6 +6,7 @@ namespace App\Domain\Catalog\Services;
 
 use App\Domain\Assistant\Exceptions\AssistantIndisponibleException;
 use App\Domain\Assistant\Services\GeminiClient;
+use App\Domain\Catalog\Contracts\ChercheurImagesInterface;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductImage;
 use App\Domain\Catalog\Models\ProductImageProposal;
@@ -29,19 +30,35 @@ use RuntimeException;
  */
 final class AgentImages
 {
-    private const POINT_D_ENTREE = 'https://www.googleapis.com/customsearch/v1';
+    public function __construct(
+        private readonly GeminiClient $gemini,
+        private readonly RechercheImagesGoogle $google,
+        private readonly RechercheImagesClaude $claude,
+    ) {}
 
-    /** Candidates demandées par article (le maximum de l'API est 10). */
-    public const CANDIDATES = 8;
+    /**
+     * Le moteur en service : Google Custom Search s'il est configuré (le
+     * plus rapide et le moins cher), sinon Claude, sinon rien.
+     */
+    public function moteur(): ?ChercheurImagesInterface
+    {
+        foreach ([$this->google, $this->claude] as $moteur) {
+            if ($moteur->disponible()) {
+                return $moteur;
+            }
+        }
 
-    /** Articles traités au plus par lancement : 100 requêtes/jour en offre gratuite. */
-    public const MAX_PAR_LANCEMENT = 25;
-
-    public function __construct(private readonly GeminiClient $gemini) {}
+        return null;
+    }
 
     public function configure(): bool
     {
-        return (string) config('services.google_cse.key') !== '' && (string) config('services.google_cse.cx') !== '';
+        return $this->moteur() !== null;
+    }
+
+    public function maxParLancement(): int
+    {
+        return $this->moteur()?->maxParLancement() ?? 25;
     }
 
     /**
@@ -68,10 +85,10 @@ final class AgentImages
     public function lancer(int $limite, ?array $productIds, ?int $userId): array
     {
         if (! $this->configure()) {
-            throw new RuntimeException('Agent images non configuré : renseignez GOOGLE_CSE_KEY et GOOGLE_CSE_CX dans le fichier .env.');
+            throw new RuntimeException('Agent images non configuré : renseignez ANTHROPIC_API_KEY, ou GOOGLE_CSE_KEY et GOOGLE_CSE_CX, dans le fichier .env.');
         }
 
-        $limite = max(1, min($limite, self::MAX_PAR_LANCEMENT));
+        $limite = max(1, min($limite, $this->maxParLancement()));
 
         $articles = $productIds !== null
             ? Product::query()->whereIn('id', $productIds)->orderBy('name')->get()
@@ -102,7 +119,7 @@ final class AgentImages
     public function proposer(Product $article, ?int $userId, ?string $requete = null): ?ProductImageProposal
     {
         $requete = trim((string) ($requete ?? $this->requetePour($article)));
-        $candidates = $this->chercher($requete);
+        $candidates = $this->chercher($requete, $this->contextePour($article));
 
         ProductImageProposal::query()
             ->where('product_id', $article->id)
@@ -172,59 +189,68 @@ final class AgentImages
     }
 
     /**
-     * Les candidates pour une requête, via Google Custom Search (images).
+     * Les candidates pour une requête, par le moteur en service.
+     *
+     * Les adresses rendues par Claude sont relevées sur des pages web : on
+     * vérifie que chacune sert bien une image avant de la proposer. Celles
+     * de Google viennent d'un index d'images, elles se montrent telles quelles.
      *
      * @return list<array{url: string, thumbnail: string, title: string, source: string, width: int|null, height: int|null}>
      */
-    public function chercher(string $requete): array
+    public function chercher(string $requete, ?string $contexte = null): array
     {
-        if ($requete === '') {
+        $moteur = $this->moteur();
+
+        if ($moteur === null || $requete === '') {
             return [];
         }
 
+        $candidates = $moteur->chercher($requete, $contexte);
+
+        if ($moteur->nom() === 'google') {
+            return $candidates;
+        }
+
+        return array_values(array_filter($candidates, fn (array $c): bool => $this->estUneImage($c['url'])));
+    }
+
+    /**
+     * Précisions passées au moteur : référence, marque, catégorie.
+     */
+    private function contextePour(Product $article): string
+    {
+        $article->loadMissing(['brand:id,name', 'category:id,name']);
+
+        return implode(', ', array_filter([
+            'référence '.$article->sku,
+            $article->brand?->name ? 'marque '.$article->brand->name : null,
+            $article->category?->name ? 'catégorie '.$article->category->name : null,
+        ]));
+    }
+
+    /**
+     * L'adresse sert-elle une image ? Un en-tête suffit, le contenu ne se
+     * télécharge qu'à la validation.
+     */
+    private function estUneImage(string $url): bool
+    {
         try {
-            $reponse = Http::withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
-                ->timeout(30)
-                ->get(self::POINT_D_ENTREE, [
-                    'key' => (string) config('services.google_cse.key'),
-                    'cx' => (string) config('services.google_cse.cx'),
-                    'q' => $requete,
-                    'searchType' => 'image',
-                    'num' => self::CANDIDATES,
-                    'safe' => 'active',
-                    'imgType' => 'photo',
-                ]);
-        } catch (ConnectionException $e) {
-            Log::warning('Agent images : Google injoignable', ['erreur' => $e->getMessage()]);
+            $r = Http::withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
+                ->withHeaders(['Accept' => 'image/*'])
+                ->timeout(10)
+                ->head($url);
 
-            throw new RuntimeException('Google ne répond pas : réessayez dans un instant.');
+            if (! $r->successful()) {
+                $r = Http::withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
+                    ->withHeaders(['Accept' => 'image/*', 'Range' => 'bytes=0-64'])
+                    ->timeout(10)
+                    ->get($url);
+            }
+        } catch (ConnectionException) {
+            return false;
         }
 
-        if ($reponse->status() === 429) {
-            throw new RuntimeException('quota Google Custom Search atteint pour aujourd’hui (100 requêtes/jour en offre gratuite).');
-        }
-
-        if (! $reponse->successful()) {
-            $detail = (string) ($reponse->json('error.message') ?? $reponse->body());
-            Log::warning('Agent images : refus de Google', ['status' => $reponse->status(), 'detail' => mb_substr($detail, 0, 300)]);
-
-            throw new RuntimeException('clé ou moteur de recherche refusé par Google : '.mb_substr($detail, 0, 160));
-        }
-
-        $items = $reponse->json('items') ?? [];
-
-        return collect(is_array($items) ? $items : [])
-            ->filter(fn ($i) => is_array($i) && isset($i['link']))
-            ->map(fn (array $i): array => [
-                'url' => (string) $i['link'],
-                'thumbnail' => (string) ($i['image']['thumbnailLink'] ?? $i['link']),
-                'title' => Str::limit((string) ($i['title'] ?? ''), 120, '…'),
-                'source' => (string) ($i['displayLink'] ?? ''),
-                'width' => isset($i['image']['width']) ? (int) $i['image']['width'] : null,
-                'height' => isset($i['image']['height']) ? (int) $i['image']['height'] : null,
-            ])
-            ->values()
-            ->all();
+        return $r->successful() && str_starts_with((string) $r->header('Content-Type'), 'image/');
     }
 
     /**

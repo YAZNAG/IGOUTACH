@@ -26,7 +26,8 @@ final class AgentImagesController extends Controller
         return response()->json(['data' => [
             'configured' => $agent->configure(),
             'counts' => $agent->compteurs(),
-            'max_per_run' => AgentImages::MAX_PAR_LANCEMENT,
+            'max_per_run' => $agent->maxParLancement(),
+            'engine' => $agent->moteur()?->nom(),
             // Les prochains articles que l'agent traiterait, pour choisir.
             'next_products' => $agent->sansImage()->limit(60)->get(['id', 'sku', 'name'])
                 ->map(fn (Product $p): array => ['id' => $p->id, 'sku' => $p->sku, 'name' => $p->name])->values()->all(),
@@ -65,8 +66,8 @@ final class AgentImagesController extends Controller
     {
         /** @var array{limit?: int, product_ids?: list<int>} $data */
         $data = $request->validate([
-            'limit' => ['sometimes', 'integer', 'min:1', 'max:'.AgentImages::MAX_PAR_LANCEMENT],
-            'product_ids' => ['sometimes', 'array', 'max:'.AgentImages::MAX_PAR_LANCEMENT],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:25'],
+            'product_ids' => ['sometimes', 'array', 'max:25'],
             'product_ids.*' => ['integer', 'exists:products,id'],
         ]);
 
@@ -112,7 +113,7 @@ final class AgentImagesController extends Controller
     public function approve(Request $request, ProductImageProposal $proposal, AgentImages $agent): JsonResponse
     {
         /** @var array{index: int} $data */
-        $data = $request->validate(['index' => ['required', 'integer', 'min:0', 'max:'.(AgentImages::CANDIDATES - 1)]]);
+        $data = $request->validate(['index' => ['required', 'integer', 'min:0', 'max:9']]);
 
         try {
             $image = $agent->approuver($proposal, (int) $data['index'], $request->user()?->id);

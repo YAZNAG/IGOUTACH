@@ -11,6 +11,7 @@ import { StockByWarehouseChart } from '../components/StockByWarehouseChart'
 import { chartColors } from '../components/chartTheme'
 import { useDashboard } from '../hooks'
 import { DemandesEnAttente } from '@/features/transfers/components/DemandesEnAttente'
+import { AgentImagesTile } from '../components/AgentImagesTile'
 
 function SkeletonBlock({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-line ${className ?? ''}`} />
@@ -97,6 +98,8 @@ export function DashboardPage() {
           tone="sky"
           hint={`${formatNumber(data.summary.distinct_in_stock)} référence(s)`}
         />
+        {/* L'agent images : ce qui attend une validation, et l'acces a la page. */}
+        <AgentImagesTile />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">

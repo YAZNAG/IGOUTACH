@@ -36,7 +36,7 @@ function googleTrouve(array $liens): void
 }
 
 it('dit si l\'agent est configuré et compte les articles sans image', function (): void {
-    config(['services.google_cse.key' => '', 'services.google_cse.cx' => '']);
+    config(['services.google_cse.key' => '', 'services.google_cse.cx' => '', 'services.anthropic.key' => '']);
     $admin = grantUser(['product.media_manage']);
     articleSansImage('A-1', 'TC ECHOLINK RX5 / IG125');
 
@@ -118,4 +118,49 @@ it('rejette une proposition et relance avec une requête corrigée', function ()
     $this->actingAs($admin)->postJson("/api/v1/agent-images/proposals/{$nouvelId}/reject")->assertOk();
     expect(ProductImageProposal::query()->findOrFail($nouvelId)->status)->toBe('rejected')
         ->and($article->images()->count())->toBe(0);
+});
+
+it('se rabat sur Claude quand Google n\'est pas configuré, et ne garde que de vraies images', function (): void {
+    config(['services.google_cse.key' => '', 'services.google_cse.cx' => '', 'services.anthropic.key' => 'cle-anthropic', 'services.gemini.key' => '']);
+    $admin = grantUser(['product.media_manage']);
+    $article = articleSansImage('C-3', 'PARABOL 70CM');
+
+    // Claude est simulé : il rend trois adresses, dont une page HTML et une
+    // adresse morte, que l'agent doit écarter.
+    $this->mock(\App\Domain\Catalog\Services\RechercheImagesClaude::class, function ($m): void {
+        $m->shouldReceive('disponible')->andReturn(true);
+        $m->shouldReceive('nom')->andReturn('claude');
+        $m->shouldReceive('maxParLancement')->andReturn(5);
+        $m->shouldReceive('chercher')->once()->andReturn([
+            ['url' => 'https://cdn.exemple.ma/parabole.jpg', 'thumbnail' => 'https://cdn.exemple.ma/parabole.jpg', 'title' => 'Parabole 70 cm', 'source' => 'cdn.exemple.ma', 'width' => null, 'height' => null],
+            ['url' => 'https://www.exemple.ma/produit/parabole', 'thumbnail' => 'https://www.exemple.ma/produit/parabole', 'title' => 'Page', 'source' => 'www.exemple.ma', 'width' => null, 'height' => null],
+            ['url' => 'https://cdn.exemple.ma/absente.png', 'thumbnail' => 'https://cdn.exemple.ma/absente.png', 'title' => 'Morte', 'source' => 'cdn.exemple.ma', 'width' => null, 'height' => null],
+        ]);
+    });
+    Http::fake([
+        'cdn.exemple.ma/parabole.jpg' => Http::response('', 200, ['Content-Type' => 'image/jpeg']),
+        'www.exemple.ma/*' => Http::response('<html></html>', 200, ['Content-Type' => 'text/html']),
+        'cdn.exemple.ma/absente.png' => Http::response('', 404),
+    ]);
+
+    $apercu = $this->actingAs($admin)->getJson('/api/v1/agent-images/overview')->assertOk();
+    expect($apercu->json('data.configured'))->toBeTrue()
+        ->and($apercu->json('data.engine'))->toBe('claude')
+        ->and($apercu->json('data.max_per_run'))->toBe(5);
+
+    $this->actingAs($admin)->postJson('/api/v1/agent-images/run', ['product_ids' => [$article->id]])
+        ->assertOk()->assertJsonPath('data.proposees', 1);
+
+    $p = ProductImageProposal::query()->firstOrFail();
+    expect(array_column($p->candidates, 'url'))->toBe(['https://cdn.exemple.ma/parabole.jpg']);
+});
+
+it('lit les candidates dans la réponse de Claude, même entourée de texte', function (): void {
+    $moteur = app(\App\Domain\Catalog\Services\RechercheImagesClaude::class);
+
+    $liste = $moteur->extraire('Voici : {"candidates":[{"url":"https://a.ma/x.jpg","title":"X","source":"a.ma"},{"url":"ftp://pas","title":"","source":""},{"url":"https://a.ma/x.jpg","title":"doublon","source":"a.ma"}]} merci');
+
+    expect($liste)->toHaveCount(1)
+        ->and($liste[0]['url'])->toBe('https://a.ma/x.jpg')
+        ->and($liste[0]['source'])->toBe('a.ma');
 });
