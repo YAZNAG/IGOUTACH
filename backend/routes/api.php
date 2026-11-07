@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AlertController;
+use App\Http\Controllers\Api\V1\AssistantController;
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
@@ -400,6 +401,10 @@ Route::prefix('v1')->group(function () {
         Route::post('customers/{customer}/copy', [CustomerController::class, 'copierVersLieu'])->middleware('can:customer.create');
         Route::patch('customers/{customer}/location', [CustomerController::class, 'setLocation'])->middleware('can:customer.update');
         Route::patch('customers/{customer}/block', [CustomerController::class, 'toggleBlock'])->middleware('can:customer.set_credit_limit');
+
+        // Assistant IA de la direction : questions appuyees sur les chiffres.
+        Route::get('assistant/modules', [AssistantController::class, 'modules'])->middleware('can:stock.view_global');
+        Route::post('assistant/ask', [AssistantController::class, 'ask'])->middleware('can:stock.view_global');
 
         // Pilotage — alertes consolidées & rapports
         // Journaux PDF sur une periode. Cloisonnes par lieu comme le reste.

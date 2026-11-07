@@ -22,6 +22,7 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
+  Sparkles,
   Store,
   Tag,
   Tags,
@@ -62,6 +63,8 @@ export const navGroups: NavGroup[] = [
       { label: "Chiffre d'affaires", to: '/chiffre-affaires', icon: TrendingUp, permission: 'report.consolidated' },
       { label: 'Bénéfice', to: '/benefice', icon: PiggyBank, permission: 'report.consolidated' },
       { label: 'Rapports', to: '/rapports', icon: FileBarChart, permission: 'report.consolidated' },
+      // L'assistant lit les chiffres de tous les lieux : direction seulement.
+      { label: 'Assistant IA', to: '/assistant', icon: Sparkles, permission: 'stock.view_global' },
     ],
   },
   {

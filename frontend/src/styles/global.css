@@ -47,6 +47,40 @@
   .tabular {
     text-align: right;
   }
+
+  /* Reponses de l'assistant : du Markdown (titres, listes, tableaux) rendu
+     dans une bulle, sans les marges d'un article. */
+  .prose-igoutech > :first-child { margin-top: 0; }
+  .prose-igoutech > :last-child { margin-bottom: 0; }
+  .prose-igoutech h1, .prose-igoutech h2, .prose-igoutech h3 {
+    margin: 0.9em 0 0.4em;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .prose-igoutech h1 { font-size: 1.05rem; }
+  .prose-igoutech h2 { font-size: 0.98rem; }
+  .prose-igoutech h3 { font-size: 0.92rem; }
+  .prose-igoutech p { margin: 0.45em 0; line-height: 1.5; }
+  .prose-igoutech ul, .prose-igoutech ol { margin: 0.4em 0 0.6em; padding-left: 1.3em; }
+  .prose-igoutech ul { list-style: disc; }
+  .prose-igoutech ol { list-style: decimal; }
+  .prose-igoutech li { margin: 0.2em 0; }
+  .prose-igoutech strong { font-weight: 600; color: var(--ink); }
+  .prose-igoutech code { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.85em; }
+  .prose-igoutech table {
+    width: 100%;
+    margin: 0.6em 0;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .prose-igoutech th, .prose-igoutech td {
+    padding: 0.35em 0.6em;
+    border: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose-igoutech th { background: var(--surface-2, var(--bg)); font-weight: 600; }
+  .prose-igoutech td:has(> :only-child) { white-space: normal; }
 }
 
 /* ---------------------------------------------------------------------------
