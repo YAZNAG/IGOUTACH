@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Accès réseau vers l'API Laravel. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Localisation du client : position courante du telephone, a la demande. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- Mise a jour depuis l'application : Android exige cette permission
          pour ouvrir l'installateur. L'utilisateur confirme malgre tout chaque
          installation — aucune installation silencieuse n'est possible. -->

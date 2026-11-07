@@ -32,6 +32,9 @@ final class UpdateCustomerRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:191'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:120'],
+            // Localisation facultative, les deux ensemble ou aucune.
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'ice' => ['nullable', 'string', 'max:30'],
             'price_type_id' => ['nullable', 'integer', 'exists:price_types,id'],
             'seller_id' => ['nullable', 'integer', 'exists:users,id'],

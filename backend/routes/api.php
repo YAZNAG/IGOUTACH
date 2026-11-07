@@ -398,6 +398,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->middleware('can:customer.delete');
         Route::put('customers/{customer}/credit', [CustomerController::class, 'setCreditLimit'])->middleware('can:customer.set_credit_limit');
         Route::post('customers/{customer}/copy', [CustomerController::class, 'copierVersLieu'])->middleware('can:customer.create');
+        Route::patch('customers/{customer}/location', [CustomerController::class, 'setLocation'])->middleware('can:customer.update');
         Route::patch('customers/{customer}/block', [CustomerController::class, 'toggleBlock'])->middleware('can:customer.set_credit_limit');
 
         // Pilotage — alertes consolidées & rapports

@@ -308,6 +308,8 @@ final class CustomerController extends Controller
                 'email' => $customer->email,
                 'address' => $customer->address,
                 'city' => $customer->city,
+                'latitude' => $customer->latitude !== null ? (float) $customer->latitude : null,
+                'longitude' => $customer->longitude !== null ? (float) $customer->longitude : null,
                 'ice' => $customer->ice,
                 'price_type' => $customer->priceType?->name,
                 'warehouse' => $customer->warehouse?->code,
@@ -420,6 +422,32 @@ final class CustomerController extends Controller
         $customer->delete();
 
         return response()->json(['message' => 'Client supprimé.']);
+    }
+
+    /**
+     * Pose ou retire la localisation du client.
+     *
+     * PATCH /customers/{customer}/location  { latitude, longitude } — les deux
+     * à null pour retirer. Un appel à part de la mise à jour de la fiche :
+     * depuis le téléphone, on ne renvoie pas toute la fiche pour poser un
+     * point sur la carte.
+     */
+    public function setLocation(Request $request, Customer $customer): CustomerResource
+    {
+        $this->assertCanSee($request, $customer);
+
+        /** @var array{latitude: float|null, longitude: float|null} $data */
+        $data = $request->validate([
+            'latitude' => ['present', 'nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['present', 'nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
+        ]);
+
+        $customer->update([
+            'latitude' => $data['latitude'] !== null ? round((float) $data['latitude'], 7) : null,
+            'longitude' => $data['longitude'] !== null ? round((float) $data['longitude'], 7) : null,
+        ]);
+
+        return CustomerResource::make($customer->refresh()->load('warehouse:id,code,name'));
     }
 
     /**

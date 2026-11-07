@@ -11,6 +11,9 @@ export interface Customer {
   email: string | null
   address: string | null
   city: string | null
+  /** Localisation facultative, posée depuis le téléphone. */
+  latitude: number | null
+  longitude: number | null
   ice: string | null
   price_type_id: number | null
   seller_id: number | null

@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $email
  * @property string|null $address
  * @property string|null $city
+ * @property float|null $latitude
+ * @property float|null $longitude
  * @property string|null $ice
  * @property int|null $price_type_id
  * @property int|null $seller_id
@@ -48,6 +50,8 @@ class Customer extends Model
         'email',
         'address',
         'city',
+        'latitude',
+        'longitude',
         'ice',
         'price_type_id',
         'seller_id',
@@ -64,6 +68,8 @@ class Customer extends Model
     {
         return [
             'is_company' => 'boolean',
+            'latitude' => 'float',
+            'longitude' => 'float',
             'credit_limit' => 'decimal:2',
             'balance' => 'decimal:2',
             'is_blocked' => 'boolean',

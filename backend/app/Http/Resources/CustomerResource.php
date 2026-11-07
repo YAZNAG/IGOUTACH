@@ -28,6 +28,8 @@ final class CustomerResource extends JsonResource
             'email' => $this->email,
             'address' => $this->address,
             'city' => $this->city,
+            'latitude' => $this->latitude !== null ? (float) $this->latitude : null,
+            'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
             'ice' => $this->ice,
             'price_type_id' => $this->price_type_id,
             'seller_id' => $this->seller_id,

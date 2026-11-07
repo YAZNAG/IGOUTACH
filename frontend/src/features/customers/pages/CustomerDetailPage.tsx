@@ -301,6 +301,21 @@ export function CustomerDetailPage() {
               <p className="mono text-sm text-ink">{customer.ice ?? '—'}</p>
             </div>
             <div>
+              <p className="text-xs font-medium text-muted">Localisation</p>
+              {customer.latitude !== null && customer.longitude !== null ? (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${customer.latitude},${customer.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-sky hover:underline"
+                >
+                  Voir sur la carte
+                </a>
+              ) : (
+                <p className="text-sm text-muted">— (se pose depuis l'application mobile)</p>
+              )}
+            </div>
+            <div>
               <p className="text-xs font-medium text-muted">Type de prix</p>
               <p className="text-sm text-ink">{customer.price_type ?? 'Détail (défaut)'}</p>
             </div>

@@ -12,6 +12,7 @@ import '../../core/ui/feedback.dart';
 import '../../models/customer_overview.dart';
 import '../sales/sales_screen.dart' show downloadSalePdf;
 import '../shared/payment_sheet.dart';
+import 'customer_location.dart';
 
 /// Fiche client : identité, crédit, achats et règlements.
 ///
@@ -88,7 +89,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final peutEncaisser = context.watch<AuthProvider>().can('payment.create');
+    final auth = context.watch<AuthProvider>();
+    final peutEncaisser = auth.can('payment.create');
+    final peutModifier = auth.can('customer.update');
     final d = _data;
 
     return PopScope(
@@ -121,6 +124,15 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         _CarteStats(stats: d.stats, credit: d.credit),
                         const SizedBox(height: 12),
                         _CarteIdentite(fiche: d.fiche),
+                        const SizedBox(height: 12),
+                        CarteLocalisation(
+                          fiche: d.fiche,
+                          peutModifier: peutModifier,
+                          onChange: () {
+                            _modifie = true;
+                            _charger();
+                          },
+                        ),
                         const SizedBox(height: 12),
                         _CarteVentes(ventes: d.ventes),
                         const SizedBox(height: 12),

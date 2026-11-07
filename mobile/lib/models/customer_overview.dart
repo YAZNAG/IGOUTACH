@@ -39,6 +39,8 @@ class FicheClient {
     this.email,
     this.adresse,
     this.ville,
+    this.latitude,
+    this.longitude,
     this.ice,
     this.typePrix,
     this.lieu,
@@ -56,6 +58,12 @@ class FicheClient {
   final String? email;
   final String? adresse;
   final String? ville;
+
+  /// Localisation facultative : null tant qu'elle n'a pas été posée.
+  final double? latitude;
+  final double? longitude;
+  bool get aUneLocalisation => latitude != null && longitude != null;
+
   final String? ice;
   final String? typePrix;
   final String? lieu;
@@ -73,6 +81,8 @@ class FicheClient {
         email: j['email'] as String?,
         adresse: j['address'] as String?,
         ville: j['city'] as String?,
+        latitude: (j['latitude'] as num?)?.toDouble(),
+        longitude: (j['longitude'] as num?)?.toDouble(),
         ice: j['ice'] as String?,
         typePrix: j['price_type'] as String?,
         lieu: j['warehouse'] as String?,
