@@ -31,6 +31,13 @@ return [
     ],
 
     // Assistant de gestion (page « Assistant IA »). La clé reste dans .env.
+    // Agent images : API officielle Google Custom Search (moteur programmable
+    // en mode images). Cle et identifiant du moteur dans .env.
+    'google_cse' => [
+        'key' => env('GOOGLE_CSE_KEY'),
+        'cx' => env('GOOGLE_CSE_CX'),
+    ],
+
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),

@@ -5,6 +5,7 @@ import { ArticlesPage, ProductDetailPage } from '@/features/articles'
 import { AuditPage } from '@/features/audit'
 import { LoginPage } from '@/features/auth'
 import { BrandsPage } from '@/features/brands'
+import { AgentImagesPage } from '@/features/agent-images/pages/AgentImagesPage'
 import { AssistantPage } from '@/features/assistant/pages/AssistantPage'
 import { CaissesLieuxPage, CashPage } from '@/features/cash'
 import { CategoriesPage } from '@/features/categories'
@@ -99,6 +100,7 @@ export const router = createBrowserRouter([
           { path: '/caisse', element: <CashPage /> },
           { path: '/caisses', element: <CaissesLieuxPage /> },
           { path: '/assistant', element: <AssistantPage /> },
+          { path: '/agent-images', element: <AgentImagesPage /> },
           { path: '/categories', element: <CategoriesPage /> },
           { path: '/articles', element: <ArticlesPage /> },
           { path: '/articles/:id', element: <ProductDetailPage /> },

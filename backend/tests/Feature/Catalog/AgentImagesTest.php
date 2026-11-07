@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Domain\Catalog\Models\Category;
+use App\Domain\Catalog\Models\Product;
+use App\Domain\Catalog\Models\ProductImageProposal;
+use App\Domain\Catalog\Models\Unit;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+
+/**
+ * L'agent images : recherche, proposition, validation par l'administrateur.
+ */
+function articleSansImage(string $sku, string $nom): Product
+{
+    return Product::factory()->create([
+        'sku' => $sku, 'name' => $nom, 'is_active' => true, 'cost_price' => 10,
+        'category_id' => Category::factory()->create()->id, 'unit_id' => Unit::factory()->create()->id,
+    ]);
+}
+
+function googleTrouve(array $liens): void
+{
+    Http::fake([
+        'www.googleapis.com/customsearch/*' => Http::response(['items' => array_map(fn (string $l, int $i): array => [
+            'link' => $l,
+            'title' => "Image $i",
+            'displayLink' => 'exemple.ma',
+            'image' => ['thumbnailLink' => "https://encrypted-tbn0.gstatic.com/images?q=$i", 'width' => 800, 'height' => 600],
+        ], $liens, array_keys($liens))]),
+        // L'image retenue, telle qu'on la télécharge : un JPEG minimal mais valide.
+        'cdn.exemple.ma/*' => Http::response("\xFF\xD8\xFF".str_repeat('x', 2000), 200, ['Content-Type' => 'image/jpeg']),
+        'generativelanguage.googleapis.com/*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'télécommande Echolink RX5']]]]]]),
+    ]);
+}
+
+it('dit si l\'agent est configuré et compte les articles sans image', function (): void {
+    config(['services.google_cse.key' => '', 'services.google_cse.cx' => '']);
+    $admin = grantUser(['product.media_manage']);
+    articleSansImage('A-1', 'TC ECHOLINK RX5 / IG125');
+
+    $this->actingAs($admin)->getJson('/api/v1/agent-images/overview')
+        ->assertOk()
+        ->assertJsonPath('data.configured', false)
+        ->assertJsonPath('data.counts.sans_image', 1)
+        ->assertJsonPath('data.next_products.0.sku', 'A-1');
+
+    $this->actingAs($admin)->postJson('/api/v1/agent-images/run', ['limit' => 5])->assertStatus(503);
+});
+
+it('refuse l\'agent sans la permission médias', function (): void {
+    $user = grantUser(['product.view']);
+
+    $this->actingAs($user)->getJson('/api/v1/agent-images/overview')->assertForbidden();
+});
+
+it('propose des images, puis n\'enregistre que celle validée par l\'administrateur', function (): void {
+    config(['services.google_cse.key' => 'cle', 'services.google_cse.cx' => 'moteur', 'services.gemini.key' => 'cle-gemini']);
+    Storage::fake('public');
+    googleTrouve(['https://cdn.exemple.ma/rx5-1.jpg', 'https://cdn.exemple.ma/rx5-2.jpg']);
+
+    $admin = grantUser(['product.media_manage']);
+    $article = articleSansImage('A-1', 'TC ECHOLINK RX5 / IG125');
+
+    $lancement = $this->actingAs($admin)->postJson('/api/v1/agent-images/run', ['limit' => 5])->assertOk();
+    expect($lancement->json('data.proposees'))->toBe(1);
+
+    // La requête envoyée à Google est celle reformulée par Gemini, sans code interne.
+    Http::assertSent(fn (\Illuminate\Http\Client\Request $r): bool => str_contains($r->url(), 'customsearch')
+        && str_contains(urldecode($r->url()), 'q=télécommande Echolink RX5')
+        && str_contains($r->url(), 'searchType=image'));
+
+    $liste = $this->actingAs($admin)->getJson('/api/v1/agent-images/proposals?status=pending')->assertOk();
+    expect($liste->json('data'))->toHaveCount(1)
+        ->and($liste->json('data.0.product.sku'))->toBe('A-1')
+        ->and($liste->json('data.0.candidates'))->toHaveCount(2);
+
+    // Rien n'est entré dans la base avant validation.
+    expect($article->images()->count())->toBe(0);
+
+    $id = $liste->json('data.0.id');
+    $this->actingAs($admin)->postJson("/api/v1/agent-images/proposals/{$id}/approve", ['index' => 1])
+        ->assertOk()
+        ->assertJsonPath('data.image.is_main', true);
+
+    expect($article->images()->count())->toBe(1);
+    Storage::disk('public')->assertExists($article->images()->first()->path);
+
+    $proposition = ProductImageProposal::query()->findOrFail($id);
+    expect($proposition->status)->toBe('approved')
+        ->and($proposition->chosen_index)->toBe(1)
+        ->and($proposition->reviewed_by)->toBe($admin->id);
+
+    // Une proposition traitée ne se revalide pas, et l'article ne revient
+    // plus dans la file des articles sans image.
+    $this->actingAs($admin)->postJson("/api/v1/agent-images/proposals/{$id}/approve", ['index' => 0])->assertStatus(422);
+    expect($this->actingAs($admin)->getJson('/api/v1/agent-images/overview')->json('data.counts.sans_image'))->toBe(0);
+});
+
+it('rejette une proposition et relance avec une requête corrigée', function (): void {
+    config(['services.google_cse.key' => 'cle', 'services.google_cse.cx' => 'moteur', 'services.gemini.key' => '']);
+    googleTrouve(['https://cdn.exemple.ma/a.jpg']);
+    $admin = grantUser(['product.media_manage']);
+    $article = articleSansImage('B-2', 'RLT RJ45 305M WDLINK NOIRE');
+
+    $this->actingAs($admin)->postJson('/api/v1/agent-images/run', ['product_ids' => [$article->id]])->assertOk();
+    $p = ProductImageProposal::query()->firstOrFail();
+
+    // Sans Gemini, la requête est le nom nettoyé des abréviations.
+    expect($p->query)->toBe('rouleau RJ45 305M WDLINK NOIRE');
+
+    $relance = $this->actingAs($admin)->postJson("/api/v1/agent-images/proposals/{$p->id}/retry", ['query' => 'câble réseau 305 m wdlink'])->assertOk();
+    expect($relance->json('data.query'))->toBe('câble réseau 305 m wdlink')
+        ->and(ProductImageProposal::query()->where('status', 'pending')->count())->toBe(1);
+
+    $nouvelId = $relance->json('data.id');
+    $this->actingAs($admin)->postJson("/api/v1/agent-images/proposals/{$nouvelId}/reject")->assertOk();
+    expect(ProductImageProposal::query()->findOrFail($nouvelId)->status)->toBe('rejected')
+        ->and($article->images()->count())->toBe(0);
+});

@@ -10,6 +10,7 @@ import {
   FileText,
   HandCoins,
   History,
+  Images,
   LayoutDashboard,
   MonitorSmartphone,
   Package,
@@ -113,6 +114,8 @@ export const navGroups: NavGroup[] = [
     title: 'Catalogue',
     items: [
       { label: 'Articles', to: '/articles', icon: Package, permission: 'product.view' },
+      // L'agent propose des photos ; seul qui gere les medias valide.
+      { label: 'Agent images', to: '/agent-images', icon: Images, permission: 'product.media_manage' },
       { label: 'Catégories', to: '/categories', icon: Tags, permission: 'category.view' },
       { label: 'Tarifs de vente', to: '/tarifs', icon: Tag, permission: 'price.view' },
       { label: 'Coûts des articles', to: '/couts', icon: Calculator, permission: 'product.view_cost_price' },

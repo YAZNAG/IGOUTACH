@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AlertController;
+use App\Http\Controllers\Api\V1\AgentImagesController;
 use App\Http\Controllers\Api\V1\AssistantController;
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\BackupController;
@@ -401,6 +402,16 @@ Route::prefix('v1')->group(function () {
         Route::post('customers/{customer}/copy', [CustomerController::class, 'copierVersLieu'])->middleware('can:customer.create');
         Route::patch('customers/{customer}/location', [CustomerController::class, 'setLocation'])->middleware('can:customer.update');
         Route::patch('customers/{customer}/block', [CustomerController::class, 'toggleBlock'])->middleware('can:customer.set_credit_limit');
+
+        // Agent images : propositions de photos pour les articles sans visuel,
+        // validees par qui gere les medias.
+        Route::get('agent-images/overview', [AgentImagesController::class, 'overview'])->middleware('can:product.media_manage');
+        Route::get('agent-images/proposals', [AgentImagesController::class, 'index'])->middleware('can:product.media_manage');
+        Route::post('agent-images/run', [AgentImagesController::class, 'run'])->middleware('can:product.media_manage');
+        Route::post('agent-images/proposals/{proposal}/retry', [AgentImagesController::class, 'retry'])->middleware('can:product.media_manage');
+        Route::post('agent-images/proposals/{proposal}/approve', [AgentImagesController::class, 'approve'])->middleware('can:product.media_manage');
+        Route::post('agent-images/proposals/{proposal}/reject', [AgentImagesController::class, 'reject'])->middleware('can:product.media_manage');
+        Route::delete('agent-images/proposals/{proposal}', [AgentImagesController::class, 'destroy'])->middleware('can:product.media_manage');
 
         // Assistant IA de la direction : questions appuyees sur les chiffres.
         Route::get('assistant/modules', [AssistantController::class, 'modules'])->middleware('can:stock.view_global');
