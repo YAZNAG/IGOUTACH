@@ -240,6 +240,10 @@ Route::prefix('v1')->group(function () {
         // Transferts inter-lieux (alerte transit > 3 jours incluse)
         Route::get('transfers', [TransferController::class, 'index'])->middleware('can:stock.view');
         Route::post('transfers', [TransferController::class, 'store'])->middleware('can:transfer.create');
+        // Brouillons : modifier, envoyer, supprimer (auteur ou direction).
+        Route::put('transfers/{transfer}', [TransferController::class, 'update'])->middleware('can:transfer.create');
+        Route::post('transfers/{transfer}/send', [TransferController::class, 'send'])->middleware('can:transfer.create');
+        Route::delete('transfers/{transfer}', [TransferController::class, 'destroy'])->middleware('can:transfer.create');
         Route::get('transfers/{transfer}', [TransferController::class, 'show'])->middleware('can:stock.view');
         // Bon de transfert imprimable : même permission que la consultation,
         // imprimer ne révèle rien de plus que la fiche à l'écran.

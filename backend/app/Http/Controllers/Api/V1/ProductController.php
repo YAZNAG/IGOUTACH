@@ -53,14 +53,7 @@ final class ProductController extends Controller
     {
         $products = Product::query()
             ->with(['category:id,name', 'brand:id,name', 'unit:id,code'])
-            ->when($request->string('search')->isNotEmpty(), function ($query) use ($request) {
-                $term = $request->string('search')->value();
-                $query->where(function ($q) use ($term) {
-                    $q->where('name', 'like', "%{$term}%")
-                        ->orWhere('sku', 'like', "%{$term}%")
-                        ->orWhere('barcode', $term);
-                });
-            })
+            ->when($request->string('search')->isNotEmpty(), fn ($query) => $this->rechercher($query, $request->string('search')->value()))
             ->when($request->integer('category_id') > 0, fn ($q) => $q->where('category_id', $request->integer('category_id')))
             // Stock du lieu demandé, exposé comme current_stock (écran bon de commande).
             ->when($request->integer('warehouse_id') > 0, function ($q) use ($request) {
@@ -88,6 +81,27 @@ final class ProductController extends Controller
         ], 'name');
 
         return ProductResource::collection($products->paginate($this->perPage($request)));
+    }
+
+    /**
+     * Recherche par mots : chaque mot tape doit se trouver dans le nom ou la
+     * reference, dans n'importe quel ordre. « TC RECSON LED » trouve aussi
+     * « TC REVOLUTION RECSON LED » ; la phrase entiere, elle, ne trouvait que
+     * l'article nomme exactement ainsi. Un code-barres se cherche entier.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<Product>  $query
+     */
+    private function rechercher($query, string $terme): void
+    {
+        $mots = preg_split('/\s+/u', trim($terme)) ?: [];
+
+        $query->where(function ($q) use ($terme, $mots): void {
+            $q->where(function ($tous) use ($mots): void {
+                foreach ($mots as $mot) {
+                    $tous->where(fn ($un) => $un->where('name', 'like', "%{$mot}%")->orWhere('sku', 'like', "%{$mot}%"));
+                }
+            })->orWhere('barcode', $terme);
+        });
     }
 
     public function store(StoreProductRequest $request, CreateProductAction $action): JsonResponse

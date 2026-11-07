@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, Printer, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft, Pencil, Plus, Printer, Save, Send, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
@@ -39,6 +40,8 @@ interface TransferRow {
   received_at: string | null
   days_in_transit: number | null
   is_late: boolean
+  /** Brouillon modifiable par celui qui regarde (auteur ou direction). */
+  can_edit?: boolean
 }
 
 interface TransferDetail {
@@ -46,11 +49,14 @@ interface TransferDetail {
   reference: string
   from: string | null
   to: string | null
+  from_warehouse_id?: number
+  to_warehouse_id?: number
   status: string
+  can_edit?: boolean
   sent_at: string | null
   received_at: string | null
   note: string | null
-  lines: { id: number; sku: string | null; name: string | null; quantity_sent: number; quantity_received: number | null }[]
+  lines: { id: number; product_id?: number; sku: string | null; name: string | null; quantity_sent: number; quantity_received: number | null }[]
 }
 
 interface DraftLine {
@@ -154,6 +160,8 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
   const can = usePermission()
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
+  /** Brouillon ouvert dans le formulaire pour modification. */
+  const [brouillon, setBrouillon] = useState<number | null>(null)
 
   const [recherche, setRecherche] = useState('')
 
@@ -211,14 +219,22 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
           <p className="text-sm text-muted">Mouvements de marchandise entre lieux — la valeur voyage avec la marchandise.</p>
         </div>
         {can('transfer.create') && !creating ? (
-          <Button onClick={() => setCreating(true)}>
+          <Button onClick={() => { setBrouillon(null); setCreating(true) }}>
             <Plus className="h-4 w-4" />
             Nouveau transfert
           </Button>
         ) : null}
       </div>
 
-      {creating ? <CreateTransferPanel onClose={() => setCreating(false)} /> : null}
+      {creating ? (
+        <CreateTransferPanel
+          draftId={brouillon}
+          onClose={() => {
+            setCreating(false)
+            setBrouillon(null)
+          }}
+        />
+      ) : null}
 
       <DemandesEnAttente />
 
@@ -272,6 +288,7 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
               onChange={(e) => appliquer(() => setStatut(e.target.value))}
             >
               <option value="">Tous les états</option>
+              <option value="draft">Brouillon</option>
               <option value="requested">Demandé</option>
               <option value="in_transit">En transit</option>
               <option value="received">Reçu</option>
@@ -370,6 +387,7 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
                       <td className="px-5 py-3">
                         {/* Une demande, un refus ou une annulation n'avaient aucun
                             badge : la ligne affichait un statut vide. */}
+                        {t.status === 'draft' ? <Badge tone="neutral">Brouillon</Badge> : null}
                         {t.status === 'requested' ? <Badge tone="warn">Demande en attente</Badge> : null}
                         {t.status === 'refused' ? <Badge tone="bad">Refusée</Badge> : null}
                         {t.status === 'cancelled' ? <Badge tone="neutral">Annulé</Badge> : null}
@@ -390,9 +408,24 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
                           >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => onOpen(t.id)}>
-                            {t.status === 'in_transit' && can('transfer.receive') ? 'Réceptionner' : 'Consulter'}
-                          </Button>
+                          {t.status === 'draft' && t.can_edit ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setBrouillon(t.id)
+                                setCreating(true)
+                                window.scrollTo({ top: 0, behavior: 'smooth' })
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Modifier
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="sm" onClick={() => onOpen(t.id)}>
+                              {t.status === 'in_transit' && can('transfer.receive') ? 'Réceptionner' : 'Consulter'}
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -415,7 +448,15 @@ function TransferList({ onOpen }: { onOpen: (id: number) => void }) {
   )
 }
 
-function CreateTransferPanel({ onClose }: { onClose: () => void }) {
+/**
+ * Creation d'un transfert, ou reprise d'un brouillon.
+ *
+ * Deux sorties : « Enregistrer en brouillon » garde le bon sans toucher au
+ * stock, modifiable a volonte ; « Envoyer » fait partir la marchandise et
+ * attribue le numero TRN. Un brouillon repris se modifie, s'envoie ou se
+ * supprime.
+ */
+function CreateTransferPanel({ onClose, draftId = null }: { onClose: () => void; draftId?: number | null }) {
   const qc = useQueryClient()
   const { data: warehouses = [] } = useWarehouseOptions()
 
@@ -424,6 +465,33 @@ function CreateTransferPanel({ onClose }: { onClose: () => void }) {
   const [note, setNote] = useState('')
   const [lines, setLines] = useState<DraftLine[]>([])
   const [search, setSearch] = useState('')
+  const [erreur, setErreur] = useState<string | null>(null)
+  const [confirmerSuppression, setConfirmerSuppression] = useState(false)
+
+  // Le brouillon repris remplit le formulaire une fois charge.
+  const { data: brouillon, isLoading: chargementBrouillon } = useQuery<TransferDetail>({
+    queryKey: ['transfer', draftId],
+    queryFn: async () => {
+      const { data: r } = await api.get<{ data: TransferDetail }>(`/transfers/${draftId}`)
+      return r.data
+    },
+    enabled: draftId !== null,
+  })
+
+  useEffect(() => {
+    if (!brouillon) return
+    setFromId(brouillon.from_warehouse_id ?? 0)
+    setToId(brouillon.to_warehouse_id ?? 0)
+    setNote(brouillon.note ?? '')
+    setLines(
+      brouillon.lines.map((l) => ({
+        product_id: l.product_id ?? 0,
+        sku: l.sku ?? '',
+        name: l.name ?? '',
+        quantity: l.quantity_sent,
+      })),
+    )
+  }, [brouillon])
 
   const { data: options = [] } = useQuery<ProductOption[]>({
     queryKey: ['transfer-product-search', search],
@@ -434,27 +502,72 @@ function CreateTransferPanel({ onClose }: { onClose: () => void }) {
     enabled: search.trim().length >= 2,
   })
 
+  const corps = () => ({
+    from_warehouse_id: fromId,
+    to_warehouse_id: toId,
+    note: note || null,
+    lines: lines.map((l) => ({ product_id: l.product_id, quantity: l.quantity })),
+  })
+
+  function termine() {
+    qc.invalidateQueries({ queryKey: KEY })
+    qc.invalidateQueries({ queryKey: ['stock'] })
+    if (draftId !== null) qc.invalidateQueries({ queryKey: ['transfer', draftId] })
+    onClose()
+  }
+
+  /** Envoi direct (nouveau bon), ou envoi du brouillon repris. */
   const create = useMutation({
     mutationFn: async () => {
       await ensureCsrfCookie()
-      await api.post('/transfers', {
-        from_warehouse_id: fromId,
-        to_warehouse_id: toId,
-        note: note || null,
-        lines: lines.map((l) => ({ product_id: l.product_id, quantity: l.quantity })),
-      })
+      if (draftId !== null) {
+        // Les dernieres modifications partent avec le bon.
+        await api.put(`/transfers/${draftId}`, corps())
+        await api.post(`/transfers/${draftId}/send`)
+        return
+      }
+      await api.post('/transfers', corps())
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEY })
-      qc.invalidateQueries({ queryKey: ['stock'] })
-      onClose()
-    },
+    onMutate: () => setErreur(null),
+    onSuccess: termine,
+    onError: (e) => setErreur(errorMessage(e, 'Envoi impossible (stock insuffisant ?).')),
   })
+
+  /** Enregistrement en brouillon : rien ne bouge en stock. */
+  const enregistrer = useMutation({
+    mutationFn: async () => {
+      await ensureCsrfCookie()
+      if (draftId !== null) {
+        await api.put(`/transfers/${draftId}`, corps())
+        return
+      }
+      await api.post('/transfers', { ...corps(), draft: true })
+    },
+    onMutate: () => setErreur(null),
+    onSuccess: termine,
+    onError: (e) => setErreur(errorMessage(e, 'Enregistrement impossible.')),
+  })
+
+  const supprimer = useMutation({
+    mutationFn: async () => {
+      await ensureCsrfCookie()
+      await api.delete(`/transfers/${draftId}`)
+    },
+    onSuccess: termine,
+    onError: (e) => setErreur(errorMessage(e, 'Suppression impossible.')),
+  })
+
+  const occupe = create.isPending || enregistrer.isPending || supprimer.isPending
+  const pretAEnvoyer = fromId !== 0 && toId !== 0 && lines.length > 0 && lines.every((l) => l.quantity > 0)
 
   return (
     <Card>
-      <CardHeader title="Nouveau transfert (envoi)" />
+      <CardHeader
+        title={draftId !== null ? `Brouillon ${brouillon?.reference ?? ''}` : 'Nouveau transfert'}
+        hint={draftId !== null ? 'Modifiable tant qu’il n’est pas envoyé ; le stock ne bouge qu’à l’envoi.' : undefined}
+      />
       <CardBody className="space-y-4">
+        {chargementBrouillon ? <p className="text-sm text-muted">Chargement du brouillon…</p> : null}
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Lieu source" htmlFor="tr-from">
             <Select id="tr-from" value={fromId || ''} onChange={(e) => setFromId(Number(e.target.value))}>
@@ -522,21 +635,37 @@ function CreateTransferPanel({ onClose }: { onClose: () => void }) {
           {lines.length === 0 ? <p className="text-sm text-muted">Aucun article ajouté.</p> : null}
         </div>
 
-        {create.isError ? (
-          <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">
-            {errorMessage(create.error, 'Envoi impossible (stock insuffisant ?).')}
-          </p>
-        ) : null}
+        {erreur ? <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{erreur}</p> : null}
 
-        <div className="flex gap-2">
-          <Button
-            onClick={() => create.mutate()}
-            disabled={create.isPending || fromId === 0 || toId === 0 || lines.length === 0}
-          >
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Deux sorties : garder le bon pour plus tard, ou faire partir la
+              marchandise maintenant. */}
+          <Button variant="outline" onClick={() => enregistrer.mutate()} disabled={occupe || !pretAEnvoyer}>
+            <Save className="h-4 w-4" />
+            {enregistrer.isPending ? 'Enregistrement…' : draftId !== null ? 'Enregistrer le brouillon' : 'Enregistrer en brouillon'}
+          </Button>
+          <Button onClick={() => create.mutate()} disabled={occupe || !pretAEnvoyer}>
+            <Send className="h-4 w-4" />
             {create.isPending ? 'Envoi…' : 'Envoyer le transfert'}
           </Button>
-          <Button variant="ghost" onClick={onClose}>Annuler</Button>
+          {draftId !== null ? (
+            <Button variant="ghost" className="text-bad hover:bg-bad-bg" onClick={() => setConfirmerSuppression(true)} disabled={occupe}>
+              <Trash2 className="h-4 w-4" />
+              Supprimer le brouillon
+            </Button>
+          ) : null}
+          <Button variant="ghost" onClick={onClose} disabled={occupe}>Annuler</Button>
         </div>
+
+        <ConfirmDialog
+          open={confirmerSuppression}
+          title="Supprimer le brouillon"
+          message={<>Le brouillon sera effacé. Aucun stock n’a bougé.</>}
+          confirmLabel="Supprimer"
+          isPending={supprimer.isPending}
+          onConfirm={() => supprimer.mutate()}
+          onCancel={() => setConfirmerSuppression(false)}
+        />
       </CardBody>
     </Card>
   )
@@ -592,7 +721,13 @@ function TransferDetailView({ id, onBack }: { id: number; onBack: () => void }) 
             <h1 className="text-xl font-semibold text-ink">Transfert {transfer?.reference}</h1>
             <p className="text-sm text-muted">
               {transfer?.from} → {transfer?.to} · envoyé le {transfer?.sent_at}{' '}
-              {transfer?.status === 'received' ? <Badge tone="ok">Reçu</Badge> : <Badge tone="sky">En transit</Badge>}
+              {transfer?.status === 'received' ? (
+                <Badge tone="ok">Reçu</Badge>
+              ) : transfer?.status === 'draft' ? (
+                <Badge tone="neutral">Brouillon</Badge>
+              ) : (
+                <Badge tone="sky">En transit</Badge>
+              )}
             </p>
           </div>
         </div>

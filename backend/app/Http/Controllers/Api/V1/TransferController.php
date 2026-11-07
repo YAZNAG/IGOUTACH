@@ -135,6 +135,9 @@ final class TransferController extends Controller
                 'can_arbitrate' => $t->status?->code === TransferStatus::REQUESTED
                     && ($request->user()?->can('transfer.approve') ?? false)
                     && $this->peutArbitrer($request, $t),
+                // Un brouillon se modifie et s'envoie depuis la liste.
+                'can_edit' => $this->peutModifierBrouillon($request, $t)
+                    && ($request->user()?->can('transfer.create') ?? false),
             ];
         });
 
@@ -151,15 +154,25 @@ final class TransferController extends Controller
 
     public function store(Request $request, CreateTransferAction $action, ProductCostResolver $cost): JsonResponse
     {
-        /** @var array{from_warehouse_id: int, to_warehouse_id: int, note?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
+        /** @var array{from_warehouse_id: int, to_warehouse_id: int, note?: string|null, draft?: bool, lines: list<array{product_id: int, quantity: int}>} $data */
         $data = $request->validate([
             'from_warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
             'to_warehouse_id' => ['required', 'integer', 'exists:warehouses,id', 'different:from_warehouse_id'],
             'note' => ['nullable', 'string', 'max:255'],
+            // Brouillon : le bon est garde, modifiable, sans toucher au stock.
+            'draft' => ['sometimes', 'boolean'],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
+
+        if (($data['draft'] ?? false) === true) {
+            $brouillon = $this->enregistrerBrouillon(null, $data, $request->user()?->id);
+
+            return response()->json([
+                'data' => ['id' => $brouillon->id, 'reference' => $brouillon->reference, 'status' => TransferStatus::DRAFT],
+            ], 201);
+        }
 
         // Le CMUP du produit voyage avec la marchandise.
         $lines = array_map(function (array $line) use ($cost): TransferLineData {
@@ -194,6 +207,143 @@ final class TransferController extends Controller
      * Aucune marchandise ne bouge : la demande attend un accord. Sans cela,
      * le stock du lieu source diminuerait sur simple demande.
      */
+    /**
+     * Cree ou remplace un brouillon : en-tete et lignes, sans mouvement.
+     *
+     * @param  array{from_warehouse_id: int, to_warehouse_id: int, note?: string|null, lines: list<array{product_id: int, quantity: int}>}  $data
+     */
+    private function enregistrerBrouillon(?Transfer $existant, array $data, ?int $userId): Transfer
+    {
+        $statut = TransferStatus::query()->where('code', TransferStatus::DRAFT)->firstOrFail();
+
+        return DB::transaction(function () use ($existant, $data, $userId, $statut): Transfer {
+            $brouillon = $existant ?? Transfer::withoutGlobalScopes()->create([
+                // Reference provisoire : le numero TRN n'est attribue qu'a l'envoi.
+                'reference' => 'BRT-'.now()->format('ymdHis'),
+                'transfer_status_id' => $statut->id,
+                'created_by' => $userId,
+                'from_warehouse_id' => $data['from_warehouse_id'],
+                'to_warehouse_id' => $data['to_warehouse_id'],
+            ]);
+
+            $brouillon->update([
+                'from_warehouse_id' => $data['from_warehouse_id'],
+                'to_warehouse_id' => $data['to_warehouse_id'],
+                'note' => $data['note'] ?? null,
+            ]);
+
+            $brouillon->lines()->delete();
+
+            foreach ($data['lines'] as $ligne) {
+                $brouillon->lines()->create([
+                    'product_id' => $ligne['product_id'],
+                    'quantity_sent' => $ligne['quantity'],
+                    'quantity_received' => null,
+                    'unit_cost' => 0,
+                ]);
+            }
+
+            return $brouillon->refresh();
+        });
+    }
+
+    /**
+     * Qui peut modifier, envoyer ou supprimer un brouillon : son auteur, ou
+     * la direction.
+     */
+    private function peutModifierBrouillon(Request $request, Transfer $transfer): bool
+    {
+        $user = $request->user();
+
+        return $user !== null
+            && $transfer->status?->code === TransferStatus::DRAFT
+            && ($user->can(WarehouseScope::DEFAULT_GLOBAL_PERMISSION) || (int) $transfer->created_by === (int) $user->id);
+    }
+
+    /**
+     * Modifie un brouillon (en-tete et lignes). PUT /transfers/{transfer}
+     */
+    public function update(Request $request, Transfer $transfer): JsonResponse
+    {
+        if (! $this->peutModifierBrouillon($request, $transfer)) {
+            return response()->json(['message' => 'Seul un brouillon se modifie, par son auteur ou la direction.'], 422);
+        }
+
+        /** @var array{from_warehouse_id: int, to_warehouse_id: int, note?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
+        $data = $request->validate([
+            'from_warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'to_warehouse_id' => ['required', 'integer', 'exists:warehouses,id', 'different:from_warehouse_id'],
+            'note' => ['nullable', 'string', 'max:255'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $this->enregistrerBrouillon($transfer, $data, $request->user()?->id);
+
+        return $this->show($request, $transfer->refresh());
+    }
+
+    /**
+     * Envoie un brouillon : le stock quitte la source, le bon recoit son
+     * numero TRN et passe en transit. POST /transfers/{transfer}/send
+     */
+    public function send(Request $request, Transfer $transfer, CreateTransferAction $action, ProductCostResolver $cost): JsonResponse
+    {
+        if (! $this->peutModifierBrouillon($request, $transfer)) {
+            return response()->json(['message' => 'Seul un brouillon peut être envoyé, par son auteur ou la direction.'], 422);
+        }
+
+        $lignes = $transfer->lines()->with('product')->get()
+            ->filter(fn ($l): bool => (int) $l->quantity_sent > 0)
+            ->map(fn ($l): TransferLineData => new TransferLineData(
+                productId: (int) $l->product_id,
+                quantity: (int) $l->quantity_sent,
+                unitCost: $cost->purchaseCost($l->product),
+            ))
+            ->values()
+            ->all();
+
+        if ($lignes === []) {
+            return response()->json(['message' => 'Le brouillon ne contient aucune ligne.'], 422);
+        }
+
+        try {
+            $reel = $action->execute(new TransferData(
+                fromWarehouseId: (int) $transfer->from_warehouse_id,
+                toWarehouseId: (int) $transfer->to_warehouse_id,
+                lines: $lignes,
+                userId: $request->user()?->id,
+                note: $transfer->note,
+            ));
+        } catch (InvalidTransferException|InsufficientStockException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        // Le brouillon cede la place au transfert reel, seul porteur des
+        // mouvements de stock : meme principe que l'accord d'une demande.
+        $reel->update(['created_by' => $transfer->created_by ?? $request->user()?->id]);
+        $transfer->lines()->delete();
+        $transfer->delete();
+
+        return response()->json(['data' => ['id' => $reel->id, 'reference' => $reel->reference, 'status' => TransferStatus::IN_TRANSIT]]);
+    }
+
+    /**
+     * Supprime un brouillon. DELETE /transfers/{transfer}
+     */
+    public function destroy(Request $request, Transfer $transfer): JsonResponse
+    {
+        if (! $this->peutModifierBrouillon($request, $transfer)) {
+            return response()->json(['message' => 'Seul un brouillon se supprime, par son auteur ou la direction.'], 422);
+        }
+
+        $transfer->lines()->delete();
+        $transfer->delete();
+
+        return response()->json(['message' => 'Brouillon supprimé.']);
+    }
+
     /**
      * Lieux auxquels on peut demander de la marchandise.
      *
@@ -458,13 +608,19 @@ final class TransferController extends Controller
             'reference' => $transfer->reference,
             'from' => $transfer->fromWarehouse?->code,
             'to' => $transfer->toWarehouse?->code,
+            // Les identifiants, pour reprendre un brouillon dans le formulaire.
+            'from_warehouse_id' => $transfer->from_warehouse_id,
+            'to_warehouse_id' => $transfer->to_warehouse_id,
             'status' => $transfer->status?->code,
+            'can_edit' => $this->peutModifierBrouillon($request, $transfer)
+                && ($request->user()?->can('transfer.create') ?? false),
             'created_at' => $transfer->created_at?->format('Y-m-d H:i'),
             'sent_at' => $transfer->sent_at?->format('Y-m-d H:i'),
             'received_at' => $transfer->received_at?->format('Y-m-d H:i'),
             'note' => $transfer->note,
             'lines' => $transfer->lines->map(fn ($l): array => [
                 'id' => $l->id,
+                'product_id' => $l->product_id,
                 'sku' => $l->product?->sku,
                 'name' => $l->product?->name,
                 'quantity_sent' => $l->quantity_sent,

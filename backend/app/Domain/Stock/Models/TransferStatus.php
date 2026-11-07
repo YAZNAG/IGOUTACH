@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Model;
 class TransferStatus extends Model
 {
     /** Demandé par un lieu, en attente d'accord — aucune marchandise déplacée. */
+    /** Bon prepare, modifiable, sans mouvement de stock tant qu'il n'est pas envoye. */
+    public const DRAFT = 'draft';
+
     public const REQUESTED = 'requested';
 
     /** Demande refusée par la direction. */
