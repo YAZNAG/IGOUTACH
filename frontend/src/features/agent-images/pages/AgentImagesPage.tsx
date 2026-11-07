@@ -181,7 +181,8 @@ export function AgentImagesPage() {
         </h1>
         <p className="text-sm text-muted">
           L’agent cherche des photos pour les articles sans visuel et vous les propose. Rien n’entre dans la base
-          tant que vous n’avez pas choisi une image : elle devient alors l’image principale de l’article.
+          tant que vous n’avez pas choisi une image : elle devient alors l’image principale de l’article. Les noms,
+          références et prix des articles ne sont jamais modifiés.
         </p>
       </div>
 
@@ -362,12 +363,16 @@ export function AgentImagesPage() {
                     if (q.length >= 2) relancer.mutate({ id: p.id, query: q })
                   }}
                 >
+                  {/* Ce champ est la requete envoyee au moteur d'images, rien
+                      d'autre : le nom de l'article, lui, ne bouge jamais. */}
                   <Search className="h-4 w-4 shrink-0 text-faint" />
+                  <span className="shrink-0 text-xs text-muted">Recherche d’images :</span>
                   <Input
                     value={requetes[p.id] ?? p.query}
                     onChange={(e) => setRequetes((prev) => ({ ...prev, [p.id]: e.target.value }))}
                     className="max-w-md"
-                    aria-label="Requête de recherche"
+                    aria-label="Requête de recherche d’images (le nom de l’article ne change pas)"
+                    title="Mots envoyés au moteur d’images. Le nom de l’article ne change pas."
                   />
                   <Button type="submit" variant="outline" size="sm" disabled={relancer.isPending}>
                     <RefreshCw className={cn('h-4 w-4', relancer.isPending && 'animate-spin')} />
