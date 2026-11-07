@@ -7,6 +7,7 @@ namespace App\Domain\Assistant\Services;
 use App\Domain\Assistant\Exceptions\AssistantIndisponibleException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Appel du modèle Gemini (API Generative Language, generateContent).
@@ -46,10 +47,17 @@ final class GeminiClient
 
         try {
             $reponse = Http::withHeaders(['x-goog-api-key' => (string) config('services.gemini.key')])
-                ->timeout(90)
+                // IPv4 impose : depuis le serveur, la route IPv6 vers Google
+                // accepte la connexion TLS mais ne renvoie jamais la reponse a
+                // un POST (observe le 07/11/2026 : 0 octet recu apres 150 s,
+                // la meme requete en IPv4 repond en 3 s).
+                ->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
+                // Une réponse argumentée sur un gros contexte peut dépasser la
+                // minute : on laisse 150 s avant de déclarer le service muet.
+                ->timeout(150)
                 // « High demand » et autres 503 sont passagers : on réessaie
-                // trois fois, en espaçant, avant de le dire à l'utilisateur.
-                ->retry(3, 2000, function (\Throwable $e): bool {
+                // quatre fois, en espaçant, avant de le dire à l'utilisateur.
+                ->retry(4, 3000, function (\Throwable $e): bool {
                     return $e instanceof \Illuminate\Http\Client\RequestException
                         && in_array($e->response->status(), [500, 502, 503, 504], true);
                 }, throw: false)
@@ -61,7 +69,11 @@ final class GeminiClient
                         'maxOutputTokens' => 4096,
                     ],
                 ]);
-        } catch (ConnectionException) {
+        } catch (ConnectionException $e) {
+            // La cause (délai dépassé, DNS, TLS…) va au journal : l'écran n'en
+            // a pas besoin, le diagnostic si.
+            Log::warning('Gemini injoignable', ['erreur' => $e->getMessage(), 'modele' => $this->modele()]);
+
             throw new AssistantIndisponibleException('Le service Gemini ne répond pas : réessayez dans un instant.');
         }
 
