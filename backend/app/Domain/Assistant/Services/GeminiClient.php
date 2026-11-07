@@ -25,7 +25,7 @@ final class GeminiClient
 
     public function modele(): string
     {
-        return (string) (config('services.gemini.model') ?: 'gemini-2.5-flash');
+        return (string) (config('services.gemini.model') ?: 'gemini-3.8-flash');
     }
 
     /**
