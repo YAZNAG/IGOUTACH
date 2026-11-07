@@ -66,6 +66,10 @@ TXT;
                 ."\n\nQuestion : ".$data['question'],
         ];
 
+        // Une réponse argumentée prend 30 à 60 s : plus que la limite PHP
+        // habituelle d'une requête web.
+        set_time_limit(180);
+
         try {
             $reponse = $gemini->repondre(self::INSTRUCTIONS, $messages);
         } catch (AssistantIndisponibleException $e) {
