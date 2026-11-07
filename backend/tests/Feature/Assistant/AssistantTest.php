@@ -99,13 +99,19 @@ it('envoie à Gemini le contexte des achats avec le taux de vente et la quantit�
 
 it('conserve la conversation et renvoie le fil précédent à Gemini', function (): void {
     config(['services.gemini.key' => 'cle-de-test', 'services.gemini.model' => 'gemini-test']);
-    geminiRepond('Première réponse.');
+    // Deux réponses successives : un seul faux, en séquence (un second
+    // Http::fake ne remplacerait pas le premier, il s'y ajouterait après).
+    $reponse = fn (string $texte): array => ['candidates' => [['content' => ['parts' => [['text' => $texte]]]]]];
+    Http::fake([
+        'generativelanguage.googleapis.com/*' => Http::sequence()
+            ->push($reponse('Première réponse.'))
+            ->push($reponse('Seconde réponse.')),
+    ]);
     $admin = grantUser(['stock.view_global']);
 
     $id = $this->actingAs($admin)->postJson('/api/v1/assistant/ask', ['module' => 'general', 'question' => 'Résume la situation.'])
         ->assertOk()->json('data.conversation_id');
 
-    geminiRepond('Seconde réponse.');
     $this->actingAs($admin)->postJson('/api/v1/assistant/ask', [
         'module' => 'general', 'question' => 'Et pour le lieu 2 ?', 'conversation_id' => $id,
     ])->assertOk()->assertJsonPath('data.conversation_id', $id);
