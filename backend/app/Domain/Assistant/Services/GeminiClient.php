@@ -47,6 +47,12 @@ final class GeminiClient
         try {
             $reponse = Http::withHeaders(['x-goog-api-key' => (string) config('services.gemini.key')])
                 ->timeout(90)
+                // « High demand » et autres 503 sont passagers : on réessaie
+                // trois fois, en espaçant, avant de le dire à l'utilisateur.
+                ->retry(3, 2000, function (\Throwable $e): bool {
+                    return $e instanceof \Illuminate\Http\Client\RequestException
+                        && in_array($e->response->status(), [500, 502, 503, 504], true);
+                }, throw: false)
                 ->post(self::POINT_D_ENTREE.'/'.$this->modele().':generateContent', [
                     'system_instruction' => ['parts' => [['text' => $instructions]]],
                     'contents' => $contenus,
@@ -61,6 +67,10 @@ final class GeminiClient
 
         if ($reponse->status() === 429) {
             throw new AssistantIndisponibleException('Quota Gemini atteint pour le moment : réessayez dans une minute.');
+        }
+
+        if ($reponse->status() === 503) {
+            throw new AssistantIndisponibleException('Gemini est saturé en ce moment (forte demande) : réessayez dans un instant.');
         }
 
         if (! $reponse->successful()) {
