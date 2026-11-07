@@ -31,7 +31,35 @@ it('liste les modules et dit si la clé est configurée', function (): void {
     $this->actingAs($admin)->getJson('/api/v1/assistant/modules')
         ->assertOk()
         ->assertJsonPath('meta.configured', false)
-        ->assertJsonCount(5, 'data');
+        ->assertJsonCount(6, 'data')
+        ->assertJsonPath('data.0.id', 'tout');
+});
+
+it('répond dans la langue demandée et peut tout embrasser d\'un coup', function (): void {
+    config(['services.gemini.key' => 'cle-de-test']);
+    geminiRepond('ملخص');
+    $admin = grantUser(['stock.view_global']);
+
+    $this->actingAs($admin)->postJson('/api/v1/assistant/ask', [
+        'module' => 'tout', 'question' => 'لخص الوضع', 'language' => 'ar',
+    ])->assertOk()->assertJsonPath('data.answer', 'ملخص');
+
+    Http::assertSent(function (\Illuminate\Http\Client\Request $r): bool {
+        $corps = $r->data();
+        $consignes = $corps['system_instruction']['parts'][0]['text'];
+        $contexte = $corps['contents'][0]['parts'][0]['text'];
+
+        // Les consignes exigent l'arabe ; le contexte « tout » porte les
+        // quatre volets, pas seulement un résumé.
+        return str_contains($consignes, 'toujours en arabe')
+            && str_contains($contexte, '## Articles qui se vendent le plus')
+            && str_contains($contexte, '## Balance âgée')
+            && str_contains($contexte, '## Caisses des lieux')
+            && str_contains($contexte, 'Chiffre d’affaires par lieu');
+    });
+
+    $this->actingAs($admin)->postJson('/api/v1/assistant/ask', ['module' => 'tout', 'question' => 'x', 'language' => 'de'])
+        ->assertStatus(422);
 });
 
 it('refuse l\'assistant sans la vue globale', function (): void {

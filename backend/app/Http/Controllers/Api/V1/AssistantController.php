@@ -26,7 +26,8 @@ final class AssistantController extends Controller
 Tu es l'assistant de gestion d'IGOUTECH, un distributeur marocain (région d'Agadir) de matériel électronique, satellite, câblage et accessoires, qui vend en détail, demi-gros et gros depuis plusieurs lieux (dépôts, magasin, véhicules de tournée). Tu t'adresses à la direction.
 
 Règles :
-- Réponds en français, de façon directe et concrète, en dirhams (DH).
+- Langue de la réponse : %LANGUE%. Les références d'articles et les codes restent tels quels.
+- Réponds de façon directe et concrète, en dirhams (DH).
 - Appuie-toi UNIQUEMENT sur les données fournies dans le contexte. Si une information manque, dis-le au lieu de l'inventer.
 - Quand tu recommandes des achats, donne pour chaque article : référence, nom, stock actuel, rythme de vente, couverture en jours, quantité à commander et dernier fournisseur connu. Présente-les dans un tableau Markdown, du plus urgent au moins urgent.
 - Quand tu parles de clients à relancer, donne le nom, le lieu, l'encours et l'ancienneté.
@@ -101,6 +102,8 @@ TXT;
         $data = $request->validate([
             'module' => ['required', 'string', Rule::in(ContexteAssistant::MODULES)],
             'question' => ['required', 'string', 'max:2000'],
+            // fr : français ; ar : arabe ; auto : la langue de la question.
+            'language' => ['sometimes', 'string', Rule::in(['auto', 'fr', 'ar'])],
             // Suite d'une conversation existante ; absent : on en ouvre une.
             'conversation_id' => ['nullable', 'integer', 'exists:assistant_conversations,id'],
         ]);
@@ -136,7 +139,7 @@ TXT;
         set_time_limit(180);
 
         try {
-            $reponse = $gemini->repondre(self::INSTRUCTIONS, $messages);
+            $reponse = $gemini->repondre($this->instructions($data['language'] ?? 'auto'), $messages);
         } catch (AssistantIndisponibleException $e) {
             return response()->json(['message' => $e->getMessage()], 503);
         }
@@ -164,6 +167,20 @@ TXT;
             'context_lines' => $extrait['lignes'],
             'generated_at' => now()->toIso8601String(),
         ]]);
+    }
+
+    /**
+     * Les consignes, avec la langue demandée.
+     */
+    private function instructions(string $langue): string
+    {
+        $regle = match ($langue) {
+            'fr' => 'toujours en français',
+            'ar' => 'toujours en arabe (العربية), y compris les titres et les en-têtes de tableaux',
+            default => 'la langue de la question (français si elle est en français, arabe si elle est en arabe)',
+        };
+
+        return str_replace('%LANGUE%', $regle, self::INSTRUCTIONS);
     }
 
     private function assertOwner(Request $request, AssistantConversation $conversation): void

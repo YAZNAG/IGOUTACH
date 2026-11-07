@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bot, History, MessageSquarePlus, Send, Sparkles, Trash2, User } from 'lucide-react'
+import { Bot, History, Languages, MessageSquarePlus, Send, Sparkles, Trash2, User } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Select } from '@/components/ui/Select'
 import { api, ensureCsrfCookie } from '@/lib/api'
 import { cn, formatDateHeure } from '@/lib/utils'
 
@@ -48,6 +49,24 @@ interface Reponse {
 
 const CONVERSATIONS = ['assistant-conversations'] as const
 
+/** Langue de la réponse : celle de la question, ou imposée. */
+type Langue = 'auto' | 'fr' | 'ar'
+
+const LANGUES: { valeur: Langue; libelle: string }[] = [
+  { valeur: 'auto', libelle: 'Langue de la question' },
+  { valeur: 'fr', libelle: 'Français' },
+  { valeur: 'ar', libelle: 'العربية' },
+]
+
+function langueMemorisee(): Langue {
+  try {
+    const v = localStorage.getItem('assistant:langue')
+    return v === 'fr' || v === 'ar' ? v : 'auto'
+  } catch {
+    return 'auto'
+  }
+}
+
 function messageErreur(e: unknown, repli: string): string {
   if (e && typeof e === 'object' && 'response' in e) {
     const r = (e as { response?: { data?: { message?: string } } }).response
@@ -67,7 +86,8 @@ function messageErreur(e: unknown, repli: string): string {
  */
 export function AssistantPage() {
   const qc = useQueryClient()
-  const [moduleId, setModuleId] = useState('achats')
+  const [moduleId, setModuleId] = useState('tout')
+  const [langue, setLangue] = useState<Langue>(langueMemorisee)
   const [conversationId, setConversationId] = useState<number | null>(null)
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -104,6 +124,7 @@ export function AssistantPage() {
         module: moduleId,
         question: texte,
         conversation_id: conversationId,
+        language: langue,
       })
       return data.data
     },
@@ -318,7 +339,9 @@ export function AssistantPage() {
                       <Bot className="h-4 w-4" />
                     </span>
                   ) : null}
+                  {/* dir=auto : une réponse en arabe se lit de droite à gauche. */}
                   <div
+                    dir="auto"
                     className={cn(
                       'max-w-[85%] rounded-lg px-4 py-3 text-sm',
                       m.role === 'user' ? 'bg-navy text-white' : 'border border-line bg-bg text-ink',
@@ -380,10 +403,34 @@ export function AssistantPage() {
                   }
                 }}
                 rows={2}
-                placeholder={configure ? 'Votre question…' : 'Assistant non configuré'}
+                dir="auto"
+                placeholder={configure ? 'Votre question… / سؤالك…' : 'Assistant non configuré'}
                 disabled={!configure || demander.isPending}
                 className="min-h-[44px] flex-1 resize-y rounded border border-line-2 bg-card px-3 py-2 text-sm text-ink placeholder:text-faint focus-visible:border-sky focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky disabled:opacity-60"
               />
+              <div className="flex w-44 shrink-0 flex-col gap-1">
+                <label htmlFor="assistant-langue" className="flex items-center gap-1 text-xs text-muted">
+                  <Languages className="h-3.5 w-3.5" />
+                  Réponse
+                </label>
+                <Select
+                  id="assistant-langue"
+                  value={langue}
+                  onChange={(e) => {
+                    const v = e.target.value as Langue
+                    setLangue(v)
+                    try {
+                      localStorage.setItem('assistant:langue', v)
+                    } catch {
+                      /* stockage indisponible : le choix vaut pour la page */
+                    }
+                  }}
+                >
+                  {LANGUES.map((l) => (
+                    <option key={l.valeur} value={l.valeur}>{l.libelle}</option>
+                  ))}
+                </Select>
+              </div>
               <Button type="submit" disabled={!configure || demander.isPending || question.trim() === ''}>
                 <Send className="h-4 w-4" />
                 Envoyer

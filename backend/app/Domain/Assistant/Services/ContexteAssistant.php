@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class ContexteAssistant
 {
-    public const MODULES = ['achats', 'ventes', 'credits', 'tresorerie', 'general'];
+    public const MODULES = ['tout', 'achats', 'ventes', 'credits', 'tresorerie', 'general'];
 
     public function __construct(
         private readonly DashboardMetricsService $metriques,
@@ -33,6 +33,16 @@ final class ContexteAssistant
     public function modules(): array
     {
         return [
+            [
+                'id' => 'tout',
+                'label' => 'Toute l’activité',
+                'description' => 'Toutes les données à la fois : articles, ventes, crédits, caisses. Posez n’importe quelle question.',
+                'suggestions' => [
+                    'Que dois-je faire en priorité cette semaine : achats, relances, caisses ?',
+                    'Quels articles commander et quels clients relancer ?',
+                    'ما هي المنتجات التي يجب شراؤها هذا الأسبوع وبأي كمية؟',
+                ],
+            ],
             [
                 'id' => 'achats',
                 'label' => 'Articles et achats',
@@ -97,6 +107,8 @@ final class ContexteAssistant
             'ventes' => $this->ventes(),
             'credits' => $this->credits(),
             'tresorerie' => $this->tresorerie(),
+            // Tout a la fois : chaque bloc garde son titre, le modele s'y retrouve.
+            'tout' => [...$this->achats(), ...$this->ventes(), ...$this->credits(), ...$this->tresorerie()],
             default => $this->general(),
         };
 
