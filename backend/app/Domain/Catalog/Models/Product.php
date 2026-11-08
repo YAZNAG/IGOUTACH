@@ -44,6 +44,10 @@ class Product extends Model
         'unit_id',
         'cost_price',
         'sale_price',
+        // Boutique en ligne : visibilite, mise en avant, texte dedie.
+        'store_visible',
+        'store_featured',
+        'store_description',
         'tax_rate',
         'is_serialized',
         'min_stock',
@@ -55,6 +59,8 @@ class Product extends Model
         return [
             'cost_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
+            'store_visible' => 'boolean',
+            'store_featured' => 'boolean',
             'tax_rate' => 'decimal:2',
             'is_serialized' => 'boolean',
             'is_active' => 'boolean',

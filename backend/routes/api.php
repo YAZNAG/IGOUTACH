@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Store\StoreCatalogController;
+use App\Http\Controllers\Api\Store\StoreOrderController;
+use App\Http\Controllers\Api\V1\StoreAdminController;
 use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AgentImagesController;
 use App\Http\Controllers\Api\V1\AssistantController;
@@ -56,6 +59,18 @@ use App\Http\Controllers\Api\V1\UserPermissionController;
 use App\Http\Controllers\Api\V1\WarehouseController;
 use App\Http\Controllers\Api\V1\WarehouseTypeController;
 use Illuminate\Support\Facades\Route;
+
+// Boutique en ligne (store.igoutech.optizaworks.com) : catalogue public et
+// prise de commande, sans authentification. Lecture plafonnee, commande
+// limitee a quelques essais par minute.
+Route::prefix('store')->middleware('throttle:120,1')->group(function () {
+    Route::get('settings', [StoreCatalogController::class, 'settings']);
+    Route::get('categories', [StoreCatalogController::class, 'categories']);
+    Route::get('products', [StoreCatalogController::class, 'products']);
+    Route::get('products/{id}', [StoreCatalogController::class, 'product'])->whereNumber('id');
+    Route::post('orders', [StoreOrderController::class, 'store'])->middleware('throttle:6,1');
+    Route::post('orders/track', [StoreOrderController::class, 'track'])->middleware('throttle:20,1');
+});
 
 Route::prefix('v1')->group(function () {
     // Authentification (login / logout)
@@ -416,6 +431,20 @@ Route::prefix('v1')->group(function () {
         Route::post('agent-images/proposals/{proposal}/approve', [AgentImagesController::class, 'approve'])->middleware('can:product.media_manage');
         Route::post('agent-images/proposals/{proposal}/reject', [AgentImagesController::class, 'reject'])->middleware('can:product.media_manage');
         Route::delete('agent-images/proposals/{proposal}', [AgentImagesController::class, 'destroy'])->middleware('can:product.media_manage');
+
+        // Tableau de bord de la boutique en ligne.
+        Route::middleware('can:store.manage')->prefix('store-admin')->group(function () {
+            Route::get('dashboard', [StoreAdminController::class, 'dashboard']);
+            Route::get('orders', [StoreAdminController::class, 'orders']);
+            Route::get('orders/{order}', [StoreAdminController::class, 'order']);
+            Route::patch('orders/{order}/status', [StoreAdminController::class, 'updateStatus']);
+            Route::post('orders/{order}/payments', [StoreAdminController::class, 'addPayment']);
+            Route::delete('orders/{order}/payments/{payment}', [StoreAdminController::class, 'deletePayment']);
+            Route::get('products', [StoreAdminController::class, 'products']);
+            Route::patch('products/{product}', [StoreAdminController::class, 'updateProduct']);
+            Route::get('settings', [StoreAdminController::class, 'settings']);
+            Route::put('settings', [StoreAdminController::class, 'updateSettings']);
+        });
 
         // Assistant IA de la direction : questions appuyees sur les chiffres.
         Route::get('assistant/modules', [AssistantController::class, 'modules'])->middleware('can:stock.view_global');
