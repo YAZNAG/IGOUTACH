@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AgentImagesController;
 use App\Http\Controllers\Api\V1\AssistantController;
 use App\Http\Controllers\Api\V1\AuditController;
+use App\Http\Controllers\Api\V1\CustomerCreditPdfController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashRemittanceController;
@@ -354,6 +355,8 @@ Route::prefix('v1')->group(function () {
         Route::patch('cheques/{cheque}/status', [ChequeController::class, 'updateStatus'])->middleware('can:cheque.manage');
         Route::delete('cheques/{cheque}', [ChequeController::class, 'destroy'])->middleware('can:cheque.manage');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
+        // Relevé de crédit imprimable : factures dues et articles emportés.
+        Route::get('customers/{customer}/credit-pdf', CustomerCreditPdfController::class)->middleware('can:credit.view');
         // Factures encore dues : sert à choisir celles qu'un règlement solde.
         // Retrait d'une ecriture saisie a la main ; le controleur refuse
         // celles adossees a un document.
