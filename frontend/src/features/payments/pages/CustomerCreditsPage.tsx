@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { FileDown, HandCoins, Trash2, X } from 'lucide-react'
+import { FileDown, HandCoins, Printer, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -294,6 +294,23 @@ export function CustomerCreditsPage() {
     })
   }
 
+  /**
+   * Imprime le relevé de crédit du client : les factures qu'il doit encore,
+   * avec les articles emportés sur chacune et les règlements déjà reçus.
+   *
+   * Le document suit le filtre de lieu affiché : ce qu'on réclame depuis un
+   * point de vente ne doit pas mélanger la dette contractée ailleurs.
+   */
+  function imprimerReleve(row: Pick<AgingRow, 'customer_id' | 'customer' | 'customer_code'>) {
+    const lieu = lieuFiltre ? `?warehouse_id=${lieuFiltre}` : ''
+    openPdf(
+      `/customers/${row.customer_id}/credit-pdf${lieu}`,
+      `credit-${row.customer_code ?? row.customer_id}.pdf`,
+    ).catch(() => {
+      window.alert("Le relevé de crédit n'a pas pu être généré. Réessayez dans un instant.")
+    })
+  }
+
   const amountValue = Number(amount)
   const invalidAmount = selected !== null && (!Number.isFinite(amountValue) || amountValue <= 0)
 
@@ -380,9 +397,15 @@ export function CustomerCreditsPage() {
             title={`Encaisser — ${selected.customer}`}
             hint={`Encours : ${money(selected.total_due)} DH`}
             action={
-              <Button variant="ghost" size="sm" onClick={() => setSelected(null)} aria-label="Fermer">
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" onClick={() => imprimerReleve(selected)} title="Imprimer le relevé de crédit : factures dues et articles">
+                  <Printer className="h-4 w-4" />
+                  Imprimer le crédit
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelected(null)} aria-label="Fermer">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             }
           />
           <CardBody className="max-h-[80vh] space-y-4 overflow-y-auto">
@@ -736,12 +759,25 @@ export function CustomerCreditsPage() {
                       <td className="tabular px-5 py-3 text-right text-bad">{money(r.bucket_over_90)}</td>
                       <td className="tabular px-5 py-3 text-right font-semibold text-ink">{money(r.total_due)} DH</td>
                       <td className="px-5 py-3 text-right">
-                        {canCollect ? (
-                          <Button variant="outline" size="sm" onClick={() => openCollect(r)}>
-                            <HandCoins className="h-4 w-4" />
-                            Encaisser
+                        <div className="flex items-center justify-end gap-1">
+                          {/* Le relevé imprimé est ce qu'on remet au client
+                              pour lui réclamer son dû : factures et articles. */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => imprimerReleve(r)}
+                            title="Imprimer le relevé de crédit"
+                            aria-label={`Imprimer le crédit de ${r.customer}`}
+                          >
+                            <Printer className="h-4 w-4" />
                           </Button>
-                        ) : null}
+                          {canCollect ? (
+                            <Button variant="outline" size="sm" onClick={() => openCollect(r)}>
+                              <HandCoins className="h-4 w-4" />
+                              Encaisser
+                            </Button>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))}

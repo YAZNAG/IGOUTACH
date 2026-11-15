@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AgentImagesController;
 use App\Http\Controllers\Api\V1\AssistantController;
 use App\Http\Controllers\Api\V1\AuditController;
+use App\Http\Controllers\Api\V1\CustomerCreditPdfController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashRemittanceController;
@@ -368,6 +369,8 @@ Route::prefix('v1')->group(function () {
         // celles adossees a un document.
         Route::delete('customer-ledger-entries/{entry}', [PaymentController::class, 'destroyLedgerEntry'])->middleware('can:credit.view');
         Route::get('customers/{customer}/open-invoices', [PaymentController::class, 'openInvoices'])->middleware('can:payment.create');
+        // Relevé de crédit imprimable : factures dues et articles emportés.
+        Route::get('customers/{customer}/credit-pdf', CustomerCreditPdfController::class)->middleware('can:credit.view');
         Route::get('customers/{customer}/overview', [CustomerController::class, 'overview'])->middleware('can:customer.view');
         // Activite chiffree par entite : le classement du tableau de bord dit
         // qui pese le plus, ces series disent comment chacun a evolue.
