@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { prixPour, surDevis } from './paliers'
 import type { Article } from './types'
 
 export interface LignePanier {
@@ -14,6 +15,14 @@ interface Panier {
   vider: () => void
   nombre: number
   sousTotal: number
+  /** Prix unitaire d'une ligne, au palier atteint par sa quantité. */
+  prixUnitaire: (ligne: LignePanier) => number
+  /**
+   * Au moins une ligne dépasse le palier vendu sur devis : le panier ne se
+   * commande plus, il se transforme en demande de devis.
+   */
+  surDevis: boolean
+  lignesSurDevis: LignePanier[]
 }
 
 const CLE = 'store:panier'
@@ -41,8 +50,11 @@ export function PanierProvider({ children }: { children: ReactNode }) {
     }
   }, [lignes])
 
-  const valeur = useMemo<Panier>(
-    () => ({
+  const valeur = useMemo<Panier>(() => {
+    const prixUnitaire = (l: LignePanier) => prixPour(l.article, l.quantite)
+    const auDevis = lignes.filter((l) => surDevis(l.article, l.quantite))
+
+    return {
       lignes,
       ajouter: (article, quantite = 1) =>
         setLignes((prev) => {
@@ -54,13 +66,17 @@ export function PanierProvider({ children }: { children: ReactNode }) {
         }),
       retirer: (id) => setLignes((prev) => prev.filter((l) => l.article.id !== id)),
       changerQuantite: (id, quantite) =>
-        setLignes((prev) => prev.map((l) => (l.article.id === id ? { ...l, quantite: Math.max(1, Math.min(500, quantite)) } : l))),
+        setLignes((prev) => prev.map((l) => (l.article.id === id ? { ...l, quantite: Math.max(1, Math.min(100000, quantite)) } : l))),
       vider: () => setLignes([]),
       nombre: lignes.reduce((n, l) => n + l.quantite, 0),
-      sousTotal: lignes.reduce((s, l) => s + l.article.price * l.quantite, 0),
-    }),
-    [lignes],
-  )
+      // Le sous-total suit les paliers : à 3 pièces, la ligne passe au
+      // demi-gros et le récapitulatif doit le refléter tout de suite.
+      sousTotal: lignes.reduce((s, l) => s + prixUnitaire(l) * l.quantite, 0),
+      prixUnitaire,
+      surDevis: auDevis.length > 0,
+      lignesSurDevis: auDevis,
+    }
+  }, [lignes])
 
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>
 }

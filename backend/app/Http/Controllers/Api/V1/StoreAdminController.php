@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Store\Models\StoreOrder;
 use App\Domain\Store\Models\StorePayment;
+use App\Domain\Store\Models\StoreQuote;
 use App\Domain\Store\Models\StoreSetting;
 use App\Domain\Store\Services\StoreCatalog;
 use App\Domain\Store\Services\StoreOrders;
+use App\Domain\Store\Services\StoreQuotes;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,7 @@ final class StoreAdminController extends Controller
 {
     public function __construct(
         private readonly StoreOrders $commandes,
+        private readonly StoreQuotes $devis,
         private readonly StoreCatalog $catalogue,
     ) {}
 
@@ -33,6 +36,11 @@ final class StoreAdminController extends Controller
     {
         return response()->json(['data' => [
             ...$this->commandes->tableauDeBord(),
+            'quotes' => $this->devis->tableauDeBord(),
+            'recent_quotes' => StoreQuote::query()->with(['warehouse:id,name', 'orders:id,quote_id,number'])->withCount('lines')
+                ->whereIn('status', [StoreQuote::STATUS_REQUESTED, StoreQuote::STATUS_QUOTED])
+                ->orderByDesc('id')->limit(6)->get()
+                ->map(fn (StoreQuote $d): array => $this->devis->serialiser($d))->values()->all(),
             'recent_orders' => StoreOrder::query()->with(['warehouse:id,code', 'sale:id,reference'])->withCount('lines')
                 ->orderByDesc('id')->limit(8)->get()
                 ->map(fn (StoreOrder $c): array => $this->commandes->serialiser($c))->values()->all(),
@@ -200,5 +208,89 @@ final class StoreAdminController extends Controller
         }
 
         return response()->json(['data' => StoreSetting::tous()]);
+    }
+
+    // ─── Devis ───────────────────────────────────────────────────────────
+
+    public function quotes(Request $request): JsonResponse
+    {
+        $page = StoreQuote::query()
+            ->with(['warehouse:id,name', 'sale:id,reference', 'orders:id,quote_id,number'])
+            ->withCount('lines')
+            ->when($request->string('status')->value() !== '', fn ($q) => $q->where('status', $request->string('status')->value()))
+            ->when($request->string('q')->value() !== '', function ($q) use ($request): void {
+                $terme = '%'.$request->string('q')->value().'%';
+                $q->where(fn ($w) => $w->where('number', 'like', $terme)
+                    ->orWhere('customer_name', 'like', $terme)
+                    ->orWhere('company', 'like', $terme)
+                    ->orWhere('customer_phone', 'like', $terme)
+                    ->orWhere('city', 'like', $terme));
+            })
+            ->orderByDesc('id')
+            ->paginate(min($request->integer('per_page', 20), 100));
+
+        return response()->json([
+            'data' => array_map(fn (StoreQuote $d): array => $this->devis->serialiser($d), $page->items()),
+            'meta' => [
+                'current_page' => $page->currentPage(),
+                'last_page' => $page->lastPage(),
+                'per_page' => $page->perPage(),
+                'total' => $page->total(),
+            ],
+        ]);
+    }
+
+    public function quote(StoreQuote $quote): JsonResponse
+    {
+        $quote->load(['lines', 'warehouse:id,name', 'sale:id,reference', 'orders:id,quote_id,number', 'handler:id,name']);
+
+        return response()->json(['data' => $this->devis->serialiser($quote, true)]);
+    }
+
+    public function priceQuote(Request $request, StoreQuote $quote): JsonResponse
+    {
+        $data = $request->validate([
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.id' => ['required', 'integer'],
+            'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:100000'],
+            'lines.*.unit_price' => ['required', 'numeric', 'min:0', 'max:9999999'],
+            'shipping_fee' => ['nullable', 'numeric', 'min:0', 'max:999999'],
+            'valid_until' => ['nullable', 'date'],
+            'reply' => ['nullable', 'string', 'max:1000'],
+            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
+        ]);
+
+        try {
+            /** @var array{lines: list<array{id: int, quantity: int, unit_price: float}>, shipping_fee?: float, valid_until?: string|null, reply?: string|null, warehouse_id?: int|null} $data */
+            $quote = $this->devis->chiffrer($quote, $data, $request->user()?->id);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => $this->devis->serialiser($quote, true)]);
+    }
+
+    public function sendQuote(Request $request, StoreQuote $quote): JsonResponse
+    {
+        try {
+            $quote = $this->devis->envoyer($quote, $request->user()?->id);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => $this->devis->serialiser($quote, true)]);
+    }
+
+    public function cancelQuote(Request $request, StoreQuote $quote): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['nullable', 'string', 'max:255']]);
+
+        try {
+            $quote = $this->devis->annuler($quote, $data['reason'] ?? null, $request->user()?->id);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['data' => $this->devis->serialiser($quote, true)]);
     }
 }

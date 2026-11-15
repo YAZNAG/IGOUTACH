@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ExternalLink, LayoutDashboard, LogOut, Package, Settings, ShoppingBag } from 'lucide-react'
+import { ExternalLink, FileText, LayoutDashboard, LogOut, Package, Settings, ShoppingBag } from 'lucide-react'
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Spinner } from '../components/ui'
 import { api, jeton, memoriserJeton } from '../lib/api'
@@ -30,6 +30,7 @@ export function useMoi() {
 const MENU = [
   { to: '/admin', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
   { to: '/admin/commandes', label: 'Commandes', icon: ShoppingBag },
+  { to: '/admin/devis', label: 'Devis', icon: FileText },
   { to: '/admin/articles', label: 'Articles en ligne', icon: Package },
   { to: '/admin/reglages', label: 'Réglages', icon: Settings },
 ]

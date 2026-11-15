@@ -1,24 +1,41 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
-import { useLocation } from 'react-router-dom'
-import { Badge, Button, Card, Erreur, Field, Input } from '../components/ui'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Badge, Button, Card, Erreur, Field, Input, cn } from '../components/ui'
 import { api, dateHeure, dh, messageErreur } from '../lib/api'
-import { ETATS_PAIEMENT, PAIEMENTS, STATUTS, type SuiviCommande } from '../lib/types'
+import { ETATS_PAIEMENT, PAIEMENTS, STATUTS, type Devis, type SuiviCommande } from '../lib/types'
 
 const ETAPES = ['new', 'confirmed', 'preparing', 'shipped', 'delivered']
 
 export function Track() {
   const etat = useLocation().state as { number?: string; phone?: string } | null
+  const navigate = useNavigate()
   const [numero, setNumero] = useState(etat?.number ?? '')
   const [tel, setTel] = useState(etat?.phone ?? '')
+  // Un client qui a perdu son lien de devis a toujours son numéro : les deux
+  // suivis partagent donc le même formulaire.
+  const [objet, setObjet] = useState<'commande' | 'devis'>(
+    (etat?.number ?? '').toUpperCase().startsWith('DEV-') ? 'devis' : 'commande',
+  )
 
   const suivre = useMutation({
     mutationFn: async () => (await api<{ data: SuiviCommande }>('/store/orders/track', { method: 'POST', body: { number: numero, phone: tel } })).data,
   })
 
+  const suivreDevis = useMutation({
+    mutationFn: async () => (await api<{ data: Devis }>('/store/quotes/track', { method: 'POST', body: { number: numero, phone: tel } })).data,
+    onSuccess: (d) => {
+      // Le lien public porte tout : on y renvoie plutôt que de redessiner le
+      // devis une seconde fois ici.
+      if (d.public_token) navigate(`/devis/${d.public_token}`)
+    },
+  })
+
+  const recherche = objet === 'devis' ? suivreDevis : suivre
+
   function envoyer(e: FormEvent) {
     e.preventDefault()
-    suivre.mutate()
+    recherche.mutate()
   }
 
   const c = suivre.data
@@ -27,20 +44,35 @@ export function Track() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Suivre ma commande</h1>
-        <p className="text-sm text-muted">Indiquez le numéro reçu à la commande et votre téléphone.</p>
+        <h1 className="text-2xl font-bold">Suivre ma {objet}</h1>
+        <p className="text-sm text-muted">Indiquez le numéro reçu et votre téléphone.</p>
+      </div>
+
+      <div className="inline-flex rounded-lg border border-line bg-white p-1 text-sm">
+        {([['commande', 'Commande'], ['devis', 'Devis']] as const).map(([cle, libelle]) => (
+          <button
+            key={cle}
+            type="button"
+            onClick={() => setObjet(cle)}
+            className={cn('rounded-md px-4 py-1.5', objet === cle ? 'bg-brand text-white' : 'text-muted hover:text-ink')}
+          >
+            {libelle}
+          </button>
+        ))}
       </div>
 
       <Card className="p-5">
         <form onSubmit={envoyer} className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-          <Field label="Numéro de commande" htmlFor="s-num"><Input id="s-num" value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="WEB-261108-001" required /></Field>
+          <Field label={objet === 'devis' ? 'Numéro de devis' : 'Numéro de commande'} htmlFor="s-num">
+            <Input id="s-num" value={numero} onChange={(e) => setNumero(e.target.value)} placeholder={objet === 'devis' ? 'DEV-261108-001' : 'WEB-261108-001'} required />
+          </Field>
           <Field label="Téléphone" htmlFor="s-tel"><Input id="s-tel" value={tel} onChange={(e) => setTel(e.target.value)} placeholder="06 12 34 56 78" required /></Field>
-          <Button type="submit" disabled={suivre.isPending}>{suivre.isPending ? 'Recherche…' : 'Rechercher'}</Button>
+          <Button type="submit" disabled={recherche.isPending}>{recherche.isPending ? 'Recherche…' : 'Rechercher'}</Button>
         </form>
-        {suivre.isError ? <div className="mt-4"><Erreur message={messageErreur(suivre.error)} /></div> : null}
+        {recherche.isError ? <div className="mt-4"><Erreur message={messageErreur(recherche.error)} /></div> : null}
       </Card>
 
-      {c ? (
+      {objet === 'commande' && c ? (
         <Card className="space-y-5 p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-mono text-lg font-semibold">{c.number}</p>
@@ -82,6 +114,12 @@ export function Track() {
             </div>
           ) : null}
         </Card>
+      ) : null}
+
+      {objet === 'devis' ? (
+        <p className="text-sm text-muted">
+          Pas encore de devis ? <Link to="/catalogue" className="text-brand hover:underline">Composez votre demande depuis le catalogue.</Link>
+        </p>
       ) : null}
     </div>
   )

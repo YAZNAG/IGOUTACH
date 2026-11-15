@@ -24,6 +24,7 @@ final class StoreOrders
 {
     public function __construct(
         private readonly StoreCatalog $catalogue,
+        private readonly StorePricing $tarifs,
         private readonly ConfirmSaleAction $confirmer,
         private readonly DocumentNumberGeneratorInterface $numeros,
     ) {}
@@ -57,13 +58,29 @@ final class StoreOrders
             if ($this->catalogue->stockDe($article) < $qte) {
                 throw new RuntimeException(sprintf('Stock insuffisant pour « %s » : %d disponible(s).', $article->name, $this->catalogue->stockDe($article)));
             }
-            $prix = $this->catalogue->prixDe($article);
+
+            // Le palier se décide sur la quantité, pas sur l'affichage : le
+            // panier du navigateur n'engage personne.
+            ['price' => $prix, 'code' => $palier] = $this->tarifs->pour($article, $qte);
+
+            // Au-delà du palier de gros, la vente passe par un devis. Le
+            // contrôle est ici, et non dans la page : une requête directe
+            // contournerait l'interface.
+            if ($this->tarifs->surDevis($palier)) {
+                throw new RuntimeException(sprintf(
+                    '« %s » se vend sur devis à partir de %d unités. Demandez un devis : la réponse arrive sous 24 h.',
+                    $article->name,
+                    $this->catalogue->seuilDevis($article) ?? $qte,
+                ));
+            }
+
             $lignes[] = [
                 'product_id' => $article->id,
                 'name' => $article->name,
                 'sku' => $article->sku,
                 'quantity' => $qte,
                 'unit_price' => $prix,
+                'price_type_code' => $palier,
                 'line_total' => round($prix * $qte, 2),
             ];
             $sousTotal += $prix * $qte;
@@ -213,7 +230,7 @@ final class StoreOrders
                 'product_id' => $l->product_id,
                 'quantity' => $l->quantity,
                 'unit_price' => $l->unit_price,
-                'price_type_code' => 'detail',
+                'price_type_code' => $l->price_type_code ?? 'detail',
                 'line_total' => $l->line_total,
             ]);
         }

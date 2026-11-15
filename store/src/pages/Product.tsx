@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ImageOff, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { ChevronLeft, FileText, ImageOff, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
 import { useReglages } from '../components/Layout'
+import { GrillePaliers, ProchainPalier } from '../components/Paliers'
 import { Button, Dispo, Erreur, Spinner } from '../components/ui'
 import { api, dh, messageErreur } from '../lib/api'
 import { usePanier } from '../lib/cart'
+import { palierPour, prixPour, surDevis } from '../lib/paliers'
 import type { Fiche } from '../lib/types'
 
 export function Product() {
@@ -26,6 +28,9 @@ export function Product() {
   if (error || !fiche) return <Erreur message={messageErreur(error, 'Article indisponible.')} />
 
   const images = fiche.images.length > 0 ? fiche.images : fiche.image ? [fiche.image] : []
+  const palier = palierPour(fiche, quantite)
+  const prixUnitaire = prixPour(fiche, quantite)
+  const devis = surDevis(fiche, quantite)
   const whatsapp = reglages?.whatsapp
     ? `https://wa.me/${reglages.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour, je souhaite commander : ${fiche.name} (réf. ${fiche.sku})`)}`
     : null
@@ -68,28 +73,60 @@ export function Product() {
             <p className="mt-1 text-xs text-faint">Réf. {fiche.sku}</p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <p className="text-3xl font-bold text-brand">{dh(fiche.price)}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p className="text-3xl font-bold text-brand">{dh(prixUnitaire)}</p>
+            {palier && quantite > 1 ? (
+              <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand-strong">
+                tarif {palier.label.toLowerCase()} · {quantite} u.
+              </span>
+            ) : null}
             <Dispo niveau={fiche.stock_level} />
           </div>
+
+          {reglages?.tiers_public !== false ? <GrillePaliers article={fiche} quantite={quantite} /> : null}
 
           {fiche.description ? <div className="prose-store text-sm text-muted">{fiche.description}</div> : null}
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex h-11 items-center rounded-lg border border-line bg-white">
               <button type="button" className="px-3 text-muted hover:text-ink" onClick={() => setQuantite((q) => Math.max(1, q - 1))} aria-label="Moins"><Minus className="h-4 w-4" /></button>
-              <span className="w-10 text-center text-sm font-medium">{quantite}</span>
-              <button type="button" className="px-3 text-muted hover:text-ink" onClick={() => setQuantite((q) => Math.min(500, q + 1))} aria-label="Plus"><Plus className="h-4 w-4" /></button>
+              {/* Saisie libre : en gros, on commande 200 pièces, pas en
+                  cliquant deux cents fois. */}
+              <input
+                type="number"
+                min={1}
+                max={100000}
+                value={quantite}
+                onChange={(e) => setQuantite(Math.max(1, Math.min(100000, Number(e.target.value) || 1)))}
+                className="w-16 border-0 bg-transparent text-center text-sm font-medium focus:outline-none"
+                aria-label="Quantité"
+              />
+              <button type="button" className="px-3 text-muted hover:text-ink" onClick={() => setQuantite((q) => Math.min(100000, q + 1))} aria-label="Plus"><Plus className="h-4 w-4" /></button>
             </div>
-            <Button className="h-11 px-5" disabled={!fiche.in_stock} onClick={() => { ajouter(fiche, quantite); navigate('/panier') }}>
-              <ShoppingCart className="h-4 w-4" /> Ajouter au panier
-            </Button>
+            {devis ? (
+              <Button className="h-11 px-5" onClick={() => { ajouter(fiche, quantite); navigate('/devis') }}>
+                <FileText className="h-4 w-4" /> Demander un devis
+              </Button>
+            ) : (
+              <Button className="h-11 px-5" disabled={!fiche.in_stock} onClick={() => { ajouter(fiche, quantite); navigate('/panier') }}>
+                <ShoppingCart className="h-4 w-4" /> Ajouter au panier
+              </Button>
+            )}
             {whatsapp ? (
               <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center rounded-lg border border-line bg-white px-4 text-sm font-medium text-ink hover:border-brand">
                 Demander sur WhatsApp
               </a>
             ) : null}
           </div>
+
+          {devis ? (
+            <p className="rounded-lg border border-warn/20 bg-warn-soft px-4 py-3 text-sm text-warn">
+              À partir de {fiche.quote_from_quantity} unités, cet article se vend sur devis : nous confirmons le prix
+              ferme et le délai avant que vous ne vous engagiez.
+            </p>
+          ) : (
+            <ProchainPalier article={fiche} quantite={quantite} />
+          )}
 
           <ul className="grid gap-2 text-sm text-muted sm:grid-cols-2">
             <li className="rounded-lg bg-white p-3">Livraison partout au Maroc{reglages && reglages.shipping_fee > 0 ? ` · ${dh(reglages.shipping_fee)}` : ''}</li>

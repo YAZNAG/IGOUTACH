@@ -1,12 +1,14 @@
-import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
+import { ArrowRight, FileText, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useReglages } from '../components/Layout'
+import { ProchainPalier } from '../components/Paliers'
 import { Button, Card } from '../components/ui'
 import { dh } from '../lib/api'
 import { usePanier } from '../lib/cart'
+import { palierPour, surDevis } from '../lib/paliers'
 
 export function Cart() {
-  const { lignes, retirer, changerQuantite, sousTotal, vider } = usePanier()
+  const { lignes, retirer, changerQuantite, sousTotal, vider, prixUnitaire, surDevis: panierSurDevis } = usePanier()
   const { data: reglages } = useReglages()
 
   const port = reglages ? (reglages.free_shipping_from > 0 && sousTotal >= reglages.free_shipping_from ? 0 : reglages.shipping_fee) : 0
@@ -29,42 +31,89 @@ export function Cart() {
           <h1 className="text-2xl font-bold">Panier</h1>
           <button type="button" onClick={vider} className="text-sm text-muted hover:text-bad">Vider le panier</button>
         </div>
-        {lignes.map(({ article, quantite }) => (
-          <Card key={article.id} className="flex items-center gap-4 p-3">
-            <Link to={`/article/${article.id}`} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line bg-white p-1">
-              {article.image ? <img src={article.image} alt="" className="h-full w-full object-contain" /> : null}
-            </Link>
-            <div className="min-w-0 flex-1">
-              <Link to={`/article/${article.id}`} className="clamp-2 text-sm font-medium hover:text-brand">{article.name}</Link>
-              <p className="text-xs text-faint">Réf. {article.sku} · {dh(article.price)} l’unité</p>
-              <div className="mt-2 flex items-center gap-3">
-                <div className="flex h-9 items-center rounded-lg border border-line">
-                  <button type="button" className="px-2.5 text-muted" onClick={() => changerQuantite(article.id, quantite - 1)} aria-label="Moins"><Minus className="h-4 w-4" /></button>
-                  <span className="w-8 text-center text-sm">{quantite}</span>
-                  <button type="button" className="px-2.5 text-muted" onClick={() => changerQuantite(article.id, quantite + 1)} aria-label="Plus"><Plus className="h-4 w-4" /></button>
+        {lignes.map((ligne) => {
+          const { article, quantite } = ligne
+          const palier = palierPour(article, quantite)
+          const unitaire = prixUnitaire(ligne)
+          const ligneSurDevis = surDevis(article, quantite)
+
+          return (
+            <Card key={article.id} className="flex items-start gap-4 p-3">
+              <Link to={`/article/${article.id}`} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line bg-white p-1">
+                {article.image ? <img src={article.image} alt="" className="h-full w-full object-contain" /> : null}
+              </Link>
+              <div className="min-w-0 flex-1">
+                <Link to={`/article/${article.id}`} className="clamp-2 text-sm font-medium hover:text-brand">{article.name}</Link>
+                <p className="text-xs text-faint">
+                  Réf. {article.sku} · {dh(unitaire)} l’unité
+                  {palier && palier.min_quantity > 1 ? (
+                    <span className="ml-1 font-medium text-brand"> · tarif {palier.label.toLowerCase()}</span>
+                  ) : null}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <div className="flex h-9 items-center rounded-lg border border-line">
+                    <button type="button" className="px-2.5 text-muted" onClick={() => changerQuantite(article.id, quantite - 1)} aria-label="Moins"><Minus className="h-4 w-4" /></button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100000}
+                      value={quantite}
+                      onChange={(e) => changerQuantite(article.id, Number(e.target.value) || 1)}
+                      className="w-14 border-0 bg-transparent text-center text-sm focus:outline-none"
+                      aria-label={`Quantité pour ${article.name}`}
+                    />
+                    <button type="button" className="px-2.5 text-muted" onClick={() => changerQuantite(article.id, quantite + 1)} aria-label="Plus"><Plus className="h-4 w-4" /></button>
+                  </div>
+                  <button type="button" onClick={() => retirer(article.id)} className="inline-flex items-center gap-1 text-xs text-muted hover:text-bad"><Trash2 className="h-3.5 w-3.5" /> Retirer</button>
                 </div>
-                <button type="button" onClick={() => retirer(article.id)} className="inline-flex items-center gap-1 text-xs text-muted hover:text-bad"><Trash2 className="h-3.5 w-3.5" /> Retirer</button>
+                {ligneSurDevis ? (
+                  <p className="mt-2 text-xs text-warn">Cette quantité se traite sur devis.</p>
+                ) : (
+                  <div className="mt-2"><ProchainPalier article={article} quantite={quantite} /></div>
+                )}
               </div>
-            </div>
-            <p className="shrink-0 text-right font-semibold">{dh(article.price * quantite)}</p>
-          </Card>
-        ))}
+              <p className="shrink-0 text-right font-semibold">{dh(unitaire * quantite)}</p>
+            </Card>
+          )
+        })}
       </div>
 
       <Card className="h-fit p-5">
         <h2 className="font-semibold">Récapitulatif</h2>
-        <dl className="mt-4 space-y-2 text-sm">
-          <div className="flex justify-between"><dt className="text-muted">Sous-total</dt><dd>{dh(sousTotal)}</dd></div>
-          <div className="flex justify-between"><dt className="text-muted">Livraison</dt><dd>{port === 0 ? 'Offerte' : dh(port)}</dd></div>
-          {reglages && reglages.free_shipping_from > 0 && port > 0 ? (
-            <p className="text-xs text-faint">Livraison offerte dès {dh(reglages.free_shipping_from)} d’achat.</p>
-          ) : null}
-          <div className="flex justify-between border-t border-line pt-3 text-base font-bold"><dt>Total</dt><dd>{dh(sousTotal + port)}</dd></div>
-        </dl>
-        <Link to="/commande" className="mt-5 block">
-          <Button className="h-11 w-full">Passer la commande <ArrowRight className="h-4 w-4" /></Button>
-        </Link>
-        <p className="mt-3 text-center text-xs text-faint">Paiement à la livraison ou par virement.</p>
+
+        {panierSurDevis ? (
+          <>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div className="flex justify-between"><dt className="text-muted">Estimation</dt><dd>{dh(sousTotal)}</dd></div>
+            </dl>
+            <p className="mt-3 rounded-lg border border-warn/20 bg-warn-soft px-3 py-2 text-xs text-warn">
+              Votre panier atteint les quantités de gros. Le montant ci-dessus est indicatif : nous vous envoyons un
+              prix ferme, avec le délai de livraison, avant tout engagement.
+            </p>
+            <Link to="/devis" className="mt-4 block">
+              <Button className="h-11 w-full"><FileText className="h-4 w-4" /> Demander un devis</Button>
+            </Link>
+            <p className="mt-3 text-center text-xs text-faint">Réponse sous 24 h ouvrées.</p>
+          </>
+        ) : (
+          <>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div className="flex justify-between"><dt className="text-muted">Sous-total</dt><dd>{dh(sousTotal)}</dd></div>
+              <div className="flex justify-between"><dt className="text-muted">Livraison</dt><dd>{port === 0 ? 'Offerte' : dh(port)}</dd></div>
+              {reglages && reglages.free_shipping_from > 0 && port > 0 ? (
+                <p className="text-xs text-faint">Livraison offerte dès {dh(reglages.free_shipping_from)} d’achat.</p>
+              ) : null}
+              <div className="flex justify-between border-t border-line pt-3 text-base font-bold"><dt>Total</dt><dd>{dh(sousTotal + port)}</dd></div>
+            </dl>
+            <Link to="/commande" className="mt-5 block">
+              <Button className="h-11 w-full">Passer la commande <ArrowRight className="h-4 w-4" /></Button>
+            </Link>
+            <p className="mt-3 text-center text-xs text-faint">Paiement à la livraison ou par virement.</p>
+            <Link to="/devis" className="mt-3 block text-center text-xs text-muted hover:text-brand">
+              Vous achetez en quantité ? Demandez un devis
+            </Link>
+          </>
+        )}
       </Card>
     </div>
   )

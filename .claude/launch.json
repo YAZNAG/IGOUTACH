@@ -4,9 +4,33 @@
     {
       "name": "igoutech-frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "cwd": "C:\\OPTIZAWORKS\\igoutech\\frontend",
       "port": 5180
+    },
+    {
+      "name": "igoutech-store",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "C:\\OPTIZAWORKS\\igoutech\\store",
+      "port": 5190
+    },
+    {
+      "name": "igoutech-api",
+      "runtimeExecutable": "php",
+      "runtimeArgs": [
+        "artisan",
+        "serve",
+        "--port=8001"
+      ],
+      "cwd": "C:/OPTIZAWORKS/igoutech/backend",
+      "port": 8001
     }
   ]
 }

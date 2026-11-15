@@ -16,11 +16,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $sku
  * @property int $quantity
  * @property float $unit_price
+ * @property string|null $price_type_code
  * @property float $line_total
  */
 final class StoreOrderLine extends Model
 {
-    protected $fillable = ['order_id', 'product_id', 'name', 'sku', 'quantity', 'unit_price', 'line_total'];
+    protected $fillable = ['order_id', 'product_id', 'name', 'sku', 'quantity', 'unit_price', 'price_type_code', 'line_total'];
 
     /** @return array<string, string> */
     protected function casts(): array

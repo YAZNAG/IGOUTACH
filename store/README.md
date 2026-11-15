@@ -15,6 +15,27 @@ catalogue, stock, prix, commandes et paiements vivent dans l'API de gestion
   - Tableau de bord `/admin` : `/api/v1/store-admin/*`, jeton obtenu via
     `/api/v1/mobile/login` (même compte que la gestion), permission `store.manage`.
 
+## Paliers et devis
+
+La boutique vend au palier : le prix suit la quantité, selon les seuils des
+tarifs de la gestion (`price_types.min_quantity`, qu'une ligne de prix peut
+surcharger pour un article donné — c'est le « seuil propre à l'article »).
+
+Au-delà d'un palier, la vente ne se conclut plus en ligne : le client demande
+un devis, la boutique chiffre, le client accepte, et la commande naît de cette
+acceptation aux prix négociés. Le palier de bascule se règle dans
+`/admin/reglages` (`quote_from` : `none`, `semi_gros` ou `gros`).
+
+- Le prix appliqué vient de `PriceResolver` (gestion) : la vitrine en fait une
+  copie d'affichage dans `src/lib/paliers.ts`, le serveur reste seul juge.
+- Une commande directe dont la quantité relève du devis est **refusée côté
+  serveur** : passer par l'API en direct ne contourne rien.
+- À l'envoi, le devis est aussi créé dans la gestion (`sales.type = quote`)
+  quand un lieu d'expédition est indiqué — il apparaît alors dans le web et
+  dans le mobile.
+- Le client répond par un lien public porteur d'un jeton
+  (`/devis/{public_token}`) ; il peut aussi le retrouver depuis `/suivi`.
+
 ## Développement
 
 ```bash

@@ -27,6 +27,8 @@ final class StoreSetting extends Model
         'shop_name', 'phone', 'whatsapp', 'email', 'address',
         'shipping_fee', 'free_shipping_from', 'payment_cod', 'payment_transfer', 'bank_details',
         'announcement', 'hero_title', 'hero_subtitle',
+        // Vente par palier et devis en ligne.
+        'quote_from', 'tiers_public', 'quote_validity_days', 'quote_intro',
     ];
 
     /** @return array<string, string> */

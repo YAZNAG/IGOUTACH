@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { dh } from '../lib/api'
 import { usePanier } from '../lib/cart'
 import type { Article } from '../lib/types'
+import { PaliersResume } from './Paliers'
 import { Button, Dispo } from './ui'
 
 /** Carte d'un article dans une grille : photo, nom, prix, disponibilité, ajout au panier. */
@@ -29,8 +30,9 @@ export function ArticleCard({ article }: { article: Article }) {
           {article.name}
         </Link>
         <div className="mt-auto flex items-end justify-between gap-2">
-          <div>
+          <div className="min-w-0">
             <p className="text-lg font-bold text-ink">{dh(article.price)}</p>
+            <PaliersResume article={article} />
             <Dispo niveau={article.stock_level} />
           </div>
           <Button

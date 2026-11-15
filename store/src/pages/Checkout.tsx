@@ -8,7 +8,7 @@ import { usePanier } from '../lib/cart'
 import type { SuiviCommande } from '../lib/types'
 
 export function Checkout() {
-  const { lignes, sousTotal, vider } = usePanier()
+  const { lignes, sousTotal, vider, prixUnitaire, surDevis } = usePanier()
   const { data: reglages } = useReglages()
   const navigate = useNavigate()
 
@@ -47,6 +47,9 @@ export function Checkout() {
   })
 
   if (lignes.length === 0 && !commander.isPending && !commander.isSuccess) return <Navigate to="/panier" replace />
+  // Un panier passé en quantités de gros ne se règle pas ici : il part en
+  // demande de devis. Le serveur le refuserait de toute façon.
+  if (surDevis && !commander.isSuccess) return <Navigate to="/devis" replace />
 
   function envoyer(e: FormEvent) {
     e.preventDefault()
@@ -96,10 +99,10 @@ export function Checkout() {
       <Card className="h-fit p-5">
         <h2 className="font-semibold">Votre commande</h2>
         <ul className="mt-3 divide-y divide-line text-sm">
-          {lignes.map(({ article, quantite }) => (
-            <li key={article.id} className="flex justify-between gap-3 py-2">
-              <span className="clamp-2 text-muted">{quantite} × {article.name}</span>
-              <span className="shrink-0">{dh(article.price * quantite)}</span>
+          {lignes.map((ligne) => (
+            <li key={ligne.article.id} className="flex justify-between gap-3 py-2">
+              <span className="clamp-2 text-muted">{ligne.quantite} × {ligne.article.name}</span>
+              <span className="shrink-0">{dh(prixUnitaire(ligne) * ligne.quantite)}</span>
             </li>
           ))}
         </ul>

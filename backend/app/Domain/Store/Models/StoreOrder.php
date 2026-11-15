@@ -57,7 +57,7 @@ final class StoreOrder extends Model
     protected $fillable = [
         'number', 'status', 'customer_name', 'customer_phone', 'customer_email', 'city', 'address', 'note',
         'payment_method', 'payment_status', 'subtotal', 'shipping_fee', 'total', 'paid_amount',
-        'warehouse_id', 'sale_id', 'handled_by', 'cancel_reason', 'ip',
+        'warehouse_id', 'sale_id', 'quote_id', 'handled_by', 'cancel_reason', 'ip',
         'confirmed_at', 'shipped_at', 'delivered_at', 'cancelled_at',
     ];
 
@@ -92,6 +92,12 @@ final class StoreOrder extends Model
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
+    }
+
+    /** @return BelongsTo<StoreQuote, $this> */
+    public function quote(): BelongsTo
+    {
+        return $this->belongsTo(StoreQuote::class, 'quote_id');
     }
 
     /** @return BelongsTo<User, $this> */

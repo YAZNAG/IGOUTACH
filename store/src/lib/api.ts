@@ -93,7 +93,10 @@ export function messageErreur(e: unknown, repli = 'Une erreur est survenue.'): s
 }
 
 export function dh(valeur: number): string {
-  return `${valeur.toLocaleString('fr-MA', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} DH`
+  // « fr-FR » et non « fr-MA » : ce dernier groupe les milliers avec un point,
+  // ce qui donne « 1.768 DH » — illisible à côté d'une virgule décimale, et
+  // les montants de gros dépassent vite le millier.
+  return `${valeur.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} DH`
 }
 
 export function dateHeure(iso: string | null | undefined): string {

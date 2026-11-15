@@ -2,8 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Badge, Card, Spinner } from '../components/ui'
 import { api, dateHeure, dh } from '../lib/api'
-import { ETATS_PAIEMENT, STATUTS } from '../lib/types'
+import { ETATS_PAIEMENT, STATUTS, STATUTS_DEVIS } from '../lib/types'
 import type { CommandeResume } from './Orders'
+import type { DevisResume } from './Quotes'
 
 interface TableauDeBord {
   by_status: Record<string, number>
@@ -11,6 +12,15 @@ interface TableauDeBord {
   month: { orders: number; revenue: number; unpaid: number }
   top_products: { product_id: number; name: string; qty: number; revenue: number }[]
   catalog: { online: number; without_image: number; out_of_stock: number }
+  quotes: {
+    by_status: Record<string, number>
+    to_answer: number
+    awaiting_customer: number
+    pipeline: number
+    accepted_value: number
+    conversion: number | null
+  }
+  recent_quotes: DevisResume[]
   recent_orders: CommandeResume[]
 }
 
@@ -32,11 +42,12 @@ export function AdminDashboard() {
         <p className="text-sm text-muted">La boutique en ligne, en un coup d’œil.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {[
           ['Nouvelles commandes', data.by_status.new ?? 0, 'à confirmer', 'text-warn'],
           ['À traiter', aTraiter, 'nouvelles, confirmées, en préparation', 'text-brand'],
           ['CA du mois (livré)', dh(data.month.revenue), `${data.month.orders} commande(s) ce mois`, 'text-ok'],
+          ['Devis à chiffrer', data.quotes?.to_answer ?? 0, `${data.quotes?.awaiting_customer ?? 0} en attente du client`, (data.quotes?.to_answer ?? 0) > 0 ? 'text-warn' : 'text-muted'],
           ['Reste à encaisser', dh(data.month.unpaid), 'commandes non soldées', data.month.unpaid > 0 ? 'text-bad' : 'text-muted'],
         ].map(([l, v, h, c]) => (
           <Card key={l as string} className="p-5">
@@ -78,6 +89,34 @@ export function AdminDashboard() {
               <div className="flex justify-between"><dt className="text-muted">En rupture</dt><dd className={data.catalog.out_of_stock > 0 ? 'font-medium text-bad' : ''}>{data.catalog.out_of_stock}</dd></div>
             </dl>
             <Link to="/admin/articles" className="mt-3 block text-sm text-brand hover:underline">Gérer les articles</Link>
+          </Card>
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Devis en cours</h2>
+              <Link to="/admin/devis" className="text-sm text-brand hover:underline">Tous</Link>
+            </div>
+            <dl className="mt-3 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-muted">En jeu</dt>
+                <dd className="font-medium">{dh(data.quotes?.pipeline ?? 0)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted">Transformation</dt>
+                <dd className="font-medium">{data.quotes?.conversion === null || data.quotes?.conversion === undefined ? '—' : `${data.quotes.conversion} %`}</dd>
+              </div>
+            </dl>
+            <ul className="mt-3 space-y-2 border-t border-line pt-3 text-sm">
+              {(data.recent_quotes ?? []).map((d) => (
+                <li key={d.id} className="flex items-start justify-between gap-2">
+                  <Link to={`/admin/devis/${d.id}`} className="min-w-0">
+                    <span className="font-mono text-xs text-brand hover:underline">{d.number}</span>
+                    <p className="clamp-2 text-xs text-muted">{d.company || d.customer_name}</p>
+                  </Link>
+                  <Badge tone={STATUTS_DEVIS[d.status]?.tone ?? 'neutral'}>{STATUTS_DEVIS[d.status]?.label}</Badge>
+                </li>
+              ))}
+              {(data.recent_quotes ?? []).length === 0 ? <li className="text-muted">Aucune demande en attente.</li> : null}
+            </ul>
           </Card>
           <Card className="p-5">
             <h2 className="font-semibold">Meilleures ventes (30 j)</h2>

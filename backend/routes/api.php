@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Store\StoreCatalogController;
 use App\Http\Controllers\Api\Store\StoreOrderController;
+use App\Http\Controllers\Api\Store\StoreQuoteController;
 use App\Http\Controllers\Api\V1\StoreAdminController;
 use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AgentImagesController;
@@ -72,6 +73,13 @@ Route::prefix('store')->middleware('throttle:120,1')->group(function () {
     Route::post('orders/track', [StoreOrderController::class, 'track'])->middleware('throttle:20,1');
 });
 
+
+    // Devis : demande, consultation par le lien recu, reponse du client.
+    Route::post('quotes', [StoreQuoteController::class, 'store'])->middleware('throttle:4,1');
+    Route::post('quotes/track', [StoreQuoteController::class, 'track'])->middleware('throttle:20,1');
+    Route::get('quotes/{token}', [StoreQuoteController::class, 'show'])->where('token', '[A-Za-z0-9]{10,64}');
+    Route::post('quotes/{token}/accept', [StoreQuoteController::class, 'accept'])->middleware('throttle:10,1')->where('token', '[A-Za-z0-9]{10,64}');
+    Route::post('quotes/{token}/decline', [StoreQuoteController::class, 'decline'])->middleware('throttle:10,1')->where('token', '[A-Za-z0-9]{10,64}');
 Route::prefix('v1')->group(function () {
     // Authentification (login / logout)
     require __DIR__.'/auth.php';
@@ -451,6 +459,11 @@ Route::prefix('v1')->group(function () {
         Route::get('assistant/modules', [AssistantController::class, 'modules'])->middleware('can:stock.view_global');
         Route::post('assistant/ask', [AssistantController::class, 'ask'])->middleware('can:stock.view_global');
         Route::get('assistant/conversations', [AssistantController::class, 'conversations'])->middleware('can:stock.view_global');
+            Route::get('quotes', [StoreAdminController::class, 'quotes']);
+            Route::get('quotes/{quote}', [StoreAdminController::class, 'quote']);
+            Route::put('quotes/{quote}', [StoreAdminController::class, 'priceQuote']);
+            Route::post('quotes/{quote}/send', [StoreAdminController::class, 'sendQuote']);
+            Route::post('quotes/{quote}/cancel', [StoreAdminController::class, 'cancelQuote']);
         Route::delete('assistant/conversations', [AssistantController::class, 'destroyAll'])->middleware('can:stock.view_global');
         Route::get('assistant/conversations/{conversation}', [AssistantController::class, 'conversation'])->middleware('can:stock.view_global');
         Route::delete('assistant/conversations/{conversation}', [AssistantController::class, 'destroyConversation'])->middleware('can:stock.view_global');

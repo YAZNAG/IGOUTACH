@@ -1,3 +1,14 @@
+/** Un palier de prix : à partir de `min_quantity`, l'unité vaut `price`. */
+export interface Palier {
+  code: string
+  label: string
+  rank: number
+  min_quantity: number
+  price: number
+  /** Ce palier ne se commande pas en ligne : il passe par un devis. */
+  on_quote: boolean
+}
+
 export interface Reglages {
   shop_name: string
   phone: string
@@ -11,6 +22,10 @@ export interface Reglages {
   announcement: string
   hero_title: string
   hero_subtitle: string
+  /** Codes des paliers vendus sur devis (vide = tout se commande en ligne). */
+  quote_from: string[]
+  tiers_public: boolean
+  quote_intro: string
 }
 
 export interface Categorie {
@@ -27,6 +42,9 @@ export interface Article {
   category_id: number | null
   brand: string | null
   price: number
+  tiers: Palier[]
+  /** Quantité à partir de laquelle cet article passe par un devis. */
+  quote_from_quantity: number | null
   in_stock: boolean
   stock_level: 'in' | 'low' | 'out'
   featured: boolean
@@ -90,4 +108,42 @@ export const ETATS_PAIEMENT: Record<string, { label: string; tone: 'ok' | 'warn'
   partial: { label: 'Partiellement payée', tone: 'warn' },
   paid: { label: 'Payée', tone: 'ok' },
   refunded: { label: 'Remboursée', tone: 'warn' },
+}
+
+export interface LigneDevis {
+  name: string
+  sku: string | null
+  quantity: number
+  unit_price: number
+  line_total: number
+}
+
+export interface Devis {
+  number: string
+  status: string
+  customer_name: string
+  company: string | null
+  city: string
+  note: string | null
+  reply: string | null
+  subtotal: number
+  shipping_fee: number
+  total: number
+  valid_until: string | null
+  created_at: string
+  quoted_at: string | null
+  answered_at: string | null
+  payment_methods: ('cod' | 'transfer')[]
+  bank_details: string
+  lines: LigneDevis[]
+  public_token?: string
+}
+
+export const STATUTS_DEVIS: Record<string, { label: string; tone: 'neutral' | 'sky' | 'ok' | 'warn' | 'bad'; aide: string }> = {
+  requested: { label: 'Demande reçue', tone: 'warn', aide: 'Nous préparons votre prix.' },
+  quoted: { label: 'Devis envoyé', tone: 'sky', aide: 'À vous de répondre.' },
+  accepted: { label: 'Accepté', tone: 'ok', aide: 'La commande est lancée.' },
+  declined: { label: 'Refusé', tone: 'bad', aide: 'Vous avez décliné cette offre.' },
+  expired: { label: 'Expiré', tone: 'bad', aide: 'La validité est passée ; demandez-nous une nouvelle offre.' },
+  cancelled: { label: 'Annulé', tone: 'neutral', aide: 'Ce devis a été retiré.' },
 }

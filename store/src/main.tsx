@@ -8,6 +8,8 @@ import { AdminLogin } from './admin/Login'
 import { AdminOrderDetail } from './admin/OrderDetail'
 import { AdminOrders } from './admin/Orders'
 import { AdminProducts } from './admin/Products'
+import { AdminQuoteDetail } from './admin/QuoteDetail'
+import { AdminQuotes } from './admin/Quotes'
 import { AdminSettings } from './admin/Settings'
 import { Layout } from './components/Layout'
 import './index.css'
@@ -18,6 +20,9 @@ import { Checkout } from './pages/Checkout'
 import { Home } from './pages/Home'
 import { OrderDone } from './pages/OrderDone'
 import { Product } from './pages/Product'
+import { QuoteDone } from './pages/QuoteDone'
+import { QuoteRequest } from './pages/QuoteRequest'
+import { QuoteView } from './pages/QuoteView'
 import { Track } from './pages/Track'
 
 const client = new QueryClient({
@@ -36,6 +41,9 @@ const routeur = createBrowserRouter([
       { path: 'panier', element: <Cart /> },
       { path: 'commande', element: <Checkout /> },
       { path: 'commande/confirmee', element: <OrderDone /> },
+      { path: 'devis', element: <QuoteRequest /> },
+      { path: 'devis/envoye', element: <QuoteDone /> },
+      { path: 'devis/:token', element: <QuoteView /> },
       { path: 'suivi', element: <Track /> },
     ],
   },
@@ -47,6 +55,8 @@ const routeur = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: 'commandes', element: <AdminOrders /> },
       { path: 'commandes/:id', element: <AdminOrderDetail /> },
+      { path: 'devis', element: <AdminQuotes /> },
+      { path: 'devis/:id', element: <AdminQuoteDetail /> },
       { path: 'articles', element: <AdminProducts /> },
       { path: 'reglages', element: <AdminSettings /> },
     ],
