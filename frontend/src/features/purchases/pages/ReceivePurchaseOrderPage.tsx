@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Paperclip, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -10,7 +10,11 @@ import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { usePermission } from '@/hooks/usePermission'
 import { cn, formatNumber } from '@/lib/utils'
-import { usePurchaseOrder, useReceivePurchaseOrder } from '../hooks'
+import { useAttachDeliveryNote, usePurchaseOrder, useReceivePurchaseOrder } from '../hooks'
+
+/** Types acceptés pour le bon de livraison : un PDF ou une photo du papier. */
+const TYPES_BON_LIVRAISON = 'application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif'
+const TAILLE_MAX_BON_LIVRAISON = 15 * 1024 * 1024
 import type { PaymentStatus, PurchaseOrderLine, ReceivePurchaseOrderLineInput } from '../api/purchaseOrdersApi'
 
 interface ReceiveLineState {
@@ -59,6 +63,22 @@ export function ReceivePurchaseOrderPage() {
   const orderId = id ? Number(id) : 0
   const { data: order, isLoading } = usePurchaseOrder(orderId)
   const receiveMutation = useReceivePurchaseOrder()
+  const attachMutation = useAttachDeliveryNote()
+
+  /** Bon de livraison du fournisseur à joindre au BR (PDF ou photo), facultatif. */
+  const [deliveryNote, setDeliveryNote] = useState<File | null>(null)
+  const [deliveryNoteError, setDeliveryNoteError] = useState<string | null>(null)
+  const deliveryNoteInputRef = useRef<HTMLInputElement>(null)
+
+  const handleDeliveryNoteChange = (file: File | null) => {
+    setDeliveryNoteError(null)
+    if (file && file.size > TAILLE_MAX_BON_LIVRAISON) {
+      setDeliveryNote(null)
+      setDeliveryNoteError('Le fichier dépasse 15 Mo : réduisez la photo ou le PDF.')
+      return
+    }
+    setDeliveryNote(file)
+  }
 
   const [receivedAt, setReceivedAt] = useState(() => new Date().toISOString().slice(0, 10))
   const [invoiceNumber, setInvoiceNumber] = useState('')
@@ -217,6 +237,21 @@ export function ReceivePurchaseOrderPage() {
           lines: payloadLines,
         },
       })
+      // Le BR existe désormais : le bon de livraison s'y accroche dans la
+      // foulée. S'il ne passe pas, la réception n'est pas perdue pour autant,
+      // on envoie sur sa fiche où il peut être joint à nouveau.
+      if (deliveryNote) {
+        try {
+          await attachMutation.mutateAsync({ id: receipt.id, file: deliveryNote })
+        } catch (error) {
+          console.error('Failed to attach the supplier delivery note:', error)
+          window.alert(
+            `La réception ${receipt.number} est enregistrée, mais le bon de livraison n'a pas pu être joint. Vous pouvez le joindre depuis la fiche du bon de réception.`,
+          )
+          navigate(`/goods-receipts/${receipt.id}`)
+          return
+        }
+      }
       navigate('/goods-receipts', { state: { createdReceipt: receipt.number } })
     } catch (error) {
       console.error('Failed to receive purchase order:', error)
@@ -325,6 +360,44 @@ export function ReceivePurchaseOrderPage() {
               placeholder="Remarques sur la livraison…"
               rows={2}
             />
+          </Field>
+
+          {/* Le bon de livraison du fournisseur : le papier qui accompagne la
+              marchandise. Une photo suffit, c'est le cas le plus courant. */}
+          <Field label="Bon de livraison du fournisseur (facultatif)" htmlFor="delivery-note">
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                ref={deliveryNoteInputRef}
+                id="delivery-note"
+                type="file"
+                accept={TYPES_BON_LIVRAISON}
+                className="hidden"
+                onChange={(e) => handleDeliveryNoteChange(e.target.files?.[0] ?? null)}
+              />
+              <Button type="button" variant="outline" size="sm" onClick={() => deliveryNoteInputRef.current?.click()}>
+                <Paperclip className="h-4 w-4" />
+                {deliveryNote ? 'Changer le fichier' : 'Joindre un PDF ou une photo'}
+              </Button>
+              {deliveryNote ? (
+                <span className="flex items-center gap-2 rounded border border-line bg-bg px-2 py-1 text-xs text-ink">
+                  <span className="max-w-[18rem] truncate" title={deliveryNote.name}>{deliveryNote.name}</span>
+                  <span className="text-faint">{(deliveryNote.size / 1024 / 1024).toFixed(1)} Mo</span>
+                  <button
+                    type="button"
+                    aria-label="Retirer le fichier"
+                    onClick={() => {
+                      handleDeliveryNoteChange(null)
+                      if (deliveryNoteInputRef.current) deliveryNoteInputRef.current.value = ''
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5 text-muted" />
+                  </button>
+                </span>
+              ) : (
+                <span className="text-xs text-muted">PDF ou image (JPG, PNG, HEIC), 15 Mo maximum. Téléchargeable ensuite depuis le bon de réception.</span>
+              )}
+            </div>
+            {deliveryNoteError ? <p className="mt-1 text-xs text-bad">{deliveryNoteError}</p> : null}
           </Field>
 
           {mutationError ? (
@@ -554,7 +627,7 @@ export function ReceivePurchaseOrderPage() {
                 Annuler
               </Button>
               <Button type="button" onClick={handleSubmit} disabled={!canSubmit}>
-                {receiveMutation.isPending ? 'Réception en cours…' : 'Valider la réception'}
+                {receiveMutation.isPending || attachMutation.isPending ? 'Réception en cours…' : 'Valider la réception'}
               </Button>
             </div>
           </div>

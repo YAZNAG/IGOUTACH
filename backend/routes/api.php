@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\AgentImagesController;
 use App\Http\Controllers\Api\V1\AssistantController;
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\CustomerCreditPdfController;
+use App\Http\Controllers\Api\V1\GoodsReceiptDeliveryNoteController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\CashRemittanceController;
@@ -72,8 +73,6 @@ Route::prefix('store')->middleware('throttle:120,1')->group(function () {
     Route::get('products/{id}', [StoreCatalogController::class, 'product'])->whereNumber('id');
     Route::post('orders', [StoreOrderController::class, 'store'])->middleware('throttle:6,1');
     Route::post('orders/track', [StoreOrderController::class, 'track'])->middleware('throttle:20,1');
-});
-
 
     // Devis : demande, consultation par le lien recu, reponse du client.
     Route::post('quotes', [StoreQuoteController::class, 'store'])->middleware('throttle:4,1');
@@ -81,6 +80,8 @@ Route::prefix('store')->middleware('throttle:120,1')->group(function () {
     Route::get('quotes/{token}', [StoreQuoteController::class, 'show'])->where('token', '[A-Za-z0-9]{10,64}');
     Route::post('quotes/{token}/accept', [StoreQuoteController::class, 'accept'])->middleware('throttle:10,1')->where('token', '[A-Za-z0-9]{10,64}');
     Route::post('quotes/{token}/decline', [StoreQuoteController::class, 'decline'])->middleware('throttle:10,1')->where('token', '[A-Za-z0-9]{10,64}');
+});
+
 Route::prefix('v1')->group(function () {
     // Authentification (login / logout)
     require __DIR__.'/auth.php';
@@ -289,17 +290,21 @@ Route::prefix('v1')->group(function () {
         Route::post('purchase-orders/{purchaseOrder}/approve', [PurchaseOrderController::class, 'approve'])->middleware('can:purchase.approve');
         Route::post('purchase-orders/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->middleware('can:receipt.create');
         Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->middleware('can:purchase.create');
+        Route::delete('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->middleware('can:purchase.create');
 
         // Achats — bons de réception
         Route::get('goods-receipts', [GoodsReceiptController::class, 'index'])->middleware('can:receipt.view');
         Route::get('goods-receipts/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->middleware('can:receipt.view');
         Route::get('goods-receipts/{goodsReceipt}/pdf', [GoodsReceiptController::class, 'pdf'])->middleware('can:receipt.view');
+        // Bon de livraison du fournisseur (PDF ou photo) joint à la réception.
+        Route::get('goods-receipts/{goodsReceipt}/delivery-note', [GoodsReceiptDeliveryNoteController::class, 'show'])->middleware('can:receipt.view');
+        Route::post('goods-receipts/{goodsReceipt}/delivery-note', [GoodsReceiptDeliveryNoteController::class, 'store'])->middleware('can:receipt.create');
+        Route::delete('goods-receipts/{goodsReceipt}/delivery-note', [GoodsReceiptDeliveryNoteController::class, 'destroy'])->middleware('can:receipt.create');
 
         // Crédits fournisseurs : reste à payer + règlements (total ou partiel)
         Route::get('supplier-credits', [SupplierCreditController::class, 'index'])->middleware('can:receipt.view');
         Route::get('supplier-payments', [SupplierCreditController::class, 'paymentsJournal'])->middleware('can:receipt.view');
         Route::get('suppliers/{supplierId}/payments', [SupplierCreditController::class, 'supplierPayments'])->whereNumber('supplierId')->middleware('can:receipt.view');
-        Route::delete('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->middleware('can:purchase.create');
         Route::get('goods-receipts/{goodsReceipt}/payments', [SupplierCreditController::class, 'payments'])->middleware('can:receipt.view');
         Route::post('goods-receipts/{goodsReceipt}/pay', [SupplierCreditController::class, 'pay'])->middleware('can:receipt.pay');
 
@@ -364,13 +369,13 @@ Route::prefix('v1')->group(function () {
         Route::patch('cheques/{cheque}/status', [ChequeController::class, 'updateStatus'])->middleware('can:cheque.manage');
         Route::delete('cheques/{cheque}', [ChequeController::class, 'destroy'])->middleware('can:cheque.manage');
         Route::get('customers/{customer}/statement', [PaymentController::class, 'statement'])->middleware('can:customer.view');
+        // Relevé de crédit imprimable : factures dues et articles emportés.
+        Route::get('customers/{customer}/credit-pdf', CustomerCreditPdfController::class)->middleware('can:credit.view');
         // Factures encore dues : sert à choisir celles qu'un règlement solde.
         // Retrait d'une ecriture saisie a la main ; le controleur refuse
         // celles adossees a un document.
         Route::delete('customer-ledger-entries/{entry}', [PaymentController::class, 'destroyLedgerEntry'])->middleware('can:credit.view');
         Route::get('customers/{customer}/open-invoices', [PaymentController::class, 'openInvoices'])->middleware('can:payment.create');
-        // Relevé de crédit imprimable : factures dues et articles emportés.
-        Route::get('customers/{customer}/credit-pdf', CustomerCreditPdfController::class)->middleware('can:credit.view');
         Route::get('customers/{customer}/overview', [CustomerController::class, 'overview'])->middleware('can:customer.view');
         // Activite chiffree par entite : le classement du tableau de bord dit
         // qui pese le plus, ces series disent comment chacun a evolue.
@@ -454,6 +459,11 @@ Route::prefix('v1')->group(function () {
             Route::delete('orders/{order}/payments/{payment}', [StoreAdminController::class, 'deletePayment']);
             Route::get('products', [StoreAdminController::class, 'products']);
             Route::patch('products/{product}', [StoreAdminController::class, 'updateProduct']);
+            Route::get('quotes', [StoreAdminController::class, 'quotes']);
+            Route::get('quotes/{quote}', [StoreAdminController::class, 'quote']);
+            Route::put('quotes/{quote}', [StoreAdminController::class, 'priceQuote']);
+            Route::post('quotes/{quote}/send', [StoreAdminController::class, 'sendQuote']);
+            Route::post('quotes/{quote}/cancel', [StoreAdminController::class, 'cancelQuote']);
             Route::get('settings', [StoreAdminController::class, 'settings']);
             Route::put('settings', [StoreAdminController::class, 'updateSettings']);
         });
@@ -462,11 +472,6 @@ Route::prefix('v1')->group(function () {
         Route::get('assistant/modules', [AssistantController::class, 'modules'])->middleware('can:stock.view_global');
         Route::post('assistant/ask', [AssistantController::class, 'ask'])->middleware('can:stock.view_global');
         Route::get('assistant/conversations', [AssistantController::class, 'conversations'])->middleware('can:stock.view_global');
-            Route::get('quotes', [StoreAdminController::class, 'quotes']);
-            Route::get('quotes/{quote}', [StoreAdminController::class, 'quote']);
-            Route::put('quotes/{quote}', [StoreAdminController::class, 'priceQuote']);
-            Route::post('quotes/{quote}/send', [StoreAdminController::class, 'sendQuote']);
-            Route::post('quotes/{quote}/cancel', [StoreAdminController::class, 'cancelQuote']);
         Route::delete('assistant/conversations', [AssistantController::class, 'destroyAll'])->middleware('can:stock.view_global');
         Route::get('assistant/conversations/{conversation}', [AssistantController::class, 'conversation'])->middleware('can:stock.view_global');
         Route::delete('assistant/conversations/{conversation}', [AssistantController::class, 'destroyConversation'])->middleware('can:stock.view_global');

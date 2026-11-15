@@ -1,5 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  attachDeliveryNote,
+  removeDeliveryNote,
   fetchGoodsReceipt,
   fetchGoodsReceipts,
   type GoodsReceipt,
@@ -9,9 +11,9 @@ import {
 import {
   cancelPurchaseOrder,
   createPurchaseOrder,
+  deletePurchaseOrder,
   fetchBelowThresholdProducts,
   fetchPurchaseOrder,
-  deletePurchaseOrder,
   fetchPurchaseOrders,
   receivePurchaseOrder,
   searchProducts,
@@ -94,8 +96,6 @@ export function useCancelPurchaseOrder() {
   })
 }
 
-export function useUpdatePurchaseOrder() {
-  const queryClient = useQueryClient()
 export function useDeletePurchaseOrder() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -107,6 +107,8 @@ export function useDeletePurchaseOrder() {
   })
 }
 
+export function useUpdatePurchaseOrder() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }: { id: number; input: UpdatePurchaseOrderInput }) =>
       updatePurchaseOrder(id, input),
@@ -198,5 +200,28 @@ export function useBelowThresholdProducts(warehouseId: number) {
     queryKey: [...BELOW_THRESHOLD_KEY, warehouseId],
     queryFn: () => fetchBelowThresholdProducts(warehouseId),
     enabled: !!warehouseId,
+  })
+}
+
+/** Joint le bon de livraison du fournisseur à une réception. */
+export function useAttachDeliveryNote() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) => attachDeliveryNote(id, file),
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: RECEIPTS_KEY })
+      queryClient.invalidateQueries({ queryKey: [...RECEIPT_DETAIL_KEY, id] })
+    },
+  })
+}
+
+export function useRemoveDeliveryNote() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => removeDeliveryNote(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: RECEIPTS_KEY })
+      queryClient.invalidateQueries({ queryKey: [...RECEIPT_DETAIL_KEY, id] })
+    },
   })
 }

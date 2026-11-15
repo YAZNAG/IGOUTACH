@@ -50,6 +50,10 @@ final class GoodsReceipt extends Model
         'payment_status',
         'amount_paid',
         'notes',
+        // Bon de livraison du fournisseur joint (PDF ou photo), sur le disque privé.
+        'supplier_note_path',
+        'supplier_note_name',
+        'supplier_note_mime',
         'created_by',
     ];
 
@@ -69,6 +73,12 @@ final class GoodsReceipt extends Model
     /**
      * Montant total HT du bon (somme des lignes).
      */
+    /** Un bon de livraison du fournisseur est-il joint à cette réception ? */
+    public function aUnBonDeLivraison(): bool
+    {
+        return $this->supplier_note_path !== null && $this->supplier_note_path !== '';
+    }
+
     public function totalAmount(): float
     {
         return round(

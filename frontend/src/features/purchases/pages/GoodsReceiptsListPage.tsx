@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Download, Eye, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Eye, Paperclip, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useWarehouseOptions } from '@/features/access/hooks'
 import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
-import { downloadFile } from '@/lib/download'
+import { downloadFile, openFile } from '@/lib/download'
 import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
 import { useGoodsReceipts } from '../hooks'
 import type { GoodsReceiptFilters } from '../api/goodsReceiptsApi'
@@ -260,6 +260,23 @@ export function GoodsReceiptsListPage() {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
+                          {/* Le bon de livraison du fournisseur, quand il a été
+                              joint : la pièce qui tranche un litige de quantités. */}
+                          {receipt.supplier_delivery_note ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                openFile(
+                                  `/goods-receipts/${receipt.id}/delivery-note`,
+                                  receipt.supplier_delivery_note?.name ?? `bon-livraison-${receipt.number}`,
+                                ).catch(() => window.alert("Le bon de livraison n'a pas pu être ouvert."))
+                              }
+                              title={`Bon de livraison fournisseur : ${receipt.supplier_delivery_note.name ?? ''}`}
+                            >
+                              <Paperclip className="h-4 w-4 text-sky" />
+                            </Button>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

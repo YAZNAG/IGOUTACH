@@ -39,6 +39,13 @@ final class GoodsReceiptResource extends JsonResource
             ],
             'received_at' => $this->received_at?->format('Y-m-d H:i:s'),
             'invoice_number' => $this->invoice_number,
+            // Bon de livraison du fournisseur joint : l'écran propose de le
+            // télécharger (PDF) ou de l'afficher (photo).
+            'supplier_delivery_note' => $this->aUnBonDeLivraison() ? [
+                'name' => $this->supplier_note_name,
+                'mime' => $this->supplier_note_mime,
+                'is_image' => str_starts_with((string) $this->supplier_note_mime, 'image/'),
+            ] : null,
             'lines_count' => (int) ($this->lines_count ?? $this->lines()->count()),
             'total_quantity' => (int) ($this->total_quantity ?? 0),
             'total_amount' => round((float) ($this->total_amount ?? 0), 2),

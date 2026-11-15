@@ -57,3 +57,42 @@ export async function openPdf(url: string, filename: string): Promise<void> {
     throw e
   }
 }
+
+/**
+ * Ouvre un fichier de l'API dans un nouvel onglet en respectant son type
+ * (PDF ou image), sinon le télécharge. Même précaution qu'openPdf pour
+ * l'onglet : ouvert avant la requête, pour ne pas être pris pour une
+ * fenêtre surgissante.
+ */
+export async function openFile(url: string, filename: string): Promise<void> {
+  const onglet = window.open('', '_blank')
+  if (onglet) {
+    onglet.document.title = filename
+    onglet.document.body.style.fontFamily = 'sans-serif'
+    onglet.document.body.textContent = 'Préparation du document…'
+  }
+
+  try {
+    const response = await api.get<Blob>(url, { responseType: 'blob' })
+    const type = String(response.headers['content-type'] ?? 'application/octet-stream').split(';')[0]
+    const blob = new Blob([response.data], { type })
+    const objectUrl = URL.createObjectURL(blob)
+    const affichable = type === 'application/pdf' || type.startsWith('image/')
+
+    if (onglet && !onglet.closed && affichable) {
+      onglet.location.href = objectUrl
+    } else {
+      onglet?.close()
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    }
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+  } catch (e) {
+    onglet?.close()
+    throw e
+  }
+}

@@ -1,5 +1,12 @@
-import { api } from '@/lib/api'
+import { api, ensureCsrfCookie } from '@/lib/api'
 import type { NamedRef, PaymentStatus, PurchaseOrderListMeta } from './purchaseOrdersApi'
+
+/** Bon de livraison du fournisseur joint à la réception (PDF ou photo). */
+export interface SupplierDeliveryNote {
+  name: string | null
+  mime: string | null
+  is_image: boolean
+}
 
 export interface GoodsReceiptSummary {
   id: number
@@ -19,6 +26,8 @@ export interface GoodsReceiptSummary {
   payment_status: PaymentStatus
   amount_paid: number
   remaining_amount: number
+  /** Null tant qu'aucun bon de livraison n'a été joint. */
+  supplier_delivery_note?: SupplierDeliveryNote | null
   created_at: string | null
 }
 
@@ -65,4 +74,20 @@ export async function fetchGoodsReceipt(id: number): Promise<GoodsReceipt> {
   // Le détail est renvoyé sans wrapper `data` (même convention que purchase-orders).
   const { data } = await api.get<GoodsReceipt>(`/goods-receipts/${id}`)
   return data
+}
+
+/** Joint (ou remplace) le bon de livraison du fournisseur : PDF ou photo. */
+export async function attachDeliveryNote(id: number, file: File): Promise<GoodsReceipt> {
+  await ensureCsrfCookie()
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post<GoodsReceipt>(`/goods-receipts/${id}/delivery-note`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
+}
+
+export async function removeDeliveryNote(id: number): Promise<void> {
+  await ensureCsrfCookie()
+  await api.delete(`/goods-receipts/${id}/delivery-note`)
 }

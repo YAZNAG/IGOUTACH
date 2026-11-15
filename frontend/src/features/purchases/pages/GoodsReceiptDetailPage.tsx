@@ -1,13 +1,26 @@
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download, Eye, Paperclip, Trash2 } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { useRechercheLocale } from '@/hooks/useRechercheLocale'
-import { downloadFile } from '@/lib/download'
+import { usePermission } from '@/hooks/usePermission'
+import { downloadFile, openFile } from '@/lib/download'
 import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
-import { useGoodsReceipt } from '../hooks'
+import { useAttachDeliveryNote, useGoodsReceipt, useRemoveDeliveryNote } from '../hooks'
+
+const TYPES_BON_LIVRAISON = 'application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif'
+
+function apiErrorMessage(error: unknown): string | null {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: string } } }).response
+    if (response?.data?.message) return response.data.message
+  }
+  return null
+}
 
 function formatMoney(value: number): string {
   return value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -19,6 +32,42 @@ export function GoodsReceiptDetailPage() {
 
   const receiptId = id ? Number(id) : 0
   const { data: receipt, isLoading } = useGoodsReceipt(receiptId)
+  const can = usePermission()
+
+  // Bon de livraison du fournisseur : se joint, se remplace, se retire ici,
+  // après coup — la réception n'a pas toujours le papier sous la main.
+  const attachMutation = useAttachDeliveryNote()
+  const removeMutation = useRemoveDeliveryNote()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const [noteError, setNoteError] = useState<string | null>(null)
+
+  const handleAttach = async (file: File | null) => {
+    if (!file) return
+    setNoteError(null)
+    if (file.size > 15 * 1024 * 1024) {
+      setNoteError('Le fichier dépasse 15 Mo : réduisez la photo ou le PDF.')
+      return
+    }
+    try {
+      await attachMutation.mutateAsync({ id: receiptId, file })
+    } catch (error) {
+      setNoteError(apiErrorMessage(error) ?? "Le bon de livraison n'a pas pu être joint.")
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleRemove = async () => {
+    setNoteError(null)
+    try {
+      await removeMutation.mutateAsync(receiptId)
+    } catch (error) {
+      setNoteError(apiErrorMessage(error) ?? "Le bon de livraison n'a pas pu être retiré.")
+    } finally {
+      setConfirmRemove(false)
+    }
+  }
 
   // Un bon de reception peut porter des dizaines de lignes. Le hook est
   // appele ici, avant les retours anticipes : l'ordre des hooks ne doit pas
@@ -125,6 +174,113 @@ export function GoodsReceiptDetailPage() {
           ) : null}
         </CardBody>
       </Card>
+
+      {/* Le bon de livraison du fournisseur : la pièce qui accompagne la
+          marchandise. Gardée avec le BR, elle tranche un litige de quantités
+          ou de prix des mois plus tard. */}
+      <Card>
+        <CardHeader
+          title="Bon de livraison du fournisseur"
+          hint={receipt.supplier_delivery_note ? (receipt.supplier_delivery_note.is_image ? 'Photo jointe' : 'PDF joint') : 'Aucun document joint'}
+        />
+        <CardBody className="space-y-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={TYPES_BON_LIVRAISON}
+            className="hidden"
+            aria-label="Choisir le bon de livraison du fournisseur"
+            onChange={(e) => handleAttach(e.target.files?.[0] ?? null)}
+          />
+          {receipt.supplier_delivery_note ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-2 rounded border border-line bg-bg px-3 py-1.5 text-sm text-ink">
+                <Paperclip className="h-4 w-4 text-sky" />
+                <span className="max-w-[22rem] truncate" title={receipt.supplier_delivery_note.name ?? ''}>
+                  {receipt.supplier_delivery_note.name ?? 'bon-livraison'}
+                </span>
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  openFile(
+                    `/goods-receipts/${receipt.id}/delivery-note`,
+                    receipt.supplier_delivery_note?.name ?? `bon-livraison-${receipt.number}`,
+                  ).catch(() => setNoteError("Le bon de livraison n'a pas pu être ouvert."))
+                }
+              >
+                <Eye className="h-4 w-4" />
+                {receipt.supplier_delivery_note.is_image ? 'Afficher la photo' : 'Afficher le PDF'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  downloadFile(
+                    `/goods-receipts/${receipt.id}/delivery-note`,
+                    receipt.supplier_delivery_note?.name ?? `bon-livraison-${receipt.number}`,
+                  ).catch(() => setNoteError("Le bon de livraison n'a pas pu être téléchargé."))
+                }
+              >
+                <Download className="h-4 w-4" />
+                Télécharger
+              </Button>
+              {can('receipt.create') ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={attachMutation.isPending}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {attachMutation.isPending ? 'Envoi…' : 'Remplacer'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-bad hover:bg-bad-bg"
+                    disabled={removeMutation.isPending}
+                    onClick={() => setConfirmRemove(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Retirer
+                  </Button>
+                </>
+              ) : null}
+            </div>
+          ) : can('receipt.create') ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={attachMutation.isPending}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Paperclip className="h-4 w-4" />
+                {attachMutation.isPending ? 'Envoi…' : 'Joindre un PDF ou une photo'}
+              </Button>
+              <span className="text-xs text-muted">PDF ou image (JPG, PNG, HEIC), 15 Mo maximum.</span>
+            </div>
+          ) : (
+            <p className="text-sm text-muted">Aucun bon de livraison n'a été joint à cette réception.</p>
+          )}
+          {noteError ? (
+            <p className="rounded border border-line bg-bad-bg px-3 py-2 text-sm text-bad">{noteError}</p>
+          ) : null}
+        </CardBody>
+      </Card>
+
+      <ConfirmDialog
+        open={confirmRemove}
+        title="Retirer le bon de livraison"
+        message="Le fichier joint sera supprimé définitivement. Vous pourrez en joindre un autre ensuite."
+        confirmLabel="Retirer"
+        danger
+        isPending={removeMutation.isPending}
+        onConfirm={handleRemove}
+        onCancel={() => setConfirmRemove(false)}
+      />
 
       <Card>
         <CardHeader
