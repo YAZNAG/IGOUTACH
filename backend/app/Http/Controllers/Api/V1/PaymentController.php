@@ -152,8 +152,14 @@ final class PaymentController extends Controller
      * Les soldes cumulés suivants sont recalculés : sinon le relevé
      * afficherait des lignes qui ne s'enchaînent plus.
      */
-    public function destroyLedgerEntry(CustomerLedgerEntry $entry, CustomerLedger $ledger): JsonResponse
+    public function destroyLedgerEntry(Request $request, CustomerLedgerEntry $entry, CustomerLedger $ledger): JsonResponse
     {
+        // L'écriture appartient au client, donc à son lieu.
+        $client = Customer::query()->find($entry->customer_id);
+        if ($client !== null) {
+            $this->assertClientDuLieu($request, $client);
+        }
+
         if ($entry->reference_type !== null) {
             $origine = match (true) {
                 str_contains((string) $entry->reference_type, 'Sale') => 'une vente',

@@ -147,11 +147,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
           : null,
       body: Column(
         children: [
-          // Le serveur restreint déjà la liste au créateur : on l'explique.
+          // Le serveur restreint déjà la liste au lieu de l'utilisateur : on l'explique.
           if (!auth.can('customer.view_all'))
             const InfoBanner(
               message:
-                  'Vous voyez uniquement les clients que vous avez créés.',
+                  'Vous voyez uniquement les clients de votre lieu.',
             ),
           AppSearchField(
             controller: _searchController,

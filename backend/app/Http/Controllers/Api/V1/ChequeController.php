@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Payments\Actions\DeclareChequeAction;
 use App\Domain\Payments\Models\Cheque;
+use App\Http\Controllers\Concerns\CloisonneParLieu;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,9 +21,19 @@ use RuntimeException;
  */
 final class ChequeController extends Controller
 {
+    use CloisonneParLieu;
+
     public function index(Request $request): JsonResponse
     {
         $query = Cheque::query()->with(['customer:id,name', 'supplier:id,name']);
+
+        // Hors direction, les chèques reçus d'un client d'un autre lieu ne se
+        // voient pas ; ceux sans client (émis aux fournisseurs) restent communs.
+        $lieu = $this->lieuCloisonne($request);
+        if ($lieu > 0) {
+            $query->where(fn ($q) => $q->whereNull('customer_id')
+                ->orWhereHas('customer', fn ($c) => $c->where('warehouse_id', $lieu)));
+        }
 
         if ($request->filled('instrument')) {
             $query->where('instrument', $request->string('instrument')->value());

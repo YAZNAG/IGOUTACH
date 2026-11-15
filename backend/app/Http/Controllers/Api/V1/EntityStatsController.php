@@ -9,8 +9,10 @@ use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Sales\Models\Sale;
 use App\Domain\Sales\Services\DashboardMetricsService;
 use App\Domain\Warehouses\Models\Warehouse;
+use App\Http\Controllers\Concerns\CloisonneParLieu;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,6 +24,8 @@ use Illuminate\Support\Facades\DB;
  */
 final class EntityStatsController extends Controller
 {
+    use CloisonneParLieu;
+
     public function __construct(private readonly DashboardMetricsService $metrics) {}
 
     /**
@@ -70,8 +74,11 @@ final class EntityStatsController extends Controller
     /**
      * Ce qu'un client achète : série mensuelle, totaux, articles préférés.
      */
-    public function customer(Customer $customer): JsonResponse
+    public function customer(Request $request, Customer $customer): JsonResponse
     {
+        // Les chiffres d'un client d'un autre lieu ne regardent pas ce lieu.
+        $this->refuserHorsLieu($request, $customer);
+
         $serie = $this->metrics->monthlyRevenueFor('customer_id', $customer->id);
 
         return response()->json(['data' => $this->masquerLesCouts([
