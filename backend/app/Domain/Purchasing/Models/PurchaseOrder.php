@@ -149,10 +149,34 @@ final class PurchaseOrder extends Model
 
     /**
      * Vérifier si le bon peut être envoyé.
+     *
+     * Un brouillon sans ligne n'est pas une commande : on le garde pour que
+     * son auteur le reprenne, mais on ne l'envoie pas au fournisseur.
      */
     public function canSend(): bool
     {
-        return $this->status()->first()?->code === 'draft';
+        return $this->status()->first()?->code === 'draft' && $this->nombreDeLignes() > 0;
+    }
+
+    /**
+     * Vérifier si le bon peut être supprimé : seulement ce qui n'a laissé
+     * aucune trace, c'est-à-dire un brouillon ou un bon annulé. Les
+     * empêchements de détail (réception rattachée, articles reçus) sont
+     * vérifiés à la suppression.
+     */
+    public function canDelete(): bool
+    {
+        return in_array($this->status()->first()?->code, ['draft', 'cancelled'], true);
+    }
+
+    /**
+     * Le nombre de lignes, sans requête quand la liste l'a déjà compté.
+     */
+    private function nombreDeLignes(): int
+    {
+        $compte = $this->getAttribute('lines_count');
+
+        return $compte !== null ? (int) $compte : $this->lines()->count();
     }
 
     /**

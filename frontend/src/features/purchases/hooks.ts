@@ -11,6 +11,7 @@ import {
   createPurchaseOrder,
   fetchBelowThresholdProducts,
   fetchPurchaseOrder,
+  deletePurchaseOrder,
   fetchPurchaseOrders,
   receivePurchaseOrder,
   searchProducts,
@@ -95,6 +96,17 @@ export function useCancelPurchaseOrder() {
 
 export function useUpdatePurchaseOrder() {
   const queryClient = useQueryClient()
+export function useDeletePurchaseOrder() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deletePurchaseOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: KEY })
+      queryClient.invalidateQueries({ queryKey: DETAIL_KEY })
+    },
+  })
+}
+
   return useMutation({
     mutationFn: ({ id, input }: { id: number; input: UpdatePurchaseOrderInput }) =>
       updatePurchaseOrder(id, input),

@@ -52,6 +52,8 @@ export interface PurchaseOrderSummary {
   can_approve: boolean
   can_receive: boolean
   can_cancel: boolean
+  /** Brouillon ou bon annulé, sans réception rattachée. */
+  can_delete: boolean
   created_at: string | null
 }
 
@@ -182,6 +184,11 @@ export async function cancelPurchaseOrder(id: number): Promise<PurchaseOrder> {
   await ensureCsrfCookie()
   const { data } = await api.post<PurchaseOrder>(`/purchase-orders/${id}/cancel`)
   return data
+}
+
+export async function deletePurchaseOrder(id: number): Promise<void> {
+  await ensureCsrfCookie()
+  await api.delete(`/purchase-orders/${id}`)
 }
 
 export async function updatePurchaseOrder(id: number, input: UpdatePurchaseOrderInput): Promise<PurchaseOrder> {

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Purchasing\Actions\ApprovePurchaseOrderAction;
 use App\Domain\Purchasing\Actions\CancelPurchaseOrderAction;
 use App\Domain\Purchasing\Actions\CreatePurchaseOrderAction;
+use App\Domain\Purchasing\Actions\DeletePurchaseOrderAction;
 use App\Domain\Purchasing\Actions\ReceiveGoodsAction;
 use App\Domain\Purchasing\Actions\SendPurchaseOrderAction;
 use App\Domain\Purchasing\Actions\UpdatePurchaseOrderAction;
@@ -89,14 +90,16 @@ final class PurchaseOrderController extends Controller
      */
     public function store(Request $request, CreatePurchaseOrderAction $action): JsonResponse
     {
-        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, notes?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
+        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, notes?: string|null, lines?: list<array{product_id: int, quantity: int}>|null} $data */
         $data = $request->validate([
             'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
             'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
             'expected_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            // Un brouillon se commence et se reprend : il peut naître sans
+            // ligne. C'est l'envoi au fournisseur qui en exige.
+            'lines' => ['nullable', 'array'],
+            'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
@@ -107,7 +110,7 @@ final class PurchaseOrderController extends Controller
                 expectedAt: isset($data['expected_at']) && $data['expected_at'] !== null ? new \DateTime($data['expected_at']) : null,
                 notes: $data['notes'] ?? null,
                 createdBy: $request->user()?->id ?? 0,
-                lines: $data['lines'],
+                lines: $data['lines'] ?? [],
             );
 
             return response()->json(
@@ -180,13 +183,13 @@ final class PurchaseOrderController extends Controller
         PurchaseOrder $purchaseOrder,
         UpdatePurchaseOrderAction $action
     ): JsonResponse {
-        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, notes?: string|null, lines: list<array{product_id: int, quantity: int}>} $data */
+        /** @var array{supplier_id: int, warehouse_id: int, expected_at?: string|null, notes?: string|null, lines?: list<array{product_id: int, quantity: int}>|null} $data */
         $data = $request->validate([
             'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
             'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
             'expected_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
-            'lines' => ['required', 'array', 'min:1'],
+            'lines' => ['nullable', 'array'],
             'lines.*.product_id' => ['required', 'integer', 'distinct', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
@@ -198,7 +201,7 @@ final class PurchaseOrderController extends Controller
                 warehouseId: $data['warehouse_id'],
                 expectedAt: isset($data['expected_at']) && $data['expected_at'] !== null ? new \DateTime($data['expected_at']) : null,
                 notes: $data['notes'] ?? null,
-                lines: $data['lines'],
+                lines: $data['lines'] ?? [],
             );
             $order->load(['supplier', 'warehouse', 'status', 'createdBy', 'lines.product']);
 
@@ -284,6 +287,21 @@ final class PurchaseOrderController extends Controller
      * Annule un bon de commande.
      * POST /purchase-orders/{id}/cancel
      */
+    /**
+     * Supprime un bon de commande en brouillon ou annulé.
+     * DELETE /purchase-orders/{id}
+     */
+    public function destroy(PurchaseOrder $purchaseOrder, DeletePurchaseOrderAction $action): JsonResponse
+    {
+        try {
+            $action->execute($purchaseOrder);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(null, 204);
+    }
+
     public function cancel(PurchaseOrder $purchaseOrder, CancelPurchaseOrderAction $action): JsonResponse
     {
         try {

@@ -290,6 +290,7 @@ Route::prefix('v1')->group(function () {
         Route::get('supplier-credits', [SupplierCreditController::class, 'index'])->middleware('can:receipt.view');
         Route::get('supplier-payments', [SupplierCreditController::class, 'paymentsJournal'])->middleware('can:receipt.view');
         Route::get('suppliers/{supplierId}/payments', [SupplierCreditController::class, 'supplierPayments'])->whereNumber('supplierId')->middleware('can:receipt.view');
+        Route::delete('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->middleware('can:purchase.create');
         Route::get('goods-receipts/{goodsReceipt}/payments', [SupplierCreditController::class, 'payments'])->middleware('can:receipt.view');
         Route::post('goods-receipts/{goodsReceipt}/pay', [SupplierCreditController::class, 'pay'])->middleware('can:receipt.pay');
 

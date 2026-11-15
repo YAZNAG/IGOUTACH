@@ -51,6 +51,7 @@ final class PurchaseOrderDetailResource extends JsonResource
             'can_approve' => $this->canApprove(),
             'can_receive' => $this->canReceive(),
             'can_cancel' => $this->canCancel(),
+            'can_delete' => $this->canDelete(),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

@@ -17,8 +17,12 @@ final class SendPurchaseOrderAction
     public function execute(PurchaseOrder $order, bool $requireApproval = false): PurchaseOrder
     {
         return DB::transaction(function () use ($order, $requireApproval): PurchaseOrder {
-            if (! $order->canSend()) {
+            if ($order->status()->first()?->code !== 'draft') {
                 throw new RuntimeException('Seul un bon en brouillon peut être envoyé.');
+            }
+
+            if (! $order->lines()->exists()) {
+                throw new RuntimeException('Ajoutez au moins un article avant d’envoyer le bon de commande.');
             }
 
             $targetStatusCode = $requireApproval ? 'pending_approval' : 'sent';

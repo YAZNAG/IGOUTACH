@@ -88,7 +88,9 @@ export function PurchaseOrderForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!supplierId || !warehouseId || lines.length === 0) {
+    // Le fournisseur et le lieu suffisent : un brouillon se commence et se
+    // reprend. C'est l'envoi au fournisseur qui exigera des articles.
+    if (!supplierId || !warehouseId) {
       return
     }
 
@@ -200,6 +202,13 @@ export function PurchaseOrderForm({
       ) : null}
 
       {/* Lines */}
+      {lines.length === 0 ? (
+        <p className="rounded border border-line bg-bg px-4 py-3 text-sm text-muted">
+          Aucun article pour l’instant. Vous pouvez enregistrer le brouillon tel quel et le compléter plus tard —
+          l’envoi au fournisseur, lui, demandera au moins un article.
+        </p>
+      ) : null}
+
       {lines.length > 0 ? (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-ink">Lignes de commande</label>
@@ -226,7 +235,7 @@ export function PurchaseOrderForm({
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium text-ink">
-                {lines.length} {lines.length === 1 ? 'ligne' : 'lignes'}
+                {lines.length === 0 ? 'Aucune ligne' : `${lines.length} ${lines.length === 1 ? 'ligne' : 'lignes'}`}
               </p>
               <p className="text-sm text-muted">
                 Total: {formatNumber(totalQuantity)} {totalQuantity === 1 ? 'unité' : 'unités'}
@@ -236,10 +245,7 @@ export function PurchaseOrderForm({
               <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
                 Annuler
               </Button>
-              <Button
-                type="submit"
-                disabled={isPending || !supplierId || !warehouseId || lines.length === 0}
-              >
+              <Button type="submit" disabled={isPending || !supplierId || !warehouseId}>
                 {isPending ? 'Enregistrement…' : submitLabel}
               </Button>
             </div>

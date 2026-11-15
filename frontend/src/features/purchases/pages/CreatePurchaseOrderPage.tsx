@@ -39,8 +39,10 @@ export function CreatePurchaseOrderPage() {
 
   const handleSubmit = async (input: CreatePurchaseOrderInput) => {
     try {
-      await createMutation.mutateAsync(input)
-      navigate('/purchase-orders')
+      const order = await createMutation.mutateAsync(input)
+      // On reste sur le bon qu'on vient d'ouvrir : c'est un brouillon, le
+      // travail continue dessus (ajouter des articles, puis l'envoyer).
+      navigate(`/purchase-orders/${order.id}`)
     } catch (error) {
       console.error('Failed to create purchase order:', error)
     }
@@ -49,8 +51,8 @@ export function CreatePurchaseOrderPage() {
   return (
     <PurchaseOrderForm
       title="Nouveau bon de commande"
-      subtitle="Saisie des quantités seules, pas de montants"
-      submitLabel="Enregistrer"
+      subtitle="Enregistré en brouillon : modifiable tant qu’il n’est pas envoyé au fournisseur"
+      submitLabel="Enregistrer le brouillon"
       isPending={createMutation.isPending}
       errorMessage={
         createMutation.isError

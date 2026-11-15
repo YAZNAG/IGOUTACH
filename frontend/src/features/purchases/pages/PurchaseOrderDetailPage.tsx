@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, PackageCheck, Pencil, Send, Trash2 } from 'lucide-react'
+import { ArrowLeft, Ban, Download, PackageCheck, Pencil, Send, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
@@ -9,7 +9,12 @@ import { downloadFile } from '@/lib/download'
 import { usePermission } from '@/hooks/usePermission'
 import { formatNumber } from '@/lib/utils'
 import { PurchaseOrderLineTable } from '../components/PurchaseOrderLineTable'
-import { useCancelPurchaseOrder, usePurchaseOrder, useSendPurchaseOrder } from '../hooks'
+import {
+  useCancelPurchaseOrder,
+  useDeletePurchaseOrder,
+  usePurchaseOrder,
+  useSendPurchaseOrder,
+} from '../hooks'
 
 const STATUS_BADGES: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad' | 'sky' | 'neutral' }> = {
   draft: { label: 'Brouillon', tone: 'neutral' },
@@ -36,10 +41,11 @@ export function PurchaseOrderDetailPage() {
   const orderId = id ? Number(id) : 0
   const { data: order, isLoading } = usePurchaseOrder(orderId)
 
-  const [confirmAction, setConfirmAction] = useState<'send' | 'cancel' | null>(null)
+  const [confirmAction, setConfirmAction] = useState<'send' | 'cancel' | 'delete' | null>(null)
 
   const sendMutation = useSendPurchaseOrder()
   const cancelMutation = useCancelPurchaseOrder()
+  const deleteMutation = useDeletePurchaseOrder()
 
   if (isLoading) {
     return (
@@ -67,10 +73,14 @@ export function PurchaseOrderDetailPage() {
   const canEditOrder = order.status.code === 'draft' && can('purchase.create')
   const canSendOrder = order.can_send && can('purchase.create')
   const canCancelOrder = order.can_cancel && can('purchase.create')
+  const canDeleteOrder = order.can_delete && can('purchase.create')
   const canReceiveOrder = order.can_receive && can('receipt.create')
   const canDownloadPdf = order.status.code !== 'draft' && order.status.code !== 'cancelled'
 
-  const mutationError = apiErrorMessage(sendMutation.error) ?? apiErrorMessage(cancelMutation.error)
+  const mutationError =
+    apiErrorMessage(sendMutation.error) ??
+    apiErrorMessage(cancelMutation.error) ??
+    apiErrorMessage(deleteMutation.error)
 
   const handleSend = async () => {
     await sendMutation.mutateAsync(orderId)
@@ -80,6 +90,17 @@ export function PurchaseOrderDetailPage() {
   const handleCancel = async () => {
     await cancelMutation.mutateAsync(orderId)
     setConfirmAction(null)
+  }
+
+  const handleDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(orderId)
+      // Le bon n'existe plus : rester sur sa fiche n'aurait pas de sens.
+      navigate('/purchase-orders')
+    } catch {
+      // Le refus du serveur s'affiche sous l'en-tête ; la boîte se ferme.
+      setConfirmAction(null)
+    }
   }
 
   const handleDownloadPdf = async () => {
@@ -147,8 +168,19 @@ export function PurchaseOrderDetailPage() {
               onClick={() => setConfirmAction('cancel')}
               className="text-bad hover:bg-bad-bg"
             >
-              <Trash2 className="h-4 w-4" />
+              <Ban className="h-4 w-4" />
               Annuler
+            </Button>
+          ) : null}
+          {canDeleteOrder ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmAction('delete')}
+              className="text-bad hover:bg-bad-bg"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
             </Button>
           ) : null}
         </div>
@@ -238,6 +270,21 @@ export function PurchaseOrderDetailPage() {
         onCancel={() => setConfirmAction(null)}
         confirmLabel="Annuler la commande"
         isPending={cancelMutation.isPending}
+        danger={true}
+      />
+
+      <ConfirmDialog
+        open={confirmAction === 'delete'}
+        title="Supprimer le bon de commande"
+        message={
+          order.status.code === 'draft'
+            ? 'Ce brouillon sera supprimé définitivement, avec ses lignes. Il n’apparaîtra plus nulle part.'
+            : 'Ce bon annulé sera supprimé définitivement, avec ses lignes. Il disparaîtra de l’historique.'
+        }
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmAction(null)}
+        confirmLabel="Supprimer"
+        isPending={deleteMutation.isPending}
         danger={true}
       />
     </div>

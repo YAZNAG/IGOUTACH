@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Download, Eye, Pencil, Plus, Send, Trash2, X } from 'lucide-react'
+import { Ban, ChevronLeft, ChevronRight, Download, Eye, Pencil, Plus, Send, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { downloadFile } from '@/lib/download'
@@ -13,7 +13,12 @@ import { useWarehouseOptions } from '@/features/access/hooks'
 import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { formatDate, formatDateHeure, formatNumber } from '@/lib/utils'
-import { useCancelPurchaseOrder, usePurchaseOrders, useSendPurchaseOrder } from '../hooks'
+import {
+  useCancelPurchaseOrder,
+  useDeletePurchaseOrder,
+  usePurchaseOrders,
+  useSendPurchaseOrder,
+} from '../hooks'
 import type { PurchaseOrderFilters } from '../api/purchaseOrdersApi'
 
 const STATUS_BADGES: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad' | 'sky' | 'neutral' }> = {
@@ -23,6 +28,14 @@ const STATUS_BADGES: Record<string, { label: string; tone: 'ok' | 'warn' | 'bad'
   partially_received: { label: 'Partiellement reçu', tone: 'warn' },
   received: { label: 'Reçu', tone: 'ok' },
   cancelled: { label: 'Annulé', tone: 'bad' },
+}
+
+function apiErrorMessage(error: unknown): string | null {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: string } } }).response
+    if (response?.data?.message) return response.data.message
+  }
+  return null
 }
 
 export function PurchaseOrdersListPage() {
@@ -38,7 +51,8 @@ export function PurchaseOrdersListPage() {
   const [page, setPage] = useState(1)
 
   const [confirmId, setConfirmId] = useState<number | null>(null)
-  const [confirmAction, setConfirmAction] = useState<'send' | 'cancel' | null>(null)
+  const [confirmAction, setConfirmAction] = useState<'send' | 'cancel' | 'delete' | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const filters: PurchaseOrderFilters = {
     search: search || undefined,
@@ -58,6 +72,12 @@ export function PurchaseOrdersListPage() {
 
   const sendMutation = useSendPurchaseOrder()
   const cancelMutation = useCancelPurchaseOrder()
+  const deleteMutation = useDeletePurchaseOrder()
+
+  const closeConfirm = () => {
+    setConfirmId(null)
+    setConfirmAction(null)
+  }
 
   const handleResetFilters = () => {
     setSearch('')
@@ -69,19 +89,19 @@ export function PurchaseOrdersListPage() {
     setPage(1)
   }
 
-  const handleSendConfirm = async () => {
-    if (confirmId && confirmAction === 'send') {
-      await sendMutation.mutateAsync(confirmId)
-      setConfirmId(null)
-      setConfirmAction(null)
-    }
-  }
-
-  const handleCancelConfirm = async () => {
-    if (confirmId && confirmAction === 'cancel') {
-      await cancelMutation.mutateAsync(confirmId)
-      setConfirmId(null)
-      setConfirmAction(null)
+  // Les trois actions échouent pour des raisons métier (bon vide, réception
+  // rattachée…). Le message du serveur est ce qui explique le refus : on
+  // l'affiche plutôt que de laisser la boîte se fermer sans rien dire.
+  const runAction = async (action: 'send' | 'cancel' | 'delete') => {
+    if (!confirmId || confirmAction !== action) return
+    setActionError(null)
+    try {
+      if (action === 'send') await sendMutation.mutateAsync(confirmId)
+      else if (action === 'cancel') await cancelMutation.mutateAsync(confirmId)
+      else await deleteMutation.mutateAsync(confirmId)
+      closeConfirm()
+    } catch (error) {
+      setActionError(apiErrorMessage(error) ?? 'L’opération a échoué. Veuillez réessayer.')
     }
   }
 
@@ -347,6 +367,25 @@ export function PurchaseOrdersListPage() {
                                 }}
                                 title="Annuler"
                               >
+                                <Ban className="h-4 w-4" />
+                              </Button>
+                            ) : null}
+                            {order.can_delete && can('purchase.create') ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-bad hover:bg-bad-bg"
+                                onClick={() => {
+                                  setActionError(null)
+                                  setConfirmId(order.id)
+                                  setConfirmAction('delete')
+                                }}
+                                title={
+                                  order.status.code === 'draft'
+                                    ? 'Supprimer ce brouillon'
+                                    : 'Supprimer ce bon annulé'
+                                }
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             ) : null}
@@ -394,11 +433,8 @@ export function PurchaseOrdersListPage() {
         open={confirmAction === 'send' && confirmId !== null}
         title="Envoyer la commande"
         message="Confirmer l'envoi du bon de commande ? Il sera figé et transmis au fournisseur."
-        onConfirm={handleSendConfirm}
-        onCancel={() => {
-          setConfirmId(null)
-          setConfirmAction(null)
-        }}
+        onConfirm={() => runAction('send')}
+        onCancel={closeConfirm}
         confirmLabel="Envoyer"
         isPending={sendMutation.isPending}
         danger={false}
@@ -408,15 +444,31 @@ export function PurchaseOrdersListPage() {
         open={confirmAction === 'cancel' && confirmId !== null}
         title="Annuler la commande"
         message="Confirmer l'annulation du bon de commande ? Cette action est définitive."
-        onConfirm={handleCancelConfirm}
-        onCancel={() => {
-          setConfirmId(null)
-          setConfirmAction(null)
-        }}
+        onConfirm={() => runAction('cancel')}
+        onCancel={closeConfirm}
         confirmLabel="Annuler la commande"
         isPending={cancelMutation.isPending}
         danger={true}
       />
+
+      <ConfirmDialog
+        open={confirmAction === 'delete' && confirmId !== null}
+        title="Supprimer le bon de commande"
+        message={
+          orders.find((o) => o.id === confirmId)?.status.code === 'draft'
+            ? 'Ce brouillon sera supprimé définitivement, avec ses lignes. Il n’apparaîtra plus nulle part.'
+            : 'Ce bon annulé sera supprimé définitivement, avec ses lignes. Il disparaîtra de l’historique.'
+        }
+        onConfirm={() => runAction('delete')}
+        onCancel={closeConfirm}
+        confirmLabel="Supprimer"
+        isPending={deleteMutation.isPending}
+        danger={true}
+      />
+
+      {actionError ? (
+        <div className="rounded border border-line bg-bad-bg px-4 py-3 text-sm text-bad">{actionError}</div>
+      ) : null}
     </div>
   )
 }
