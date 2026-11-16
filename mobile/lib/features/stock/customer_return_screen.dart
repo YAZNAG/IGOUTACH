@@ -10,6 +10,42 @@ import '../../models/product.dart';
 import '../shared/product_picker.dart';
 import '../shared/warehouse_scope.dart';
 
+/// Une vente qui contient l'article, et ce qu'il reste à retourner dessus.
+class _SaleOption {
+  _SaleOption({
+    required this.saleLineId,
+    required this.reference,
+    required this.date,
+    required this.customer,
+    required this.quantity,
+    required this.unitPrice,
+    required this.returnable,
+  });
+
+  factory _SaleOption.fromJson(Map<String, dynamic> j) => _SaleOption(
+        saleLineId: (j['sale_line_id'] as num).toInt(),
+        reference: (j['reference'] as String?) ?? '—',
+        date: (j['date'] as String?) ?? '',
+        customer: (j['customer'] as String?) ?? 'Client de passage',
+        quantity: (j['quantity'] as num?)?.toInt() ?? 0,
+        unitPrice: (j['unit_price'] as num?)?.toDouble() ?? 0,
+        returnable: (j['returnable'] as num?)?.toInt() ?? 0,
+      );
+
+  final int saleLineId;
+  final String reference;
+  final String date;
+  final String customer;
+  final int quantity;
+  final double unitPrice;
+  final int returnable;
+
+  String get label =>
+      '$reference · ${formatDateTexte(date)} · $customer · '
+      '$quantity × ${formatMoney(unitPrice)}'
+      '${returnable == 0 ? ' · tout retourné' : returnable < quantity ? ' · reste $returnable' : ''}';
+}
+
 /// Ligne de retour en cours de saisie.
 class _ReturnLine {
   _ReturnLine({required this.product});
@@ -19,6 +55,15 @@ class _ReturnLine {
 
   /// `resellable` (remis en stock) ou `defective` (tracé puis sorti en SAV).
   String condition = 'resellable';
+
+  /// Les ventes confirmées qui contiennent l'article (null tant que ça charge).
+  List<_SaleOption>? sales;
+
+  /// La vente d'où revient l'article : elle fixe le prix remboursé et le
+  /// maximum retournable. Null = retour sans vente rattachée.
+  _SaleOption? sale;
+
+  bool get depasse => sale != null && quantity > sale!.returnable;
 }
 
 /// Retour client : remise en stock d'articles rendus par un client.
@@ -74,7 +119,47 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
       setState(() => existing.quantity++);
       return;
     }
-    setState(() => _lines.add(_ReturnLine(product: product)));
+    final line = _ReturnLine(product: product);
+    setState(() => _lines.add(line));
+    _loadSales(line);
+  }
+
+  /// Les ventes qui contiennent l'article, la plus récente d'abord : la
+  /// première encore retournable est proposée d'office.
+  Future<void> _loadSales(_ReturnLine line) async {
+    line
+      ..sales = null
+      ..sale = null;
+    try {
+      final r = await _api.dio.get<Map<String, dynamic>>(
+        '/customer-returns/sales',
+        queryParameters: {
+          'product_id': line.product.id,
+          if (_scope?.selectedId != null) 'warehouse_id': _scope!.selectedId,
+        },
+      );
+      final rows = (r.data?['data'] as List<dynamic>? ?? const [])
+          .map((e) => _SaleOption.fromJson(e as Map<String, dynamic>))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        line.sales = rows;
+        line.sale = rows.where((v) => v.returnable > 0).firstOrNull;
+        if (line.sale != null && line.quantity > line.sale!.returnable) {
+          line.quantity = line.sale!.returnable;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => line.sales = const []);
+    }
+  }
+
+  /// Le lieu change : les ventes proposées aussi.
+  void _reloadAllSales() {
+    for (final line in _lines) {
+      _loadSales(line);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -113,6 +198,13 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
       showErrorSnack(messenger, 'Ajoutez au moins un article.');
       return;
     }
+    if (_lines.any((l) => l.depasse)) {
+      showErrorSnack(
+        messenger,
+        'Une quantité dépasse ce que la vente contenait.',
+      );
+      return;
+    }
 
     setState(() => _saving = true);
 
@@ -133,6 +225,7 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
                     'product_id': l.product.id,
                     'quantity': l.quantity,
                     'condition': l.condition,
+                    if (l.sale != null) 'sale_line_id': l.sale!.saleLineId,
                   })
               .toList(),
         },
@@ -169,6 +262,10 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
 
     final scope = _scope;
     final totalQuantity = _lines.fold<int>(0, (sum, l) => sum + l.quantity);
+    final montantRendu = _lines.fold<double>(
+      0,
+      (sum, l) => sum + (l.sale == null ? 0 : l.quantity * l.sale!.unitPrice),
+    );
 
     return PopScope(
       canPop: false,
@@ -207,11 +304,14 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
                                     ),
                                   )
                                   .toList(),
-                              onChanged: (value) => setState(
-                                () => _scope = scope.copyWith(
-                                  selectedId: value,
-                                ),
-                              ),
+                              onChanged: (value) {
+                                setState(
+                                  () => _scope = scope.copyWith(
+                                    selectedId: value,
+                                  ),
+                                );
+                                _reloadAllSales();
+                              },
                             ),
                           ),
                         )
@@ -293,8 +393,10 @@ class _CustomerReturnScreenState extends State<CustomerReturnScreen> {
                 loading: _saving,
                 summaryLabel: '${_lines.length} article'
                     '${_lines.length > 1 ? 's' : ''}',
-                summaryValue: '${formatQuantity(totalQuantity)} unité'
-                    '${totalQuantity > 1 ? 's' : ''}',
+                summaryValue: montantRendu > 0
+                    ? '${formatQuantity(totalQuantity)} u. · ${formatMoney(montantRendu)}'
+                    : '${formatQuantity(totalQuantity)} unité'
+                        '${totalQuantity > 1 ? 's' : ''}',
                 onPressed: _submit,
               ),
       ),
@@ -363,24 +465,106 @@ class _LineCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            // La vente d'origine : elle fixe le prix remboursé, le maximum
+            // retournable et ce que le bénéfice doit retirer.
+            if (line.sales == null)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Text(
+                  'Recherche des ventes…',
+                  style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                ),
+              )
+            else if (line.sales!.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Text(
+                  'Aucune vente confirmée ne contient cet article : '
+                  'retour sans vente rattachée.',
+                  style: TextStyle(fontSize: 13, height: 1.3, color: AppTheme.warning),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: DropdownButtonFormField<int>(
+                  initialValue: line.sale?.saleLineId ?? 0,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Vente d\'origine',
+                    prefixIcon: Icon(Icons.receipt_long_outlined),
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: 0,
+                      child: Text('— Sans vente rattachée —'),
+                    ),
+                    ...line.sales!.map(
+                      (v) => DropdownMenuItem(
+                        value: v.saleLineId,
+                        enabled: v.returnable > 0,
+                        child: Text(
+                          v.label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: v.returnable > 0 ? null : AppTheme.textMuted,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    line.sale = line.sales!
+                        .where((v) => v.saleLineId == value)
+                        .firstOrNull;
+                    if (line.sale != null && line.quantity > line.sale!.returnable) {
+                      line.quantity = line.sale!.returnable;
+                    }
+                    onChanged();
+                  },
+                ),
+              ),
             Row(
               children: [
                 QuantityStepper(
+                  key: ValueKey('q-${line.sale?.saleLineId ?? 0}-${line.quantity}'),
                   quantity: line.quantity,
                   onChanged: (value) {
-                    line.quantity = value;
+                    final max = line.sale?.returnable;
+                    line.quantity = max != null && value > max ? max : value;
                     onChanged();
                   },
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'unité(s) rendue(s)',
-                    style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
+                    line.sale == null
+                        ? 'unité(s) rendue(s)'
+                        : 'max ${line.sale!.returnable} · '
+                            '${formatMoney(line.quantity * line.sale!.unitPrice)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: line.depasse ? AppTheme.danger : AppTheme.textMuted,
+                    ),
                   ),
                 ),
               ],
             ),
+            if (line.sale != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  'Vendu à ${formatMoney(line.sale!.unitPrice)} l\'unité à '
+                  '${line.sale!.customer}.',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 1.3,
+                    color: AppTheme.textMuted,
+                  ),
+                ),
+              ),
             const SizedBox(height: 12),
             // Sur sa propre ligne : deux libellés lisibles tiennent sans
             // être rognés, même sur un écran de 360 dp.
