@@ -491,6 +491,7 @@ Route::prefix('v1')->group(function () {
         Route::get('reports/dormant-products', [ReportController::class, 'dormantProducts'])->middleware('can:report.consolidated');
         Route::get('reports/breakdown', [ReportController::class, 'breakdown'])->middleware('can:report.consolidated');
         Route::get('reports/margins', [ReportController::class, 'margins'])->middleware('can:report.consolidated');
+        Route::get('reports/profit-by-product', [ReportController::class, 'profitByProduct'])->middleware('can:report.consolidated');
 
         // Lieux — types (référentiel) et lieux
         Route::get('warehouse-types', [WarehouseTypeController::class, 'index'])->middleware('can:warehouse.view');

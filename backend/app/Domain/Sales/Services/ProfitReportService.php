@@ -163,6 +163,63 @@ final class ProfitReportService
     }
 
     /**
+     * Tous les articles vendus sur la période, sans limite, avec leur bénéfice.
+     *
+     * Le classement « par article » ne garde que les meilleurs ; ici on veut
+     * la liste entière, pour la fouiller : un article qui se vend à perte ne
+     * figure jamais dans un palmarès, et c'est justement lui qu'on cherche.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function tousLesArticles(string $du, string $au, int $lieu = 0, string $recherche = ''): array
+    {
+        $lignes = $this->lignes($du, $au)
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->when($lieu > 0, fn ($q) => $q->where('sales.warehouse_id', $lieu))
+            ->when($recherche !== '', function ($q) use ($recherche): void {
+                $terme = '%'.$recherche.'%';
+                $q->where(fn ($w) => $w->where('products.sku', 'like', $terme)->orWhere('products.name', 'like', $terme));
+            })
+            ->groupBy('products.id', 'products.sku', 'products.name', 'products.cost_price', 'categories.name')
+            ->orderByDesc('profit')
+            ->get([
+                'products.id as product_id',
+                'products.sku',
+                'products.name as product_name',
+                'categories.name as category',
+                DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                DB::raw('SUM(sale_lines.quantity) as quantity'),
+                DB::raw('ROUND(products.cost_price, 2) as unit_cost'),
+                ...$this->mesures(),
+            ]);
+
+        $sortie = [];
+        foreach ($lignes as $r) {
+            $ca = (float) $r->revenue;
+            $benefice = (float) $r->profit;
+            $qte = (int) $r->quantity;
+            $sortie[] = [
+                'product_id' => (int) $r->product_id,
+                'sku' => (string) $r->sku,
+                'name' => (string) $r->product_name,
+                'category' => $r->category !== null ? (string) $r->category : null,
+                'documents' => (int) $r->documents,
+                'quantity' => $qte,
+                'revenue' => $ca,
+                'cost' => (float) $r->cost,
+                'unit_cost' => (float) $r->unit_cost,
+                // Prix de vente moyen constaté : utile pour repérer les remises.
+                'avg_price' => $qte > 0 ? round($ca / $qte, 2) : null,
+                'profit' => $benefice,
+                'unit_profit' => $qte > 0 ? round($benefice / $qte, 2) : null,
+                'margin_percent' => $ca > 0 ? round(($benefice / $ca) * 100, 1) : null,
+            ];
+        }
+
+        return $sortie;
+    }
+
+    /**
      * Bénéfice par fournisseur : la marge dégagée sur les articles qu'il livre.
      *
      * Le rattachement vient des réceptions, pas du catalogue. La table de

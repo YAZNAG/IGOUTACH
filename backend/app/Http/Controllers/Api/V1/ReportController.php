@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exports\ArrayExport;
+use App\Support\Export\HtmlTable;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Domain\Sales\Services\ProfitReportService;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Rapports du pilotage : ventes par période/lieu/vendeur, valorisation du
@@ -275,5 +278,81 @@ final class ReportController extends Controller
             ]);
 
         return response()->json(['data' => ['from' => $from, 'to' => $to, 'rows' => $rows]]);
+    }
+
+    /**
+     * Bénéfice de tous les articles vendus sur une période, un jour ou un lieu.
+     * GET /reports/profit-by-product?from&to&day&warehouse_id&q&format=xlsx|pdf
+     *
+     * Le jour, s'il est donné, l'emporte sur la période : c'est le filtre
+     * « qu'est-ce qui a rapporté aujourd'hui ».
+     */
+    public function profitByProduct(Request $request, ProfitReportService $benefices): JsonResponse|BinaryFileResponse|Response
+    {
+        // Le bénéfice se déduit des prix d'achat : sans le droit de les voir,
+        // la liste n'a rien à montrer, et l'export encore moins.
+        if (! ($request->user()?->can('product.view_cost_price') ?? false)) {
+            return response()->json(['message' => 'Le bénéfice par article demande le droit de voir les prix d’achat.'], 403);
+        }
+
+        /** @var array{from?: string|null, to?: string|null, day?: string|null, warehouse_id?: int|null, q?: string|null, format?: string|null} $data */
+        $data = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+            'day' => ['nullable', 'date'],
+            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
+            'q' => ['nullable', 'string', 'max:100'],
+            'format' => ['nullable', 'in:xlsx,pdf'],
+        ]);
+
+        $du = $data['from'] ?? now()->startOfMonth()->format('Y-m-d');
+        $au = $data['to'] ?? now()->format('Y-m-d');
+        if (! empty($data['day'])) {
+            $du = $au = \Illuminate\Support\Carbon::parse($data['day'])->format('Y-m-d');
+        }
+        $lieu = (int) ($data['warehouse_id'] ?? 0);
+        $recherche = trim((string) ($data['q'] ?? ''));
+
+        $lignes = $benefices->tousLesArticles($du, $au, $lieu, $recherche);
+
+        $totaux = [
+            'products' => count($lignes),
+            'quantity' => (int) array_sum(array_column($lignes, 'quantity')),
+            'revenue' => round(array_sum(array_column($lignes, 'revenue')), 2),
+            'cost' => round(array_sum(array_column($lignes, 'cost')), 2),
+            'profit' => round(array_sum(array_column($lignes, 'profit')), 2),
+        ];
+        $totaux['margin_percent'] = $totaux['revenue'] > 0 ? round($totaux['profit'] / $totaux['revenue'] * 100, 1) : null;
+
+        $format = $data['format'] ?? null;
+        if ($format === null) {
+            return response()->json(['data' => ['from' => $du, 'to' => $au, 'rows' => $lignes, 'totals' => $totaux]]);
+        }
+
+        $titre = $du === $au ? "Bénéfice par article — {$du}" : "Bénéfice par article — du {$du} au {$au}";
+        $entetes = ['Référence', 'Article', 'Catégorie', 'Qté vendue', 'Factures', 'CA (DH)', 'Coût (DH)', 'Bénéfice (DH)', 'Bénéfice / unité', 'Marge %'];
+        $rangs = array_map(static fn (array $l): array => [
+            $l['sku'],
+            $l['name'],
+            $l['category'] ?? '—',
+            $l['quantity'],
+            $l['documents'],
+            number_format($l['revenue'], 2, '.', ''),
+            number_format($l['cost'], 2, '.', ''),
+            number_format($l['profit'], 2, '.', ''),
+            $l['unit_profit'] !== null ? number_format($l['unit_profit'], 2, '.', '') : '—',
+            $l['margin_percent'] !== null ? number_format($l['margin_percent'], 1, '.', '') : '—',
+        ], $lignes);
+        $rangs[] = ['', 'TOTAL', '', $totaux['quantity'], '', number_format($totaux['revenue'], 2, '.', ''), number_format($totaux['cost'], 2, '.', ''), number_format($totaux['profit'], 2, '.', ''), '', $totaux['margin_percent'] !== null ? number_format($totaux['margin_percent'], 1, '.', '') : '—'];
+
+        $nom = 'IGOUTECH_benefice-articles_'.($du === $au ? $du : "{$du}_{$au}");
+
+        if ($format === 'pdf') {
+            return Pdf::loadHtml(HtmlTable::render($titre, $entetes, $rangs))
+                ->setPaper('a4', 'landscape')
+                ->download($nom.'.pdf');
+        }
+
+        return Excel::download(new ArrayExport($entetes, $rangs), $nom.'.xlsx');
     }
 }

@@ -9,6 +9,7 @@ import { ChartCard } from '@/features/dashboard/components/ChartCard'
 import { RankedBarChart } from '@/features/dashboard/components/RankedBarChart'
 import { StatTile } from '@/features/dashboard/components/StatTile'
 import { chartColors } from '@/features/dashboard/components/chartTheme'
+import { TableauBeneficeArticles } from '../components/TableauBeneficeArticles'
 import { api } from '@/lib/api'
 import { cn, formatCurrency, formatNumber } from '@/lib/utils'
 
@@ -292,6 +293,10 @@ export function BreakdownPage({ mesure }: BreakdownPageProps) {
           />
         </div>
       )}
+
+      {/* Le palmarès ci-dessous s'arrête aux dix premiers : le tableau donne
+          tous les articles, à fouiller par jour, par lieu et par recherche. */}
+      {beneficeVise && !beneficeInterdit && data ? <TableauBeneficeArticles du={du} au={au} /> : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {blocs.map((bloc) => {
