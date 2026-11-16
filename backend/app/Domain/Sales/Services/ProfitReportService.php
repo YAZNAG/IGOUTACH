@@ -25,12 +25,28 @@ final class ProfitReportService
      */
     private function lignes(string $du, string $au): \Illuminate\Database\Query\Builder
     {
-        return DB::table('sale_lines')
+        $debut = $du.' 00:00:00';
+        $fin = $au.' 23:59:59';
+
+        // Les ventes de la période, en positif.
+        $ventes = DB::table('sale_lines')
+            ->join('sales as s', 's.id', '=', 'sale_lines.sale_id')
+            ->where('s.type', 'invoice')
+            ->where('s.status', 'confirmed')
+            ->whereBetween('s.confirmed_at', [$debut, $fin])
+            ->selectRaw('sale_lines.sale_id, sale_lines.product_id, sale_lines.quantity, sale_lines.quantity as cost_quantity, sale_lines.line_total, s.confirmed_at as occurred_at');
+
+        // Les retours de la période, en négatif, au prix de la vente
+        // d'origine. Un article revenu défectueux ne rend pas son coût : il
+        // est perdu, seul le chiffre d'affaires recule.
+        $retours = DB::table('sale_returns as r')
+            ->whereBetween('r.occurred_at', [$debut, $fin])
+            ->selectRaw("r.sale_id, r.product_id, -r.quantity, CASE WHEN r.`condition` = 'resellable' THEN -r.quantity ELSE 0 END, -r.amount, r.occurred_at");
+
+        return DB::query()
+            ->fromSub($ventes->unionAll($retours), 'sale_lines')
             ->join('sales', 'sales.id', '=', 'sale_lines.sale_id')
-            ->join('products', 'products.id', '=', 'sale_lines.product_id')
-            ->where('sales.type', 'invoice')
-            ->where('sales.status', 'confirmed')
-            ->whereBetween('sales.confirmed_at', [$du.' 00:00:00', $au.' 23:59:59']);
+            ->join('products', 'products.id', '=', 'sale_lines.product_id');
     }
 
     /** Les trois mesures que porte chaque ligne du rapport. */
@@ -38,8 +54,8 @@ final class ProfitReportService
     {
         return [
             DB::raw('ROUND(SUM(sale_lines.line_total), 2) as revenue'),
-            DB::raw('ROUND(SUM(sale_lines.quantity * products.cost_price), 2) as cost'),
-            DB::raw('ROUND(SUM(sale_lines.line_total) - SUM(sale_lines.quantity * products.cost_price), 2) as profit'),
+            DB::raw('ROUND(SUM(sale_lines.cost_quantity * products.cost_price), 2) as cost'),
+            DB::raw('ROUND(SUM(sale_lines.line_total) - SUM(sale_lines.cost_quantity * products.cost_price), 2) as profit'),
         ];
     }
 
@@ -85,7 +101,7 @@ final class ProfitReportService
                 ->orderByDesc('profit')
                 ->get([
                     DB::raw('warehouses.code as name'),
-                    DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                     ...$this->mesures(),
                 ]),
         );
@@ -110,7 +126,7 @@ final class ProfitReportService
                 ->limit($limite)
                 ->get([
                     DB::raw('customers.name as name'),
-                    DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                     ...$this->mesures(),
                 ]),
         );
@@ -120,7 +136,7 @@ final class ProfitReportService
                 ->whereNull('sales.customer_id')
                 ->get([
                     DB::raw("'Client de passage' as name"),
-                    DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                     ...$this->mesures(),
                 ]),
         );
@@ -155,7 +171,7 @@ final class ProfitReportService
                 ->limit($limite)
                 ->get([
                     DB::raw("CONCAT(products.sku, ' — ', products.name) as name"),
-                    DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                     DB::raw('SUM(sale_lines.quantity) as quantity'),
                     ...$this->mesures(),
                 ]),
@@ -187,7 +203,7 @@ final class ProfitReportService
                 'products.sku',
                 'products.name as product_name',
                 'categories.name as category',
-                DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                 DB::raw('SUM(sale_lines.quantity) as quantity'),
                 DB::raw('ROUND(products.cost_price, 2) as unit_cost'),
                 ...$this->mesures(),
@@ -252,7 +268,7 @@ final class ProfitReportService
                 ->limit($limite)
                 ->get([
                     DB::raw('suppliers.name as name'),
-                    DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                     ...$this->mesures(),
                 ]),
         );
@@ -361,11 +377,11 @@ final class ProfitReportService
     public function serie(string $du, string $au): array
     {
         return $this->lignes($du, $au)
-            ->groupByRaw('DATE(sales.confirmed_at)')
-            ->orderByRaw('DATE(sales.confirmed_at)')
+            ->groupByRaw('DATE(sale_lines.occurred_at)')
+            ->orderByRaw('DATE(sale_lines.occurred_at)')
             ->get([
-                DB::raw('DATE(sales.confirmed_at) as jour'),
-                DB::raw('COUNT(DISTINCT sales.id) as documents'),
+                DB::raw('DATE(sale_lines.occurred_at) as jour'),
+                DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
                 ...$this->mesures(),
             ])
             ->map(fn ($r): array => [
@@ -386,7 +402,7 @@ final class ProfitReportService
     public function totaux(string $du, string $au): array
     {
         $r = $this->lignes($du, $au)->first([
-            DB::raw('COUNT(DISTINCT sales.id) as documents'),
+            DB::raw('COUNT(DISTINCT CASE WHEN sale_lines.quantity > 0 THEN sales.id END) as documents'),
             ...$this->mesures(),
         ]);
 

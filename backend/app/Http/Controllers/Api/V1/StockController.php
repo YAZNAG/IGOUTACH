@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Stock\Actions\EntryStockAction;
+use App\Domain\Sales\Services\RetourClient;
 use App\Domain\Stock\Actions\IssueStockAction;
 use App\Domain\Stock\Contracts\StockWriterInterface;
 use App\Domain\Stock\DTOs\StockMovementData;
@@ -623,7 +624,7 @@ final class StockController extends Controller
      * Si une ligne échoue, aucune n'est enregistrée (pas de retour à moitié saisi).
      * POST /stock/return-multi
      */
-    public function returnMulti(Request $request, StockWriterInterface $writer): JsonResponse
+    public function returnMulti(Request $request, StockWriterInterface $writer, RetourClient $retours): JsonResponse
     {
         /** @var array{warehouse_id: int, occurred_at?: string|null, note?: string|null, lines: list<array{product_id: int, quantity: int, condition: string}>} $data */
         $data = $request->validate([
@@ -634,6 +635,9 @@ final class StockController extends Controller
             'lines.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
             'lines.*.condition' => ['required', 'in:resellable,defective'],
+            // Rattachée à la ligne de vente d'origine : le retour en reprend le
+            // prix et vient en déduction du bénéfice de cette vente-là.
+            'lines.*.sale_line_id' => ['nullable', 'integer', 'exists:sale_lines,id'],
         ]);
 
         // Le formulaire ne demande qu'une date : saisie le jour meme, elle
@@ -642,8 +646,21 @@ final class StockController extends Controller
         $occurredAt = MovementInstant::resolve($data['occurred_at'] ?? null);
 
         try {
-            DB::transaction(function () use ($data, $writer, $request, $occurredAt): void {
+            DB::transaction(function () use ($data, $writer, $request, $occurredAt, $retours): void {
                 foreach ($data['lines'] as $line) {
+                    if (! empty($line['sale_line_id'])) {
+                        $retours->enregistrer(
+                            saleLineId: (int) $line['sale_line_id'],
+                            quantite: (int) $line['quantity'],
+                            condition: $line['condition'],
+                            note: isset($data['note']) && $data['note'] !== '' ? $data['note'] : null,
+                            occurredAt: $occurredAt,
+                            userId: $request->user()?->id,
+                        );
+
+                        continue;
+                    }
+
                     $note = ($line['condition'] === 'resellable' ? 'Retour client revendable' : 'Retour client défectueux')
                         .(isset($data['note']) && $data['note'] !== '' ? ' — '.$data['note'] : '');
 

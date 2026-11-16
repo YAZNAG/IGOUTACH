@@ -10,7 +10,8 @@ import { useWarehouseOptions } from '@/features/access/hooks'
 import { SupplierCombobox } from '@/features/suppliers/components/SupplierCombobox'
 import { usePermission } from '@/hooks/usePermission'
 import { api, ensureCsrfCookie } from '@/lib/api'
-import { formatNumber } from '@/lib/utils'
+import { formatCurrency, formatNumber } from '@/lib/utils'
+import { SelecteurVente, type VenteRetournable } from '../components/SelecteurVente'
 import { fetchStockEntries, type StockEntryList } from '../api/stockEntriesApi'
 import { fetchStockExits, type StockExitList } from '../api/stockExitsApi'
 
@@ -28,6 +29,10 @@ interface DraftLine {
   quantity: number
   /** Retour client uniquement : revendable ou défectueux. */
   condition: 'resellable' | 'defective'
+  /** Retour client : la ligne de vente d'où revient l'article, si on l'a retrouvée. */
+  sale_line_id: number | null
+  /** Ce que dit la vente choisie : prix payé, reste retournable. */
+  vente: VenteRetournable | null
 }
 
 function errorMessage(error: unknown, fallback: string): string {
@@ -93,7 +98,7 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
         lines: lines.map((l) => ({
           product_id: l.product_id,
           quantity: l.quantity,
-          ...(isCustomer ? { condition: l.condition } : {}),
+          ...(isCustomer ? { condition: l.condition, sale_line_id: l.sale_line_id ?? undefined } : {}),
         })),
         ...(isCustomer ? {} : { supplier_id: supplierId || undefined, reason: reason.trim() }),
       }
@@ -119,17 +124,22 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
       if (existing) {
         return prev.map((l) => (l.product_id === p.id ? { ...l, quantity: l.quantity + 1 } : l))
       }
-      return [...prev, { product_id: p.id, sku: p.sku, name: p.name, quantity: 1, condition: 'resellable' }]
+      return [...prev, { product_id: p.id, sku: p.sku, name: p.name, quantity: 1, condition: 'resellable', sale_line_id: null, vente: null }]
     })
     setSearch('')
   }
 
   const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0)
+  // Ce que valent les articles rendus, au prix de leur vente : c'est ce qui
+  // revient au client (en avoir sur sa facture, ou de la main à la main).
+  const montantRendu = lines.reduce((sum, l) => sum + (l.vente ? l.quantity * l.vente.unit_price : 0), 0)
+  const depasse = lines.some((l) => l.vente !== null && l.quantity > l.vente.returnable)
   const canSubmit =
     canDo &&
     warehouseId > 0 &&
     lines.length > 0 &&
     lines.every((l) => l.quantity > 0) &&
+    !depasse &&
     (isCustomer || reason.trim() !== '') &&
     !submit.isPending
 
@@ -285,15 +295,21 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
                   <Input
                     type="number"
                     min={1}
+                    max={l.vente ? l.vente.returnable : undefined}
                     value={l.quantity}
                     onChange={(e) =>
                       setLines((prev) =>
                         prev.map((x, j) => (j === i ? { ...x, quantity: Math.max(1, Number(e.target.value)) } : x)),
                       )
                     }
-                    className="w-24 text-right"
+                    className={`w-24 text-right ${l.vente && l.quantity > l.vente.returnable ? 'border-bad' : ''}`}
                     aria-label="Quantité"
                   />
+                  {l.vente ? (
+                    <span className={`tabular text-xs ${l.quantity > l.vente.returnable ? 'text-bad' : 'text-muted'}`}>
+                      max {l.vente.returnable} · {formatCurrency(l.quantity * l.vente.unit_price)}
+                    </span>
+                  ) : null}
 
                   <Button
                     variant="ghost"
@@ -304,6 +320,38 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
+
+                  {/* La vente d'origine : elle fixe le prix remboursé, la
+                      quantité maximale et ce que le bénéfice doit retirer. */}
+                  {isCustomer ? (
+                    <div className="flex w-full flex-wrap items-center gap-2 border-t border-line pt-2">
+                      <span className="text-xs font-medium text-muted">Vente d'origine</span>
+                      <SelecteurVente
+                        productId={l.product_id}
+                        warehouseId={warehouseId}
+                        value={l.sale_line_id}
+                        onChange={(vente) =>
+                          setLines((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? {
+                                    ...x,
+                                    sale_line_id: vente?.sale_line_id ?? null,
+                                    vente,
+                                    quantity: vente ? Math.min(Math.max(1, x.quantity), Math.max(1, vente.returnable)) : x.quantity,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                      />
+                      {l.vente ? (
+                        <span className="text-xs text-muted">
+                          vendu à {formatCurrency(l.vente.unit_price)} l'unité à {l.vente.customer}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               ))
             )}
@@ -313,6 +361,13 @@ export function ReturnsPage({ direction }: { direction: 'customer' | 'supplier' 
             <p className="text-sm text-muted">
               {lines.length} ligne{lines.length > 1 ? 's' : ''} · {formatNumber(totalQuantity)} unité
               {totalQuantity > 1 ? 's' : ''}
+              {isCustomer && montantRendu > 0 ? (
+                <span className="ml-2 text-ink">
+                  Montant rendu : <span className="font-semibold">{formatCurrency(montantRendu)}</span>
+                  <span className="text-muted"> (en avoir sur la facture si elle est due, sinon de la main à la main)</span>
+                </span>
+              ) : null}
+              {depasse ? <span className="ml-2 text-bad">Une quantité dépasse ce que la vente contenait.</span> : null}
               {isCustomer && lines.some((l) => l.condition === 'defective') ? (
                 <span className="ml-2 text-warn">
                   Les articles défectueux entrent puis ressortent aussitôt (sortie SAV).

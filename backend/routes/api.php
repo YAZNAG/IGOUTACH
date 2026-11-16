@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\AgentImagesController;
 use App\Http\Controllers\Api\V1\AssistantController;
 use App\Http\Controllers\Api\V1\AuditController;
 use App\Http\Controllers\Api\V1\CustomerCreditPdfController;
+use App\Http\Controllers\Api\V1\CustomerReturnController;
 use App\Http\Controllers\Api\V1\GoodsReceiptDeliveryNoteController;
 use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\BrandController;
@@ -260,6 +261,8 @@ Route::prefix('v1')->group(function () {
         Route::post('stock/adjust', [StockController::class, 'adjust'])->middleware('can:stock.adjust');
         Route::post('stock/return', [StockController::class, 'returnIn'])->middleware('can:sale.return');
         Route::post('stock/return-multi', [StockController::class, 'returnMulti'])->middleware('can:sale.return');
+        // Les ventes qui contiennent l'article à retourner, pour y rattacher le retour.
+        Route::get('customer-returns/sales', [CustomerReturnController::class, 'sales'])->middleware('can:sale.return');
         Route::post('stock/supplier-return', [StockController::class, 'supplierReturn'])->middleware('can:purchase.return');
 
         // Transferts inter-lieux (alerte transit > 3 jours incluse)
